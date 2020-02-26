@@ -34,9 +34,9 @@ Links to additional documentation is provided in the table below.  Instructions 
 ## Repository Legend
 Folder/File | Description | Documentation Link
 --- | --- | ---
-application/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [samples/application-conf/README.md](samples/application-conf/README.md)
+samples/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [samples/application-conf/README.md](samples/application-conf/README.md)
 build-conf | This folder contains global configuration properties used by build.groovy and language build scripts. | [build-conf/README.md](build-conf/README.md)
-languages | This folder contains the language specific build scripts that are associated to build files via script mappings (see `application/application-conf/files.properties`) and called by build.groovy. | [languages/README.md](languages/README.md)
+languages | This folder contains the language specific build scripts that are associated to build files via script mappings (see `samples/application-conf/files.properties`) and called by build.groovy. | [languages/README.md](languages/README.md)
 utilities | This folder contains utility scripts which provide common utility functions used by the various zAppBuild build scripts. | [utilities/README.md](utilities/README.md)
 build.groovy | This is the main build script that is called to start the build process. | [BUILD.md](BUILD.md)
 
