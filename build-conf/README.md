@@ -1,5 +1,5 @@
 # Build Configuration
-This folder contains general build configuration properties used by the zAppBuild Groovy build and utility scripts. They are separated from the application specific configuration properties contained in `application/application-conf` which should be copied and modified in application repositories.
+This folder contains general build configuration properties used by the zAppBuild Groovy build and utility scripts. They are separated from the application specific configuration properties contained in `samples/application-conf` which should be copied and modified in application repositories.
 
 ***NOTE : datasets.properties (described below) must be configured for your build machine!***
 

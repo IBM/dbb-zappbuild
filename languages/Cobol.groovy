@@ -162,11 +162,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 	
-	if ( (linkEditStream && doLinkEdit && doLinkEdit.toBoolean()) || (props.debug && linkDebugExit!= null && doLinkEdit)) {
+	if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
 		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
-	}
-	else {
+	} else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
 		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
+	} else {
+		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
 	}
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
@@ -240,10 +241,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		// add the obj DD
 		linkedit.dd(new DDStatement().name("OBJECT").dsn("${props.cobol_objPDS}($member)").options('shr'))
 
-		//	} else if (props.debug && linkDebugExit!= null){
-		//		//instream SYSLIN, requires DDName list
-		//		String records = "  " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
-		//		linkedit.dd(new DDStatement().name("SYSLIN").instreamData(records))
 	} else { // no debug && no link card
 		// Use &&TEMP from Compile
 	}

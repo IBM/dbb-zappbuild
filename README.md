@@ -1,5 +1,5 @@
 # zAppBuild
-zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs. It is intended to be cloned to a single location on USS and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See [MortgageApplicationV2](../MortgageApplicationV2) for two examples of applications that are designed to be built by zAppBuild.  Instructions on how to create a stand alone Git repository for zAppBuild is included in [INSTALL.md](INSTALL.md).
+zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs. It is intended to be cloned to a single location on USS and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See [MortgageApplication](samples/MortgageApplication) for an example of an application that is designed to be built by zAppBuild.  
 
 **IMPORTANT** : The [datasets.properties](build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md](build-conf/README.md) for more information.
 
@@ -34,9 +34,10 @@ Links to additional documentation is provided in the table below.  Instructions 
 ## Repository Legend
 Folder/File | Description | Documentation Link
 --- | --- | ---
-application/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [application/application-conf/README.md](application/application-conf/README.md)
 build-conf | This folder contains global configuration properties used by build.groovy and language build scripts. | [build-conf/README.md](build-conf/README.md)
-languages | This folder contains the language specific build scripts that are associated to build files via script mappings (see `application/application-conf/files.properties`) and called by build.groovy. | [languages/README.md](languages/README.md)
+languages | This folder contains the language specific build scripts that are associated to build files via script mappings (see `samples/application-conf/files.properties`) and called by build.groovy. | [languages/README.md](languages/README.md)
+samples/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [samples/application-conf/README.md](samples/application-conf/README.md)
+samples/MortgageApplication | This is an updated version of the original [MortgageApplication](https://github.com/IBM/dbb/tree/master/Build/MortgageApplication) sample designed to be built by zAppBuild. | [samples/MortgageApplication/README.md](samples/MortgageApplication/README.md)
 utilities | This folder contains utility scripts which provide common utility functions used by the various zAppBuild build scripts. | [utilities/README.md](utilities/README.md)
 build.groovy | This is the main build script that is called to start the build process. | [BUILD.md](BUILD.md)
 
