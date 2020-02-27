@@ -1,5 +1,16 @@
 # zAppBuild
-zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs. It is intended to be cloned to a single location on USS and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See [MortgageApplication](samples/MortgageApplication) for an example of an application that is designed to be built by zAppBuild.  
+zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs.
+
+## Resources
+* [IBM Dependency Based Build Product Page](https://developer.ibm.com/mainframe/products/ibm-dependency-based-build/)
+* [IBM DBB Community](https://www.ibm.com/developerworks/community/groups/service/html/communitystart?communityUuid=eb5571db-e187-47c1-bd64-d5da2bd73e73)
+* [IBM DBB Knowledge Center](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.7/welcome.html)
+
+## Contributing
+For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
+
+## How zAppBuild works
+The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
 
 **IMPORTANT** : The [datasets.properties](build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md](build-conf/README.md) for more information.
 
