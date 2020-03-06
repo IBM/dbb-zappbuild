@@ -39,7 +39,7 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 
 ## Command Line Options Summary
 ```
-$DBB_HOME/bin/groovyz <ussLocation>/zAppBuild/build.groovy [options] buildfile
+$DBB_HOME/bin/groovyz <zAppBuildLocation>/build.groovy [options] buildfile
 
 buildFile (optional):  Path of the source file to build (absolute or relative to workspace). 
 If buildFile is a text file (*.txt), then it is assumed to be a build list file.
