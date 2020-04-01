@@ -69,8 +69,17 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			if (props.verbose) println "** Found impacted file $impactFile"
 			// only add impacted files that have a build script mapped to it
 			if (ScriptMappings.getScriptName(impactFile)) {
-				buildSet.add(impactFile)
-				if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+				// only add impacted files, that are in scope of the build.
+				if (!matches(impactFile, excludeMatchers){
+					buildSet.add(impactFile)
+					if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+				}
+				else {
+					// impactedFile found, but on Exclude List
+					//   Possible reasons: Exclude of file was defined after building the collection.
+					//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+					if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+				}
 			}
 		}
 	}
