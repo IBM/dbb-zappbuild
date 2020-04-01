@@ -144,7 +144,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			file = fixFilePath(file, dir, true)
+			file = fixGitDiffPath(file, dir, true)
 			if ( file != null ) {
 				changedFiles << file
 				if (props.verbose) println "*** $file"
@@ -153,7 +153,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
 		deleted.each { file ->
-			file = fixFilePath(file, dir, false)
+			file = fixGitDiffPath(file, dir, false)
 			deletedFiles << file
 			if (props.verbose) println "*** $file"
 		}
@@ -311,10 +311,31 @@ def verifyCollections(RepositoryClient repositoryClient) {
 
 }
 
-def fixFilePath(String file, String dir, boolean mustExist ) {
-	def fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
+/* 
+ *  calculates the correct filepath from the git diff, due to different offsets in the directory path
+ *  like nested projects, projects at root level
+ *  
+ *  returns null if file not found + mustExist
+ *
+ */
+
+def fixGitDiffPath(String file, String dir, boolean mustExist ) {
+ 	// relativized within the repository
+	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
+
+	// substring from identified common path element 
+	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
+
+	if (props.verbose) println ("** Testing if fixed file path exists : " + fixedFileName)
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return fixedFileName;
+
+	// Scenario: Repository name is used as Application Root directory   
+	String dirName = new File(dir).getName()
+	if (new File("${dir}/${file}").exists())
+		return "$dirName/$file" as String
+
+	// returns null or assumed fullPath to file
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
 
