@@ -62,7 +62,10 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		// perform impact analysis on changed file
 		if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 		ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
-
+		
+		// get excludeListe
+		List<PathMatcher> excludeMatchers = createExcludePatterns()
+		
 		def impacts = impactResolver.resolve()
 		impacts.each { impact ->
 			def impactFile = impact.getFile()
@@ -70,7 +73,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// only add impacted files that have a build script mapped to it
 			if (ScriptMappings.getScriptName(impactFile)) {
 				// only add impacted files, that are in scope of the build.
-				if (!matches(impactFile, excludeMatchers){
+				if (!matches(impactFile, excludeMatchers)){
 					buildSet.add(impactFile)
 					if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 				}
