@@ -32,8 +32,8 @@ def bindPackage(String file, String dbrmHLQ, String workDir, String confDir, Str
 	clist << """PROC 6 SUBSYS COLLID MEMBER LIB OWNER QUAL                       
    DSN SYSTEM(&SUBSYS)                                       
    BIND PACKAGE(&COLLID)    +                                
-        MEMBER(&MEMBER)     +
-        LIBRARY('&LIB')     +	
+        MEMBER(&MEMBER)     +                                
+        LIBRARY('&LIB')     +                                
         OWNER(&OWNER)       +                                
         QUALIFIER(&QUAL)    +                                
         ACTION(REPLACE)     +                                
