@@ -104,7 +104,7 @@ def createPhase1Command(String buildFile, String member, File logFile) {
 //	mfsPhase1.dd(new DDStatement().name("SYSLIB").dsn(props.SDFSMAC).options("shr"))
 	mfsPhase1.dd(new DDStatement().name("TASKLIB").dsn(props.SDFSRESL).options("shr"))
 	mfsPhase1.dd(new DDStatement().name("SYSTEXT").dsn("&&TXTPASS").options(props.mfs_tempOptions))
-	mfsPhase1.dd(new DDStatement().name("DUMMY").dsn("${props.PROCLIB}(REFCPY)").options("shr"))
+//	mfsPhase1.dd(new DDStatement().name("DUMMY").dsn("${props.PROCLIB}(REFCPY)").options("shr"))
 	
 	mfsPhase1.dd(new DDStatement().name("SYSUT3").options(props.mfs_tempOptions))
 	mfsPhase1.dd(new DDStatement().name("SYSUT4").options(props.mfs_tempOptions))
