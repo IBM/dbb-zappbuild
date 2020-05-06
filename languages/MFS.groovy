@@ -91,13 +91,9 @@ def createPhase1Command(String buildFile, String member, File logFile) {
 
 	mfsPhase1.dd(new DDStatement().name("SYSIN").dsn("${props.mfs_srcPDS}($member)").options("shr").report(true))
 	
-//	mfsPhase1.dd(new DDStatement().name("REFIN").dsn(props.REFERAL).options("shr"))
-//	mfsPhase1.dd(new DDStatement().name("REFOUT").dsn("&&TEMPPDS").options("${props.mfs_tempOptions} dir(5) lrecl(80) recfm(f,b)"))
-//	mfsPhase1.dd(new DDStatement().name("REFRD").dsn(props.REFERAL).options("shr"))
-	
-	mfsPhase1.dd(new DDStatement().name("REFIN").dsn(props.REFERAL).options("old"))
-	mfsPhase1.dd(new DDStatement().name("REFOUT").dsn(props.REFERAL).options("old"))
-	mfsPhase1.dd(new DDStatement().name("REFRD").dsn(props.REFERAL).options("old"))
+	mfsPhase1.dd(new DDStatement().name("REFIN").dsn(props.REFERAL).options("shr"))
+	mfsPhase1.dd(new DDStatement().name("REFOUT").dsn("&&TEMPPDS").options("${props.mfs_tempOptions} dir(5) lrecl(80) recfm(f,b)"))
+	mfsPhase1.dd(new DDStatement().name("REFRD").dsn(props.REFERAL).options("shr"))
 	
 	mfsPhase1.dd(new DDStatement().name("SYSPRINT").options(props.mfs_tempOptions))
 	mfsPhase1.dd(new DDStatement().name("SEQBLKS").dsn("&&SEQBLK").options(props.mfs_tempOptions).pass(true))
@@ -129,10 +125,8 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 
 	// define the MVSExec command for MFS Language Utility - Phase 2
 	MVSExec mfsPhase2 = new MVSExec().file(buildFile).pgm(props.mfs_phase2processor).parm(parameters)
-
-	// add DD statements to the mfsPhase2 command
-	mfsPhase2.dd(new DDStatement().name("UTPRINT").options(props.mfs_tempOptions))
 	
+	// add DD statements to the mfsPhase2 command
 	String mfs_deployType = props.getFileProperty('mfs_deployType', buildFile)
 	if ( mfs_deployType == null )
 		mfs_deployType = 'LOAD'
@@ -141,10 +135,15 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 	// mfsPhase2.dd(new DDStatement().name("DUMMY").dsn("${props.PROCLIB}(FMTCPY)").options("shr"))
 	mfsPhase2.dd(new DDStatement().name("TASKLIB").dsn(props.SDFSRESL).options("shr"))
 	
+	// output DD statements
+	mfsPhase2.dd(new DDStatement().name("UTPRINT").options(props.mfs_tempOptions))
 	mfsPhase2.dd(new DDStatement().name("SYSPRINT").options(props.mfs_tempOptions))
-
+	
 	// add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
 	mfsPhase2.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
+	mfsPhase2.copy(new CopyToHFS().ddName("UTPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
+	
+	return mfsPhase2
 }
 
 def getRepositoryClient() {
