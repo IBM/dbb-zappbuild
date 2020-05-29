@@ -42,10 +42,12 @@ else {
                         scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
 			def buildFiles = ScriptMappings.getMappedList(script, buildList)
-               	        if (scriptPath.startsWith('/'))
-			        runScript(new File("${scriptPath}"), ['buildList':buildFiles])
-			else
-			        runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+                        if (buildFiles.size() > 0) {
+               	                if (scriptPath.startsWith('/'))
+			                runScript(new File("${scriptPath}"), ['buildList':buildFiles])
+			        else
+			                runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+                        }
 			processCounter = processCounter + buildFiles.size()
 		}
 	}
@@ -112,11 +114,7 @@ def initializeBuildProcess(String[] args) {
 	// verify/create build data sets required by each language script
 	if (props.languagePropertyQualifiers) {
 		props.languagePropertyQualifiers.trim().split(',').each { lang ->
-			if (props."${lang}_srcDatasets")
-				createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
-		
-			if (props."${lang}_loadDatasets")
-				createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
+		        buildUtils.getLanguagePropertyQualifiers(lang)
 		}
 	}
 	
@@ -334,16 +332,6 @@ def populateBuildProperties(String[] args) {
 
 }
 
-
-def createDatasets(String[] datasets, String options) {
-	if (datasets && options) {
-		datasets.each { dataset ->
-			new CreatePDS().dataset(dataset.trim()).options(options.trim()).create()
-			if (props.verbose)
-				println "** Creating / verifying build dataset ${dataset}"
-		}
-	}
-}
 
 /*
 * createBuildList - creates the list of programs to build. Build list calculated four ways:
