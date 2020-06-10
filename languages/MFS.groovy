@@ -17,6 +17,9 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.mfs_requiredBuildProperties)
 
+def langQualifier = "mfs"
+buildUtils.createLanguageDatasets(langQualifier)
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'mfs_fileBuildRank')
 

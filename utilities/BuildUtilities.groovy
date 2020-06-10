@@ -313,9 +313,9 @@ def relativizeFolderPath(String folder, String path) {
 }
 
 /*
- * getLanguagePropertyQualifiers - gets the language used to create the datasets
+ * createLanguageDatasets - gets the language used to create the datasets
  */
-def getLanguagePropertyQualifiers(String lang) {
+def createLanguageDatasets(String lang) {
 	if (props."${lang}_srcDatasets")
 		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
 		

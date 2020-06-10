@@ -110,15 +110,7 @@ def initializeBuildProcess(String[] args) {
 	// create the work directory (build output)
 	new File(props.buildOutDir).mkdirs()
 	println("** Build output located at ${props.buildOutDir}")
-	
-	// verify/create build data sets required by each language script
-	if (props.languagePropertyQualifiers) {
-		props.languagePropertyQualifiers.trim().split(',').each { lang ->
-		        buildUtils.getLanguagePropertyQualifiers(lang)
-		}
-	}
-	
-
+		
 	// initialize build report
 	BuildReportFactory.createDefaultReport()
 

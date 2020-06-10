@@ -15,6 +15,12 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.psbgen_requiredBuildProperties)
 
+def psbgenLangQualifier = "psbgen"
+buildUtils.createLanguageDatasets(psbgenLangQualifier)
+
+def acbgenLangQualifier = "acbgen"
+buildUtils.createLanguageDatasets(acbgenLangQualifier)
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'psbgen_fileBuildRank')
 
