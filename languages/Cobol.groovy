@@ -17,6 +17,9 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
+def langQualifier = "cobol"
+buildUtils.createLanguageDatasets(langQualifier)
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
 
@@ -84,10 +87,10 @@ sortedList.each { buildFile ->
 	if (props.userBuild && bindFlag && logicalFile.isSQL() && props.bind_performBindPackage && props.bind_performBindPackage.toBoolean() ) {
 		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
 
-		// if no  owner is set, use the user.name as package owner 
+		// if no  owner is set, use the user.name as package owner
 		def owner = ( !props.bind_packageOwner ) ? System.getProperty("user.name") : props.bind_packageOwner
 	
-		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS, props.buildOutDir, props.bind_runIspfConfDir, 
+		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS, props.buildOutDir, props.bind_runIspfConfDir,
 				props.bind_db2Location, props.bind_collectionID, owner, props.bind_qualifier, props.verbose && props.verbose.toBoolean());
 		if ( bindRc > bindMaxRC) {
 			String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"

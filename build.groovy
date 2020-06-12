@@ -31,6 +31,7 @@ List<String> buildList = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
+def scriptPath = ""
 if (buildList.size() == 0)
 	println("*! No files in build list.  Nothing to do.")
 else {
@@ -38,9 +39,15 @@ else {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
 		String[] buildOrder = props.buildOrder.split(',')
 		buildOrder.each { script ->
+                        scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
 			def buildFiles = ScriptMappings.getMappedList(script, buildList)
-			runScript(new File("languages/${script}"), ['buildList':buildFiles])
+                        if (buildFiles.size() > 0) {
+               	                if (scriptPath.startsWith('/'))
+			                runScript(new File("${scriptPath}"), ['buildList':buildFiles])
+			        else
+			                runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+                        }
 			processCounter = processCounter + buildFiles.size()
 		}
 	}
@@ -52,7 +59,7 @@ if (processCounter == 0)
 	
 finalizeBuildProcess(start:startTime, count:processCounter)
 
-// if error occurred signal process error 
+// if error occurred signal process error
 if (props.error)
 	System.exit(1)
 
@@ -103,19 +110,7 @@ def initializeBuildProcess(String[] args) {
 	// create the work directory (build output)
 	new File(props.buildOutDir).mkdirs()
 	println("** Build output located at ${props.buildOutDir}")
-	
-	// verify/create build data sets required by each language script
-	if (props.languagePropertyQualifiers) {
-		props.languagePropertyQualifiers.trim().split(',').each { lang ->
-			if (props."${lang}_srcDatasets")
-				createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
 		
-			if (props."${lang}_loadDatasets")
-				createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
-		}
-	}
-	
-
 	// initialize build report
 	BuildReportFactory.createDefaultReport()
 
@@ -286,7 +281,7 @@ def populateBuildProperties(String[] args) {
 	if (opts.pf) props.pf = opts.pf
 	
 	// set debug flag
-	if(opts.d) props.debug = 'true' 
+	if(opts.d) props.debug = 'true'
 	
 	// set DBB configuration properties
 	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
@@ -305,7 +300,7 @@ def populateBuildProperties(String[] args) {
 	// set calculated properties
 	if (!props.userBuild) {
 		def gitDir = buildUtils.getAbsolutePath(props.application)
-		if ( gitUtils.isGitDetachedHEAD(gitDir) ) 
+		if ( gitUtils.isGitDetachedHEAD(gitDir) )
 			props.applicationCurrentBranch = gitUtils.getCurrentGitDetachedBranch(gitDir)
 		else
 			props.applicationCurrentBranch = gitUtils.getCurrentGitBranch(gitDir)
@@ -330,22 +325,12 @@ def populateBuildProperties(String[] args) {
 }
 
 
-def createDatasets(String[] datasets, String options) {
-	if (datasets && options) {
-		datasets.each { dataset ->
-			new CreatePDS().dataset(dataset.trim()).options(options.trim()).create()
-			if (props.verbose)
-				println "** Creating / verifying build dataset ${dataset}"
-		}
-	}
-}
-
 /*
 * createBuildList - creates the list of programs to build. Build list calculated four ways:
 *   - full build : Contains all programs in application and external directories. Use script option --fullBuild
 *   - impact build : Contains impacted programs from calculated changed files. Use script option --impactBuild
 *   - build file : Contains one program. Provide a build file argument.
-*   - build text file: Contains a list of programs from a text file. Provide a *.txt build file argument. 
+*   - build text file: Contains a list of programs from a text file. Provide a *.txt build file argument.
 */
 def createBuildList() {
 	
@@ -445,7 +430,7 @@ def finalizeBuildProcess(Map args) {
 	if (repositoryClient) {
 		if (props.verbose)
 			println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
-		def buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel) 
+		def buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
 		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))

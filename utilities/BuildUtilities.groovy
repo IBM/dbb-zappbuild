@@ -303,11 +303,35 @@ def relativizePath(String path) {
  * relativizeFolderPath - converts a path to a relative path from folder
  */
 def relativizeFolderPath(String folder, String path) {
-	String fullPath = getAbsolutePath(path) 
+	String fullPath = getAbsolutePath(path)
 	String fullFolderPath = folder
 	if (!folder.startsWith('/'))
 		fullFolderPath = getAbsolutePath(folder)
 	if (fullPath.startsWith(fullFolderPath))
 		return fullPath.substring(fullFolderPath.length()+1)
 	return path
+}
+
+/*
+ * createLanguageDatasets - gets the language used to create the datasets
+ */
+def createLanguageDatasets(String lang) {
+	if (props."${lang}_srcDatasets")
+		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
+		
+	if (props."${lang}_loadDatasets")
+		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
+}
+
+/*
+ * createDatasets - creates the dataset for a particular language
+ */
+def createDatasets(String[] datasets, String options) {
+	if (datasets && options) {
+		datasets.each { dataset ->
+			new CreatePDS().dataset(dataset.trim()).options(options.trim()).create()
+			if (props.verbose)
+				println "** Creating / verifying build dataset ${dataset}"
+		}
+	}
 }

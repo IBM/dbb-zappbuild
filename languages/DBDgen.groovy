@@ -15,6 +15,9 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.dbdgen_requiredBuildProperties)
 
+def langQualifier = "dbdgen"
+buildUtils.createLanguageDatasets(langQualifier)
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'dbdgen_fileBuildRank')
 
@@ -136,7 +139,7 @@ def createDBDLinkEditCommand(String buildFile, String member, File logFile) {
 	//SYSPRINT  DD SYSOUT=&SOUT,SPACE=(TRK,(1,1),RLSE)                      00160000
 	//SYSLMOD   DD DISP=SHR,DSN=IMSCFG.&PLEX..DBDLIB(&MBR)                  00180001
 	//SYSUT1    DD UNIT=(SYSDA,SEP=(SYSLMOD,SYSLIN)),SPACE=(TRK,(1,1))      00200000
-	//         ENDIF                                                        00220000                                 
+	//         ENDIF                                                        00220000
 	
 	String parameters = props.getFileProperty('dbdgen_linkEditParms', buildFile)
 
