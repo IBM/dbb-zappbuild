@@ -346,7 +346,13 @@ def fixGitDiffPath(String file, String dir, boolean mustExist ) {
 	String dirName = new File(dir).getName()
 	if (new File("${dir}/${file}").exists())
 		return "$dirName/$file" as String
-
+		
+	// Scenario: Directory ${dir} is not the root directory of the file
+	// Example : 
+	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
+	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
+	if ( new File("${props.workspace}/${fixedFileName}").exists())
+		return fixedFileName;
 	// returns null or assumed fullPath to file
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
