@@ -71,8 +71,8 @@ pipeline { agent { label linuxAgent }
             agent { label agentLabel }
             steps {
  // added by Regi ---------- delete directory MortgageApplication
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
+                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
+                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
  // ------------------------------------
                 script {
                     dir('dbb-zappbuild-1') {
@@ -112,7 +112,7 @@ pipeline { agent { label linuxAgent }
 							}
 						}
 						
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
 // test >  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build-conf/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
   def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 // Do not deploy if nothing in the build list
