@@ -84,6 +84,7 @@ pipeline { agent { label linuxAgent }
 		    doGenerateSubmoduleConfigurations: false,
 		    submoduleCfg: [],
     extensions: [[$class: 'SparseCheckoutPaths',sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'cobol/'],
+				[$class:'SparseCheckoutPath', path:'/'],
 				[$class:'SparseCheckoutPath', path:'bms/'],
 				[$class:'SparseCheckoutPath', path:'copybook/'],
 				[$class:'SparseCheckoutPath', path:'application-conf/'],
