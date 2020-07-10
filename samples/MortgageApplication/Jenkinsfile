@@ -1,7 +1,7 @@
 // Updated by Regi to work with Regi Repo at github.com
 // * July 10, 2020  - for Mortgage sample using RegiBrazil
 // Global variables
-// This is modified to use GitHub and dbb-zappbuild/samples/MortgageApplication
+// This is modified to use GitHub and dbb-zappbuild-1/samples/MortgageApplication
     println "**Regi IF using VPN the gitHost must be physical IP"
 // ---------------------------Agents labels
 def linuxAgent = 'master'
@@ -25,8 +25,8 @@ def gitCred = '8e1d5827-1f44-4168-a2a1-f47f78e3ea92'
 def gitOrg = 'RegiBrazil'
 def srcGitBranch = 'sandbox'
 def gitHost = 'github.com'
-def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild.git'
-// git@github.com:RegiBrazil/dbb-zappbuild.git
+def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
+// git@github.com:RegiBrazil/dbb-zappbuild-1.git
 // def gitHost = '140.82.114.3'
 // ----------------------------- Build type
 //  -i: incremental
@@ -71,11 +71,11 @@ pipeline { agent { label linuxAgent }
             agent { label agentLabel }
             steps {
  // added by Regi ---------- delete directory MortgageApplication
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild', returnStdout: true)
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild@tmp', returnStdout: true)
+ //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
+ //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
  // ------------------------------------
                 script {
-                    dir('dbb-zappbuild') {
+                    dir('dbb-zappbuild-1') {
                     println "branch: ${srcGitBranch}"
                     println "WORKSPACE  is ${WORKSPACE}"
  // -----------------------------------------------------------------
@@ -112,8 +112,8 @@ pipeline { agent { label linuxAgent }
 							}
 						}
 						
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
-// test >  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild/build-conf/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+// test >  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build-conf/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
   def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 // Do not deploy if nothing in the build list
 						needDeploy = files.length > 0 && files[0].length > 0
@@ -158,7 +158,7 @@ pipeline { agent { label linuxAgent }
 						                   }
             // ------ z/OS agent  ----------------------------------
 					    node( agentLabel ) {	
-		sh "$DBB_HOME/bin/groovyz  ${WORKSPACE}/dbb-zappbuild/zunit/ZUnitExecute.groovy -w ${WORKSPACE} --testConf ${WORKSPACE}/dbb-zappbuild/samples/application-conf/ --cc --outDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq ${dbbHlq}.HEALTH  ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt" 											
+		sh "$DBB_HOME/bin/groovyz  ${WORKSPACE}/dbb-zappbuild-1/zunit/ZUnitExecute.groovy -w ${WORKSPACE} --testConf ${WORKSPACE}/dbb-zappbuild-1/samples/application-conf/ --cc --outDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq ${dbbHlq}.HEALTH  ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt" 											
  					                       }
 					              }
 				      }
@@ -216,7 +216,7 @@ pipeline { agent { label linuxAgent }
                     if ( needDeploy ) {
                         node( agentLabel ) {
                              println "Push to UCD Code station"
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component HC_CICS  "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component HC_CICS  "
                                            }
                                       }
                      }
