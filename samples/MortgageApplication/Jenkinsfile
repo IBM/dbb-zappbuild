@@ -37,7 +37,8 @@ def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
-def ucdApplication = 'A JKE Mortgage zOS and Worklight (LINUX)'
+// def ucdApplication = 'A JKE Mortgage zOS and Worklight (LINUX)'
+def ucdApplication = 'MortgageApplication'
 def ucdProcess = 'Deploy HC to CICS + MF to Windows'
 def ucdComponent = 'JKEMortgageCICS'
 def ucdEnv = 'DEV for JKEP'
@@ -109,9 +110,9 @@ pipeline { agent { label linuxAgent }
 							}
 						}
 						
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
-// was   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
-// test >  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build-conf/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.HEALTH --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+// was   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+// test >  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build-conf/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/samples/MortgageApplication  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
   def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 // Do not deploy if nothing in the build list
 						needDeploy = files.length > 0 && files[0].length > 0
@@ -156,7 +157,7 @@ pipeline { agent { label linuxAgent }
 						                   }
             // ------ z/OS agent  ----------------------------------
 					    node( agentLabel ) {	
-		sh "$DBB_HOME/bin/groovyz  ${WORKSPACE}/dbb-zappbuild-1/zunit/ZUnitExecute.groovy -w ${WORKSPACE} --testConf ${WORKSPACE}/dbb-zappbuild-1/samples/application-conf/ --cc --outDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq ${dbbHlq}.HEALTH  ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt" 											
+		sh "$DBB_HOME/bin/groovyz  ${WORKSPACE}/dbb-zappbuild-1/zunit/ZUnitExecute.groovy -w ${WORKSPACE} --testConf ${WORKSPACE}/dbb-zappbuild-1/samples/application-conf/ --cc --outDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq ${dbbHlq}.MORTGAGE  ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt" 											
  					                       }
 					              }
 				      }
