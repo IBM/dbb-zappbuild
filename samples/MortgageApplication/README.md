@@ -19,9 +19,13 @@
 #
 # 5. Be sure that MortgageApplication/application-conf/Cobol.properties has the option below:
 # cobol_compileDebugParms=TEST
+# ----> For UCD
+# 6. Add deploy.groovy to zAppBuild/utilities/
+# 7. Replace build.groovy by build2.groovy
+# 8. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
 #
-# 6. Add deploy.groovy to z   AppBuild/utilities/
-# 6. Add deploy.groovy to z   AppBuild/utilities/
+#
+#
 This version of the MortgageApplication sample is designed to be built by zAppBuild.
 
 **Example showing how to build all programs in MortgageApplication**
