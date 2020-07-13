@@ -1,0 +1,55 @@
+---
+# Build properties used by build.groovy
+buildProperties:
+
+  # Comma separated list of additional build property files to load
+  # Supports both relative path (to zAppBuild/build-conf/) and absolute path
+  - key: buildPropFiles
+    value: datasets.properties,Assembler.properties,BMS.properties,Cobol.properties,LinkEdit.properties,PLI.properties
+
+  # file extension that indicates the build file is really a build list or build list filter
+  - key: buildListFileExt
+    value: txt
+
+  # List of language script property qualifiers
+  - key: languagePropertyQualifiers
+    value: assembler,bms,cobol,linkedit,pli
+
+  # Alternate root directory for application-conf location.  Allows for the deployment of
+  # the application-conf directories to a static location.
+  # Defaults to ${workspace}/${application}
+  - key: applicationConfRootDir
+    value: ${zAppBuildDir}/application/
+
+  # Comma separated list of required build properties for zAppBuild/build.groovy
+  - key: requiredBuildProperties
+    value: buildOrder,buildListFileExt,languagePropertyQualifiers
+
+  # Set filter used to exclude certain information from the link edit scanning.
+  # The value contains a comma separated list of patterns.
+  # example: A filter of *.SUB1, *.SUB2 will exclude modules SUB1 and SUB2
+  #          from any dataset. To exclude member HELLO in PDS TEST.ASM will
+  #          be matched by the pattern TEST.ASM.HELLO. The pattern TEST.ASM.*
+  #          will match any member in the data set TEST.COBOL.
+  # The following filter excludes CICS and LE Library references.
+  - key: dbb.LinkEditScanner.excludeFilter
+    value: ${SDFHLOAD}.*, ${SCEELKED}.*
+
+  # default DBB Repository Web Application authentication properties
+  # can be overridden by build.groovy script options
+
+  # build.groovy option -url, --url
+  - key: dbb.RepositoryClient.url
+    value: https://10.1.1.1:11043/dbb
+
+  # build.groovy option -id, --id
+  - key: dbb.RepositoryClient.userId
+    value: ADMIN
+
+  # build.groovy option -pw, --pw
+  - key: dbb.RepositoryClient.password
+    value: ADMIN
+
+  # build.groovy option -pf, --pf
+  #- key: dbb.RepositoryClient.passwordFile
+  #  value: ${zAppBuildDir}/utilities/ADMIN.pw

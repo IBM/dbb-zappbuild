@@ -23,7 +23,9 @@
 # 6. Add deploy.groovy to zAppBuild/utilities/
 # 7. Replace build.groovy by build2.groovy
 # 8. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
-#
+# 9. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
+#10. Add /build-conf/build.yaml to  zAppBuild/build-conf/
+#11.
 #
 #
 This version of the MortgageApplication sample is designed to be built by zAppBuild.
