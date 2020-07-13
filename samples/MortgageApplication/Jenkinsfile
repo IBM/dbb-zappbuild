@@ -86,6 +86,7 @@ pipeline { agent { label linuxAgent }
 		    submoduleCfg: [],
     extensions: [[$class: 'SparseCheckoutPaths',sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'cobol/'],
 				[$class:'SparseCheckoutPath', path:'build.groovy'],
+				[$class:'SparseCheckoutPath', path:'build2.groovy'],
 				[$class:'SparseCheckoutPath', path:'build-conf/'],
 				[$class:'SparseCheckoutPath', path:'languages/'],
 				[$class:'SparseCheckoutPath', path:'samples/'],
