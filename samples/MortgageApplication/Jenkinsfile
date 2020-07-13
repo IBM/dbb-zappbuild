@@ -8,8 +8,8 @@ def linuxAgent = 'master'
 def agentLabel = 'zOSSlaveJ'
 // ---------------------------Verbose
 //def verbose = false
-// def buildVerbose = ''
-def buildVerbose = '-v'
+def buildVerbose = ''
+// verbose -> def buildVerbose = '-v'
 // ---------------------------Hosts and ports
 def linuxHost = '10.1.1.1'
 def zosHost = '10.1.1.2'
@@ -32,8 +32,8 @@ def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 //  -i: incremental
 //  -f: full
 //  -c: only changed source
-// was --> def buildType='-i'
-def buildType='-f'
+def buildType='-i'
+// full build -> def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
@@ -112,6 +112,8 @@ pipeline { agent { label linuxAgent }
    sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
   def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 // Do not deploy if nothing in the build list
+   println "%regi - Build Number is ${BUILD_NUMBER}"
+   println "%regi - Build extraparms is  $buildExtraParams"
 						needDeploy = files.length > 0 && files[0].length > 0
 						if (needDeploy) {
 						   sh "iconv -f ISO8859-1 -t IBM-1047 ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList.txt > ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt"

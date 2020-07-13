@@ -1,6 +1,6 @@
        ID DIVISION.
        PROGRAM-ID. EPSNBRVL
-      * chnaged July 13 - 09:21
+      * changed July 13 - 16:04
       *    THIS IS A CALLED PROGRAM EXAMPLE FOR DEMONSTRATION
       *
       *    THIS PROGRAM WILL BE CALLED BY ANOTHER, RECEIVE
