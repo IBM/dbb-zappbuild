@@ -17,6 +17,9 @@
 # 4. Updated build.properties at /zAppBuild/build-conf
 # --> Updated dbb.RepositoryClient.url=https://10.1.1.1:11043/dbb
 #
+# 5. Be sure that MortgageApplication/application-conf/Cobol.properties has the option below:
+# cobol_compileDebugParms=TEST
+#
 This version of the MortgageApplication sample is designed to be built by zAppBuild.
 
 **Example showing how to build all programs in MortgageApplication**
