@@ -25,7 +25,7 @@
 # 8. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
 # 9. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
 #10. Add /build-conf/build.yaml to  zAppBuild/build-conf/
-#11.
+#11. Replace /utilities/ImpactUtilities.groovy from geanapp to  /utilities/ImpactUtilities.groovy
 #
 #
 This version of the MortgageApplication sample is designed to be built by zAppBuild.
