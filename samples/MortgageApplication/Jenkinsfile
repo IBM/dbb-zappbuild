@@ -1,5 +1,6 @@
 // Updated by Regi to work with Regi Repo at github.com
 // * July 13, 2020  - for Mortgage sample using RegiBrazil
+// * invoking now build2.grovvy -> This write *.txt at BUILD-X instead of BUILD-X/build.nnnnnn
 // Global variables
 // This is modified to use GitHub and dbb-zappbuild-1/samples/MortgageApplication
     println "**Regi IF using VPN the gitHost must be physical IP"
@@ -109,7 +110,8 @@ pipeline { agent { label linuxAgent }
 							}
 						}
 						
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+// was ->   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build2.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
 
 // was def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
  def files = findFiles(glob: "**/buildList.txt")
