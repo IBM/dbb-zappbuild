@@ -37,11 +37,10 @@ def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
-// def ucdApplication = 'A JKE Mortgage zOS and Worklight (LINUX)'
 def ucdApplication = 'MortgageApplication'
-def ucdProcess = 'Deploy HC to CICS + MF to Windows'
+def ucdProcess = 'InstallMortgage'
 def ucdComponent = 'JKEMortgageCICS'
-def ucdEnv = 'DEV for JKEP'
+def ucdEnv = 'QA'
 // def ucdBuztool = '/apps/ucd/v7/bin/buztool.sh'
 // ----------------------------  Build extra args
 //  -d: COBOL debug options

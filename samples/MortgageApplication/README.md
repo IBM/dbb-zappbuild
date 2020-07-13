@@ -1,5 +1,23 @@
 # MortgageApplication
-This version of the MortgageApplication sample is designed to be built by zAppBuild. 
+#
+# Added by Regi - July 13, 2020
+# 1. Created JENKSFILE at /Mortgage
+
+# 2. Update datasets.properties  at    /zAppBuild/build-conf
+# --> specify correct data set names
+
+# 3. Updated build.properties at /zAppBuild/build-conf
+# --> # updated applicationConfRootDir=${zAppBuildDir}/samples/
+# ** otherwise..
+# ** appConf = /var/jenkins/workspace/dbb-zappbuild-1/dbb-zappbuild-1/samples/MortgageApplication/MortgageApplication/application-conf
+# Caught: com.ibm.dbb.build.ValidationException: BGZTK0045E Could not load because the file :
+#  /var/jenkins/workspace/dbb-zappbuild-1/dbb-zappbuild-1/samples/MortgageApplication/MortgageApplication/application-conf/application.properties
+#  does not exist in this directory.
+#
+# 4. Updated build.properties at /zAppBuild/build-conf
+# --> Updated dbb.RepositoryClient.url=https://10.1.1.1:11043/dbb
+#
+This version of the MortgageApplication sample is designed to be built by zAppBuild.
 
 **Example showing how to build all programs in MortgageApplication**
 ```
