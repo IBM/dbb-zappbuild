@@ -1,5 +1,5 @@
 // Updated by Regi to work with Regi Repo at github.com
-// * July 10, 2020  - for Mortgage sample using RegiBrazil
+// * July 13, 2020  - for Mortgage sample using RegiBrazil
 // Global variables
 // This is modified to use GitHub and dbb-zappbuild-1/samples/MortgageApplication
     println "**Regi IF using VPN the gitHost must be physical IP"
@@ -84,15 +84,11 @@ pipeline { agent { label linuxAgent }
 		    doGenerateSubmoduleConfigurations: false,
 		    submoduleCfg: [],
     extensions: [[$class: 'SparseCheckoutPaths',sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'cobol/'],
-				[$class:'SparseCheckoutPath', path:'/'],
-				[$class:'SparseCheckoutPath', path:'bms/'],
-				[$class:'SparseCheckoutPath', path:'copybook/'],
-				[$class:'SparseCheckoutPath', path:'application-conf/'],
-				[$class:'SparseCheckoutPath', path:'link/'],
+//				[$class:'SparseCheckoutPath', path:'/'],
 				[$class:'SparseCheckoutPath', path:'build-conf/'],
 				[$class:'SparseCheckoutPath', path:'languages/'],
-				[$class:'SparseCheckoutPath', path:'utilities/'],
-				[$class:'SparseCheckoutPath', path:'testcases/']
+				[$class:'SparseCheckoutPath', path:'samples/'],
+				[$class:'SparseCheckoutPath', path:'utilities/']
 		]]
 				       ],								
 				userRemoteConfigs: [[credentialsId: gitCred,url: srcGitRepo, ]]])
