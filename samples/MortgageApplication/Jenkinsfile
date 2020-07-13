@@ -32,8 +32,8 @@ def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 //  -i: incremental
 //  -f: full
 //  -c: only changed source
-def buildType='-i'
-// def buildType='-f'
+// was --> def buildType='-i'
+def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
