@@ -216,7 +216,7 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
                     if ( needDeploy ) {
                         node( agentLabel ) {
                              println "Push to UCD Code station"
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ucdComponent  "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
                                            }
                                       }
                      }
