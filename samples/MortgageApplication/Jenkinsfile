@@ -110,10 +110,10 @@ pipeline { agent { label linuxAgent }
 						}
 						
    sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
- // was -> def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
-  def files = findFiles(glob: "${props.buildOutDir}/buildList.txt")
+
+// was def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
+ def files = findFiles(glob: "**/buildList.txt")
 // Do not deploy if nothing in the build list
-   println "%regi - Building is ${props.buildOutDir}"
 						needDeploy = files.length > 0 && files[0].length > 0
 						if (needDeploy) {
 						   sh "iconv -f ISO8859-1 -t IBM-1047 ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList.txt > ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt"
@@ -214,7 +214,7 @@ pipeline { agent { label linuxAgent }
                     if ( needDeploy ) {
                         node( agentLabel ) {
                              println "Push to UCD Code station"
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component HC_CICS  "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ucdComponent  "
                                            }
                                       }
                      }
