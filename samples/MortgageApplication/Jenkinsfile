@@ -33,8 +33,8 @@ def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 //  -i: incremental
 //  -f: full
 //  -c: only changed source
-def buildType='-i'
-// full build -> def buildType='-f'
+// def buildType='-i'
+def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
@@ -114,8 +114,7 @@ pipeline { agent { label linuxAgent }
 // was ->   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
    sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build2.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
 
-// was def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
- def files = findFiles(glob: "**/buildList.txt")
+def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 // Do not deploy if nothing in the build list
 						needDeploy = files.length > 0 && files[0].length > 0
 						if (needDeploy) {
