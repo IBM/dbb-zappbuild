@@ -116,12 +116,13 @@ pipeline { agent { label linuxAgent }
  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
 
 def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
-//*  ---------------------------test
+//  ---------------------------test
 def fileList = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
-def fileDir = fileList[0].path.minus(fileList[0].name)
-println "%Regi files: ${fileList}"
-println "%Regi files: ${files}"
- //* ------------------------
+//def fileDir = fileList[0].path.minus(fileList[0].name)
+println "%Regi files List: ${fileList}"
+println "%Regi files : ${files}"
+// println "%Regi file Dir: ${fileDir}"
+ //  ------------------------
 // Do not deploy if nothing in the build list
 						needDeploy = files.length > 0 && files[0].length > 0
 						if (needDeploy) {
