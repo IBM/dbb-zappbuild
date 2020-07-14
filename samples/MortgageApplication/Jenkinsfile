@@ -117,7 +117,7 @@ pipeline { agent { label linuxAgent }
 
 def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 //  ---------------------------test
-for file in files:
+//for file in files:
   echo """
   ${files[0].name} ${files[0].path} ${files[0].directory}
   ${files[0].length} ${files[0].lastModified}
