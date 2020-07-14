@@ -116,6 +116,12 @@ pipeline { agent { label linuxAgent }
  sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/build.groovy --logEncoding UTF-8 -w ${WORKSPACE} --application MortgageApplication --sourceDir ${WORKSPACE}/dbb-zappbuild-1/samples  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --hlq ${dbbHlq}.MORTGAGE --url $dbbUrl -pw ADMIN $buildType  $buildVerbose $buildExtraParams "
 
 def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
+//*  ---------------------------test
+def fileList = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
+def fileDir = fileList[0].path.minus(fileList[0].name)
+println "%Regi files: ${fileList}"
+println "%Regi files: ${files}"
+ //* ------------------------
 // Do not deploy if nothing in the build list
 						needDeploy = files.length > 0 && files[0].length > 0
 						if (needDeploy) {
@@ -141,82 +147,13 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
 			}
 		}
 // -------------------------------------------------------------------------
-/*  -----**REGI- No zUnit
-		stage('Unit Tests') {
-			steps {
-                               println "**Unit Test stage starts **"
-                               println("** needTest = " + needTest)
-
-				script{
-					if (needTest) {
-             // ------ Linux agent ----------------------------------
-						node( linuxAgent ) {
-							sh "echo $PWD"
-							sh "rm -rf ${WORKSPACE}/../Testcases/results"
-							sh "mkdir ${WORKSPACE}/../Testcases/results"
-							sh "mkdir ${WORKSPACE}/BUILD-${BUILD_NUMBER}"
-							sh "mkdir ${WORKSPACE}/BUILD-${BUILD_NUMBER}/ccresults"
-						                   }
-            // ------ z/OS agent  ----------------------------------
-					    node( agentLabel ) {	
-		sh "$DBB_HOME/bin/groovyz  ${WORKSPACE}/dbb-zappbuild-1/zunit/ZUnitExecute.groovy -w ${WORKSPACE} --testConf ${WORKSPACE}/dbb-zappbuild-1/samples/application-conf/ --cc --outDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq ${dbbHlq}.MORTGAGE  ${WORKSPACE}/BUILD-${BUILD_NUMBER}/buildList-1047.txt" 											
- 					                       }
-					              }
-				      }
-			      }
-			post {
-				always {
-					node( agentLabel ) {
-						dir("${WORKSPACE}/BUILD-${BUILD_NUMBER}") {
-							archiveArtifacts allowEmptyArchive: true,
-											artifacts: '*.bzures',
-											excludes: '*clist',
-											onlyIfSuccessful: false
-						}
-					}
-				}
-			}
-		}
- ----**REGI-------- NO CODE COVERAGE */
-// -------------------------------------------------------------------------
-/*  -----**REGI- No CODE COVERAGE
-		stage('Code coverage gating') {
-			steps {
-				script{
-                println "on Linux IDz is listening for the Code Coverage"
-					if (needTest) {
-					    node( linuxAgent ) {
-							sh "cp ${WORKSPACE}/../Testcases/results/* ${WORKSPACE}/BUILD-${BUILD_NUMBER}/ccresults/"
-							int ccpercent = sh (script: "$CCDIR/headless-cc/ccresults.sh ${WORKSPACE}/BUILD-${BUILD_NUMBER}/ccresults", returnStdout: true)
-							println "${ccpercent} + ccpercent"
-							if (ccpercent < 40) {
-								println "This build is unstable - the code coverage is less than 40%"
-								currentBuild.result = "UNSTABLE"
-							                    }
-						               }
-					              }
-				      }
-			      }
-			post {
-				always {
-					node( linuxAgent ) {
-						dir("${WORKSPACE}/BUILD-${BUILD_NUMBER}/ccresults") {
-							archiveArtifacts allowEmptyArchive: true,
-											artifacts: '*cczip',
-											onlyIfSuccessful: false
-						                                                    }
-					                   }
-				        }
-			     }
-	                                      }
- ----**REGI-------- NO CODE COVERAGE */
-// -------------------------------------------------------------------------
         stage('Push to UCD Code station') {
             steps {
                 script{
                     if ( needDeploy ) {
                         node( agentLabel ) {
                              println "Push to UCD Code station"
+//   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
    sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
                                            }
                                       }
@@ -246,14 +183,4 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
                                       }
                        }
                   }
-// -------------------------------------------------------------------------
-/*  ---  Commented all post this is for GitLab
-post { 	success { updateGitlabCommitStatus(name: "Jenkins Job: '${env.JOB_NAME} [${env.BUILD_NUMBER} - ${env.BUILD_DISPLAY_NAME}]' (${env.BUILD_URL})", state: 'success') }
-	unstable { updateGitlabCommitStatus(name: "Jenkins Job: '${env.JOB_NAME} [${env.BUILD_NUMBER} - ${env.BUILD_DISPLAY_NAME}]' (${env.BUILD_URL})", state: 'success') }		
-	failure { updateGitlabCommitStatus(name: "Jenkins Job: '${env.JOB_NAME} [${env.BUILD_NUMBER} - ${env.BUILD_DISPLAY_NAME}]' (${env.BUILD_URL})", state: 'failed') }
-        aborted { updateGitlabCommitStatus(name: "Jenkins Job: '${env.JOB_NAME} [${env.BUILD_NUMBER} - ${env.BUILD_DISPLAY_NAME}]' (${env.BUILD_URL})", state: 'canceled') }		
-     }	
------ end of comments   */
-}
-}
-}
+}}}
