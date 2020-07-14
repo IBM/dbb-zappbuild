@@ -312,8 +312,10 @@ def populateBuildProperties(String[] args) {
         props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 	
-	// do not create a subfolder for user builds
-	props.buildOutDir = ((props.userBuild) ? "${props.outDir}" : "${props.outDir}/${props.applicationBuildLabel}") as String
+	// create a subfolder for user builds
+//	props.buildOutDir = ((props.userBuild) ? "${props.outDir}" : "${props.outDir}/${props.applicationBuildLabel}") as String
+        // do not create a subfolder for user builds
+	props.buildOutDir = ((props.userBuild) ? "${props.outDir}" : "${props.outDir}") as String
 	
 	if (props.verbose) {
 		println("java.version="+System.getProperty("java.runtime.version"))

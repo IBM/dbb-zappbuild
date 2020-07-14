@@ -1,11 +1,11 @@
 # MortgageApplication
 #
-# Added by Regi - July 13, 2020
+# Added by Regi - July 14, 2020
 # 1. Created JENKSFILE at /Mortgage
-
+#
 # 2. Update datasets.properties  at    /zAppBuild/build-conf
 # --> specify correct data set names
-
+#
 # 3. Updated build.properties at /zAppBuild/build-conf
 # --> # updated applicationConfRootDir=${zAppBuildDir}/samples/
 # ** otherwise..
@@ -21,13 +21,17 @@
 # cobol_compileDebugParms=TEST
 # ----> For UCD
 # 6. Add deploy.groovy to zAppBuild/utilities/
-# 7. Replace build.groovy by build2.groovy
+# 7. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
 # 8. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
-# 9. Add /utilities/PackageUtilities.groovy to  zAppBuild/utilities/
-#10. Add /build-conf/build.yaml to  zAppBuild/build-conf/
-#11. Replace /utilities/ImpactUtilities.groovy from geanapp to  /utilities/ImpactUtilities.groovy
+# 9. Add /build-conf/build.yaml to  zAppBuild/build-conf/
+#10. Replace /utilities/ImpactUtilities.groovy from geanapp to  /utilities/ImpactUtilities.groovy
+#11.  Change build.groovy: Look for below
+// props.buildOutDir = ((props.userBuild) ? "${props.outDir}" : "${props.outDir}/${props.applicationBuildLabel}") as String
+# comment the line and replace by below..
+// do not create a subfolder for user builds
+	props.buildOutDir = ((props.userBuild) ? "${props.outDir}" : "${props.outDir}") as String
 #
-#
+# =======================================================================
 This version of the MortgageApplication sample is designed to be built by zAppBuild.
 
 **Example showing how to build all programs in MortgageApplication**
