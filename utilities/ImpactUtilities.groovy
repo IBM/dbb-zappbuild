@@ -196,7 +196,7 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 	}
 
 	if (props.verbose) println "** Updating collection ${props.applicationCollectionName}"
-	def scanner = new DependencyScanner()
+	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
 	List<PathMatcher> excludeMatchers = createExcludePatterns()
 
@@ -211,11 +211,13 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 
 	// scan changed files
 	changedFiles.each { file ->
-
+		
 		// make sure file is not an excluded file
 		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
+		
+			def scanner = buildUtils.getScanner(file)
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"

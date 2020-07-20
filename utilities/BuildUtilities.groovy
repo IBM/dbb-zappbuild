@@ -4,13 +4,13 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 import groovy.json.JsonSlurper
-
-
+import com.ibm.dbb.build.DBBConstants.CopyMode
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
+
 
 
 /*
@@ -20,7 +20,7 @@ def assertBuildProperties(String requiredProps) {
 	if (props.verbose) println "required props = $requiredProps"
 	if (requiredProps) {
 		String[] buildProps = requiredProps.split(',')
-	
+
 		buildProps.each { buildProp ->
 			buildProp = buildProp.trim()
 			assert props."$buildProp" : "*! Missing required build property '$buildProp'"
@@ -34,12 +34,12 @@ def createFullBuildList() {
 	List<String> srcDirs = []
 	if (props.applicationSrcDirs)
 		srcDirs.addAll(props.applicationSrcDirs.split(','))
-		
+
 	srcDirs.each{ dir ->
 		dir = getAbsolutePath(dir)
 		buildSet.addAll(getFileSet(dir, true, '**/*.*', props.excludeFileList))
 	}
-	
+
 	return buildSet
 }
 
@@ -50,53 +50,66 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
 	Set<String> fileSet = new HashSet<String>()
 
 	def files = new FileNameFinder().getFileNames(dir, includeFileList, excludeFileList)
-		files.each { file ->
-			if (relativePaths)
-				fileSet.add(relativizePath(file))
-			else
-				fileSet.add(file)					
+	files.each { file ->
+		if (relativePaths)
+			fileSet.add(relativizePath(file))
+		else
+			fileSet.add(file)
 	}
-	
+
 	return fileSet
 }
+
 
 /*
  * copySourceFiles - copies both the program being built and the program
  * dependencies from USS directories to data sets
  */
+
 def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, DependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
 		new CopyToPDS().file(new File(getAbsolutePath(buildFile)))
-					   .dataset(srcPDS)
-					   .member(CopyToPDS.createMemberName(buildFile))
-					   .execute()
+				.dataset(srcPDS)
+				.member(CopyToPDS.createMemberName(buildFile))
+				.execute()
 	}
-	
+
 	// resolve the logical dependencies to physical files to copy to data sets
 	if (dependencyPDS && dependencyResolver) {
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
-			dependencyResolver.getResolutionRules().each{ rule ->
-				println rule
-			}
+			dependencyResolver.getResolutionRules().each{ rule -> println rule }
 		}
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
-		
+
 		physicalDependencies.each { physicalDependency ->
 			if (props.verbose) println physicalDependency
 			if (physicalDependency.isResolved()) {
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
-	
+
 				// only copy the dependency file once per script invocation
 				if (!copiedFileCache.contains(physicalDependencyLoc)) {
 					copiedFileCache.add(physicalDependencyLoc)
-					new CopyToPDS().file(new File(physicalDependencyLoc))
-								   .dataset(dependencyPDS)
-								   .member(CopyToPDS.createMemberName(physicalDependency.getFile()))
-								   .execute()
+
+					//retrieve zUnitFileExtension plbck
+					zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+
+					if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
+						new CopyToPDS().file(new File(physicalDependencyLoc))
+								.copyMode(CopyMode.BINARY)
+								.dataset(dependencyPDS)
+								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.execute()
+					} else
+					{
+						new CopyToPDS().file(new File(physicalDependencyLoc))
+								.dataset(dependencyPDS)
+								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.execute()
+					}
 				}
 			}
 		}
@@ -110,7 +123,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 	List<String> sortedList = []
 	TreeMap<Integer,List<String>> rankings = new TreeMap<Integer,List<String>>()
 	List<String> unranked = new ArrayList<String>()
-	
+
 	// sort buildFiles by rank
 	buildList.each { buildFile ->
 		String rank = props.getFileProperty(rankPropertyName, buildFile)
@@ -127,17 +140,17 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 			unranked << buildFile
 		}
 	}
-	
+
 	// loop through rank keys adding sub lists (TreeMap automatically sorts keySet)
 	rankings.keySet().each { key ->
 		List<String> ranking = rankings.get(key)
 		if (ranking)
 			sortedList.addAll(ranking)
 	}
-	
+
 	// finally add unranked buildFiles
 	sortedList.addAll(unranked)
-	
+
 	return sortedList
 }
 
@@ -146,28 +159,28 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
  */
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
-	
+
 	if (args.client) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
 		}
-		
+
 		// add error message
 		if (args.errorMsg) {
 			buildResult.setStatus(buildResult.ERROR)
 			buildResult.addProperty("error", args.errorMsg)
 
 		}
-		
+
 		// add warning message, but keep result status
 		if (args.warningMsg) {
 			// buildResult.setStatus(buildResult.WARNING)
 			buildResult.addProperty("warning", args.warningMsg)
 
 		}
-		
+
 		// add logs
 		if (args.logs) {
 			args.logs.each { logName, logFile ->
@@ -175,7 +188,7 @@ def updateBuildResult(Map args) {
 					buildResult.addAttachment(logName, new FileInputStream(logFile))
 			}
 		}
-		
+
 		// save result
 		buildResult.save()
 	}
@@ -187,15 +200,17 @@ def updateBuildResult(Map args) {
  */
 def createDependencyResolver(String buildFile, String rules) {
 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
-	
+
+	def scanner = getScanner(buildFile)
+
 	// create a dependency resolver for the build file
 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
-														  .sourceDir(props.workspace)
-														  .scanner(new DependencyScanner())
+			.sourceDir(props.workspace)
+			.scanner(scanner)
 	// add resolution rules
 	if (rules)
 		resolver.setResolutionRules(parseResolutionRules(rules))
-	
+
 	return resolver
 }
 
@@ -237,7 +252,7 @@ def isCICS(LogicalFile logicalFile) {
 		if (cicsFlag)
 			isCICS = cicsFlag.toBoolean()
 	}
-	
+
 	return isCICS
 }
 
@@ -252,7 +267,7 @@ def isSQL(LogicalFile logicalFile) {
 		if (sqlFlag)
 			isSQL = sqlFlag.toBoolean()
 	}
-	
+
 	return isSQL
 }
 
@@ -267,7 +282,7 @@ def isDLI(LogicalFile logicalFile) {
 		if (dliFlag)
 			isDLI = dliFlag.toBoolean()
 	}
-	
+
 	return isDLI
 }
 
@@ -278,11 +293,11 @@ def getAbsolutePath(String path) {
 	path = path.trim()
 	if (path.startsWith('/'))
 		return path
-		
+
 	String workspace = props.workspace.trim()
 	if (!workspace.endsWith('/'))
 		workspace = "${workspace}/"
-		
+
 	return "${workspace}${path}"
 }
 
@@ -310,6 +325,22 @@ def relativizeFolderPath(String folder, String path) {
 	if (fullPath.startsWith(fullFolderPath))
 		return fullPath.substring(fullFolderPath.length()+1)
 	return path
+}
+
+/*
+ * getScannerInstantiates - returns the mapped scanner or default scanner
+ */
+def getScanner(String buildFile){
+	def mapping = new PropertyMappings("dbb.scannerMapping")
+	if (mapping.isMapped("ZUnitConfigScanner", buildFile)) {
+		if (props.verbose) println("*** Scanning file with the ZUnitConfigScanner")
+		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
+		scanner = scannerUtils.getzUnitScanner();
+	}
+	else {
+		if (props.verbose) println("*** Scanning file with the default scanner")
+		scanner = new DependencyScanner()
+	}
 }
 
 /*
