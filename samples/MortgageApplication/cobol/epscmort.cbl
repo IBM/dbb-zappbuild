@@ -1,7 +1,7 @@
        ID DIVISION.
        PROGRAM-ID. EPSCMORT.
       *    THIS DEMONSTRATES CICS/DEBUG           - EPSDEMOS 2008
-      * changed July 21, 2020 by Regi
+      * changed July 22, 2020 by Regi
       *    THIS PROGRAM WILL RECEIVE A DATE AND COVERT THE DATE TO
       *    AN INTEGER IN A CALLED PROGRAM TO DETERMINE DAYS FROM
       *    CURRENT DATE.
