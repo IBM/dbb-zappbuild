@@ -36,49 +36,24 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
-	// Parse the playback and testCase from the bzucfg file
+	// Parse the playback from the bzucfg file
 	String xml = new File(buildUtils.getAbsolutePath(buildFile)).getText("IBM-1047")
 
 	String playback;
-	String testCase;
-
 	for (line in xml.split('\n')) {
 		if (line.contains("runner:playback moduleName")) {
 			playback = line.split("=")[1].substring(1,line.split("=")[1].length()-3)
-		}
-		else if (line.contains("runner:testCase moduleName")) {
-			testCase = line.split("=")[1].substring(1,line.split("=")[1].length()-3).toUpperCase()
 		}
 	}
 	
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
 
-	/***
-	 * Create Datasets for JCL
-	 * TODO: Move to JCL
-	 */
 
-	String[][] zunitDatasets = [
-		[
-			props.zunit_bzuReportPDS,
-			props.zunit_reportDatasetOptions
-		],
-		[
-			props.zunit_bzuMesssagePDS,
-			props.zunit_msgDatasetOptions
-		],
-		[
-			props.zunit_bzuOutputPDS,
-			props.zunit_outputDatasetOptions]
-	]
-	zunitDatasets.each { dataset ->
-		if (props.verbose)
-			println "** Creating / verifying build dataset " + dataset[0]
-		new CreatePDS().dataset(dataset[0].trim()).options(dataset[1].trim()).create()
-	}
-
-
+/*
+ TODO: replace the job card with a variable to externalize it
+ //RUNZUNIT JOB ,MSGCLASS=H,CLASS=A,NOTIFY=&SYSUID,REGION=0M             JOB03819
+*/
 	// Create JCLExec String
 	String jcl = """\
 //RUNZUNIT JOB ,MSGCLASS=H,CLASS=A,NOTIFY=&SYSUID,REGION=0M             JOB03819
@@ -97,7 +72,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 //BZUPLAY DD DISP=SHR,
 // DSN=${props.zunit_bzuplayPDS}(${playback})
 //BZURPT DD DISP=SHR,
-// DSN=${props.zunit_bzuReportPDS}(${member})
+// DSN=${props.zunit_bzureportPDS}(${member})
 //*
 //IFGOOD IF RC<=4 THEN
 //GOODRC  EXEC PGM=IEFBR14
@@ -161,13 +136,13 @@ buildUtils.createLanguageDatasets(langQualifier)
 		rc = zUnitRunJCL.maxRC.split("CC")[1].toInteger()
 
 		// manage processing the RC, up to your logic. You might want to flag the build as failed.
-		if (rc < 4){
+		if (rc < maxPassRC){
 			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
-		} else if (rc >= 4 && rc <8){
+		} else if (maxPassRC >= 4 && rc <maxWarnRC){
 			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
 			println warningMsg
 			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
-		} else { // rc >= 8
+		} else { // rc >= maxWarnRC
 			props.error = "true"
 			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)

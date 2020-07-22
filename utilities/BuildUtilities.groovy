@@ -352,6 +352,12 @@ def createLanguageDatasets(String lang) {
 		
 	if (props."${lang}_loadDatasets")
 		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
+	
+	if (props."${lang}_reportDatasets")
+		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
+	
+	if (props."${lang}_testDatasets" && props.runzunitTests == "True")
+		createDatasets(props."${lang}_testDatasets".split(','), props."${lang}_testOptions")
 }
 
 /*
