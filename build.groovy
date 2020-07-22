@@ -37,7 +37,13 @@ if (buildList.size() == 0)
 else {
 	if (!props.scanOnly) {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
-		String[] buildOrder = props.buildOrder.split(',')
+		String[] buildOrderList = props.buildOrder.split(',')
+		String[] testOrderList;
+		if (props.runzunitTests == "True") { 
+			println("** LOOK HERE:Invoking test scripts according to test order: ${props.testOrder}")
+			testOrderList = props.testOrder.split(',')
+		}
+		buildOrder = buildOrderList + testOrderList
 		buildOrder.each { script ->
                         scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script

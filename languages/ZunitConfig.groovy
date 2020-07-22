@@ -99,7 +99,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	zUnitRunJCL.saveOutput(logFile, props.logEncoding)
 
 	// Store Report in Workspace
-	new CopyToHFS().dataset(props.zunit_bzuReportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
+	new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
 
 	//	// Extract Job BZURPT as XML
 	//	def logEncoding = "UTF-8"
@@ -136,13 +136,13 @@ buildUtils.createLanguageDatasets(langQualifier)
 		rc = zUnitRunJCL.maxRC.split("CC")[1].toInteger()
 
 		// manage processing the RC, up to your logic. You might want to flag the build as failed.
-		if (rc < maxPassRC){
+		if (rc < props.zunit_maxPassRC.toInteger()){
 			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
-		} else if (maxPassRC >= 4 && rc <maxWarnRC){
+		} else if (props.zunit_maxPassRC.toInteger() >= 4 && rc <props.zunit_maxWarnRC.toInteger()){
 			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
 			println warningMsg
 			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
-		} else { // rc >= maxWarnRC
+		} else { // rc >= props.zunit_maxWarnRC.toInteger()
 			props.error = "true"
 			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
