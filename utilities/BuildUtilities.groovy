@@ -332,7 +332,7 @@ def relativizeFolderPath(String folder, String path) {
  */
 def getScanner(String buildFile){
 	def mapping = new PropertyMappings("dbb.scannerMapping")
-	if (mapping.isMapped("ZUnitConfigScanner", buildFile)) {
+	if (mapping.isMapped("ZUnitConfigScanner", buildFile) && props.runzTests == "True") {
 		if (props.verbose) println("*** Scanning file with the ZUnitConfigScanner")
 		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
 		scanner = scannerUtils.getzUnitScanner();

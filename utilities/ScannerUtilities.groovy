@@ -9,7 +9,6 @@ import com.ibm.dbb.scanner.zUnit.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
-//@Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 
 
 /*
