@@ -74,8 +74,8 @@ pipeline { agent { label linuxAgent }
             agent { label agentLabel }
             steps {
  // added by Regi ---------- delete directory MortgageApplication
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
- //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
+                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
+                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
  // ------------------------------------
                 script {
                     dir('dbb-zappbuild-1') {
