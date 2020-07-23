@@ -49,15 +49,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
 
-
-/*
- TODO: replace the job card with a variable to externalize it
- //RUNZUNIT JOB ,MSGCLASS=H,CLASS=A,NOTIFY=&SYSUID,REGION=0M             JOB03819
-*/
 	// Create JCLExec String
-	String jcl = """\
-//RUNZUNIT JOB ,MSGCLASS=H,CLASS=A,NOTIFY=&SYSUID,REGION=0M             JOB03819
-//*
+	String jobcard = props.jobCard.replace("\\n", "\n")
+	String jcl = jobcard
+	jcl += """\
+\n//*
 //BADRC   EXEC PGM=IEFBR14
 //DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,CATLG,DELETE),
 //             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
@@ -81,7 +77,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 //             SPACE=(TRK,(1,1),RLSE)
 //       ENDIF
 """
-
+	println(jcl)
 	def dbbConf = System.getenv("DBB_CONF")
 
 	// Create jclExec
