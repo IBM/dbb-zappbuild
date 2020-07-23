@@ -40,7 +40,7 @@ else {
 		String[] buildOrderList = props.buildOrder.split(',')
 		String[] testOrderList;
 		if (props.runzTests == "True") { 
-			println("** LOOK HERE:Invoking test scripts according to test order: ${props.testOrder}")
+			println("** Invoking test scripts according to test order: ${props.testOrder}")
 			testOrderList = props.testOrder.split(',')
 		}
 		buildOrder = buildOrderList + testOrderList
