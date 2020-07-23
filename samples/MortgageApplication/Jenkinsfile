@@ -1,5 +1,5 @@
 // Updated by Regi to work with Regi Repo at github.com
-// * July 13, 2020  - for Mortgage sample using RegiBrazil
+// * July 23, 2020  - for Mortgage sample using RegiBrazil
 // * invoking now build2.grovvy -> This write *.txt at BUILD-X instead of BUILD-X/build.nnnnnn
 // * build type = -i (incremental - see line 37)
 // * First time do a "full build" to populate the dbb server
@@ -74,8 +74,8 @@ pipeline { agent { label linuxAgent }
             agent { label agentLabel }
             steps {
  // added by Regi ---------- delete directory MortgageApplication
-                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
-                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
+ //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
+ //                   sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
  // ------------------------------------
                 script {
                     dir('dbb-zappbuild-1') {
