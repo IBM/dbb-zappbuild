@@ -11,8 +11,8 @@ def linuxAgent = 'master'
 def agentLabel = 'zOSSlaveJ'
 // ---------------------------Verbose
 //def verbose = false
-def buildVerbose = ''
-// verbose -> def buildVerbose = '-v'
+// def buildVerbose = ''
+def buildVerbose = '-v'
 // ---------------------------Hosts and ports
 def linuxHost = '10.1.1.1'
 def zosHost = '10.1.1.2'
