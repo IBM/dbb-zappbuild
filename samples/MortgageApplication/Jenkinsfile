@@ -152,8 +152,7 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
    println "Push to UCD Code station"
    println "**Regi > buztool:   ${ucdBuztool}"
    println "**Regi > Component: ${ucdComponent}"
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  ${ucdBuztool}
-       --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  ${ucdBuztool} --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
                                            }
                                       }
                      }
