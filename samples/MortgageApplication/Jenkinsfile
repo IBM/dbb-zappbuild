@@ -38,16 +38,16 @@ def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 //  -i: incremental
 //  -f: full
 //  -c: only changed source
-//def buildType='-i'
-def buildType='-f'
+def buildType='-i'
+// def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
-def buildConf=''
-// UCD definitions
+// def buildConf=''
+// UCD definitions - Using V6
 def ucdApplication = 'MortgageApplication'
 def ucdProcess = 'InstallMortgage'
 def ucdComponent = 'JKEMortgageCICS'
 def ucdEnv = 'QA'
-// def ucdBuztool = '/apps/ucd/v7/bin/buztool.sh'
+def ucdBuztool = '/etc/ibm-ucd/v6.2.6/dtsc-agent/bin/buztool.sh'
 // ----------------------------  Build extra args
 //  -d: COBOL debug options
 def buildExtraParams='-d'
@@ -149,9 +149,11 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
                 script{
                     if ( needDeploy ) {
                         node( agentLabel ) {
-                             println "Push to UCD Code station"
-//   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
-   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  /apps/ucd/v7/bin/buztool.sh  --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
+   println "Push to UCD Code station"
+   println "**Regi > buztool:   ${ucdBuztool}"
+   println "**Regi > Component: ${ucdComponent}"
+   sh "$DBB_HOME/bin/groovyz ${WORKSPACE}/dbb-zappbuild-1/utilities/deploy.groovy --buztool  ${ucdBuztool}
+       --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER}  --component ${ucdComponent}   "
                                            }
                                       }
                      }
