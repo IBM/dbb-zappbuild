@@ -1,11 +1,12 @@
 // Updated by Regi to work with Regi Repo at github.com
 // --> Simplified jenkinsfile using sandbox2 branch
 // * July 24, 2020  - for Mortgage sample using RegiBrazil
-// * with --verbose - see line 15)
-// * build type = -i (incremental - see line 38)
+// * with --verbose - see line 16)
+// * build type = -i (incremental - see line 41)
 // * First time do a "full build" to populate the dbb server
 // Global variables
 // This is modified to use GitHub and dbb-zappbuild-1/samples/MortgageApplication
+    println "**Regi IF First build change to full build"
     println "**Regi IF using VPN the gitHost must be physical IP"
 // ---------------------------Agents labels
 def linuxAgent = 'master'
@@ -37,8 +38,8 @@ def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 //  -i: incremental
 //  -f: full
 //  -c: only changed source
-def buildType='-i'
-//def buildType='-f'
+//def buildType='-i'
+def buildType='-f'
 // -----------------------Build properties related to a specific jenkins agent
 def buildConf=''
 // UCD definitions
