@@ -1,7 +1,7 @@
 // Updated by Regi to work with Regi Repo at github.com
-// * July 23, 2020  - for Mortgage sample using RegiBrazil
-// * invoking now build2.grovvy -> This write *.txt at BUILD-X instead of BUILD-X/build.nnnnnn
-// * build type = -i (incremental - see line 37)
+// * July 24, 2020  - for Mortgage sample using RegiBrazil
+// * with --verbose - see line 15)
+// * build type = -i (incremental - see line 38)
 // * First time do a "full build" to populate the dbb server
 // Global variables
 // This is modified to use GitHub and dbb-zappbuild-1/samples/MortgageApplication
@@ -13,6 +13,7 @@ def agentLabel = 'zOSSlaveJ'
 //def verbose = false
 // def buildVerbose = ''
 def buildVerbose = '-v'
+println "**Regi - Verbose in effect"
 // ---------------------------Hosts and ports
 def linuxHost = '10.1.1.1'
 def zosHost = '10.1.1.2'
