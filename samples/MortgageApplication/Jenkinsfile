@@ -145,6 +145,7 @@ def files = findFiles(glob: "**BUILD-${BUILD_NUMBER}/buildList.txt")
         stage('Deploy to CICS using UCD') {
             steps {
                 script{
+       	         echo "Invoke UCD plugin to deploy to CICSTS5.3 - see Appl: ${ucdApplication} "
                     if ( needDeploy ) {
                         node( linuxAgent ) {
                             script{
