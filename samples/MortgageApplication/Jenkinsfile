@@ -1,4 +1,5 @@
 // Updated by Regi to work with Regi Repo at github.com
+// --> Simplified jenkinsfile using sandbox2 branch
 // * July 24, 2020  - for Mortgage sample using RegiBrazil
 // * with --verbose - see line 15)
 // * build type = -i (incremental - see line 38)
@@ -27,7 +28,7 @@ def dbbGroovyzOpts= ''
 def gitCredId = '8e1d5827-1f44-4168-a2a1-f47f78e3ea92'
 def gitCred = '8e1d5827-1f44-4168-a2a1-f47f78e3ea92'
 def gitOrg = 'RegiBrazil'
-def srcGitBranch = 'sandbox'
+def srcGitBranch = 'sandbox2'
 def gitHost = 'github.com'
 def srcGitRepo =     'git@'+gitHost+':'+gitOrg+'/dbb-zappbuild-1.git'
 // git@github.com:RegiBrazil/dbb-zappbuild-1.git
@@ -49,9 +50,6 @@ def ucdEnv = 'QA'
 // ----------------------------  Build extra args
 //  -d: COBOL debug options
 def buildExtraParams='-d'
-// ----------------------------- code coverage daemon port
-def ccPORT='8005'
-def CCDIR='/Appliance/IDz14.2.1'
 // --------------------------- Deploy only in case of source code modifications
 def needDeploy = true
 // ===========================================================
@@ -74,16 +72,13 @@ pipeline { agent { label linuxAgent }
         stage('Git Clone/Refresh') {
             agent { label agentLabel }
             steps {
- // added by Regi ---------- delete directory MortgageApplication
-                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1', returnStdout: true)
-                    sh(script: 'rm -rf ${WORKSPACE}/dbb-zappbuild-1@tmp', returnStdout: true)
- // ------------------------------------
                 script {
-                    dir('dbb-zappbuild-1') {
-                    println "branch: ${srcGitBranch}"
-                    println "WORKSPACE  is ${WORKSPACE}"
+                    println "**Regi >branch: ${srcGitBranch}"
+                    println "**Regi >WORKSPACE  is ${WORKSPACE}"
+                    println "**REGI > Simplified clone **"
  // -----------------------------------------------------------------
-                    println "**REGI sparseCheckoutPaths **"
+                    dir('dbb-zappbuild-1') {
+ /* ---BEFORE
 	            scmVars = checkout([$class: 'GitSCM', branches: [[name: srcGitBranch]],
 		    doGenerateSubmoduleConfigurations: false,
 		    submoduleCfg: [],
@@ -98,6 +93,11 @@ pipeline { agent { label linuxAgent }
 				       ],								
 				userRemoteConfigs: [[credentialsId: gitCred,url: srcGitRepo, ]]])
 		                   } } } }
+ */
+ //  Now is the simplified clone
+   checkout([$class: 'GitSCM', branches: [[name: srcGitBranch]], doGenerateSubmoduleConfigurations: false,
+            submoduleCfg: [], userRemoteConfigs: [[url: srcGitRepo]]])
+			               } } } }
 // -------------------------------------------------------------------------
 		stage('DBB Build') {
 			steps {
