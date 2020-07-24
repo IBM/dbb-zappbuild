@@ -11,11 +11,13 @@ This property file is loaded automatically at the beginning of the build and con
 
 Property | Description
 --- | ---
+runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `False`, to enable zUnit Tests, set value to `True`.
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/.
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}.
 buildOrder | Comma separated list of the build script processing order.
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application.
 excludeFileList | Files to exclude when scanning or running full build.
+jobCard | JOBCARD for JCL execs
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
 
 ### file.properties
@@ -154,3 +156,13 @@ Property | Description | Overridable
 --- | --- | ---
 acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
+
+### ZunitConfig.properties
+Application properties used by zAppBuild/language/ZunitConfig.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
+zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
+zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
+zunit_resolutionRules | Default resolution rules for zUnit. | true 
