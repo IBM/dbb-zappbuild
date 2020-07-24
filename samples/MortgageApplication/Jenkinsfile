@@ -79,23 +79,6 @@ pipeline { agent { label linuxAgent }
                     println "**REGI > Simplified clone **"
  // -----------------------------------------------------------------
                     dir('dbb-zappbuild-1') {
- /* ---BEFORE
-	            scmVars = checkout([$class: 'GitSCM', branches: [[name: srcGitBranch]],
-		    doGenerateSubmoduleConfigurations: false,
-		    submoduleCfg: [],
-    extensions: [[$class: 'SparseCheckoutPaths',sparseCheckoutPaths:[[$class:'SparseCheckoutPath', path:'cobol/'],
-				[$class:'SparseCheckoutPath', path:'build.groovy'],
-				[$class:'SparseCheckoutPath', path:'build2.groovy'],
-				[$class:'SparseCheckoutPath', path:'build-conf/'],
-				[$class:'SparseCheckoutPath', path:'languages/'],
-				[$class:'SparseCheckoutPath', path:'samples/'],
-				[$class:'SparseCheckoutPath', path:'utilities/']
-		]]
-				       ],								
-				userRemoteConfigs: [[credentialsId: gitCred,url: srcGitRepo, ]]])
-		                   } } } }
- */
- //  Now is the simplified clone
    checkout([$class: 'GitSCM', branches: [[name: srcGitBranch]], doGenerateSubmoduleConfigurations: false,
             submoduleCfg: [], userRemoteConfigs: [[url: srcGitRepo]]])
 			               } } } }
