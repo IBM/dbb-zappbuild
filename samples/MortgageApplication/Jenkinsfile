@@ -1,7 +1,7 @@
 // Updated by Regi to work with Regi Repo at github.com
 // --> Simplified jenkinsfile using sandbox2 branch
 // * July 24, 2020  - for Mortgage sample using RegiBrazil
-// * with --verbose - see line 16)
+// * without --verbose - see line 16)
 // * build type = -i (incremental - see line 41)
 // * First time do a "full build" to populate the dbb server
 // Global variables
@@ -13,9 +13,9 @@ def linuxAgent = 'master'
 def agentLabel = 'zOSSlaveJ'
 // ---------------------------Verbose
 //def verbose = false
-// def buildVerbose = ''
-def buildVerbose = '-v'
-println "**Regi - Verbose in effect"
+def buildVerbose = ''
+//def buildVerbose = '-v'
+//println "**Regi - Verbose in effect"
 // ---------------------------Hosts and ports
 def linuxHost = '10.1.1.1'
 def zosHost = '10.1.1.2'
