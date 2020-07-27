@@ -1,7 +1,7 @@
    CBL NUMPROC(MIG),FLAG(I,W),RENT
        ID DIVISION.
        PROGRAM-ID. EPSCSMRT.
-      * Added by Regi - This program was missing - July 27, 2020
+      * Added by Regi - program was missing on samples - July 27, 2020
       *    THIS IS A CALLED PROGRAM EXAMPLE FOR DEMONSTRATION
       *
       *    THIS PROGRAM IS INVOKED VIA A CICS LINK STATMENT
