@@ -1,4 +1,4 @@
-* changed July 27 - 16:05
+* changed July 27 - 18:05
 *********************************************************************** 00010000
 EPSMORT    DFHMSD TYPE=&SYSPARM,MODE=INOUT,LANG=COBOL,              @P3CX0008000
                STORAGE=AUTO,TIOAPFX=YES,DSATTS=(COLOR,HILIGHT),        X00090000
@@ -7,7 +7,7 @@ EPSMORT    DFHMSD TYPE=&SYSPARM,MODE=INOUT,LANG=COBOL,              @P3CX0008000
 EPMENU  DFHMDI SIZE=(24,80),CTRL=(PRINT,FREEKB)                         00110000
 LITLOAN  DFHMDF POS=(8,15),LENGTH=23,INITIAL='Amount of Loan:',        *
                ATTRB=(ASKIP,NORM)
-EPLOAN   DFHMDF POS=(8,42),LENGTH=12,INITIAL='30000.00',               *
+EPLOAN   DFHMDF POS=(8,42),LENGTH=12,INITIAL='000300000.00',           *
                ATTRB=(NUM,FSET,IC,NORM)
          DFHMDF POS=(8,55),                                            *
                ATTRB=ASKIP
