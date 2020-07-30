@@ -331,11 +331,9 @@ def relativizeFolderPath(String folder, String path) {
  * getScannerInstantiates - returns the mapped scanner or default scanner
  */
 def getScanner(String buildFile){
-	def mapping = new PropertyMappings("dbb.scannerMapping")
-	if (mapping.isMapped("ZUnitConfigScanner", buildFile) && props.runzTests == "True") {
-		if (props.verbose) println("*** Scanning file with the ZUnitConfigScanner")
+	if (props.runzTests == "True") {
 		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
-		scanner = scannerUtils.getzUnitScanner();
+		scanner = scannerUtils.getScanner(buildFile)
 	}
 	else {
 		if (props.verbose) println("*** Scanning file with the default scanner")
@@ -356,13 +354,7 @@ def createLanguageDatasets(String lang) {
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
 	
-	if (props."${lang}_testsrcDatasets")
-		createDatasets(props."${lang}_testsrcDatasets".split(','), props."${lang}_testsrcOptions")
-	
-	if (props."${lang}_testloadDatasets")
-		createDatasets(props."${lang}_testloadDatasets".split(','), props."${lang}_testloadOptions")
-	
-	if (props."${lang}_testDatasets")
+	if (props."${lang}_testDatasets" && props.runzunitTests == "True")
 		createDatasets(props."${lang}_testDatasets".split(','), props."${lang}_testOptions")
 }
 
@@ -378,3 +370,4 @@ def createDatasets(String[] datasets, String options) {
 		}
 	}
 }
+
