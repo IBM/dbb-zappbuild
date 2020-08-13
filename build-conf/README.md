@@ -27,6 +27,7 @@ SCSQCOBC | MQ COBOL Library. Example: CSQ.V9R1M0.SCSQCOBC
 SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
+SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
 
 ### build.properties
 General properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts. 
