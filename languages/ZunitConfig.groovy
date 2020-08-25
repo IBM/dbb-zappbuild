@@ -42,7 +42,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	String playback;
 	for (line in xml.split('\n')) {
 		if (line.contains("runner:playback moduleName")) {
-			playback = line.split("=")[1].substring(1,line.split("=")[1].length()-3)
+			playback = line.split("=")[1].split("\"")[1]
 		}
 	}
 	

@@ -25,7 +25,10 @@ Location of file properties, script mappings and file level property overrides. 
 
 Property | Description 
 --- | --- 
-dbb.scriptMapping | DBB configuration file properties associtation build files to language scripts
+dbb.scriptMapping | DBB configuration file properties association build files to language scripts
+dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
+
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
