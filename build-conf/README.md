@@ -100,12 +100,12 @@ cobol_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 cobol_loadDatasets | Comma separated list of 'load module' type data sets
 cobol_loadOptions | BPXWDYN creation options for 'load module' type data sets
 cobol_tempOptions | BPXWDYN creation options for temporary data sets
-cobol_testcase_srcPDS | Dataset to move COBOL test source files to from USS
-cobol_testcase_loadPDS | Dataset to create load modules in from link edit step
-cobol_testsrcDatasets | Comma separated list of test 'source' type data sets
-cobol_testsrcOptions | BPXWDYN creation options for creating 'source' type data sets
-cobol_testloadDatasets | Comma separated list of test 'load module' type data sets
-cobol_testloadOptions | BPXWDYN creation options for creating 'load module' type data sets
+cobol_test_case_srcPDS | Dataset to move COBOL test source files to from USS
+cobol_test_case_loadPDS | Dataset to create load modules in from link edit step
+cobol_test_srcDatasets | Comma separated list of test 'source' type data sets
+cobol_test_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+cobol_test_loadDatasets | Comma separated list of test 'load module' type data sets
+cobol_test_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
 cobol_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 cobol_compiler | MVS program name of the COBOL compiler
 cobol_linkEditor | MVS program name of the link editor
