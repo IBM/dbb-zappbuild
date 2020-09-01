@@ -95,7 +95,12 @@ buildUtils.createLanguageDatasets(langQualifier)
 	zUnitRunJCL.saveOutput(logFile, props.logEncoding)
 
 	// Store Report in Workspace
-	new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
+	try {
+		new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
+	}
+	catch (Exception e) {
+		println "*! Warning the zunit test did not produce report for $buildFile"
+	}
 
 	//	// Extract Job BZURPT as XML
 	//	def logEncoding = "UTF-8"
