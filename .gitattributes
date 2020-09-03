@@ -17,3 +17,5 @@
 *.jcl zos-working-tree-encoding=ibm-1047 git-encoding=utf-8
 *.mac zos-working-tree-encoding=ibm-1047 git-encoding=utf-8
 *.json zos-working-tree-encoding=ibm-1047 git-encoding=utf-8
+*.bzucfg zos-working-tree-encoding=utf-8 git-encoding=utf-8
+*.plbck binary
