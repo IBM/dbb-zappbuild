@@ -20,6 +20,11 @@ buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
+if (props.runzTests == "True") {
+	langQualifier = "cobol_test"
+	buildUtils.createLanguageDatasets(langQualifier)
+}
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
 
