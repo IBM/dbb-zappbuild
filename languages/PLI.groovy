@@ -145,7 +145,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
 	// adding bms copybook libraries only when it exists
-	if (ZFile.dsExists(props.bms_cpyPDS))
+	if (props.bms_cpyPDS && ZFile.dsExists("'${props.bms_cpyPDS}'"))
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
