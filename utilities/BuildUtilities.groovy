@@ -160,7 +160,8 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
-	if (args.client) {
+	// update build results only in non-userbuild scenarios 
+	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
