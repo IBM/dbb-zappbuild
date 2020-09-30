@@ -3,6 +3,7 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import com.ibm.jzos.ZFile
 
 
 // define script properties
@@ -143,7 +144,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
-	if (props.bms_cpyPDS)
+	// adding bms copybook libraries only when it exists
+	if (props.bms_cpyPDS && ZFile.dsExists("'${props.bms_cpyPDS}'"))
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
