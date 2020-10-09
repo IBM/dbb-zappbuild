@@ -39,7 +39,7 @@ else {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
 		String[] buildOrderList = props.buildOrder.split(',')
 		String[] testOrderList;
-		if (props.runzTests) { 
+		if (props.runzTests && props.runzTests.toBoolean()) { 
 			println("** Invoking test scripts according to test order: ${props.testOrder}")
 			testOrderList = props.testOrder.split(',')
 		}

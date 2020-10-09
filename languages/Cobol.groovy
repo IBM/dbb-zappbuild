@@ -21,7 +21,7 @@ buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
-if (props.runzTests) {
+if (props.runzTests && props.runzTests.toBoolean()) {
 	langQualifier = "cobol_test"
 	buildUtils.createLanguageDatasets(langQualifier)
 }
