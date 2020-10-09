@@ -331,7 +331,7 @@ def relativizeFolderPath(String folder, String path) {
  * getScannerInstantiates - returns the mapped scanner or default scanner
  */
 def getScanner(String buildFile){
-	if (props.runzTests == "True") {
+	if (props.runzTests) {
 		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
 		scanner = scannerUtils.getScanner(buildFile)
 	}

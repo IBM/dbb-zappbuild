@@ -39,7 +39,7 @@ else {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
 		String[] buildOrderList = props.buildOrder.split(',')
 		String[] testOrderList;
-		if (props.runzTests == "True") { 
+		if (props.runzTests) { 
 			println("** Invoking test scripts according to test order: ${props.testOrder}")
 			testOrderList = props.testOrder.split(',')
 		}
@@ -176,7 +176,7 @@ options:
 	cli.srcDir(longOpt:'sourceDir', args:1, 'Absolute path to workspace (root) directory containing all required source directories for user build')
 	cli.wrkDir(longOpt:'workDir', args:1, 'Absolute path to the build output root directory for user build')
 	cli.t(longOpt:'team', args:1, argName:'hlq', 'Team build hlq for user build syslib concatenations')
-	cli.zTest(longOpt:'runzTests', args:1, 'Specify if zUnit Tests should be run "True", or not run "False"')
+	cli.zTest(longOpt:'runzTests', 'Specify if zUnit Tests should be executed')
 
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
@@ -222,8 +222,6 @@ def populateBuildProperties(String[] args) {
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
 	buildUtils.assertBuildProperties('workspace,outDir')
-	
-	if (opts.zTest) props.runzTests = opts.zTest
 	
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
@@ -275,6 +273,9 @@ def populateBuildProperties(String[] args) {
 			props.load(new File(propFile))
 		}
 	}
+	
+	// set flag indicating to run unit tests
+	if (opts.zTest) props.runzTests = 'true'
 
 	// set optional command line arguments
 	if (opts.l) props.logEncoding = opts.l
