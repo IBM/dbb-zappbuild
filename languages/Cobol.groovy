@@ -18,10 +18,11 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
+// create language datasets
 def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
-if (props.runzTests == "True") {
+if (props.runzTests && props.runzTests.toBoolean()) {
 	langQualifier = "cobol_test"
 	buildUtils.createLanguageDatasets(langQualifier)
 }

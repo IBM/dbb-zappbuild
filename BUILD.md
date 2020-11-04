@@ -68,8 +68,7 @@ build options:
                           IBM Debug for z/OS
  -l,--logEncoding <arg>   Encoding of output logs. Default is EBCDIC 
                              directory for user build
- -zTest,--runzTests <arg> Specify if zUnit Tests should be run "True",
-                             or not run "False"
+ -zTest,--runzTests       Specify if zUnit Tests should be run
 
 web application credentials
  -url,--url <arg>         DBB repository URL
