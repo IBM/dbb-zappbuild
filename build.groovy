@@ -357,8 +357,7 @@ def createBuildList() {
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		if (repositoryClient) {
-			buildSet = impactUtils.createImpactBuildList(repositoryClient)
-		}
+			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
