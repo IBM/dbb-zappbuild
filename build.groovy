@@ -344,6 +344,8 @@ def createBuildList() {
 	
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> deletedFiles = new HashSet<String>()
+	
 	String action = (props.scanOnly) ? 'Scanning' : 'Building'
 
 	// check if full build
@@ -402,6 +404,19 @@ def createBuildList() {
 		buildList.each { file ->
 			if (props.verbose) println file
 			writer.write("$file\n")
+		}
+	}
+	
+	// write out list of deleted files (for documentation, not actually used by build scripts)
+	if (deletedFiles.size() > 0){
+		String deletedFilesListLoc = "${props.buildOutDir}/deletedFilesList.${props.buildListFileExt}"
+		println "** Writing lists of deleted files to $deletedFilesListLoc"
+		File deletedFilesListFile = new File(deletedFilesListLoc)
+		deletedFilesListFile.withWriter(enc) { writer ->
+			deletedFiles.each { file ->
+				if (props.verbose) println file
+				writer.write("$file\n")
+			}
 		}
 	}
 	

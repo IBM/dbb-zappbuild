@@ -87,7 +87,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
-	return buildSet
+	return [buildSet, deletedFiles]
 }
 
 
