@@ -207,6 +207,16 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (isMQ && isMQ.toBoolean())
 		compile.dd(new DDStatement().dsn(props.SCSQCOBC).options("shr"))
 
+	// add concatenation
+	def SYSLIBConcatenation = props.getFileProperty('cobol_SYSLIBConcatenation', buildFile) ?: ""
+	if (SYSLIBConcatenation) {
+		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
+		for (String SYSLIBDataset : SYSLIBDatasets )
+		println(SYSLIBDataset);
+	} else {
+		println("no concat")
+	}
+		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
 	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
