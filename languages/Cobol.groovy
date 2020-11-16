@@ -213,7 +213,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (SYSLIBConcatenation) {
 		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
 		for (String SYSLIBDataset : SYSLIBDatasets )
-		println(SYSLIBDataset);
+		compile.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
 	}
 		
 	// add additional zunit libraries
