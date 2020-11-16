@@ -213,8 +213,6 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
 		for (String SYSLIBDataset : SYSLIBDatasets )
 		println(SYSLIBDataset);
-	} else {
-		println("no concat")
 	}
 		
 	// add additional zunit libraries
