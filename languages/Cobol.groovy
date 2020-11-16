@@ -208,8 +208,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.SCSQCOBC).options("shr"))
 
 	// add concatenation
-	println("Cobol compiler= " + props.cobol_compiler + "    - Concat= " + props.cobol_SYSLIBConcatenation)
-	def SYSLIBConcatenation = props.getFileProperty('cobol_SYSLIBConcatenation', buildFile) ?: props.cobol_SYSLIBConcat
+//	def SYSLIBConcatenation = props.getFileProperty('cobol_SYSLIBConcatenation', buildFile) ?: props.cobol_SYSLIBConcat
+	def SYSLIBConcatenation = props.getFileProperty('cobol_SYSLIBConcatenation', buildFile) ?: ""
 	if (SYSLIBConcatenation) {
 		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
 		for (String SYSLIBDataset : SYSLIBDatasets )
