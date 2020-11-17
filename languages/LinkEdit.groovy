@@ -94,6 +94,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.linkedit_objPDS).options("shr"))
 	// add custom concatenation
 	def SYSLIBConcatenation = props.getFileProperty('linkedit_SYSLIBConcatenation', buildFile) ?: ""
+	println("***********")
+	println("Linkedit concat = " + props.getFileProperty('linkedit_SYSLIBConcatenation', buildFile))
 	if (SYSLIBConcatenation) {
 		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
 		for (String SYSLIBDataset : SYSLIBDatasets )
