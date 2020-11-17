@@ -149,13 +149,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
+		
 	// add custom concatenation
-	def SYSLIBConcatenation = props.getFileProperty('pli_SYSLIBConcatenation', buildFile) ?: ""
-	if (SYSLIBConcatenation) {
-		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
-		for (String SYSLIBDataset : SYSLIBDatasets )
-		compile.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	def compileSyslibConcatenation = props.getFileProperty('pli_compileSyslibConcatenation', buildFile) ?: ""
+	if (compileSyslibConcatenation) {
+		def String[] syslibDatasets = compileSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
+	
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
 
@@ -232,11 +234,11 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add a syslib to the compile command with optional CICS concatenation
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.pli_objPDS).options("shr"))
 	// add custom concatenation
-	def SYSLIBConcatenation = props.getFileProperty('pli_linkedit_SYSLIBConcatenation', buildFile) ?: ""
-	if (SYSLIBConcatenation) {
-		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
-		for (String SYSLIBDataset : SYSLIBDatasets )
-		linkedit.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	def linkEditSyslibConcatenation = props.getFileProperty('pli_linkEditSyslibConcatenation', buildFile) ?: ""
+	if (linkEditSyslibConcatenation) {
+		def String[] syslibDatasets = syslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 	if (buildUtils.isCICS(logicalFile))

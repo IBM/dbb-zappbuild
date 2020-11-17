@@ -126,11 +126,11 @@ def createAssemblerCommand(String buildFile, String member, File logFile) {
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN	
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
 	// add custom concatenation
-	def SYSLIBConcatenation = props.getFileProperty('assembler_SYSLIBConcatenation', buildFile) ?: ""
-	if (SYSLIBConcatenation) {
-		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
-		for (String SYSLIBDataset : SYSLIBDatasets )
-		compile.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	def assemblySyslibConcatenation = props.getFileProperty('assembler_assemblySyslibConcatenation', buildFile) ?: ""
+	if (assemblySyslibConcatenation) {
+		def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	if (props.SCEEMAC)
 		assembler.dd(new DDStatement().dsn(props.SCEEMAC).options("shr"))
@@ -176,11 +176,11 @@ def createLinkEditCommand(String buildFile, String member, File logFile) {
 	// add a syslib to the linkedit command
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_objPDS).options("shr"))
 	// add custom concatenation
-	def SYSLIBConcatenation = props.getFileProperty('assembler_linkedit_SYSLIBConcatenation', buildFile) ?: ""
-	if (SYSLIBConcatenation) {
-		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
-		for (String SYSLIBDataset : SYSLIBDatasets )
-		linkedit.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	def linkEditSyslibConcatenation = props.getFileProperty('assembler_linkEditSyslibConcatenation', buildFile) ?: ""
+	if (linkEditSyslibConcatenation) {
+		def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 	if ( props.SDFHLOAD )
