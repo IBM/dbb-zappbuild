@@ -125,6 +125,13 @@ def createAssemblerCommand(String buildFile, String member, File logFile) {
 	
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN	
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
+	// add custom concatenation
+	def SYSLIBConcatenation = props.getFileProperty('assembler_SYSLIBConcatenation', buildFile) ?: ""
+	if (SYSLIBConcatenation) {
+		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
+		for (String SYSLIBDataset : SYSLIBDatasets )
+		compile.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	}
 	if (props.SCEEMAC)
 		assembler.dd(new DDStatement().dsn(props.SCEEMAC).options("shr"))
 	if (props.MACLIB)

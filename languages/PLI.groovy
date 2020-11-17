@@ -149,6 +149,13 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
+	// add custom concatenation
+	def SYSLIBConcatenation = props.getFileProperty('pli_SYSLIBConcatenation', buildFile) ?: ""
+	if (SYSLIBConcatenation) {
+		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
+		for (String SYSLIBDataset : SYSLIBDatasets )
+		compile.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	}
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
 
