@@ -175,6 +175,13 @@ def createLinkEditCommand(String buildFile, String member, File logFile) {
 	
 	// add a syslib to the linkedit command
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_objPDS).options("shr"))
+	// add custom concatenation
+	def SYSLIBConcatenation = props.getFileProperty('assembler_linkedit_SYSLIBConcatenation', buildFile) ?: ""
+	if (SYSLIBConcatenation) {
+		def String[] SYSLIBDatasets = SYSLIBConcatenation.split(',');
+		for (String SYSLIBDataset : SYSLIBDatasets )
+		linkedit.dd(new DDStatement().dsn(SYSLIBDataset).options("shr"))
+	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 	if ( props.SDFHLOAD )
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
