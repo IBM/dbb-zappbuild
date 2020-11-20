@@ -190,6 +190,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Create the link stream if needed
 	if ( linkEditStream != null ) {
+		def langQualifier = "linkedit"
+		buildUtils.createLanguageDatasets(langQualifier)
 		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
 		if (lnkFile.exists())
 			lnkFile.delete()
