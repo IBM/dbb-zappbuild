@@ -252,8 +252,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
-	// Create a pysical link card
+	// Create a physical link card
 	if ( (linkEditStream) || (props.debug && linkDebugExit!= null)) {
+		def langQualifier = "linkedit"
+		buildUtils.createLanguageDatasets(langQualifier)
 		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
 		if (lnkFile.exists())
 			lnkFile.delete()
@@ -321,12 +323,3 @@ def getRepositoryClient() {
 
 	return repositoryClient
 }
-
-
-
-
-
-
-
-
-
