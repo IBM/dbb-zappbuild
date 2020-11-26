@@ -131,6 +131,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 		// manage processing the RC, up to your logic. You might want to flag the build as failed.
 		if (rc <= props.zunit_maxPassRC.toInteger()){
 			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
+			printReport(reportLogFile)
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
 		} else if (rc <= props.zunit_maxWarnRC.toInteger()){
@@ -138,6 +139,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
 			println warningMsg
+			printReport(reportLogFile)
 			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
 		} else { // rc > props.zunit_maxWarnRC.toInteger()
 			props.error = "true"
@@ -167,7 +169,35 @@ def getRepositoryClient() {
 	return repositoryClient
 }
 
+/**
+ *  Parsing the result file and prints summary of the result
+ */
+def printReport(File resultFile) {
 
+	String reportString
+	if (props.logEncoding != null) //if set
+		reportString = new FileInputStream(resultFile).getText(props.logEncoding)
+	else // Default ibm-1047
+		reportString = new FileInputStream(resultFile).getText("IBM-1047")
+
+	try {
+
+		def runnerResult = new XmlParser().parseText(reportString)
+		def testCase = runnerResult.testCase
+		println "****************** Module ${testCase.@moduleName} ******************"
+		println "Name:       ${testCase.@name[0]}"
+		println "Status:     ${testCase.@result[0]}"
+		println "Test cases: ${testCase.@tests[0]} (${testCase.@passed[0]} passed, ${testCase.@warn[0]} failed, ${testCase.@errors[0]} errors)"
+		println "Details: "
+		testCase.test.each { test ->
+			println "      ${test.@name}   ${test.@result}"
+		}
+		println "****************** Module ${testCase.@moduleName} ****************** \n"
+	} catch (Exception e) {
+		print "! Reading zUnit result failed."
+	}
+
+}
 
 
 
