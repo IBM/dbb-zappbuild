@@ -77,7 +77,8 @@ buildUtils.createLanguageDatasets(langQualifier)
 //             SPACE=(TRK,(1,1),RLSE)
 //       ENDIF
 """
-	println(jcl)
+	if (props.verbose) println(jcl)
+		
 	def dbbConf = System.getenv("DBB_CONF")
 
 	// Create jclExec
