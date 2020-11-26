@@ -65,9 +65,9 @@ buildUtils.createLanguageDatasets(langQualifier)
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
 //  PARM=('STOP=E,REPORT=XML')
-//BZUPLAY DD DISP=SHR,
+//REPLAY.BZUPLAY DD DISP=SHR,
 // DSN=${props.zunit_bzuplayPDS}(${playback})
-//BZURPT DD DISP=SHR,
+//REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 //*
 //IFGOOD IF RC<=4 THEN
