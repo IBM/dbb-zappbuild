@@ -37,7 +37,9 @@ assembler_linkEdit | Flag indicating to execute the link edit step to produce a 
 assembler_maxRC | Default Assembler maximum RC allowed. | true
 assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
 assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
-cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+assembler_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+assembler_assemblySyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during assembly step | true
+assembler_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### BMS.properties
 Application properties used by zAppBuild/language/BMS.groovy
@@ -68,6 +70,8 @@ cobol_linkEditParms | Default link edit parameters. | true
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 cobol_isMQ | Flag indicating that the program contains MQ calls | true
 cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+cobol_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+cobol_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### LinkEdit.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
@@ -78,6 +82,7 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+linkEdit_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### PLI.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
@@ -95,4 +100,6 @@ pli_compileSQLParms | Default SQL compile parameters. Appended to base parameter
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_linkEditParms | Default link edit parameters. | true
 pli_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-plil_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
+pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+pli_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true

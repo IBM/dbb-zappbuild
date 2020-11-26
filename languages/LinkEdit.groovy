@@ -92,6 +92,13 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// add a syslib to the compile command with optional CICS concatenation
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.linkedit_objPDS).options("shr"))
+	// add custom concatenation
+	def linkEditSyslibConcatenation = props.getFileProperty('linkedit_linkEditSyslibConcatenation', buildFile) ?: ""
+	if (linkEditSyslibConcatenation) {
+		def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 	linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
