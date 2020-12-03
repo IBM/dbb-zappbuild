@@ -69,6 +69,18 @@ buildUtils.createLanguageDatasets(langQualifier)
 // DSN=${props.zunit_bzuplayPDS}(${playback})
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
+"""
+if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
+   jcl +=
+   "//CEEOPTS DD *                        \n"   +
+   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
+       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
+       "TEST(,,,DBMDT:*)  \n" ) +
+   "ENVAR(                                \n" +
+   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
+   "/* \n"
+}
+jcl += """\
 //*
 //IFGOOD IF RC<=4 THEN
 //GOODRC  EXEC PGM=IEFBR14

@@ -69,6 +69,11 @@ build options:
  -l,--logEncoding <arg>   Encoding of output logs. Default is EBCDIC 
                              directory for user build
  -zTest,--runzTests       Specify if zUnit Tests should be run
+ 
+ -cc,--ccczUnit           Flag to indicate to collect code coverage reports during zUnit step
+ -cch,--cccHost           Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
+ -ccp,--cccPort           Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ 
 
 web application credentials
  -url,--url <arg>         DBB repository URL

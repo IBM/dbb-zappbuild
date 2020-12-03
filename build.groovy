@@ -181,6 +181,11 @@ options:
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
 	
+	// code coverage options
+	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
+	cli.cch(longOpt:'cccHost', args:1, argName:'cccHost', 'Headless Code Coverage Collector host (if not specified IDz will be used for reporting)')
+	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
+	
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 	
@@ -191,6 +196,11 @@ options:
 	
 	if(opts.v && args.size() > 1)
 		println "** Input args = ${args[1..-1].join(' ')}"
+		
+	if( (!opts.cch && opts.ccp) || (opts.cch && !opts.ccp) ) {
+		println "** --cccHost and --cccPort options are mutual"
+		System.exit(1)
+	}
 	
 	// if help option used, print usage and exit
     if (opts.help) {
@@ -291,6 +301,15 @@ def populateBuildProperties(String[] args) {
 	
 	// set debug flag
 	if(opts.d) props.debug = 'true'
+	
+	// set code coverage flag
+	if(opts.cc) {
+		props.codeZunitCoverage = 'true'
+		if ( opts.cch && opts.ccp ) {
+			props.codeCoverageHeadlessHost=opts.cch
+			props.codeCoverageHeadlessPort=opts.ccp
+		}
+	}
 	
 	// set DBB configuration properties
 	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
