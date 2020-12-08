@@ -397,7 +397,7 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 /**
  * 
  */
-def boolean shouldCalculateImpacts(String changeFile, List<Pathmatcher> nonImpactingFiles){
+def boolean shouldCalculateImpacts(String changeFile, List<PathMatcher> nonImpactingFiles){
 	//return the 
 	onExludeList = matches(changeFile, nonImpactingFiles)
 	if (onExludeList) return false 
