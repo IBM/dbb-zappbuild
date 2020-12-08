@@ -400,11 +400,11 @@ def matches(String file, List<PathMatcher> pathMatchers) {
  */
 def boolean shouldCalculateImpacts(String changedFile){
 	// retrieve Pathmaters from property and check
-	List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalcuationList)
-	onSkipImpactCalcuationList = matches(changedFile, nonImpactingFiles)
+	List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalculationList)
+	onskipImpactCalculationList = matches(changedFile, nonImpactingFiles)
 
-	// return false if changedFile found in skipImpactCalcuationList
-	if (onSkipImpactCalcuationList) return false
+	// return false if changedFile found in skipImpactCalculationList
+	if (onskipImpactCalculationList) return false
 	return true //default
 
 	//	// Alternate implementation using a property file

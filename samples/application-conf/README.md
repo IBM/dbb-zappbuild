@@ -17,7 +17,7 @@ applicationSrcDirs | Comma separated list of all source directories included in 
 buildOrder | Comma separated list of the build script processing order.
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application.
 excludeFileList | Files to exclude when scanning or running full build.
-skipImpactCalcuationList | Files for which the impact analysis should be skipped in impact build
+skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
 jobCard | JOBCARD for JCL execs
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
 
