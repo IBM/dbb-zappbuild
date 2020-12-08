@@ -59,18 +59,16 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
 
-		// perform impact analysis on changed file
-		if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-		ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
+		// check if impact calculation should be performed, default true
+		if (shouldCalculateImpacts(changedFile)){
 
-		// get excludeListe
-		List<PathMatcher> excludeMatchers = createExcludePatterns()
-		
-		// get
-		List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalcuationList)
+			// perform impact analysis on changed file
+			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
+			ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
 
-		// manage exceptions to bypass impact calculation
-		if (shouldCalculateImpacts(changedFile, nonImpactingFiles)){
+			// get excludeListe
+			List<PathMatcher> excludeMatchers = createExcludePatterns()
+
 			def impacts = impactResolver.resolve()
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
@@ -91,7 +89,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				}
 			}
 		}else {
-			if (props.verbose) println "** Impact calculation for $changedFile has been skipped."
+			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 		}
 	}
 
@@ -395,17 +393,41 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 }
 
 /**
- * 
+ *  shouldCalculateImpacts
+ *  
+ *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
+ *   returns a boolean - default true
  */
-def boolean shouldCalculateImpacts(String changeFile, List<PathMatcher> nonImpactingFiles){
-	//return the 
-	onExludeList = matches(changeFile, nonImpactingFiles)
-	if (onExludeList) return false 
-	return true
+def boolean shouldCalculateImpacts(String changedFile){
+	// retrieve Pathmaters from property and check
+	List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalcuationList)
+	onSkipImpactCalcuationList = matches(changedFile, nonImpactingFiles)
+
+	// return false if changedFile found in skipImpactCalcuationList
+	if (onSkipImpactCalcuationList) return false
+	return true //default
+
+	//	// Alternate implementation using a property file
+	//	// file named <*buildfile*_prop.properties> in the same folder
+	//	//	 containing a property impact_changes=true|false to indicate to skip impact calculation
+	//	propertyFileName = changedFile.replaceAll(".cpy","_prop.properties")
+	//	File propertyFile = new File("${props.workspace}/${propertyFileName}")
+	//	if (propertyFile.exists())
+	//	{
+	//		Properties impactProperties = new Properties()
+	//		propertyFile.withInputStream { impactProperties.load(it) }
+	//		impactChanges = impactProperties.get('impact_changes')
+	//		if (impactChanges != null){
+	//			if (impactChanges.toBoolean()==false) return false
+	//		}
+	//	}
+	//	return true // default
+
 }
 
 /**
- * create pathMatcherPattern
+ * createPathMatcherPattern
+ * Generic method to build PathMatcher from a build property
  */
 
 def createPathMatcherPattern(String property) {

@@ -11,11 +11,14 @@ This property file is loaded automatically at the beginning of the build and con
 
 Property | Description
 --- | ---
+runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `false`, to enable zUnit Tests, set value to `true`.
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/.
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}.
 buildOrder | Comma separated list of the build script processing order.
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application.
 excludeFileList | Files to exclude when scanning or running full build.
+skipImpactCalcuationList | Files for which the impact analysis should be skipped in impact build
+jobCard | JOBCARD for JCL execs
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
 
 ### file.properties
@@ -23,7 +26,9 @@ Location of file properties, script mappings and file level property overrides. 
 
 Property | Description 
 --- | --- 
-dbb.scriptMapping | DBB configuration file properties associtation build files to language scripts
+dbb.scriptMapping | DBB configuration file properties association build files to language scripts
+dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
