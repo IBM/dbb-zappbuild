@@ -409,7 +409,7 @@ def boolean shouldCalculateImpacts(String changedFile){
 
 	//	// Alternate implementation using a property file
 	//	// file named <*buildfile*_prop.properties> in the same folder
-	//	//	 containing a property impact_changes=true|false to indicate to skip impact calculation
+	//	//	 containing a property <impact_changes=true|false> to indicate to skip impact analysis
 	//	propertyFileName = changedFile.replaceAll(".cpy","_prop.properties")
 	//	File propertyFile = new File("${props.workspace}/${propertyFileName}")
 	//	if (propertyFile.exists())
@@ -422,7 +422,6 @@ def boolean shouldCalculateImpacts(String changedFile){
 	//		}
 	//	}
 	//	return true // default
-
 }
 
 /**
