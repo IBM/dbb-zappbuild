@@ -67,7 +67,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
 
 			// get excludeListe
-			List<PathMatcher> excludeMatchers = createExcludePatterns()
+			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
 			def impacts = impactResolver.resolve()
 			impacts.each { impact ->
@@ -148,7 +148,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			if (props.verbose) println "** Diffing baseline $baseline -> current $current"
 			def _changed = []
 			(_changed, deleted) = gitUtils.getChangedFiles(dir, baseline, current )
-			List<PathMatcher> excludeMatchers = createExcludePatterns()
+			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			
 			// make sure file is not an excluded file
 			_changed.each { file ->
 				if ( !matches(file, excludeMatchers)) {
@@ -204,7 +205,7 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 	if (props.verbose) println "** Updating collection ${props.applicationCollectionName}"
 	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
-	List<PathMatcher> excludeMatchers = createExcludePatterns()
+	List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
 	verifyCollections(repositoryClient)
 
@@ -365,22 +366,6 @@ def fixGitDiffPath(String file, String dir, boolean mustExist ) {
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
 
-def createExcludePatterns() {
-	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
-	if (props.excludeFileList) {
-		props.excludeFileList.split(',').each{ filePattern ->
-			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
-				filePattern = "glob:$filePattern"
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
-			pathMatchers.add(matcher)
-		}
-	}
-
-
-	return pathMatchers
-}
-
-
 def matches(String file, List<PathMatcher> pathMatchers) {
 	def result = pathMatchers.any { matcher ->
 		Path path = FileSystems.getDefault().getPath(file);
@@ -406,22 +391,6 @@ def boolean shouldCalculateImpacts(String changedFile){
 	// return false if changedFile found in skipImpactCalculationList
 	if (onskipImpactCalculationList) return false
 	return true //default
-
-	//	// Alternate implementation using a property file
-	//	// file named <*buildfile*_prop.properties> in the same folder
-	//	//	 containing a property <impact_changes=true|false> to indicate to skip impact analysis
-	//	propertyFileName = changedFile.replaceAll(".cpy","_prop.properties")
-	//	File propertyFile = new File("${props.workspace}/${propertyFileName}")
-	//	if (propertyFile.exists())
-	//	{
-	//		Properties impactProperties = new Properties()
-	//		propertyFile.withInputStream { impactProperties.load(it) }
-	//		impactChanges = impactProperties.get('impact_changes')
-	//		if (impactChanges != null){
-	//			if (impactChanges.toBoolean()==false) return false
-	//		}
-	//	}
-	//	return true // default
 }
 
 /**
