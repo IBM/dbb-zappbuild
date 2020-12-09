@@ -59,31 +59,37 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
 
-		// perform impact analysis on changed file
-		if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-		ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
-		
-		// get excludeListe
-		List<PathMatcher> excludeMatchers = createExcludePatterns()
-		
-		def impacts = impactResolver.resolve()
-		impacts.each { impact ->
-			def impactFile = impact.getFile()
-			if (props.verbose) println "** Found impacted file $impactFile"
-			// only add impacted files that have a build script mapped to it
-			if (ScriptMappings.getScriptName(impactFile)) {
-				// only add impacted files, that are in scope of the build.
-				if (!matches(impactFile, excludeMatchers)){
-					buildSet.add(impactFile)
-					if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
-				}
-				else {
-					// impactedFile found, but on Exclude List
-					//   Possible reasons: Exclude of file was defined after building the collection.
-					//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-					if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+		// check if impact calculation should be performed, default true
+		if (shouldCalculateImpacts(changedFile)){
+
+			// perform impact analysis on changed file
+			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
+			ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
+
+			// get excludeListe
+			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+
+			def impacts = impactResolver.resolve()
+			impacts.each { impact ->
+				def impactFile = impact.getFile()
+				if (props.verbose) println "** Found impacted file $impactFile"
+				// only add impacted files that have a build script mapped to it
+				if (ScriptMappings.getScriptName(impactFile)) {
+					// only add impacted files, that are in scope of the build.
+					if (!matches(impactFile, excludeMatchers)){
+						buildSet.add(impactFile)
+						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+					}
+					else {
+						// impactedFile found, but on Exclude List
+						//   Possible reasons: Exclude of file was defined after building the collection.
+						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+						if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+					}
 				}
 			}
+		}else {
+			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 		}
 	}
 
@@ -142,7 +148,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			if (props.verbose) println "** Diffing baseline $baseline -> current $current"
 			def _changed = []
 			(_changed, deleted) = gitUtils.getChangedFiles(dir, baseline, current )
-			List<PathMatcher> excludeMatchers = createExcludePatterns()
+			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			
 			// make sure file is not an excluded file
 			_changed.each { file ->
 				if ( !matches(file, excludeMatchers)) {
@@ -198,7 +205,7 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 	if (props.verbose) println "** Updating collection ${props.applicationCollectionName}"
 	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
-	List<PathMatcher> excludeMatchers = createExcludePatterns()
+	List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
 	verifyCollections(repositoryClient)
 
@@ -211,24 +218,24 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 
 	// scan changed files
 	changedFiles.each { file ->
-		
+
 		// make sure file is not an excluded file
 		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
-		
+
 			def scanner = buildUtils.getScanner(file)
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 				logicalFiles.add(logicalFile)
 			} catch (Exception e) {
-				
+
 				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
 				buildUtils.updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
 				println(warningMsg)
 				e.printStackTrace()
-				
+
 				// terminate when continueOnScanFailure is not set to true
 				if(!(props.continueOnScanFailure == 'true')){
 					println "***** continueOnScan Failure set to false. Build terminates."
@@ -334,23 +341,23 @@ def verifyCollections(RepositoryClient repositoryClient) {
  */
 
 def fixGitDiffPath(String file, String dir, boolean mustExist ) {
- 	// relativized within the repository
+	// relativized within the repository
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
 
-	// substring from identified common path element 
+	// substring from identified common path element
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 
 	if (props.verbose) println ("** Testing if fixed file path exists : " + fixedFileName)
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return fixedFileName;
 
-	// Scenario: Repository name is used as Application Root directory   
+	// Scenario: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
 	if (new File("${dir}/${file}").exists())
 		return "$dirName/$file" as String
-		
+
 	// Scenario: Directory ${dir} is not the root directory of the file
-	// Example : 
+	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
@@ -358,22 +365,6 @@ def fixGitDiffPath(String file, String dir, boolean mustExist ) {
 	// returns null or assumed fullPath to file
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
-
-def createExcludePatterns() {
-	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
-	if (props.excludeFileList) {
-		props.excludeFileList.split(',').each{ filePattern ->
-			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
-				filePattern = "glob:$filePattern"
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
-			pathMatchers.add(matcher)
-		}
-	}
-
-
-	return pathMatchers
-}
-
 
 def matches(String file, List<PathMatcher> pathMatchers) {
 	def result = pathMatchers.any { matcher ->
@@ -384,6 +375,40 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 		}
 	}
 	return result
+}
+
+/**
+ *  shouldCalculateImpacts
+ *  
+ *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
+ *   returns a boolean - default true
+ */
+def boolean shouldCalculateImpacts(String changedFile){
+	// retrieve Pathmaters from property and check
+	List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalculationList)
+	onskipImpactCalculationList = matches(changedFile, nonImpactingFiles)
+
+	// return false if changedFile found in skipImpactCalculationList
+	if (onskipImpactCalculationList) return false
+	return true //default
+}
+
+/**
+ * createPathMatcherPattern
+ * Generic method to build PathMatcher from a build property
+ */
+
+def createPathMatcherPattern(String property) {
+	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
+	if (property) {
+		property.split(',').each{ filePattern ->
+			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
+				filePattern = "glob:$filePattern"
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
+			pathMatchers.add(matcher)
+		}
+	}
+	return pathMatchers
 }
 
 
