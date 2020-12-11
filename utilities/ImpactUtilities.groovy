@@ -164,9 +164,11 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
 		}
 
+		def mode = null 
+		
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			file = fixGitDiffPath(file, dir, true)
+			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
 				changedFiles << file
 				if (props.verbose) println "*** $file"
@@ -175,14 +177,14 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
 		deleted.each { file ->
-			file = fixGitDiffPath(file, dir, false)
+			file = fixGitDiffPath(file, dir, false, mode)
 			deletedFiles << file
 			if (props.verbose) println "*** $file"
 		}
 		
 		if (props.verbose) println "*** Renamed files for directory $dir:"
 		renamed.each { file ->
-			file = fixGitDiffPath(file, dir, false)
+			file = fixGitDiffPath(file, dir, false, mode)
 			renamedFiles << file
 			if (props.verbose) println "*** $file"
 		}
@@ -356,31 +358,41 @@ def verifyCollections(RepositoryClient repositoryClient) {
  *  like nested projects, projects at root level
  *  
  *  returns null if file not found + mustExist
+ *  
+ *  scenarios / mode
+ *  1 - Application projects are nested (e.q Mortgage in zAppBuild)
+ *  2 - Repository name is used as Application Root dir
+ *  3 - 
  *
  */
 
-def fixGitDiffPath(String file, String dir, boolean mustExist ) {
+def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
+	
+	// Scenario 1: Nested projects
+
 	// relativized within the repository
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
-
 	// substring from identified common path element
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 
-	if (props.verbose) println ("** Testing if fixed file path exists : " + fixedFileName)
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return fixedFileName;
-
-	// Scenario: Repository name is used as Application Root directory
+		return [fixedFileName,1];
+	if (mode==1) return fixedFileName
+		
+	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
 	if (new File("${dir}/${file}").exists())
-		return "$dirName/$file" as String
+		return ["$dirName/$file" as String,2]
+	if (mode==2) return "$dirName/$file" as String
 
-	// Scenario: Directory ${dir} is not the root directory of the file
+	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return fixedFileName;
+		return [fixedFileName,3];
+	if (mode==3) return fixedFileName
+			
 	// returns null or assumed fullPath to file
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
