@@ -171,7 +171,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
 				changedFiles << file
-				if (props.verbose) println "*** $file"
+				if (props.verbose) println "** $file"
 			}
 		}
 
@@ -179,14 +179,14 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		deleted.each { file ->
 			file = fixGitDiffPath(file, dir, false, mode)
 			deletedFiles << file
-			if (props.verbose) println "*** $file"
+			if (props.verbose) println "** $file"
 		}
 		
 		if (props.verbose) println "*** Renamed files for directory $dir:"
 		renamed.each { file ->
 			file = fixGitDiffPath(file, dir, false, mode)
 			renamedFiles << file
-			if (props.verbose) println "*** $file"
+			if (props.verbose) println "** $file"
 		}
 	}
 
@@ -226,7 +226,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
 		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
-		//props.applicationOutputsCollectionName
+		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, buildUtils.relativizePath(file))
 	}
 	
 	// remove renamed files from collection
@@ -234,7 +234,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
 		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
-		//props.applicationOutputsCollectionName
+		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, buildUtils.relativizePath(file))
 	}
 
 	// scan changed files
