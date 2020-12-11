@@ -182,6 +182,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 	def git_error = new StringBuffer()
 	def changedFiles = []
 	def deletedFiles = []
+	def renamedFiles = []
 	
 	def process = cmd.execute()
 	process.waitForProcessOutput(git_diff, git_error)
@@ -202,16 +203,27 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 				deletedFiles.add(file)
 			}
 			// handle changed files
-			else {
+			if (action == "M") {
 				changedFiles.add(file)
 			}
+			
+			// handle renamed file
+			if (action == "R100") {
+				renamedFile = line.split()[1]
+				newFileName = file = line.split()[2]
+				
+				changedFiles.add(newFileName)
+				renamedFiles.add(renamedFile)
+				
+			}
+			
 		}
 		catch (Exception e) {
 			// no changes or unhandled format
 		}
 	}
 	
-	return [changedFiles, deletedFiles]
+	return [changedFiles, deletedFiles, renamedFiles]
 }
 
 def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {

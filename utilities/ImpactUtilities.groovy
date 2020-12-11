@@ -19,13 +19,14 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
+	Set<String> renamedFiles = new HashSet<String>()
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 
 	// calculate changed files
 	if (lastBuildResult) {
-		(changedFiles, deletedFiles) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else if (props.topicBranchBuild) {
 		// if this is the first topic branch build get the main branch build result
@@ -47,7 +48,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 
 	// scan files and update source collection for impact analysis
-	updateCollection(changedFiles, deletedFiles, repositoryClient)
+	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
 
 	// create build list using impact analysis
@@ -103,6 +104,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Map<String,String> baselineHashes = new HashMap<String,String>()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
+	Set<String> renamedFiles = new HashSet<String>()
 
 	// create a list of source directories to search
 	List<String> directories = []
@@ -139,6 +141,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.verbose) println "** Calculating changed files for directory $dir"
 		def changed = []
 		def deleted = []
+		def renamed = []
 		String baseline = baselineHashes.get(buildUtils.relativizePath(dir))
 		String current = currentHashes.get(buildUtils.relativizePath(dir))
 		if (!baseline || !current) {
@@ -147,7 +150,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		else if (gitUtils.isGitDir(dir)) {
 			if (props.verbose) println "** Diffing baseline $baseline -> current $current"
 			def _changed = []
-			(_changed, deleted) = gitUtils.getChangedFiles(dir, baseline, current )
+			(_changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current )
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 			
 			// make sure file is not an excluded file
@@ -176,9 +179,16 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			deletedFiles << file
 			if (props.verbose) println "*** $file"
 		}
+		
+		if (props.verbose) println "*** Renamed files for directory $dir:"
+		renamed.each { file ->
+			file = fixGitDiffPath(file, dir, false)
+			renamedFiles << file
+			if (props.verbose) println "*** $file"
+		}
 	}
 
-	return [changedFiles, deletedFiles]
+	return [changedFiles, deletedFiles, renamedFiles]
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -196,7 +206,7 @@ def createImpactResolver(String changedFile, String rules, RepositoryClient repo
 	return resolver
 }
 
-def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClient) {
+def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient repositoryClient) {
 	if (!repositoryClient) {
 		if (props.verbose) println "** Unable to update collections. No repository client."
 		return
@@ -214,6 +224,15 @@ def updateCollection(changedFiles, deletedFiles, RepositoryClient repositoryClie
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
 		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
+		//props.applicationOutputsCollectionName
+	}
+	
+	// remove renamed files from collection
+	renamedFiles.each { file ->
+		// files in a collection are stored as relative paths from a source directory
+		if (props.verbose) println "*** Deleting renamed logical file for $file"
+		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
+		//props.applicationOutputsCollectionName
 	}
 
 	// scan changed files
