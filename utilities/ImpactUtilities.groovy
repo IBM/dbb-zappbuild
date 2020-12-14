@@ -149,48 +149,54 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		}
 		else if (gitUtils.isGitDir(dir)) {
 			if (props.verbose) println "** Diffing baseline $baseline -> current $current"
-			def _changed = []
-			(_changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current )
-			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
-			
-			// make sure file is not an excluded file
-			_changed.each { file ->
-				if ( !matches(file, excludeMatchers)) {
-					changed.add(file)
-				}
-			}
+			(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current )
+
 		}
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
 		}
 
-		def mode = null 
+		// Understand repository setup for offsets
+		def mode = null
 		
+		// make sure file is not an excluded file
+		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			(file, mode) = fixGitDiffPath(file, dir, true, null)
-			if ( file != null ) {
-				changedFiles << file
-				if (props.verbose) println "** $file"
+			if ( !matches(file, excludeMatchers)) {
+				(file, mode) = fixGitDiffPath(file, dir, true, null)
+				if ( file != null ) {
+					changedFiles << file
+					if (props.verbose) println "**** $file"
+				}
 			}
 		}
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
 		deleted.each { file ->
-			file = fixGitDiffPath(file, dir, false, mode)
-			deletedFiles << file
-			if (props.verbose) println "** $file"
+			if ( !matches(file, excludeMatchers)) {
+				file = fixGitDiffPath(file, dir, false, mode)
+				deletedFiles << file
+				if (props.verbose) println "**** $file"
+			}
 		}
-		
+
 		if (props.verbose) println "*** Renamed files for directory $dir:"
 		renamed.each { file ->
-			file = fixGitDiffPath(file, dir, false, mode)
-			renamedFiles << file
-			if (props.verbose) println "** $file"
+			if ( !matches(file, excludeMatchers)) {
+				file = fixGitDiffPath(file, dir, false, mode)
+				renamedFiles << file
+				if (props.verbose) println "**** $file"
+			}
 		}
 	}
 
-	return [changedFiles, deletedFiles, renamedFiles]
+	return [
+		changedFiles,
+		deletedFiles,
+		renamedFiles
+	]
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -228,7 +234,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
 		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, buildUtils.relativizePath(file))
 	}
-	
+
 	// remove renamed files from collection
 	renamedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
@@ -367,7 +373,7 @@ def verifyCollections(RepositoryClient repositoryClient) {
  */
 
 def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
-	
+
 	// Scenario 1: Nested projects
 
 	// relativized within the repository
@@ -376,13 +382,16 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName,1];
+		return [fixedFileName, 1];
 	if (mode==1) return fixedFileName
-		
+
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
 	if (new File("${dir}/${file}").exists())
-		return ["$dirName/$file" as String,2]
+		return [
+			"$dirName/$file" as String,
+			2
+		]
 	if (mode==2) return "$dirName/$file" as String
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
@@ -390,9 +399,9 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName,3];
+		return [fixedFileName, 3];
 	if (mode==3) return fixedFileName
-			
+
 	// returns null or assumed fullPath to file
 	return mustExist ? null : "${props.workspace}/${fixedFileName}"
 }
