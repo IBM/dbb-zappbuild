@@ -158,7 +158,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		// Understand repository setup for offsets
 		def mode = null
-		
+
 		// make sure file is not an excluded file
 		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
@@ -220,7 +220,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		return
 	}
 
-	if (props.verbose) println "** Updating collection ${props.applicationCollectionName}"
+	if (props.verbose) println "** Updating collections ${props.applicationCollectionName} and ${props.applicationOutputsCollectionName}"
 	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
 	List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
@@ -361,25 +361,26 @@ def verifyCollections(RepositoryClient repositoryClient) {
 
 /* 
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
- *  like nested projects, projects at root level
+ *  like nested projects, projects at root level, no root folder
  *  
  *  returns null if file not found + mustExist
  *  
  *  scenarios / mode
- *  1 - Application projects are nested (e.q Mortgage in zAppBuild)
+ *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
- *  3 - 
+ *  3 - $dir is not the root directory of the file
  *
  */
 
 def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 
-	// Scenario 1: Nested projects
+	// default value, relevant for non-existent files (like deletions)
+	String defaultValue
 
-	// relativized within the repository
+	// Scenario 1: Nested projects, like MortgageApplication and projects with a top-level dir
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
-	// substring from identified common path element
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
+	defaultValue = fixedFileName
 
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 1];
@@ -403,7 +404,13 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	if (mode==3) return fixedFileName
 
 	// returns null or assumed fullPath to file
-	return mustExist ? null : "${props.workspace}/${fixedFileName}"
+	if (mustExist){
+		if (props.verbose) println "!! (fixGitDiffPath) File not found."
+		return null
+	}
+
+	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
+	return defaultValue
 }
 
 def matches(String file, List<PathMatcher> pathMatchers) {
