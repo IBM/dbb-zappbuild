@@ -202,8 +202,8 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 			if (action == "D") {
 				deletedFiles.add(file)
 			}
-			// handle changed files
-			if (action == "M") {
+			// handle changed and new added files
+			if (action == "M" || action == "A") {
 				changedFiles.add(file)
 			}
 			
