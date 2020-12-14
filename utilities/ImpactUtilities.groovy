@@ -384,7 +384,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 1];
-	if (mode==1) return fixedFileName
+	if (mode==1 && !mustExist) return fixedFileName
 
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
@@ -393,7 +393,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 			"$dirName/$file" as String,
 			2
 		]
-	if (mode==2) return "$dirName/$file" as String
+	if (mode==2 && !mustExist) return "$dirName/$file" as String
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
@@ -401,7 +401,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 3];
-	if (mode==3) return fixedFileName
+	if (mode==3 && !mustExist) return fixedFileName
 
 	// returns null or assumed fullPath to file
 	if (mustExist){
