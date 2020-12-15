@@ -443,7 +443,7 @@ def createBuildList() {
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild) {
-		impactUtils.updateCollection(buildList, null, repositoryClient)
+		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 	
 	return buildList
