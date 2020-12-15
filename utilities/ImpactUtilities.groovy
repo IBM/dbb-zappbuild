@@ -231,16 +231,18 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 	deletedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
-		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
-		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, buildUtils.relativizePath(file))
+		logicalFile = buildUtils.relativizePath(file)
+		repositoryClient.deleteLogicalFile(props.applicationCollectionName, logicalFile)
+		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
 	}
 
 	// remove renamed files from collection
 	renamedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
-		repositoryClient.deleteLogicalFile(props.applicationCollectionName, buildUtils.relativizePath(file))
-		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, buildUtils.relativizePath(file))
+		logicalFile = buildUtils.relativizePath(file)
+		repositoryClient.deleteLogicalFile(props.applicationCollectionName, logicalFile)
+		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
 	}
 
 	// scan changed files

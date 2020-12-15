@@ -15,16 +15,16 @@ def isGitDir(String dir) {
 	StringBuffer gitResponse = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 	boolean isGit = false
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitResponse, gitError)
 	if (gitError) {
-		println("*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError")	
+		println("*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError")
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
 	}
-		
+
 	return isGit
 }
 
@@ -38,7 +38,7 @@ def getCurrentGitBranch(String gitDir) {
 	String cmd = "git -C $gitDir rev-parse --abbrev-ref HEAD"
 	StringBuffer gitBranch = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitBranch, gitError)
 	if (gitError) {
@@ -53,16 +53,16 @@ def getCurrentGitBranch(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  * @return String gitBranch     The current Git branch
  */
- def getCurrentGitDetachedBranch(String gitDir) {
-	 String cmd = "git -C $gitDir show -s --pretty=%D HEAD"
-	 StringBuffer gitBranch = new StringBuffer()
-	 StringBuffer gitError = new StringBuffer()
+def getCurrentGitDetachedBranch(String gitDir) {
+	String cmd = "git -C $gitDir show -s --pretty=%D HEAD"
+	StringBuffer gitBranch = new StringBuffer()
+	StringBuffer gitError = new StringBuffer()
 
-	 Process process = cmd.execute();
-	 process.waitForProcessOutput(gitBranch, gitError)
-	 if (gitError) {
-		 println("*! Error executing Git command: $cmd error: $gitError")
-	 }
+	Process process = cmd.execute();
+	process.waitForProcessOutput(gitBranch, gitError)
+	if (gitError) {
+		println("*! Error executing Git command: $cmd error: $gitError")
+	}
 
 	String gitBranchString = gitBranch.toString()
 	def gitBranchArr = gitBranchString.split(',')
@@ -74,26 +74,26 @@ def getCurrentGitBranch(String gitDir) {
 	}
 
 	return (solution != "") ? solution : println("*! Error parsing branch name: $gitBranch")
- }
+}
 
 /*
  * Returns true if this is a detached HEAD
  *
  * @param  String gitDir  		Local Git repository directory
  */
- def isGitDetachedHEAD(String gitDir) {
-	 String cmd = "git -C $gitDir status"
-	 StringBuffer gitStatus = new StringBuffer()
-	 StringBuffer gitError = new StringBuffer()
+def isGitDetachedHEAD(String gitDir) {
+	String cmd = "git -C $gitDir status"
+	StringBuffer gitStatus = new StringBuffer()
+	StringBuffer gitError = new StringBuffer()
 
-	 Process process = cmd.execute()
-	 process.waitForProcessOutput(gitStatus, gitError)
-	 if (gitError) {
-		 println("*! Error executing Git command: $cmd error $gitError")
-	 }
-	 
-	 return gitStatus.toString().contains("HEAD detached at")
- }
+	Process process = cmd.execute()
+	process.waitForProcessOutput(gitStatus, gitError)
+	if (gitError) {
+		println("*! Error executing Git command: $cmd error $gitError")
+	}
+
+	return gitStatus.toString().contains("HEAD detached at")
+}
 
 /*
  * Returns the current Git hash
@@ -105,9 +105,9 @@ def getCurrentGitHash(String gitDir) {
 	String cmd = "git -C $gitDir rev-parse HEAD"
 	StringBuffer gitHash = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
-	
+
 	Process process = cmd.execute()
-	process.waitForProcessOutput(gitHash, gitError) 	
+	process.waitForProcessOutput(gitHash, gitError)
 	if (gitError) {
 		print("*! Error executing Git command: $cmd error: $gitError")
 	}
@@ -125,7 +125,7 @@ def getFileCurrentGitHash(String gitDir, String filePath) {
 	String cmd = "git -C $gitDir rev-list -1 HEAD " + filePath
 	StringBuffer gitHash = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitHash, gitError)
 	if (gitError) {
@@ -144,10 +144,10 @@ def getCurrentGitUrl(String gitDir) {
 	String cmd = "git -C $gitDir config --get remote.origin.url"
 	StringBuffer gitUrl = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitUrl, gitError)
-	
+
 	if (gitError) {
 		print("*! Error executing Git command: $cmd error: $gitError")
 	}
@@ -165,7 +165,7 @@ def getPreviousGitHash(String gitDir) {
 	String cmd = "git -C $gitDir --no-pager log -n 1 --skip=1"
 	StringBuffer gitStdout = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitStdout, gitError)
 	if (gitError) {
@@ -183,66 +183,67 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 	def changedFiles = []
 	def deletedFiles = []
 	def renamedFiles = []
-	
+
 	def process = cmd.execute()
 	process.waitForProcessOutput(git_diff, git_error)
-	
+
 	// handle command error
 	if (git_error.size() > 0) {
 		println("*! Error executing Git command: $cmd error: $git_error")
 		println ("*! Attempting to parse unstable git command for changed files...")
 	}
-	
+
 	for (line in git_diff.toString().split("\n")) {
 		// process files from git diff
 		try {
-			action = line.split()[0]
-			file = line.split()[1]
-			// handle deleted files
-			if (action == "D") {
-				deletedFiles.add(file)
-			}
-			// handle changed and new added files
-			if (action == "M" || action == "A") {
+			gitDiffOutput = line.split()
+			action = gitDiffOutput[0]
+			file = gitDiffOutput[1]
+			
+			if (action == "M" || action == "A") { // handle changed and new added files
 				changedFiles.add(file)
-			}
-			
-			// handle renamed file
-			if (action == "R100") {
-				renamedFile = line.split()[1]
-				newFileName = file = line.split()[2]
-				
-				changedFiles.add(newFileName)
+			} else if (action == "D") {// handle deleted files
+				deletedFiles.add(file)
+			} else if (action == "R100") { // handle renamed file
+				renamedFile = gitDiffOutput[1]
+				newFileName = gitDiffOutput[2]
+				changedFiles.add(newFileName) // will rebuild file
 				renamedFiles.add(renamedFile)
-				
 			}
-			
+			else {
+				println ("*! (GitUtils.getChangedFiles) Error in determining action in git diff. ")
+				println ("*! (GitUtils.getChangedFiles) Git diff output: $line. ")
+			}
 		}
 		catch (Exception e) {
 			// no changes or unhandled format
 		}
 	}
-	
-	return [changedFiles, deletedFiles, renamedFiles]
+
+	return [
+		changedFiles,
+		deletedFiles,
+		renamedFiles
+	]
 }
 
 def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {
 	if (verbose) println "** Running git command: git -C $gitDir show --pretty=format: --name-status $currentHash"
-	String cmd = "git -C $gitDir show --pretty=format: --name-status $currentHash"	
+	String cmd = "git -C $gitDir show --pretty=format: --name-status $currentHash"
 	def gitDiff = new StringBuffer()
 	def gitError = new StringBuffer()
 	def changedFiles = []
 	def deletedFiles = []
-	
+
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitDiff, gitError)
-	
+
 	// handle command error
 	if (gitError.size() > 0) {
 		println("*! Error executing Git command: $cmd error: $gitError")
 		println ("*! Attempting to parse unstable git command for changed files...")
 	}
-	
+
 	for (line in gitDiff.toString().split("\n")) {
 		if (verbose) println "** Git command line: $line"
 		// process files from git diff
@@ -262,7 +263,7 @@ def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {
 			// no changes or unhandled format
 		}
 	}
-	
+
 	return [changedFiles, deletedFiles]
 }
 
