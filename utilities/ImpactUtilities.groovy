@@ -408,11 +408,11 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// returns null or assumed fullPath to file
 	if (mustExist){
 		if (props.verbose) println "!! (fixGitDiffPath) File not found."
-		return null
+		return [null]
 	}
 
 	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
-	return defaultValue
+	return [defaultValue]
 }
 
 def matches(String file, List<PathMatcher> pathMatchers) {
