@@ -37,14 +37,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
 	// Parse the playback from the bzucfg file
-	String xml = new File(buildUtils.getAbsolutePath(buildFile)).getText("IBM-1047")
-
-	String playback;
-	for (line in xml.split('\n')) {
-		if (line.contains("runner:playback moduleName")) {
-			playback = line.split("=")[1].split("\"")[1]
-		}
-	}
+	String playback = getPlaybackFile(buildFile);
 	
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
@@ -182,6 +175,12 @@ def getRepositoryClient() {
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
 	return repositoryClient
+}
+
+def getPlaybackFile(String xmlFile) {
+	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
+	def parser = new XmlParser().parseText(xml)
+	return("${parser.'runner:playback'.@moduleName[0]}")
 }
 
 /**
