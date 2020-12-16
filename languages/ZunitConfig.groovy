@@ -36,8 +36,9 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
-	// Parse the playback from the bzucfg file
-	String playback = getPlaybackFile(buildFile);
+	// Parse the playback and the IO files from the bzucfg file
+	String playback = getPlaybackFile(buildFile)
+	def filesIO = getFilesIO(buildFile)
 	
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
@@ -52,7 +53,39 @@ buildUtils.createLanguageDatasets(langQualifier)
 //             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
 //             SPACE=(TRK,(1,1),RLSE)
 //*
-//* Action: Run Test Case...
+"""
+	if(filesIO) {
+		// Clean up existing test files ( only if "isDispNew" )
+		jcl += """\
+//DELETE   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+"""
+		filesIO.each { file ->
+			if(file['isDispNew'].toBoolean())
+				jcl += "  DELETE ${file['DSN']}\n"
+	 		}
+
+		// Create the new test files ( only if "isDispNew" )
+		jcl += """\
+//*
+//PREBZU   EXEC PGM=IEFBR14
+"""
+		filesIO.each { file ->
+			if(file['isDispNew'].toBoolean()) {
+				jcl += "//${file['DDName']} DD DISP=(NEW,CATLG,DELETE),\n"
+				jcl += "//  SPACE=(TRK,(100,100),RLSE),\n"
+				jcl += "//  DCB=(DSORG=PS,BLKSIZE=0,RECFM=${file['format']}"
+				jcl += ",LRECL=${file['LRECL']},EROPT=ACC),\n"
+				jcl += "//  DSN=${file['DSN']}\n"
+			}
+		}
+	}
+	
+	// Run Test Case
+	jcl += """\
+\n//* Action: Run Test Case...
+//*
 //RUNNER EXEC PROC=BZUPPLAY,
 // BZUCFG=${props.zunit_bzucfgPDS}(${member}),
 // BZUCBK=${props.cobol_testcase_loadPDS},
@@ -63,17 +96,33 @@ buildUtils.createLanguageDatasets(langQualifier)
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
-if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-   jcl +=
-   "//CEEOPTS DD *                        \n"   +
-   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-       "TEST(,,,DBMDT:*)  \n" ) +
-   "ENVAR(                                \n" +
-   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
-   "/* \n"
-}
-jcl += """\
+	if(filesIO) {
+
+		// Specify HLQ of test files
+		jcl += """\
+//AZUHLQ DD *
+${props.hlq}.IO
+"""
+		// Pass IO files to the test runner
+		filesIO.each { file ->
+			jcl += "//${file['DDName']} DD DISP=SHR,DSN=${file['DSN']}\n"
+		}
+
+	}
+	
+
+	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
+	   jcl +=
+	   "//CEEOPTS DD *                        \n"   +
+	   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
+	       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
+	       "TEST(,,,DBMDT:*)  \n" ) +
+	   "ENVAR(                                \n" +
+	   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
+	   "/* \n"
+	}
+
+	jcl += """\
 //*
 //IFGOOD IF RC<=4 THEN
 //GOODRC  EXEC PGM=IEFBR14
@@ -181,6 +230,53 @@ def getPlaybackFile(String xmlFile) {
 	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
 	def parser = new XmlParser().parseText(xml)
 	return("${parser.'runner:playback'.@moduleName[0]}")
+}
+
+def getFilesIO(String xmlFile) {
+	
+	def filesIO = []
+	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")	
+	def parser = new XmlParser().parseText(xml)
+
+/**
+ *  Parse the config file and return a dictionary containing:
+ *		- DDName
+ *		- DSN
+ *		- LRECL
+ *		- format -> Dataset format, PDS and VSAM files not yet supported 
+ *		- isDispNew -> Indicates if the file has to be created before running the test or is already available on the system
+ */
+
+	parser.'runner:fileAttributes'.fileAttributes.each { file -> 
+		file.ddInfo.each { dd ->
+			filesIO.add([
+				"DDName":"${dd.@ddName}",
+				"DSN":"${dd.@targetDsn.replace("<HLQ>", "${props.hlq}")}",
+				"isDispNew":"${dd.@isDispNew}",
+				"format":"${file.@format}",
+				"LRECL":getLRECL(file.@format,file.@maxRecordLength,file.@hasCarriageControlCharacter.toBoolean())
+				])
+		}
+	}
+	
+	return filesIO	
+}
+
+/**
+ *  Calculate LRECL for Fixed and Variable block datasets.
+ *  If hasCarriageControlCharacter the lenght is increased by 1. 
+ */
+
+def getLRECL(String format, String maxLRECL, boolean hasCCC) {
+	if(format=="FB")
+		if(hasCCC)
+			return (maxLRECL.toInteger()+1).toString()
+		else
+			return maxLRECL
+	else if(format=="VB")
+		return (maxLRECL.toInteger()+4).toString()
+	else
+		return maxLRECL
 }
 
 /**
