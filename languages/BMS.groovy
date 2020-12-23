@@ -43,7 +43,7 @@ sortedList.each { buildFile ->
         def rc = new MVSJob().executable(copyGen)
 	                     .executable(compile)
 			     .executable(linkEdit)
-			     .maxRC(0)
+			     .maxRC(maxRC)
 			     .execute()
 	
     if (rc > maxRC) {
