@@ -3,6 +3,7 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import com.ibm.jzos.ZFile
 
 
 // define script properties
@@ -143,10 +144,20 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
-	if (props.bms_cpyPDS)
+	// adding bms copybook libraries only when it exists
+	if (props.bms_cpyPDS && ZFile.dsExists("'${props.bms_cpyPDS}'"))
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
+		
+	// add custom concatenation
+	def compileSyslibConcatenation = props.getFileProperty('pli_compileSyslibConcatenation', buildFile) ?: ""
+	if (compileSyslibConcatenation) {
+		def String[] syslibDatasets = compileSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+	}
+	
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
 
@@ -188,6 +199,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Create the link stream if needed
 	if ( linkEditStream != null ) {
+		def langQualifier = "linkedit"
+		buildUtils.createLanguageDatasets(langQualifier)
 		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
 		if (lnkFile.exists())
 			lnkFile.delete()
@@ -222,6 +235,13 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// add a syslib to the compile command with optional CICS concatenation
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.pli_objPDS).options("shr"))
+	// add custom concatenation
+	def linkEditSyslibConcatenation = props.getFileProperty('pli_linkEditSyslibConcatenation', buildFile) ?: ""
+	if (linkEditSyslibConcatenation) {
+		def String[] syslibDatasets = syslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))

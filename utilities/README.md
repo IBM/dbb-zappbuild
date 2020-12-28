@@ -8,3 +8,4 @@ BuidUtilities.groovy | Common build utilty methods.
 GitUtilities.groovy | Git command methods.
 ImpactUtilities.groovy | Methods used for ImpactBuilds.
 BindUtilities.groovy | Use for the DB2 binding.
+ScannerUtilities.groovy | Returns custom scanners.

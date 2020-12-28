@@ -37,7 +37,13 @@ if (buildList.size() == 0)
 else {
 	if (!props.scanOnly) {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
-		String[] buildOrder = props.buildOrder.split(',')
+		String[] buildOrderList = props.buildOrder.split(',')
+		String[] testOrderList;
+		if (props.runzTests && props.runzTests.toBoolean()) { 
+			println("** Invoking test scripts according to test order: ${props.testOrder}")
+			testOrderList = props.testOrder.split(',')
+		}
+		buildOrder = buildOrderList + testOrderList
 		buildOrder.each { script ->
                         scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
@@ -170,9 +176,15 @@ options:
 	cli.srcDir(longOpt:'sourceDir', args:1, 'Absolute path to workspace (root) directory containing all required source directories for user build')
 	cli.wrkDir(longOpt:'workDir', args:1, 'Absolute path to the build output root directory for user build')
 	cli.t(longOpt:'team', args:1, argName:'hlq', 'Team build hlq for user build syslib concatenations')
+	cli.zTest(longOpt:'runzTests', 'Specify if zUnit Tests should be executed')
 
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
+	
+	// code coverage options
+	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
+	cli.cch(longOpt:'cccHost', args:1, argName:'cccHost', 'Headless Code Coverage Collector host (if not specified IDz will be used for reporting)')
+	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
@@ -184,6 +196,11 @@ options:
 	
 	if(opts.v && args.size() > 1)
 		println "** Input args = ${args[1..-1].join(' ')}"
+		
+	if( (!opts.cch && opts.ccp) || (opts.cch && !opts.ccp) ) {
+		println "** --cccHost and --cccPort options are mutual"
+		System.exit(1)
+	}
 	
 	// if help option used, print usage and exit
     if (opts.help) {
@@ -215,7 +232,6 @@ def populateBuildProperties(String[] args) {
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
 	buildUtils.assertBuildProperties('workspace,outDir')
-	
 	
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
@@ -267,6 +283,9 @@ def populateBuildProperties(String[] args) {
 			props.load(new File(propFile))
 		}
 	}
+	
+	// set flag indicating to run unit tests
+	if (opts.zTest) props.runzTests = 'true'
 
 	// set optional command line arguments
 	if (opts.l) props.logEncoding = opts.l
@@ -282,6 +301,15 @@ def populateBuildProperties(String[] args) {
 	
 	// set debug flag
 	if(opts.d) props.debug = 'true'
+	
+	// set code coverage flag
+	if(opts.cc) {
+		props.codeZunitCoverage = 'true'
+		if ( opts.cch && opts.ccp ) {
+			props.codeCoverageHeadlessHost=opts.cch
+			props.codeCoverageHeadlessPort=opts.ccp
+		}
+	}
 	
 	// set DBB configuration properties
 	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
@@ -338,6 +366,8 @@ def createBuildList() {
 	
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> deletedFiles = new HashSet<String>()
+	
 	String action = (props.scanOnly) ? 'Scanning' : 'Building'
 
 	// check if full build
@@ -349,8 +379,7 @@ def createBuildList() {
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		if (repositoryClient) {
-			buildSet = impactUtils.createImpactBuildList(repositoryClient)
-		}
+			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
@@ -399,11 +428,24 @@ def createBuildList() {
 		}
 	}
 	
+	// write out list of deleted files (for documentation, not actually used by build scripts)
+	if (deletedFiles.size() > 0){
+		String deletedFilesListLoc = "${props.buildOutDir}/deletedFilesList.${props.buildListFileExt}"
+		println "** Writing lists of deleted files to $deletedFilesListLoc"
+		File deletedFilesListFile = new File(deletedFilesListLoc)
+		deletedFilesListFile.withWriter(enc) { writer ->
+			deletedFiles.each { file ->
+				if (props.verbose) println file
+				writer.write("$file\n")
+			}
+		}
+	}
+	
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild) {
-		impactUtils.updateCollection(buildList, null, repositoryClient)
+		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 	
 	return buildList
