@@ -130,7 +130,7 @@ def createAssemblerCommand(String buildFile, String member, File logFile) {
 	if (assemblySyslibConcatenation) {
 		def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
 		for (String syslibDataset : syslibDatasets )
-		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+		assembler.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	if (props.SCEEMAC)
 		assembler.dd(new DDStatement().dsn(props.SCEEMAC).options("shr"))
