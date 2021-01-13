@@ -68,7 +68,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	def gitBranchArr = gitBranchString.split(',')
 	def solution = ""
 	for (i = 0; i < gitBranchArr.length; i++) {
-		if (gitBranchArr[i].contains("/")) {
+		if (gitBranchArr[i].contains("origin/")) {
 			solution = gitBranchArr[i].replaceAll(".*?/", "").trim()
 		}
 	}
