@@ -343,15 +343,12 @@ def getRepositoryClient() {
 def buildListContainsTests(List<String> buildList) {
 	// iterate through build list
 	buildList.each { buildFile ->
-		println "*** Building file $buildFile"
 	
 		// Check if this a testcase
 		isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 		
 		// create test datasets
 		if (isZUnitTestCase) {
-			langQualifier = "cobol_test"
-			buildUtils.createLanguageDatasets(langQualifier)
 			return true
 		}
 	}
