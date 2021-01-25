@@ -46,31 +46,28 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
-	jcl += """\
-\n//*
-//BADRC   EXEC PGM=IEFBR14
-//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,CATLG,DELETE),
-//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
-//             SPACE=(TRK,(1,1),RLSE)
-//*
-"""
+	jcl += "\n//*\n"
+	jcl += "//BADRC   EXEC PGM=IEFBR14\n"
+	jcl += "//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,CATLG,DELETE),\n"
+	jcl += "//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,\n"
+	jcl += "//             SPACE=(TRK,(1,1),RLSE)\n"
+	jcl += "//*\n"
+
 	if(filesIO) {
 		// Clean up existing test files ( only if "isDispNew" )
-		jcl += """\
-//DELETE   EXEC PGM=IDCAMS
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-"""
+		jcl += "//DELETE   EXEC PGM=IDCAMS\n"
+		jcl += "//SYSPRINT DD SYSOUT=*\n"
+		jcl += "//SYSIN    DD *\n"
+
 		filesIO.each { file ->
 			if(file['isDispNew'].toBoolean())
 				jcl += "  DELETE ${file['DSN']}\n"
-	 		}
+			 }
 
 		// Create the new test files ( only if "isDispNew" )
-		jcl += """\
-//*
-//PREBZU   EXEC PGM=IEFBR14
-"""
+		jcl += "//*\n"
+		jcl += "//PREBZU   EXEC PGM=IEFBR14\n"
+
 		filesIO.each { file ->
 			if(file['isDispNew'].toBoolean()) {
 				jcl += "//${file['DDName']} DD DISP=(NEW,CATLG,DELETE),\n"
@@ -83,26 +80,31 @@ buildUtils.createLanguageDatasets(langQualifier)
 	}
 	
 	// Run Test Case
-	jcl += """\
-\n//* Action: Run Test Case...
-//*
-//RUNNER EXEC PROC=BZUPPLAY,
-// BZUCFG=${props.zunit_bzucfgPDS}(${member}),
-// BZUCBK=${props.cobol_testcase_loadPDS},
-// BZULOD=${props.cobol_loadPDS},
-//  PARM=('STOP=E,REPORT=XML')
-//REPLAY.BZUPLAY DD DISP=SHR,
-// DSN=${props.zunit_bzuplayPDS}(${playback})
-//REPLAY.BZURPT DD DISP=SHR,
-// DSN=${props.zunit_bzureportPDS}(${member})
-"""
+	jcl += "//* Action: Run Test Case...\n"
+	jcl += "//*\n"
+	jcl += "//RUNNER EXEC PROC=BZUPPLAY,\n"
+	jcl += "// BZUCFG=${props.zunit_bzucfgPDS}(${member}),\n"
+	jcl += "// BZUCBK=${props.cobol_testcase_loadPDS},\n"
+	jcl += "// BZULOD=${props.cobol_loadPDS},\n"
+	jcl += "//  PARM=('STOP=E,REPORT=XML')\n"
+
+	
+	// Specify playback file only if needed by config file
+	if(playback) {
+		jcl += "//REPLAY.BZUPLAY DD DISP=SHR,\n"
+		jcl += "// DSN=${props.zunit_bzuplayPDS}(${playback})\n"
+	}
+
+	jcl += "//REPLAY.BZURPT DD DISP=SHR,\n"
+	jcl += "// DSN=${props.zunit_bzureportPDS}(${member})\n"
+
+	
 	if(filesIO) {
 
 		// Specify HLQ of test files
-		jcl += """\
-//AZUHLQ DD *
-${props.hlq}.IO
-"""
+		jcl += "//AZUHLQ DD *\n"
+		jcl += "${props.hlq}.IO\n"
+
 		// Pass IO files to the test runner
 		filesIO.each { file ->
 			jcl += "//${file['DDName']} DD DISP=SHR,DSN=${file['DSN']}\n"
@@ -115,22 +117,21 @@ ${props.hlq}.IO
 	   jcl +=
 	   "//CEEOPTS DD *                        \n"   +
 	   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-	       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-	       "TEST(,,,DBMDT:*)  \n" ) +
+		   "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
+		   "TEST(,,,DBMDT:*)  \n" ) +
 	   "ENVAR(                                \n" +
 	   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
 	   "/* \n"
 	}
 
-	jcl += """\
-//*
-//IFGOOD IF RC<=4 THEN
-//GOODRC  EXEC PGM=IEFBR14
-//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,DELETE,DELETE),
-//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
-//             SPACE=(TRK,(1,1),RLSE)
-//       ENDIF
-"""
+	jcl += "//*\n"
+	jcl += "//IFGOOD IF RC<=4 THEN\n"
+	jcl += "//GOODRC  EXEC PGM=IEFBR14\n"
+	jcl += "//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,DELETE,DELETE),\n"
+	jcl += "//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,\n"
+	jcl += "//             SPACE=(TRK,(1,1),RLSE)\n"
+	jcl += "//       ENDIF\n"
+
 	if (props.verbose) println(jcl)
 		
 	def dbbConf = System.getenv("DBB_CONF")
@@ -165,7 +166,6 @@ ${props.hlq}.IO
 	//			zUnitRunJCL.saveOutput(ddName, file, logEncoding)
 	//		}
 	//	})
-
 
 	/**
 	 * Error Handling
@@ -229,7 +229,11 @@ def getRepositoryClient() {
 def getPlaybackFile(String xmlFile) {
 	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
 	def parser = new XmlParser().parseText(xml)
-	return("${parser.'runner:playback'.@moduleName[0]}")
+	if (!parser.'playbackFile'.@name[0]) {
+		return("")
+	}
+	else
+		return("${parser.'runner:playback'.@moduleName[0]}")
 }
 
 def getFilesIO(String xmlFile) {
@@ -243,7 +247,7 @@ def getFilesIO(String xmlFile) {
  *		- DDName
  *		- DSN
  *		- LRECL
- *		- format -> Dataset format, PDS and VSAM files not yet supported 
+ *		- format -> Dataset format, PDS and VSAM files not yet supported
  *		- isDispNew -> Indicates if the file has to be created before running the test or is already available on the system
  */
 
@@ -264,7 +268,7 @@ def getFilesIO(String xmlFile) {
 
 /**
  *  Calculate LRECL for Fixed and Variable block datasets.
- *  If hasCarriageControlCharacter the lenght is increased by 1. 
+ *  If hasCarriageControlCharacter the lenght is increased by 1.
  */
 
 def getLRECL(String format, String maxLRECL, boolean hasCCC) {
@@ -308,6 +312,3 @@ def printReport(File resultFile) {
 	}
 
 }
-
-
-
