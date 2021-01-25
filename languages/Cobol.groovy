@@ -340,7 +340,8 @@ def getRepositoryClient() {
 	return repositoryClient
 }
 
-def buildListContainsTests(List<String> buildList) {
+boolean buildListContainsTests(List<String> buildList) {
+	boolean testFound = false
 	// iterate through build list
 	buildList.each { buildFile ->
 	
@@ -349,8 +350,8 @@ def buildListContainsTests(List<String> buildList) {
 		
 		// create test datasets
 		if (isZUnitTestCase) {
-			return true
+			testFound = true
 		}
 	}
-	return false
+	return testFound
 }
