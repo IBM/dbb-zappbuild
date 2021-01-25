@@ -345,10 +345,9 @@ boolean buildListContainsTests(List<String> buildList) {
 	// iterate through build list
 	buildList.each { buildFile ->
 	
-		// Check if this a testcase
+		// Check if this is a testcase
 		isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 		
-		// create test datasets
 		if (isZUnitTestCase) {
 			testFound = true
 		}
