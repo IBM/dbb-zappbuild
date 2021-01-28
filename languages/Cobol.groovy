@@ -321,6 +321,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	
+	if (buildUtils.isSQL(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
 	String isMQ = props.getFileProperty('cobol_isMQ', buildFile)
 	if (isMQ && isMQ.toBoolean())
