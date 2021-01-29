@@ -36,15 +36,9 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
-	// Parse the playback from the bzucfg file
-	String xml = new File(buildUtils.getAbsolutePath(buildFile)).getText("IBM-1047")
-
-	String playback;
-	for (line in xml.split('\n')) {
-		if (line.contains("runner:playback moduleName")) {
-			playback = line.split("=")[1].split("\"")[1]
-		}
-	}
+	// Parse the playback and the IO files from the bzucfg file
+	String playback = getPlaybackFile(buildFile)
+	def filesIO = getFilesIO(buildFile)
 	
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
@@ -52,43 +46,92 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
-	jcl += """\
-\n//*
-//BADRC   EXEC PGM=IEFBR14
-//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,CATLG,DELETE),
-//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
-//             SPACE=(TRK,(1,1),RLSE)
-//*
-//* Action: Run Test Case...
-//RUNNER EXEC PROC=BZUPPLAY,
-// BZUCFG=${props.zunit_bzucfgPDS}(${member}),
-// BZUCBK=${props.cobol_testcase_loadPDS},
-// BZULOD=${props.cobol_loadPDS},
-//  PARM=('STOP=E,REPORT=XML')
-//REPLAY.BZUPLAY DD DISP=SHR,
-// DSN=${props.zunit_bzuplayPDS}(${playback})
-//REPLAY.BZURPT DD DISP=SHR,
-// DSN=${props.zunit_bzureportPDS}(${member})
-"""
-if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-   jcl +=
-   "//CEEOPTS DD *                        \n"   +
-   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-       "TEST(,,,DBMDT:*)  \n" ) +
-   "ENVAR(                                \n" +
-   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
-   "/* \n"
-}
-jcl += """\
-//*
-//IFGOOD IF RC<=4 THEN
-//GOODRC  EXEC PGM=IEFBR14
-//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,DELETE,DELETE),
-//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,
-//             SPACE=(TRK,(1,1),RLSE)
-//       ENDIF
-"""
+	jcl += "\n//*\n"
+	jcl += "//BADRC   EXEC PGM=IEFBR14\n"
+	jcl += "//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,CATLG,DELETE),\n"
+	jcl += "//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,\n"
+	jcl += "//             SPACE=(TRK,(1,1),RLSE)\n"
+	jcl += "//*\n"
+
+	if(filesIO) {
+		// Clean up existing test files ( only if "isDispNew" )
+		jcl += "//DELETE   EXEC PGM=IDCAMS\n"
+		jcl += "//SYSPRINT DD SYSOUT=*\n"
+		jcl += "//SYSIN    DD *\n"
+
+		filesIO.each { file ->
+			if(file['isDispNew'].toBoolean())
+				jcl += "  DELETE ${file['DSN']}\n"
+			 }
+
+		// Create the new test files ( only if "isDispNew" )
+		jcl += "//*\n"
+		jcl += "//PREBZU   EXEC PGM=IEFBR14\n"
+
+		filesIO.each { file ->
+			if(file['isDispNew'].toBoolean()) {
+				jcl += "//${file['DDName']} DD DISP=(NEW,CATLG,DELETE),\n"
+				jcl += "//  SPACE=(TRK,(100,100),RLSE),\n"
+				jcl += "//  DCB=(DSORG=PS,BLKSIZE=0,RECFM=${file['format']}"
+				jcl += ",LRECL=${file['LRECL']},EROPT=ACC),\n"
+				jcl += "//  DSN=${file['DSN']}\n"
+			}
+		}
+	}
+	
+	// Run Test Case
+	jcl += "//* Action: Run Test Case...\n"
+	jcl += "//*\n"
+	jcl += "//RUNNER EXEC PROC=BZUPPLAY,\n"
+	jcl += "// BZUCFG=${props.zunit_bzucfgPDS}(${member}),\n"
+	jcl += "// BZUCBK=${props.cobol_testcase_loadPDS},\n"
+	jcl += "// BZULOD=${props.cobol_loadPDS},\n"
+	jcl += "//  PARM=('STOP=E,REPORT=XML')\n"
+
+	
+	// Specify playback file only if needed by config file
+	if(playback) {
+		jcl += "//REPLAY.BZUPLAY DD DISP=SHR,\n"
+		jcl += "// DSN=${props.zunit_bzuplayPDS}(${playback})\n"
+	}
+
+	jcl += "//REPLAY.BZURPT DD DISP=SHR,\n"
+	jcl += "// DSN=${props.zunit_bzureportPDS}(${member})\n"
+
+	
+	if(filesIO) {
+
+		// Specify HLQ of test files
+		jcl += "//AZUHLQ DD *\n"
+		jcl += "${props.hlq}.IO\n"
+
+		// Pass IO files to the test runner
+		filesIO.each { file ->
+			jcl += "//${file['DDName']} DD DISP=SHR,DSN=${file['DSN']}\n"
+		}
+
+	}
+	
+
+	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
+	   jcl +=
+	   "//CEEOPTS DD *                        \n"   +
+	   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
+		   "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
+		   "TEST(,,,DBMDT:*)  \n" ) +
+	   "ENVAR(                                \n" +
+	   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
+	   "/* \n"
+	}
+
+	jcl += "//*\n"
+	jcl += "//IFGOOD IF RC<=4 THEN\n"
+	jcl += "//GOODRC  EXEC PGM=IEFBR14\n"
+	jcl += "//DD        DD DSN=&SYSUID..BADRC,DISP=(MOD,DELETE,DELETE),\n"
+	jcl += "//             DCB=(RECFM=FB,LRECL=80),UNIT=SYSALLDA,\n"
+	jcl += "//             SPACE=(TRK,(1,1),RLSE)\n"
+	jcl += "//       ENDIF\n"
+
 	if (props.verbose) println(jcl)
 		
 	def dbbConf = System.getenv("DBB_CONF")
@@ -123,7 +166,6 @@ jcl += """\
 	//			zUnitRunJCL.saveOutput(ddName, file, logEncoding)
 	//		}
 	//	})
-
 
 	/**
 	 * Error Handling
@@ -184,6 +226,63 @@ def getRepositoryClient() {
 	return repositoryClient
 }
 
+def getPlaybackFile(String xmlFile) {
+	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
+	def parser = new XmlParser().parseText(xml)
+	if (!parser.'playbackFile'.@name[0]) {
+		return("")
+	}
+	else
+		return("${parser.'runner:playback'.@moduleName[0]}")
+}
+
+def getFilesIO(String xmlFile) {
+	
+	def filesIO = []
+	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")	
+	def parser = new XmlParser().parseText(xml)
+
+/**
+ *  Parse the config file and return a dictionary containing:
+ *		- DDName
+ *		- DSN
+ *		- LRECL
+ *		- format -> Dataset format, PDS and VSAM files not yet supported
+ *		- isDispNew -> Indicates if the file has to be created before running the test or is already available on the system
+ */
+
+	parser.'runner:fileAttributes'.fileAttributes.each { file -> 
+		file.ddInfo.each { dd ->
+			filesIO.add([
+				"DDName":"${dd.@ddName}",
+				"DSN":"${dd.@targetDsn.replace("<HLQ>", "${props.hlq}")}",
+				"isDispNew":"${dd.@isDispNew}",
+				"format":"${file.@format}",
+				"LRECL":getLRECL(file.@format,file.@maxRecordLength,file.@hasCarriageControlCharacter.toBoolean())
+				])
+		}
+	}
+	
+	return filesIO	
+}
+
+/**
+ *  Calculate LRECL for Fixed and Variable block datasets.
+ *  If hasCarriageControlCharacter the lenght is increased by 1.
+ */
+
+def getLRECL(String format, String maxLRECL, boolean hasCCC) {
+	if(format=="FB")
+		if(hasCCC)
+			return (maxLRECL.toInteger()+1).toString()
+		else
+			return maxLRECL
+	else if(format=="VB")
+		return (maxLRECL.toInteger()+4).toString()
+	else
+		return maxLRECL
+}
+
 /**
  *  Parsing the result file and prints summary of the result
  */
@@ -213,6 +312,3 @@ def printReport(File resultFile) {
 	}
 
 }
-
-
-
