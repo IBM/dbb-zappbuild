@@ -5,12 +5,13 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
+import java.util.Properties
 
 // define script properties
-@Field BuildProperties props = BuildProperties.getInstance()
+@Field static BuildProperties props = BuildProperties.getInstance()
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
-
+@Field HashMap<String,Properties> fileLevelPropertiesCache = new HashMap<String,Properties>()
 
 
 /*
@@ -160,7 +161,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
-	// update build results only in non-userbuild scenarios 
+	// update build results only in non-userbuild scenarios
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
@@ -348,13 +349,13 @@ def getScanner(String buildFile){
 def createLanguageDatasets(String lang) {
 	if (props."${lang}_srcDatasets")
 		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
-		
+
 	if (props."${lang}_loadDatasets")
 		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
-	
+
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
-	
+
 }
 
 /*
@@ -370,3 +371,97 @@ def createDatasets(String[] datasets, String options) {
 	}
 }
 
+/*
+ * getFileProperty - verifies if a properties file for the buildFile exists to overwrite properties 
+ */
+def getFileProperty(String prop, String buildFile){
+	// validate if build framework allows overwrites
+	if (props.allowFileLevelOverwrites && props.allowFileLevelOverwrites.toBoolean()){
+		if(!fileLevelPropertiesCache.containsKey(buildFile)){
+			loadFileLevelOverwrites(buildFile)
+		}
+
+		fileLevelOverwrites = fileLevelPropertiesCache.get(buildFile)
+		if (fileLevelOverwrites != null) {
+			fileLevelProperty = fileLevelOverwrites.getProperty(prop)
+			if (fileLevelProperty!=null){
+				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
+				if (props.verbose)
+					return fileLevelProperty
+			}
+		}
+	}
+
+	//return DBB File Property or Global property
+	return props.getFileProperty(prop, buildFile)
+}
+
+/*
+ * getFileProperty - verifies if a properties file for the buildFile exists to overwrite properties 
+ */
+def getFileProperty(String prop, String buildFile){
+	// validate if build framework allows overwrites
+	if (props.allowFileLevelOverwrites && props.allowFileLevelOverwrites.toBoolean()){
+		if(!fileLevelPropertiesCache.containsKey(buildFile)){
+			loadFileLevelOverwrites(buildFile)
+		}
+
+		fileLevelOverwrites = fileLevelPropertiesCache.get(buildFile)
+		if (fileLevelOverwrites != null) {
+			fileLevelProperty = fileLevelOverwrites.getProperty(prop)
+			if (fileLevelProperty!=null){
+				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
+				// check if overwrite is allowed 
+				if (props.whitelistFileLevelOverwrites.contains(prop))
+					return fileLevelProperty
+				else
+				if (props.verbose) println("*! Overwrite for $prop not allowed. Not on whitelist. See build property whitelistFileLevelOverwrites.")
+			}
+		}
+	}
+
+	//return DBB File Property or Global property
+	return props.getFileProperty(prop, buildFile)
+}
+
+/*
+ * groovy metaprogramming to return properties to language scripts
+ *  - verifies if a propertiesfile for the buildFile exists and overwrites settings
+ */
+static def propertyMissing(String name) {
+	return props.getProperty(name)
+}
+
+/*
+ * Load file level overwrites property files into hashmap 
+ */
+def loadFileLevelOverwrites(String buildFile){
+
+	String member = getFileNameWithoutExtension(buildFile)
+	String propertyFile = getAbsolutePath(props.application) + "/$props.propertiesFileLocation/${member}.properties"
+	File file = new File (propertyFile)
+	Properties fileProperties = new Properties()
+
+	if (file.exists()){
+		FileReader reader = new FileReader(file);
+		fileProperties.load(new FileInputStream(file))
+		if(props.verbose ) println("** Loaded file level property overwrites for $buildFile:")
+		if(props.verbose ) println("   $fileProperties")
+	} else
+	if(props.verbose ) println("** No file level property file found for $buildFile")
+
+	// Adding set to file level property cache, adds null if no file was found.
+	fileLevelPropertiesCache.put(buildFile,fileProperties)
+
+}
+
+/*
+ * get filename without file extension
+ */
+def getFileNameWithoutExtension(String buildFile){
+	int pos = buildFile.lastIndexOf(".");
+	int posFolder = buildFile.lastIndexOf("/")
+
+	if (pos > 0) {
+		return buildFile.substring(posFolder+1, pos);
+	}

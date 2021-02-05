@@ -6,9 +6,10 @@ import groovy.transform.*
 
 
 // define script properties
-@Field BuildProperties props = BuildProperties.getInstance()
-@Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field BuildProperties zApp = BuildProperties.getInstance()
+@Field def buildUtils= loadScript(new File("${zApp.zAppBuildDir}/utilities/BuildUtilities.groovy"))
+@Field def impactUtils= loadScript(new File("${zApp.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def props = buildUtils
 @Field RepositoryClient repositoryClient
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
