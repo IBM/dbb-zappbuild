@@ -411,7 +411,7 @@ def getFileProperty(String prop, String buildFile){
 			fileLevelProperty = fileLevelOverwrites.getProperty(prop)
 			if (fileLevelProperty!=null){
 				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
-				// check if overwrite is allowed 
+				// check if overwrite is allowed
 				if (props.whitelistFileLevelOverwrites.contains(prop))
 					return fileLevelProperty
 				else
@@ -465,3 +465,4 @@ def getFileNameWithoutExtension(String buildFile){
 	if (pos > 0) {
 		return buildFile.substring(posFolder+1, pos);
 	}
+}
