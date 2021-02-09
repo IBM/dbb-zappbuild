@@ -412,7 +412,7 @@ def getFileProperty(String prop, String buildFile){
 			if (fileLevelProperty!=null){
 				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
 				// check if overwrite is allowed
-				if (props.whitelistFileLevelOverwrites.contains(prop))
+				if (props.whitelistFileLevelOverwrites.split(",").contains(prop))
 					return fileLevelProperty
 				else
 				if (props.verbose) println("*! Overwrite for $prop not allowed. Not on whitelist. See build property whitelistFileLevelOverwrites.")
