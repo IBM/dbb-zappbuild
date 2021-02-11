@@ -19,7 +19,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 excludeFileList | Files to exclude when scanning or running full build.
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
 jobCard | JOBCARD for JCL execs
-propertiesFileLocation |  Location of property files providing file level property overwrites, files follow naming convention <sourcefile-name>.*** -> <sourcefile-name>.properties
+propertiesFileLocation |  Location of property files providing file level property overwrites, files follow naming convention <sourcefile-name>.<ext> -> <sourcefile-name>.<ext>.properties
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
 
 ### file.properties

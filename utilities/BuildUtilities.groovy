@@ -386,31 +386,6 @@ def getFileProperty(String prop, String buildFile){
 			fileLevelProperty = fileLevelOverwrites.getProperty(prop)
 			if (fileLevelProperty!=null){
 				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
-				if (props.verbose)
-					return fileLevelProperty
-			}
-		}
-	}
-
-	//return DBB File Property or Global property
-	return props.getFileProperty(prop, buildFile)
-}
-
-/*
- * getFileProperty - verifies if a properties file for the buildFile exists to overwrite properties 
- */
-def getFileProperty(String prop, String buildFile){
-	// validate if build framework allows overwrites
-	if (props.allowFileLevelOverwrites && props.allowFileLevelOverwrites.toBoolean()){
-		if(!fileLevelPropertiesCache.containsKey(buildFile)){
-			loadFileLevelOverwrites(buildFile)
-		}
-
-		fileLevelOverwrites = fileLevelPropertiesCache.get(buildFile)
-		if (fileLevelOverwrites != null) {
-			fileLevelProperty = fileLevelOverwrites.getProperty(prop)
-			if (fileLevelProperty!=null){
-				if (props.verbose) println("** File level overwrite found for $buildFile - $prop: $fileLevelProperty")
 				// check if overwrite is allowed
 				if (props.whitelistFileLevelOverwrites.split(",").contains(prop))
 					return fileLevelProperty
@@ -437,8 +412,8 @@ static def propertyMissing(String name) {
  */
 def loadFileLevelOverwrites(String buildFile){
 
-	String member = getFileNameWithoutExtension(buildFile)
-	String propertyFile = getAbsolutePath(props.application) + "/$props.propertiesFileLocation/${member}.properties"
+	String buildmember = getFileNameWithExtension(buildFile)
+	String propertyFile = getAbsolutePath(props.application) + "/$props.propertiesFileLocation/${buildmember}.properties"
 	File file = new File (propertyFile)
 	Properties fileProperties = new Properties()
 
@@ -456,13 +431,14 @@ def loadFileLevelOverwrites(String buildFile){
 }
 
 /*
- * get filename without file extension
+ * get filename
  */
-def getFileNameWithoutExtension(String buildFile){
-	int pos = buildFile.lastIndexOf(".");
+def getFileNameWithExtension(String buildFile){
 	int posFolder = buildFile.lastIndexOf("/")
 
-	if (pos > 0) {
-		return buildFile.substring(posFolder+1, pos);
+	if (posFolder > 0) {
+		return buildFile.substring(posFolder+1);
+	} else {
+		if(props.verbose ) println("** Could not retrieve file name from $buildFile")
 	}
 }
