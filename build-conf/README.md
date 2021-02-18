@@ -45,7 +45,7 @@ dbb.RepositoryClient.userId | DBB configuration property for web application log
 dbb.RepositoryClient.password | DBB configuration property for web application logon password.  ***Can be overridden by build.groovy option -pw, --pw***
 dbb.RepositoryClient.passwordFile | DBB configuration property for web application logon password file.  ***Can be overridden by build.groovy option -pf, --pf***
 allowFileLevelOverwrites| Configuration property to enable zAppBuild to search for property files for each buildable file defined by the propertiesFileLocation property in application-conf 
-whitelistFileLevelOverwrites | Comma-separated list of file level properties, which can be overridden by a file level property file retrieved via props.getFileProperty api in the lanaguage scripts
+whitelistFileLevelOverwrites | Comma-separated list of file level properties, which can be overridden by a file level property file retrieved via props.getFileProperty api in the language scripts. If empty, any overwrite is allowed. As soon as one entry exists, it validates against the list.
 
 ### Assembler.properties
 Build properties used by zAppBuild/language/Assembler.groovy
