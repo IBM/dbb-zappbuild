@@ -238,7 +238,7 @@ def scanOnlyStaticDependencies(List buildList){
  */
 def getLangPrefix(String scriptName){
 	def langPrefix = null
-	switch(scriptMapping) {
+	switch(scriptName) {
 		case "Cobol.groovy":
 			langPrefix = 'cobol'
 			break;
