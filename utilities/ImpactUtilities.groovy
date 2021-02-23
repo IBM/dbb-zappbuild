@@ -204,7 +204,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
  * Limitation: Sample for cobol
  */
-def scanOnlyStaticDependencies(){
+def scanOnlyStaticDependencies(List buildList){
 	buildList.each { buildFile ->
 		def scriptMapping = ScriptMappings.getScriptName(buildFile)
 		if(scriptMapping != null){
