@@ -221,7 +221,7 @@ def scanOnlyStaticDependencies(List buildList){
 				if (isLinkEdited && isLinkEdited.toBoolean()){
 					try{
 						if (props.verbose) println ("*** Scanning loadmodule $loadPDSMember of $buildFile")
-						impactUtils.saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
+						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
 					}
 					catch (com.ibm.dbb.build.ValidationException e){
 						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
