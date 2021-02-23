@@ -252,7 +252,7 @@ def getLangPrefix(String scriptName){
 			langPrefix = 'assembler'
 			break;
 		default:
-			if (props.verbose) println ("*** No language prefix defined for $scriptMapping.")
+			if (props.verbose) println ("*** No language prefix defined for $scriptName.")
 			break;
 	}
 	return langPrefix
