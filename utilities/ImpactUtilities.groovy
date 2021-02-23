@@ -199,6 +199,66 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	]
 }
 
+/*
+ * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
+ * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
+ * Limitation: Sample for cobol
+ */
+def scanOnlyStaticDependencies(){
+	buildList.each { buildFile ->
+		def scriptMapping = ScriptMappings.getScriptName(buildFile)
+		if(scriptMapping != null){
+			langPrefix = getLangPrefix(scriptMapping)
+			if(langPrefix != null){
+				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
+				String rules = props.getFileProperty("${langPrefix}_resolutionRules", buildFile)
+				DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+
+				LogicalFile logicalFile = dependencyResolver.getLogicalFile()
+				String member = CopyToPDS.createMemberName(buildFile)
+				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
+
+				if (isLinkEdited && isLinkEdited.toBoolean()){
+					try{
+						if (props.verbose) println ("*** Scanning loadmodule $loadPDSMember of $buildFile")
+						impactUtils.saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
+					}
+					catch (com.ibm.dbb.build.ValidationException e){
+						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
+						println e
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
+ * returns languagePrefix for language script name or null if not defined.
+ */
+def getLangPrefix(String scriptName){
+	def langPrefix = null
+	switch(scriptMapping) {
+		case "Cobol.groovy":
+			langPrefix = 'cobol'
+			break;
+		case "LinkEdit.groovy" :
+			langPrefix = 'linkedit'
+			break;
+		case "PLI.groovy":
+			langPrefix = 'pli'
+			break;
+		case "Assembler.groovy":
+			langPrefix = 'assembler'
+			break;
+		default:
+			if (props.verbose) println ("*** No language prefix defined for $scriptMapping.")
+			break;
+	}
+	return langPrefix
+}
+
+
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
 	if (props.verbose) println "*** Creating impact resolver for $changedFile with $rules rules"
 
