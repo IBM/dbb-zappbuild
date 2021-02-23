@@ -36,6 +36,10 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanOnly
 ```
+**Scan source files and existing load modules for the application to collect dependency data for source and outputs without actually creating load modules**
+```
+$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanOnly --scanLoadmodules
+```
 
 ## Command Line Options Summary
 ```
@@ -61,6 +65,7 @@ build options:
  -i,--impactBuild         Flag indicating to build only programs impacted
                           by changed files since last successful build.
  -s,--scanOnly            Flag indicating to only scan files for application
+ -sl,--scanLoadmodules    Flag indicating to scan loadmodules based on provided hlq, mutual to --scanOnly
  -r,--reset               Deletes the application's dependency collections 
                           and build result group from the DBB repository
  -v,--verbose             Flag to turn on script trace
