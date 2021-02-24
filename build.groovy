@@ -36,7 +36,7 @@ def scriptPath = ""
 if (buildList.size() == 0)
 	println("*! No files in build list.  Nothing to do.")
 else {
-	if (!props.scanOnly) {
+	if (!props.scanOnly && !props.scanLoadmodules) {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
 		String[] buildOrderList = props.buildOrder.split(',')
 		String[] testOrderList;
@@ -384,7 +384,7 @@ def createBuildList() {
 	Set<String> buildSet = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 
-	String action = (props.scanOnly) ? 'Scanning' : 'Building'
+	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
 	// check if full build
 	if (props.fullBuild) {
@@ -460,7 +460,7 @@ def createBuildList() {
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
-	if (!props.impactBuild && !props.userBuild) {
+	if (!props.impactBuild && !props.userBuild && props.scanOnly) {
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 
