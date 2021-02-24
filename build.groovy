@@ -58,7 +58,7 @@ else {
 			processCounter = processCounter + buildFiles.size()
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
-		println ("** Scanning loadmodules for static dependencies.")
+		println ("** Scanning load modules.")
 		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
 	}
 }
@@ -461,6 +461,7 @@ def createBuildList() {
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && props.scanOnly) {
+		println "** Scanning source code."
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 

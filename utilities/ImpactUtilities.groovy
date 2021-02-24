@@ -211,16 +211,16 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 			langPrefix = buildUtils.getLangPrefix(scriptMapping)
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
-				String rules = props.getFileProperty("${langPrefix}_resolutionRules", buildFile)
-				DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
-				LogicalFile logicalFile = dependencyResolver.getLogicalFile()
+				def scanner = buildUtils.getScanner(buildFile)
+				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
+				
 				String member = CopyToPDS.createMemberName(buildFile)
 				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
 
-				if (isLinkEdited && isLinkEdited.toBoolean()){
+				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy"){
 					try{
-						if (props.verbose) println ("*** Scanning loadmodule $loadPDSMember of $buildFile")
+						if (props.verbose) println ("*** Scanning load module $loadPDSMember of $buildFile")
 						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
 					}
 					catch (com.ibm.dbb.build.ValidationException e){
@@ -228,6 +228,11 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 						println e
 					}
 				}
+				else {
+					if (props.verbose) println ("*** Skipped scanning module $loadPDSMember of $buildFile.")
+				}
+			} else {
+				if (props.verbose) println ("*** Skipped scanning outputs of $buildFile. No language prefix found.")
 			}
 		}
 	}
