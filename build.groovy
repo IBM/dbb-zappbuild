@@ -57,7 +57,7 @@ else {
 			}
 			processCounter = processCounter + buildFiles.size()
 		}
-	} else if(props.scanOnly && props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
+	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning loadmodules for static dependencies.")
 		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
 	}
@@ -164,11 +164,15 @@ options:
 	cli.l(longOpt:'logEncoding', args:1, 'Encoding of output logs. Default is EBCDIC')
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
-	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan files for application')
-	cli.sl(longOpt:'scanLoadmodules', 'Flag indicating to scan loadmodules based on provided hlq')
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
+	// scan options
+	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
+	cli.ss(longOpt:'scanSource', 'Flag indicating to only scan source files for application without building anything')
+	cli.sl(longOpt:'scanLoad', 'Flag indicating to only scan load modules for application without building anything')
+	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
+	
 	// web application credentials (overrides properties in build.properties)
 	cli.url(longOpt:'url', args:1, 'DBB repository URL')
 	cli.id(longOpt:'id', args:1, 'DBB repository id')
@@ -296,12 +300,16 @@ def populateBuildProperties(String[] args) {
 	if (opts.l) props.logEncoding = opts.l
 	if (opts.f) props.fullBuild = 'true'
 	if (opts.i) props.impactBuild = 'true'
-	if (opts.s) props.scanOnly = 'true'
 	if (opts.r) props.reset = 'true'
 	if (opts.v) props.verbose = 'true'
-	if (opts.sl) {
+
+	// scan options
+	if (opts.s) props.scanOnly = 'true'
+	if (opts.ss) props.scanOnly = 'true'
+	if (opts.sl) props.scanLoadmodules = 'true'
+	if (opts.sa) {
+		props.scanOnly = 'true'
 		props.scanLoadmodules = 'true'
-		buildUtils.assertBuildProperties('scanOnly') // scanLoadmodules should only be used along with scanOnly buildtype
 	}
 
 	if (opts.url) props.url = opts.url

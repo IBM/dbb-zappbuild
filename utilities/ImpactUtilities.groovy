@@ -208,7 +208,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 	buildList.each { buildFile ->
 		def scriptMapping = ScriptMappings.getScriptName(buildFile)
 		if(scriptMapping != null){
-			langPrefix = getLangPrefix(scriptMapping)
+			langPrefix = buildUtils.getLangPrefix(scriptMapping)
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
 				String rules = props.getFileProperty("${langPrefix}_resolutionRules", buildFile)
@@ -232,32 +232,6 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 		}
 	}
 }
-
-/*
- * returns languagePrefix for language script name or null if not defined.
- */
-def getLangPrefix(String scriptName){
-	def langPrefix = null
-	switch(scriptName) {
-		case "Cobol.groovy":
-			langPrefix = 'cobol'
-			break;
-		case "LinkEdit.groovy" :
-			langPrefix = 'linkedit'
-			break;
-		case "PLI.groovy":
-			langPrefix = 'pli'
-			break;
-		case "Assembler.groovy":
-			langPrefix = 'assembler'
-			break;
-		default:
-			if (props.verbose) println ("*** No language prefix defined for $scriptName.")
-			break;
-	}
-	return langPrefix
-}
-
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
 	if (props.verbose) println "*** Creating impact resolver for $changedFile with $rules rules"
