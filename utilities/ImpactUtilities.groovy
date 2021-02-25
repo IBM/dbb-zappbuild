@@ -199,6 +199,45 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	]
 }
 
+/*
+ * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
+ * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
+ * Limitation: Sample for cobol
+ */
+def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient){
+	buildList.each { buildFile ->
+		def scriptMapping = ScriptMappings.getScriptName(buildFile)
+		if(scriptMapping != null){
+			langPrefix = buildUtils.getLangPrefix(scriptMapping)
+			if(langPrefix != null){
+				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
+
+				def scanner = buildUtils.getScanner(buildFile)
+				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
+				
+				String member = CopyToPDS.createMemberName(buildFile)
+				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
+
+				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy"){
+					try{
+						if (props.verbose) println ("*** Scanning load module $loadPDSMember of $buildFile")
+						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
+					}
+					catch (com.ibm.dbb.build.ValidationException e){
+						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
+						println e
+					}
+				}
+				else {
+					if (props.verbose) println ("*** Skipped scanning module $loadPDSMember of $buildFile.")
+				}
+			} else {
+				if (props.verbose) println ("*** Skipped scanning outputs of $buildFile. No language prefix found.")
+			}
+		}
+	}
+}
+
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
 	if (props.verbose) println "*** Creating impact resolver for $changedFile with $rules rules"
 

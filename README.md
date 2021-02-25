@@ -39,7 +39,9 @@ zAppBuild supports a number of build scenarios:
 * **Full Build** - Build all programs (or buildable files) of an application.
 * **Impact Build** - Build only programs impacted by source files that have changed since the last successful build.
 * **Topic Branch Build** - Detects when building a topic branch for the first time and will automatically clone the dependency data collections from the main build branch in order to avoid having to rescan the entire application.
-* **Scan Only** - Skip the actual building and only scan source files for dependency data.
+* **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
+* **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
+
 
 Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md).
 

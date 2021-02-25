@@ -370,3 +370,28 @@ def createDatasets(String[] datasets, String options) {
 	}
 }
 
+/*
+ * returns languagePrefix for language script name or null if not defined.
+ */
+def getLangPrefix(String scriptName){
+	def langPrefix = null
+	switch(scriptName) {
+		case "Cobol.groovy":
+			langPrefix = 'cobol'
+			break;
+		case "LinkEdit.groovy" :
+			langPrefix = 'linkedit'
+			break;
+		case "PLI.groovy":
+			langPrefix = 'pli'
+			break;
+		case "Assembler.groovy":
+			langPrefix = 'assembler'
+			break;
+		default:
+			if (props.verbose) println ("*** No language prefix defined for $scriptName.")
+			break;
+	}
+	return langPrefix
+}
+
