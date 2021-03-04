@@ -460,7 +460,7 @@ def createBuildList() {
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
-	if (!props.impactBuild && !props.userBuild && props.scanOnly) {
+	if (!props.impactBuild && !props.userBuild) {
 		println "** Scanning source code."
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
