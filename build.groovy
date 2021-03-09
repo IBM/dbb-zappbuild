@@ -4,11 +4,11 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.html.*
+import com.ibm.dbb.build.report.records.*
 import groovy.util.*
 import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
-import com.ibm.jzos.ZFile
 
 
 // define script properties
