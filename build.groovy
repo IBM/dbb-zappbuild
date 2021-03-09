@@ -194,6 +194,8 @@ options:
 	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
 	cli.cch(longOpt:'cccHost', args:1, argName:'cccHost', 'Headless Code Coverage Collector host (if not specified IDz will be used for reporting)')
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
+	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
+
 
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
@@ -318,14 +320,17 @@ def populateBuildProperties(String[] args) {
 	if (opts.pf) props.pf = opts.pf
 
 	// set debug flag
-	if(opts.d) props.debug = 'true'
+	if (opts.d) props.debug = 'true'
 
 	// set code coverage flag
-	if(opts.cc) {
+	if (opts.cc) {
 		props.codeZunitCoverage = 'true'
-		if ( opts.cch && opts.ccp ) {
-			props.codeCoverageHeadlessHost=opts.cch
-			props.codeCoverageHeadlessPort=opts.ccp
+		if (opts.cch && opts.ccp) {
+			props.codeCoverageHeadlessHost = opts.cch
+			props.codeCoverageHeadlessPort = opts.ccp
+		}
+		if (opts.cco) {
+			props.codeCoverageOptions = opts.cco
 		}
 	}
 
