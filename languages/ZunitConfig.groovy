@@ -75,14 +75,21 @@ buildUtils.createLanguageDatasets(langQualifier)
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-		jcl +=
-				"//CEEOPTS DD *                        \n"   +
-				( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-				"TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-				"TEST(,,,DBMDT:*)  \n" ) +
-				"ENVAR(                                \n" +
-				'"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
-				"/* \n"
+		jcl += "//CEEOPTS DD *                        \n"   +
+			( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
+			"TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
+			"TEST(,,,DBMDT:*)  \n" ) +
+			"ENVAR(\n"
+		if (props.codeCoverageOptions != null) {
+			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + props.codeCoverageOptions + '")');
+			optionsParms.each { optionParm ->
+				jcl += optionParm + "\n";
+			}
+		} else {
+			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
+		}
+  		jcl += "/* \n"
+		
 	}
 	jcl += """\
 //*
@@ -229,4 +236,15 @@ def printReport(File resultFile) {
 		print "! Reading zUnit result failed."
 	}
 
+}
+
+def splitCCParms(String parms) {
+	def outParms = []
+	for (int chunk = 0; chunk <= (parms.length().intdiv(72)); chunk++) {
+		maxLength = (parms.length() - (chunk * 72))
+		if (maxLength > 72)
+			maxLength = 72
+		outParms.add(parms.substring((chunk * 72), (chunk * 72) + maxLength));
+	}
+	return outParms
 }
