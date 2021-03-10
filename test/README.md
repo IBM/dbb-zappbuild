@@ -32,7 +32,7 @@ $DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b AutomationTest -a Mortgage
 
 Successful test run
 ```
-** Invoking test scripts according to test list order: initialization.groovy,fullBuild.groovy,impactBuild.groovy
+** Invoking test scripts according to test list order: fullBuild.groovy,impactBuild.groovy
 
 /////********EXECUTING INITIALIZATION SCRIPT USING THESE BUILD PROPERTIES
 zRepoPath: Optional path to ZAppBuild Repo
