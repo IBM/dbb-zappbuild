@@ -32,78 +32,66 @@ $DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageAppl
 
 Successful test run
 ```
+** Executing zAppBuild test framework test/test.groovy
+** Creating and checking out branch zAppBuildTesting
+Your branch is up-to-date with 'origin/TestAutomation'.
+On branch zAppBuildTesting
+nothing to commit, working tree clean
+
 ** Invoking test scripts according to test list order: fullBuild.groovy,impactBuild.groovy
 
-/////********EXECUTING INITIALIZATION SCRIPT USING THESE BUILD PROPERTIES
-zRepoPath: Optional path to ZAppBuild Repo
-branchName: Feature branch to create a test(automation) branch against
+** Executing test script fullBuild.groovy
+** Executing /u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar/bin/groovyz /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/build.groovy --workspace /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples --application MortgageApplication --outDir /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out --hlq IBMDBB.ZAPPB.BUILD --logEncoding UTF-8 --url https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ --id ADMIN --pw ADMIN --fullBuild
+** Validating full build results
+**
+** FULL BUILD TEST : PASSED **
+**
+Deleting full build PDSEs [BMS, COBOL, LINK]
 
-Exit code: 0
-Deleting test PDSEs . . .
-** deleting 'IBMDBB.ZAPPB.BUILD.BMS'
-** deleting 'IBMDBB.ZAPPB.BUILD.COBOL'
-** deleting 'IBMDBB.ZAPPB.BUILD.DBRM'
-** deleting 'IBMDBB.ZAPPB.BUILD.LINK'
-** deleting 'IBMDBB.ZAPPB.BUILD.LOAD'
-** deleting 'IBMDBB.ZAPPB.BUILD.OBJ'
+** Executing test script impactBuild.groovy
+** Processing changed files from impactBuild_changedFiles property : bms/epsmort.bms,cobol/epsmlist.cbl,copybook/epsmtout.cpy,link/epsmlist.lnk
 
-/////********EXECUTING FULL BUILD USING THESE BUILD PROPERTIES
-zRepoPath: Optional path to ZAppBuild Repo
-branchName: Feature branch to create a test(automation) branch against
-app: Application that is being tested (example: MortgageApplication)
-hlq: hlq to delete segments from (example: IBMDBB.ZAPP.BUILD)
-serverURL: Server URL example(https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/)
-userName: User for server
-password: Password for server
-fullFiles: Build files for verification
+** Running impact build test for changed file bms/epsmort.bms
+** Copying and committing /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/test/applications/MortgageApplication/bms/epsmort.bms to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples/MortgageApplication/bms/epsmort.bms
+** Executing /u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar/bin/groovyz /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/build.groovy --workspace /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples --application MortgageApplication --outDir /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out --hlq IBMDBB.ZAPPB.BUILD --logEncoding UTF-8 --url https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ --id ADMIN --pw ADMIN --impactBuild
+** Validating impact build results
+**
+** IMPACT BUILD TEST : PASSED **
+**
 
-***This is dbb home****/u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar
-Already on 'AutomationTest'
-Switched to a new branch 'automation'
+** Running impact build test for changed file cobol/epsmlist.cbl
+** Copying and committing /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/test/applications/MortgageApplication/cobol/epsmlist.cbl to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples/MortgageApplication/cobol/epsmlist.cbl
+** Executing /u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar/bin/groovyz /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/build.groovy --workspace /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples --application MortgageApplication --outDir /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out --hlq IBMDBB.ZAPPB.BUILD --logEncoding UTF-8 --url https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ --id ADMIN --pw ADMIN --impactBuild
+** Validating impact build results
+**
+** IMPACT BUILD TEST : PASSED **
+**
 
-/////********EXECUTING IMPACT BUILD USING THESE BUILD PROPERTIES
-serverURL: Server URL example(https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/)
-zRepoPath: Optional path to ZAppBuild Repo
-programFile: Path to the program folder for the file to be edited
-app: Application that is being tested (example: MortgageApplication)
-hlq: hlq to delete segments from (example: IBMDBB.ZAPP.BUILD)
-userName: User for server
-password: Password for server
-impactFiles: Impact build files for verification
+** Running impact build test for changed file copybook/epsmtout.cpy
+** Copying and committing /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/test/applications/MortgageApplication/copybook/epsmtout.cpy to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtout.cpy
+** Executing /u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar/bin/groovyz /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/build.groovy --workspace /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples --application MortgageApplication --outDir /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out --hlq IBMDBB.ZAPPB.BUILD --logEncoding UTF-8 --url https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ --id ADMIN --pw ADMIN --impactBuild
+** Validating impact build results
+**
+** IMPACT BUILD TEST : PASSED **
+**
 
-** Build finished
-```
-Test run with errors
-```
-Caught: java.lang.AssertionError: ///***EITHER THE FULLBUILD FAILED OR TOTAL FILES PROCESSED ARE NOT EQUAL TO 9.
- HERE IS THE OUTPUT FROM FULLBUILD 
-Your branch is up-to-date with 'origin/AutomationTest'.
+** Running impact build test for changed file link/epsmlist.lnk
+** Copying and committing /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/test/applications/MortgageApplication/link/epsmlist.lnk to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples/MortgageApplication/link/epsmlist.lnk
+** Executing /u/dbbAutomation/workspace/Automation_Jobs/DBB_All_BuildS/DBBZtoolkitTar/bin/groovyz /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/build.groovy --workspace /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/samples --application MortgageApplication --outDir /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out --hlq IBMDBB.ZAPPB.BUILD --logEncoding UTF-8 --url https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ --id ADMIN --pw ADMIN --impactBuild
+** Validating impact build results
+**
+** IMPACT BUILD TEST : PASSED **
+**
+Deleting impact build PDSEs [BMS, COBOL, LINK, COPY, BMS.COPY, DBRM, LOAD, MFS, OBJ, TFORMAT]
 
-** Build start at 20210303.101913.019
-** Repository client created for https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/
-** Build output located at /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out/build.20210303.101913.019
-** Build result created for BuildGroup:MortgageApplication-automation BuildLabel:build.20210303.101913.019 at https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/rest/buildResult/452
-** --fullBuild option selected. Building all programs for application MortgageApplication
-** Writing build list file to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out/build.20210303.101913.019/buildList.txt
-** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
-** Building files mapped to BMS.groovy script
-*** Building file MortgageApplication/bms/epsmort.bms
-*** Building file MortgageApplication/bms/epsmlis.bms
-** Building files mapped to Cobol.groovy script
-*** Building file MortgageApplication/cobol/epsnbrvl.cbl
-*** Building file MortgageApplication/cobol/epscsmrt.cbl
-*** Building file MortgageApplication/cobol/epsmlist.cbl
-*** Building file MortgageApplication/cobol/epsmpmt.cbl
-*** Building file MortgageApplication/cobol/epscmort.cbl
-*** Building file MortgageApplication/cobol/epscsmrd.cbl
-** Building files mapped to LinkEdit.groovy script
-*** Building file MortgageApplication/link/epsmlist.lnk
-** Writing build report data to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out/build.20210303.101913.019/BuildReport.json
-** Writing build report to /u/dbbAutomation/workspace/Automation_Jobs/ZAppBuildTest/ZAppBuild/dbb-zappbuild/out/build.20210303.101913.019/BuildReport.html
-** Build ended at Wed Mar 03 10:19:36 EST 2021
-** Build State : CLEAN
-** Total files processed : 8
-** Total build time  : 23.164 seconds
+** Deleting test branch zAppBuildTesting
+HEAD is now at 10aa9d5 edited program file
+Your branch is up-to-date with 'origin/TestAutomation'.
+Deleted branch zAppBuildTesting (was 10aa9d5).
+On branch TestAutomation
+Your branch is up-to-date with 'origin/TestAutomation'.
+
+nothing to commit, working tree clean
 
 ** Build finished
 ```
