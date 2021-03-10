@@ -77,19 +77,15 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
 	
-	def assertionList = []
-	
 	// Validate clean build
-	assert outputStream.contains("Build State : CLEAN") : assertionList.add("*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n")
+	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
 	// Validate expected number of files built
 	def numImpactFiles = expectedFilesBuiltList.size()
-	assert outputStream.contains("Total files processed : ${numImpactFiles}") : assertionList.add("*! IMPACT BUILD FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n")
+	assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
 
 	// Validate expected built files in output stream
-	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : assertionList.add("*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n")
-	
-	assert assertionList.isEmpty() : assertionList.toString()
+	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 	
 	println "**"
 	println "** IMPACT BUILD TEST : PASSED **"
