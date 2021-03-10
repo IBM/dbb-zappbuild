@@ -6,7 +6,7 @@ This contains the modified program files to execute an impact build of the Mortg
 - [Full-Impact/README.md](/test/testScripts/README.md) 
 
 # test.properties
-This properties file is invoked by test.groovy and it contains the properties below
+This properties file is invoked by [test.groovy](/test/test.groovy) and it contains the properties below
 
 Property | Description
 --- | ---
