@@ -8,7 +8,7 @@ samples/MortgageApplication | This folder contains modified language scripts use
 test.groovy  | This is the main build script that is called to start the test process | [test.groovy](/test/README.md#testing-applications-with-zappbuild)
 
 # Testing Applications with zAppBuild
-The main script for testing applications against zAppBuild is `test.groovy`. It takes most of its input from the command line to run full and impact builds. `test.groovy` once executed from the command line calls `fullBuild.groovy` and `impactBuild.groovy` scripts to perform an end to end test on the given feature branch with the program specified for impact build. 
+The main script for testing applications against zAppBuild is `test.groovy`. It takes most of its input from the command line to run full and impact builds. `test.groovy` once executed from the command line calls `fullBuild.groovy` [fullBuild.groovy](/test/testScripts/fullBuild.groovy) and `impactBuild.groovy` [impactBuild.groovy](/test/testScripts/impactBuild.groovy) scripts to perform an end to end test on the given feature branch with the program specified for impact build. 
 
 test.groovy script has five required arguments that must be present during each invocation:
 * --branch <arg> - zAppBuild branch to test
@@ -25,7 +25,7 @@ test.groovy script has three optional argument that can be present during each i
 # Examples of running an end to end test:
 
 ```
-$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b AutomationTest -a MortgageApplication -q IBMDBB.ZAPPB.BUILD -u https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ -i ADMIN -p ADMIN
+$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q IBMDBB.ZAPPB.BUILD -u https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ -i ADMIN -p ADMIN
 ``` 
 
 # Examples of outputs to be expected:
