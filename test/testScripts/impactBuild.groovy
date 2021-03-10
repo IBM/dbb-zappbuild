@@ -11,7 +11,7 @@ println "\n** Executing test script impactBuild.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// create impact build command
+// Create impact build command
 def impactBuildCommand = []
 impactBuildCommand << "${dbbHome}/bin/groovyz"
 impactBuildCommand << "${props.zAppBuildDir}/build.groovy"
@@ -26,7 +26,7 @@ impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}
 // impactBuildCommand << (props.verbose ? "--verbose" : "")
 impactBuildCommand << "--impactBuild"
 
-// iterate through change files to test impact build
+// Iterate through change files to test impact build
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expectedFilesBuilt')
 def changedFiles = props.impactBuild_changedFiles.split(',')
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
