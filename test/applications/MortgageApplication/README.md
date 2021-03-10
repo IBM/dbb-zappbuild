@@ -15,4 +15,4 @@ fullBuild_expectedFilesBuilt | List of programs should be built for a full build
 fullBuild_datasetsToCleanUp | List of source datasets (LLQ) that should be deleted during fullBuild.groovy cleanUp
 impactBuild_changedFiles | List of changed source files to test impact builds
 impactBuild_datasetsToCleanUp | List of source datasets (LLQ) that should be deleted during impactBuild.groovy cleanUp
-impactBuild_expectedFilesBuilt | Use file properties to associate expected files built to changed files
+impactBuild_expectedFilesBuilt | Uses file properties to associate expected files built to changed files
