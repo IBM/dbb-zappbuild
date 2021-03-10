@@ -11,7 +11,7 @@ println "\n** Executing test script fullBuild.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// create full build command
+// Create full build command
 def fullBuildCommand = [] 
 fullBuildCommand << "${dbbHome}/bin/groovyz"
 fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
@@ -26,13 +26,13 @@ fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 // fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << "--fullBuild"
 
-// run full build 
+// Run full build 
 println "** Executing ${fullBuildCommand.join(" ")}"
 def process = ['bash', '-c', fullBuildCommand.join(" ")].execute()
 def outputStream = new StringBuffer();
 process.waitForProcessOutput(outputStream, System.err)
 
-//validate build results
+//Validate build results
 println "** Validating full build results"
 def expectedFilesBuiltList = props.fullBuild_expectedFilesBuilt.split(',')
 
