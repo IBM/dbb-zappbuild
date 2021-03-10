@@ -25,7 +25,7 @@ test.groovy script has three optional argument that can be present during each i
 # Examples of running an end to end test:
 
 ```
-$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q IBMDBB.ZAPPB.BUILD -u https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ -i ADMIN -p ADMIN
+$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u https://dbbdev.rtp.raleigh.ibm.com:19443/dbb/ -i ADMIN -p ADMIN
 ``` 
 
 # Examples of outputs to be expected:
