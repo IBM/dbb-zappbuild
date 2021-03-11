@@ -52,9 +52,11 @@ try {
 finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
-	println "**"
+        println "***"
+	println "**Start failed impact build results**"
 	println "**Failed impact build tests**\n" + assertionList
-	println "**"
+	println "**End failed impact build results**"
+	println "***"
   }
 }
 // script end  
