@@ -52,10 +52,10 @@ try {
 finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
-        println "***"
+        println "\n***"
 	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
 	println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
-	println "/n**END OF FAILED IMPACT BUILD TEST RESULTS**"
+	println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
 	println "***"
   }
 }
