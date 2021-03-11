@@ -28,6 +28,7 @@ impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
+@Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expectedFilesBuilt')
 def changedFiles = props.impactBuild_changedFiles.split(',')
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
@@ -46,15 +47,13 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
+                println "Not from the method" + assertionList
 	}
 }
 finally {
 	cleanUpDatasets()
 }
-
-
 // script end  
-
 
 //*************************************************************
 // Method Definitions
@@ -78,6 +77,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
 	
+    try{
 	// Validate clean build
 	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
@@ -91,8 +91,14 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	println "**"
 	println "** IMPACT BUILD TEST : PASSED **"
 	println "**"
+    }
+    catch(AssertionError e) {
+    def result = e.getMessage()
+    assertionList << result;
+    println "From the method" + assertionList
+    println "From the method" + assertionList.size()
+ }
 }
-
 def cleanUpDatasets() {
 	def segments = props.impactBuild_datasetsToCleanUp.split(',')
 	
