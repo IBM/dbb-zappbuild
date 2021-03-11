@@ -40,6 +40,10 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanAll
 ```
+**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties**
+```
+$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --cc --cch localhost --ccp 8009 --cco "e=CCPDF"
+```
 
 ## Command Line Options Summary
 ```
@@ -82,6 +86,7 @@ build options:
  -cc,--ccczUnit           Flag to indicate to collect code coverage reports during zUnit step
  -cch,--cccHost           Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
  -ccp,--cccPort           Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ -cco,--cccOptions        Headless Code Coverage Collector Options
  
 
 web application credentials
