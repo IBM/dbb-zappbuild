@@ -46,6 +46,8 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
+		 println assertionList.size()
+                 println assertionList
 	}
 }
 finally {
@@ -97,6 +99,8 @@ try{
 catch(AssertionError e) {
     def result = e.getMessage()
     assertionList << result;
+    println "from method" + assertionList.size()
+    println "from method" + assertionList
  }
 }
 
