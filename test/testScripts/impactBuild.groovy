@@ -1,3 +1,4 @@
+
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import groovy.transform.*
 import com.ibm.dbb.*
@@ -11,7 +12,7 @@ println "\n** Executing test script impactBuild.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// Create impact build command
+// create impact build command
 def impactBuildCommand = []
 impactBuildCommand << "${dbbHome}/bin/groovyz"
 impactBuildCommand << "${props.zAppBuildDir}/build.groovy"
@@ -26,8 +27,7 @@ impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}
 // impactBuildCommand << (props.verbose ? "--verbose" : "")
 impactBuildCommand << "--impactBuild"
 
-// Iterate through change files to test impact build
-def assertionList = []
+// iterate through change files to test impact build
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expectedFilesBuilt')
 def changedFiles = props.impactBuild_changedFiles.split(',')
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
@@ -46,11 +46,9 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
-		println "From not method" + validateImpactBuild.badRecords
 	}
 }
 finally {
-	assert assertionList.isEmpty() : assertionList.toString()
 	cleanUpDatasets()
 }
 
@@ -79,11 +77,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
-
-	Record[] record = // the records from the file
-    List badRecords = new LinkedList();
-    for( int i=0; i < record.length; i++ ) {
-try {
+	
 	// Validate clean build
 	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
@@ -93,21 +87,12 @@ try {
 
 	// Validate expected built files in output stream
 	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
-
+	
 	println "**"
 	println "** IMPACT BUILD TEST : PASSED **"
 	println "**"
 }
-    }
-catch( Exception e ) {
-    badRecords.add( record[i] );
 
-  }
-finally
-{
-    println "From method" + badRecords
-}
-}
 def cleanUpDatasets() {
 	def segments = props.impactBuild_datasetsToCleanUp.split(',')
 	
