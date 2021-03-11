@@ -51,9 +51,11 @@ try {
 }
 finally {
 	cleanUpDatasets()
+	if (assertionList.size()>0) {
 	println "**"
 	println "**Failed impact build tests**\n" + assertionList
 	println "**"
+  }
 }
 // script end  
 
