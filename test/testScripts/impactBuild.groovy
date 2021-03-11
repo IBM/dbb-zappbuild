@@ -53,9 +53,9 @@ finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
         println "***"
-	println "**Start failed impact build results**"
-	println "**Failed impact build tests**\n" + assertionList
-	println "**End failed impact build results**"
+	println "**START OF FAILED IMPACT BUILD TEST RESULTS**"
+	println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
+	println "**END OF FAILED IMPACT BUILD TEST RESULTS**"
 	println "***"
   }
 }
@@ -95,7 +95,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 	
 	println "**"
-	println "** IMPACT BUILD TEST : PASSED FOR $changedFile**"
+	println "** IMPACT BUILD TEST : PASSED FOR ($changedFile.toUpperCase())**"
 	println "**"
     }
     catch(AssertionError e) {
