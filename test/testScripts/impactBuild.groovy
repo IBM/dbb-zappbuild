@@ -46,8 +46,7 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
-		 println assertionList.size()
-                 println assertionList
+		println "From not method" + validateImpactBuild.badRecords
 	}
 }
 finally {
@@ -76,12 +75,15 @@ def copyAndCommit(String changedFile) {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream, String[] assertionList) {
+def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
-	
-try{
+
+	Record[] record = // the records from the file
+    List badRecords = new LinkedList();
+    for( int i=0; i < record.length; i++ ) {
+try {
 	// Validate clean build
 	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
@@ -91,19 +93,21 @@ try{
 
 	// Validate expected built files in output stream
 	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
-    
-        println "**"
+
+	println "**"
 	println "** IMPACT BUILD TEST : PASSED **"
 	println "**"
 }
-catch(AssertionError e) {
-    def result = e.getMessage()
-    assertionList << result;
-    println "from method" + assertionList.size()
-    println "from method" + assertionList
- }
-}
+    }
+catch( Exception e ) {
+    badRecords.add( record[i] );
 
+  }
+finally
+{
+    println "From method" + badRecords
+}
+}
 def cleanUpDatasets() {
 	def segments = props.impactBuild_datasetsToCleanUp.split(',')
 	
