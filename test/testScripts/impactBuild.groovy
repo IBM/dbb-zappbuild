@@ -95,8 +95,8 @@ try{
 	println "**"
 }
 catch(AssertionError e) {
-    result = e.getMessage()
-    assertionList << result
+    def result = e.getMessage()
+    assertionList.add(result);
  }
 }
 
