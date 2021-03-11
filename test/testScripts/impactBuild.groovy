@@ -95,7 +95,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 	
 	println "**"
-	println "** IMPACT BUILD TEST : PASSED FOR ($changedFile.toUpperCase())**"
+	println "** IMPACT BUILD TEST : PASSED FOR $changedFile **"
 	println "**"
     }
     catch(AssertionError e) {
