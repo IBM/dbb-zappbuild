@@ -51,7 +51,9 @@ try {
 }
 finally {
 	cleanUpDatasets()
-	println "Not from the method" + assertionList
+	println "**"
+	println "Failed asserts" + assertionList
+	println "**"
 }
 // script end  
 
