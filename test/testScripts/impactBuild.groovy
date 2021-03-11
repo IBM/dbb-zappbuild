@@ -74,7 +74,7 @@ def copyAndCommit(String changedFile) {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream, def assertionList = []) {
+def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream, assertionList[]) {
 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
@@ -96,7 +96,7 @@ try{
 }
 catch(AssertionError e) {
     def result = e.getMessage()
-    assertionList.add(result);
+    assertionList << result;
  }
 }
 
