@@ -47,11 +47,11 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
-                println "Not from the method" + assertionList
 	}
 }
 finally {
 	cleanUpDatasets()
+	println "Not from the method" + assertionList
 }
 // script end  
 
@@ -95,8 +95,6 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
     catch(AssertionError e) {
     def result = e.getMessage()
     assertionList << result;
-    println "From the method" + assertionList
-    println "From the method" + assertionList.size()
  }
 }
 def cleanUpDatasets() {
