@@ -75,21 +75,32 @@ buildUtils.createLanguageDatasets(langQualifier)
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-		jcl += "//CEEOPTS DD *                        \n"   +
-			( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-			"TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-			"TEST(,,,DBMDT:*)  \n" ) +
-			"ENVAR(\n"
-		if (props.codeCoverageOptions != null) {
-			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + props.codeCoverageOptions + '")');
+		if (props.codeCoverageHeadlessHost != null)
+			codeCoverageHost = props.codeCoverageHeadlessHost
+		if (props.getFileProperty('zunit_CodeCoverageHost', buildFile) != null)
+			codeCoverageHost = props.getFileProperty('zunit_CodeCoverageHost', buildFile)
+		if (props.codeCoverageHeadlessPort != null)
+			codeCoveragePort = props.codeCoverageHeadlessPort
+		if (props.getFileProperty('zunit_CodeCoveragePort', buildFile) != null)
+			codeCoveragePort = props.getFileProperty('zunit_CodeCoveragePort', buildFile)
+		if (props.codeCoverageOptions != null)
+			codeCoverageOptions = props.codeCoverageOptions
+		if (props.getFileProperty('zunit_CodeCoverageOptions', buildFile) != null)
+			codeCoverageOptions = props.getFileProperty('zunit_CodeCoverageOptions', buildFile)
+	
+		jcl +=
+		"//CEEOPTS DD *                        \n"   +
+		( ( codeCoverageHost != null && codeCoveragePort != null ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
+		"ENVAR(\n"
+		if (codeCoverageOptions != null) {
+			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
 			optionsParms.each { optionParm ->
 				jcl += optionParm + "\n";
 			}
 		} else {
 			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
 		}
-  		jcl += "/* \n"
-		
+   		jcl += "/* \n"
 	}
 	jcl += """\
 //*
