@@ -40,7 +40,7 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanAll
 ```
-**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties**
+**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --cc --cch localhost --ccp 8009 --cco "e=CCPDF"
 ```
