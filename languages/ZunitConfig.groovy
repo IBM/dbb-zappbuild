@@ -76,17 +76,20 @@ buildUtils.createLanguageDatasets(langQualifier)
 """
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
 	        // codeCoverageHost
-		codeCoverageHost = props.getFileProperty('zunit_CodeCoverageHost', buildFile)
 		if (props.codeCoverageHeadlessHost != null)
 			codeCoverageHost = props.codeCoverageHeadlessHost
+               else
+			codeCoverageHost = props.getFileProperty('zunit_CodeCoverageHost', buildFile)
 	        // codeCoveragePort
-		codeCoveragePort = props.getFileProperty('zunit_CodeCoveragePort', buildFile)
 		if (props.codeCoverageHeadlessPort != null)
 			codeCoveragePort = props.codeCoverageHeadlessPort
+               else
+			codeCoveragePort = props.getFileProperty('zunit_CodeCoveragePort', buildFile)
 		// codeCoverageOptions
-		codeCoverageOptions = props.getFileProperty('zunit_CodeCoverageOptions', buildFile)
 		if (props.codeCoverageOptions != null)
 			codeCoverageOptions = props.codeCoverageOptions
+               else
+			codeCoverageOptions = props.getFileProperty('zunit_CodeCoverageOptions', buildFile)
 	
 		jcl +=
 		"//CEEOPTS DD *                        \n"   +
