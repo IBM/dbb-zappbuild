@@ -54,7 +54,7 @@ sortedList.each { buildFile ->
 
 	// SQL preprocessor
 	if (buildUtils.isSQL(logicalFile)){
-		 assembler_SQLTranslator.execute()
+		rc = assembler_SQLTranslator.execute()
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -65,7 +65,7 @@ sortedList.each { buildFile ->
 
 	// CICS preprocessor
 	if (buildUtils.isSQL(logicalFile)){
-		int rc = assembler_CICSTranslator.execute()
+		rc = assembler_CICSTranslator.execute()
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
