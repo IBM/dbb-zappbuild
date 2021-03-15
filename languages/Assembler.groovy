@@ -48,13 +48,13 @@ sortedList.each { buildFile ->
 	MVSJob job = new MVSJob()
 	job.start()
 
-	// SQL translate
-
+	// initialize return codes
+	int rc = 0
 	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 	// SQL preprocessor
 	if (buildUtils.isSQL(logicalFile)){
-		int rc = assembler_SQLTranslator.execute()
+		 assembler_SQLTranslator.execute()
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
