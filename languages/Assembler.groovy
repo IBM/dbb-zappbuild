@@ -75,7 +75,7 @@ sortedList.each { buildFile ->
 	}
 
 	// Assembler
-	if (rc > maxRC) {
+	if (rc <= maxRC) {
 		rc = assembler.execute()
 		maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
