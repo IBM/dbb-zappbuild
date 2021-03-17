@@ -4,8 +4,9 @@ Test folder is designed to help test samples like the Mortgage Application again
 ## Repository Legend
 Folder/File | Description | Documentation Link
 --- | --- | ---
-samples/MortgageApplication | This folder contains modified language scripts used to execute impact build by replacing these modified files with the original language files | [MortgageApplication/README.md](applications/MortgageApplication/README.md)
+applications/MortgageApplication | This folder contains modified language scripts used to execute impact build by replacing these modified files with the original language files | [MortgageApplication/README.md](applications/MortgageApplication/README.md)
 test.groovy  | This is the main build script that is called to start the test process | [test.groovy](/test/README.md#testing-applications-with-zappbuild)
+testScripts  | This folder contains test scripts to execute full and impact builds | [testScripts](/test/testScripts/README.md)
 
 # Testing Applications with zAppBuild
 The main script for testing applications against zAppBuild is `test.groovy`. It takes most of its input from the command line to run full and impact builds. `test.groovy` once executed from the command line calls [fullBuild.groovy](/test/testScripts/fullBuild.groovy) and [impactBuild.groovy](/test/testScripts/impactBuild.groovy) scripts to perform an end to end test on the given feature branch with the program specified for impact build. 
