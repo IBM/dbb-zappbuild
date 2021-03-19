@@ -208,7 +208,6 @@ def createDependencyResolver(String buildFile, String rules) {
 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
 			.sourceDir(props.workspace)
 			.scanner(scanner)
-	                .disableCache(true)
 	// add resolution rules
 	if (rules)
 		resolver.setResolutionRules(parseResolutionRules(rules))
