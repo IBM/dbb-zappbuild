@@ -62,11 +62,12 @@ def loadBuildProperties(String [] args) {
 	   p(longOpt: 'pw', 'DBB Web Application user password', args: 1)
 	   P(longOpt: 'pwFile', 'DBB Web Application user password file', args: 1)
 	   v(longOpt: 'verbose', 'Flag indicating to print trace statements')
+	   f(longOpt: 'propFiles', 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace', args:1)
 	}
 	
 	def options = cli.parse(args)
 	
-	// Show usage text when -h or --help option is used.
+	// show usage text when -h or --help option is used.
 	if (options.h) {
 		cli.usage()
 		System.exit(0)
@@ -84,13 +85,27 @@ def loadBuildProperties(String [] args) {
 	if (options.p) props.pw = options.p
 	if (options.P) props.pwFile = options.P
 	if (options.v) props.verbose = 'true'
+	if (options.f) props.propFiles = options.f
 	
-	// Load application test.properties file
+	// load application test.properties file
 	props.load(new File("${getScriptDir()}/applications/${props.app}/test.properties"))
 	
 	// add some additional properties
 	props.testBranch = 'zAppBuildTesting'
 	props.zAppBuildDir = new File(getScriptDir()).getParent()
+	
+	// load property files from argument list
+	if (options.f) props.propFiles = options.f
+	if (props.propFiles) {
+		String[] propFiles = props.propFiles.split(',')
+		propFiles.each { propFile ->
+			if (!propFile.startsWith('/'))
+				propFile = "${props.workspace}/${propFile}"
+
+			if (opts.v) println "** Loading property file ${propFile}"
+			props.load(new File(propFile))
+		}
+	}
 	
 	// zAppBuild repo locations
 	props.appLocation = "${props.zAppBuildDir}/samples/${props.app}" as String
