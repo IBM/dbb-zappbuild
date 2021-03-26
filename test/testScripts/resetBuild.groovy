@@ -24,6 +24,7 @@ resetBuildCommand << "--url ${props.url}"
 resetBuildCommand << "--id ${props.id}"
 resetBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 resetBuildCommand << (props.verbose ? "--verbose" : "")
+resetBuildCommand << (props.propFile ? "--f ${props.f}" : "--propFile ${props.propFile}")
 resetBuildCommand << "--reset"
 
 // Run reset build 
