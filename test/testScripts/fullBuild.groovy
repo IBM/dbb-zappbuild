@@ -18,6 +18,7 @@ fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
 fullBuildCommand << "--workspace ${props.workspace}"
 fullBuildCommand << "--application ${props.app}"
 fullBuildCommand << "--outDir ${props.zAppBuildDir}/out"
+fullBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
 fullBuildCommand << "--url ${props.url}"
