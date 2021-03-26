@@ -5,7 +5,7 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script fullBuild.groovy"
+println "\n** Executing test script resetBuild.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
