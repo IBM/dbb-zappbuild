@@ -19,6 +19,7 @@ impactBuildCommand << "${props.zAppBuildDir}/build.groovy"
 impactBuildCommand << "--workspace ${props.workspace}"
 impactBuildCommand << "--application ${props.app}"
 impactBuildCommand << "--outDir ${props.zAppBuildDir}/out"
+impactBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
 impactBuildCommand << "--url ${props.url}"
