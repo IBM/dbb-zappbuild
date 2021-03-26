@@ -53,7 +53,6 @@ def loadBuildProperties(String [] args) {
 	   
 	   // test framework options
 	   b(longOpt: 'branch', 'zAppBuild branch to test', args: 1, required: true)
-	   l(longOpt: 'appRepo', '[Optional] location of external app repo to use in test. Defaults to zAppBuild', args: 1)
 
 	   // zAppBuild options
 	   a(longOpt: 'app', 'Application that is being tested (example: MortgageApplication)', args: 1, required: true)
@@ -78,7 +77,6 @@ def loadBuildProperties(String [] args) {
 	
 	// store the command line arguments in the Build Properties for all scripts to access
 	if (options.b) props.branch = options.b
-	if (options.r) props.appRepo = options.r
 	if (options.a) props.app = options.a
 	if (options.q) props.hlq = options.q
 	if (options.u) props.url = options.u
@@ -94,15 +92,10 @@ def loadBuildProperties(String [] args) {
 	props.testBranch = 'zAppBuildTesting'
 	props.zAppBuildDir = new File(getScriptDir()).getParent()
 	
-	if (props.appRepo) {
-		props.appLocation = props.appRepo
-		props.workspace = new File(props.appLocation).getParent()
-	}
-	else { // default to zAppBuild repo locations
-		props.appLocation = "${props.zAppBuildDir}/samples/${props.app}" as String
-		props.workspace = "${props.zAppBuildDir}/samples" as String
-	}
-	
+	// zAppBuild repo locations
+	props.appLocation = "${props.zAppBuildDir}/samples/${props.app}" as String
+	props.workspace = "${props.zAppBuildDir}/samples" as String
+
 	// print properties
 	if (props.verbose) {
 		println "** Properties args and applications/${props.app}/test.properties"
