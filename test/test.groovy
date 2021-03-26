@@ -63,7 +63,7 @@ def loadBuildProperties(String [] args) {
 	   P(longOpt: 'pwFile', 'DBB Web Application user password file', args: 1)
 	   v(longOpt: 'verbose', 'Flag indicating to print trace statements')
 	   f(longOpt: 'propFile', 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace', args:1)
-           o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
+           o(longOpt: 'outDirs', 'Absolute path to the build output root directory', args:1)
 	}
 	
 	def options = cli.parse(args)
@@ -87,7 +87,7 @@ def loadBuildProperties(String [] args) {
 	if (options.P) props.pwFile = options.P
 	if (options.v) props.verbose = 'true'
 	if (options.f) props.propFile = options.f
-	if (options.o) props.outDir = options.o
+	if (options.o) props.outDirs = options.o
 	
 	// load application test.properties file
 	props.load(new File("${getScriptDir()}/applications/${props.app}/test.properties"))
