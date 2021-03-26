@@ -18,6 +18,7 @@ resetBuildCommand << "${props.zAppBuildDir}/build.groovy"
 resetBuildCommand << "--workspace ${props.workspace}"
 resetBuildCommand << "--application ${props.app}"
 resetBuildCommand << "--outDir ${props.zAppBuildDir}/out"
+resetBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
 resetBuildCommand << "--hlq ${props.hlq}"
 resetBuildCommand << "--logEncoding UTF-8"
 resetBuildCommand << "--url ${props.url}"
