@@ -24,7 +24,7 @@ impactBuildCommand << "--logEncoding UTF-8"
 impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-// impactBuildCommand << (props.verbose ? "--verbose" : "")
+impactBuildCommand << (props.verbose ? "--verbose" : "")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
