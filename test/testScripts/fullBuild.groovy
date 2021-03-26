@@ -23,7 +23,7 @@ fullBuildCommand << "--logEncoding UTF-8"
 fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-// fullBuildCommand << (props.verbose ? "--verbose" : "")
+fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << "--fullBuild"
 
 // Run full build 
