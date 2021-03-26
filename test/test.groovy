@@ -98,9 +98,9 @@ def loadBuildProperties(String [] args) {
 	
 	// load property files from argument list
 	if (options.f) props.propFiles = options.f
-	if (props.propFiles) {
-		String[] propFiles = props.propFiles.split(',')
-		propFiles.each { propFile ->
+	if (props.propFile) {
+		String[] propFile = props.propFile.split(',')
+		propFile.each { propFile ->
 			if (!propFile.startsWith('/'))
 				propFile = "${props.workspace}/${propFile}"
 
