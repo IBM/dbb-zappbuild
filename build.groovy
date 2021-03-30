@@ -17,6 +17,7 @@ import groovy.xml.*
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
+@Field String giturlPrefix = ':giturl:'
 @Field RepositoryClient repositoryClient
 
 // start time message
@@ -471,9 +472,7 @@ def createBuildList() {
 
 def finalizeBuildProcess(Map args) {
 
-	// create build report data file
-	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
-	def buildReportEncoding = "UTF-8"
+
 	def buildReport = BuildReportFactory.getBuildReport()
 	def buildResult = null
 
@@ -492,10 +491,16 @@ def finalizeBuildProcess(Map args) {
 			dir = buildUtils.getAbsolutePath(dir)
 			if (props.verbose) println "*** Obtaining hash for directory $dir"
 			if (gitUtils.isGitDir(dir)) {
+				// store current hash 
 				String hash = gitUtils.getCurrentGitHash(dir)
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
 				buildResult.setProperty(key, hash)
 				if (props.verbose) println "** Setting property $key : $hash"
+				// store gitUrl
+				String url = gitUtils.getCurrentGitUrl(dir)
+				String gitURLkey = "$giturlPrefix$url}"
+				buildResult.setProperty(gitURLkey, url)
+				if (props.verbose) println "** Setting property $gitURLkey : $url"
 			}
 			else {
 				if (props.verbose) println "**! Directory $dir is not a Git repository"
@@ -518,6 +523,14 @@ def finalizeBuildProcess(Map args) {
 		buildReport.addRecord(buildReportRecord)
 	}
 
+	// create build report data file
+	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
+	def buildReportEncoding = "UTF-8"
+	
+	// save json file
+	println "** Writing build report data to ${jsonOutputFile}"
+	buildReport.save(jsonOutputFile, buildReportEncoding)
+	
 	// create build report html file
 	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
 	println "** Writing build report to ${htmlOutputFile}"
@@ -527,9 +540,6 @@ def finalizeBuildProcess(Map args) {
 	def transformer = HtmlTransformer.getInstance()
 	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
 	
-	// save json file
-	println "** Writing build report data to ${jsonOutputFile}"
-	buildReport.save(jsonOutputFile, buildReportEncoding)
 
 	// attach build report & result
 	if (repositoryClient) {
