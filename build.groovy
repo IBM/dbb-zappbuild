@@ -478,8 +478,6 @@ def finalizeBuildProcess(Map args) {
 
 	// update repository artifacts
 	if (repositoryClient) {
-		if (props.verbose)
-			println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
 		buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 
 		// add git hashes for each build directory
@@ -546,6 +544,7 @@ def finalizeBuildProcess(Map args) {
 		buildReport.save(jsonOutputFile, buildReportEncoding)
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
 		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
+		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
 		buildResult.save()
 	}
 	
