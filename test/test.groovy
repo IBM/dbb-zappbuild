@@ -63,7 +63,7 @@ def loadBuildProperties(String [] args) {
 	   P(longOpt: 'pwFile', 'DBB Web Application user password file', args: 1)
 	   v(longOpt: 'verbose', 'Flag indicating to print trace statements')
 	   f(longOpt: 'propFiles', 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace', args:1)
-           o(longOpt: 'outDirs', 'Absolute path to the build output root directory', args:1)
+           o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
 	}
 	
 	def options = cli.parse(args)
