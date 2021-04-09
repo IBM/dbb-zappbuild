@@ -25,7 +25,7 @@ fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--f ${props.f}" ? : "--propFiles ${props.propFiles}")
+fullBuildCommand << (props.propFiles ? "--f ${props.f}" : "--propFiles ${props.propFiles}")
 fullBuildCommand << "--fullBuild"
 
 // Run full build 
