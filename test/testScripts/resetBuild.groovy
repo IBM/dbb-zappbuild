@@ -17,15 +17,14 @@ resetBuildCommand << "${dbbHome}/bin/groovyz"
 resetBuildCommand << "${props.zAppBuildDir}/build.groovy"
 resetBuildCommand << "--workspace ${props.workspace}"
 resetBuildCommand << "--application ${props.app}"
-resetBuildCommand << "--outDir ${props.zAppBuildDir}/out"
-resetBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
+resetBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 resetBuildCommand << "--hlq ${props.hlq}"
 resetBuildCommand << "--logEncoding UTF-8"
 resetBuildCommand << "--url ${props.url}"
 resetBuildCommand << "--id ${props.id}"
 resetBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 resetBuildCommand << (props.verbose ? "--verbose" : "")
-resetBuildCommand << (props.propFiles ? "--f ${props.f}" : "--propFiles ${props.propFiles}")
+resetBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 resetBuildCommand << "--reset"
 
 // Run reset build 
