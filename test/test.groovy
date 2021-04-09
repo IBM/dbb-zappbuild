@@ -97,7 +97,7 @@ def loadBuildProperties(String [] args) {
 	props.zAppBuildDir = new File(getScriptDir()).getParent()
 	
 	// load property files from argument list
-	if (options.p) props.propFiles = options.p
+	if (options.f) props.propFiles = options.f
 	if (props.propFiles) {
 		String[] propFiles = props.propFiles.split(',')
 		propFiles.each { propFile ->
