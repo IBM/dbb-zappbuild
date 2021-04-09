@@ -18,15 +18,14 @@ impactBuildCommand << "${dbbHome}/bin/groovyz"
 impactBuildCommand << "${props.zAppBuildDir}/build.groovy"
 impactBuildCommand << "--workspace ${props.workspace}"
 impactBuildCommand << "--application ${props.app}"
-impactBuildCommand << "--outDir ${props.zAppBuildDir}/out"
-impactBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
+impactBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
 impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 impactBuildCommand << (props.verbose ? "--verbose" : "")
-impactBuildCommand << (props.propFiles ? "--f ${props.f}" : "--propFiles ${props.propFiles}")
+impactBuildCommand << (props.propFiles ? "--f ${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
