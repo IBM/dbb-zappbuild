@@ -87,7 +87,7 @@ def loadBuildProperties(String [] args) {
 	if (options.P) props.pwFile = options.P
 	if (options.v) props.verbose = 'true'
 	if (options.f) props.propFiles = options.f
-	if (options.o) props.outDirs = options.o
+	if (options.o) props.outDir = options.o
 	
 	// load application test.properties file
 	props.load(new File("${getScriptDir()}/applications/${props.app}/test.properties"))
