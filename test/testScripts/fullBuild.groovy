@@ -17,15 +17,14 @@ fullBuildCommand << "${dbbHome}/bin/groovyz"
 fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
 fullBuildCommand << "--workspace ${props.workspace}"
 fullBuildCommand << "--application ${props.app}"
-fullBuildCommand << "--outDir ${props.zAppBuildDir}/out"
-fullBuildCommand << (props.outDirs ? "--o ${props.o}" : "--propFile ${props.outDirs}")
+fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
 fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--f ${props.propFiles}" : "--propFiles ${props.propFiles}")
+fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"
 
 // Run full build 
