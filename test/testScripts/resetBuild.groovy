@@ -37,7 +37,7 @@ process.waitForProcessOutput(outputStream, System.err)
 println "** Validating reset build"
 
 // Validate clean reset build
-assert outputStream.contains("Build State : CLEAN") : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
+assert outputStream.contains("Deleting collection") && ("Deleting build result group") && ("Build finished") : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
   
 println "**"
 println "** RESET OF THE BUILD : PASSED **"
