@@ -1,6 +1,6 @@
 
 # test.properties
-This is an application specify properties file to invoke by [test.groovy](/test/test.groovy) and it contains the properties below
+This is a sample application specify properties file invoked by [test.groovy](/test/test.groovy) and it contains the properties below
 
 Property | Description
 --- | ---
