@@ -104,7 +104,7 @@ def loadBuildProperties(String [] args) {
 			if (!propFile.startsWith('/'))
 				propFile = "${props.workspace}/${propFile}"
 
-			if (opts.v) println "** Loading property file ${propFile}"
+			if (options.v) println "** Loading property file ${propFile}"
 			props.load(new File(propFile))
 		}
 	}
