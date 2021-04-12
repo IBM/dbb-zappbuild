@@ -11,4 +11,4 @@ This script that is called by test.groovy to run an impact build against all the
 - Build files expected is the same as build files during the impact build in the console.
 
 ## resetBuild.groovy
-This is a maintenance script that runs at the end of this test pipeline to delete collections and build result groups
+This is a maintenance script that runs at the end of this test pipeline to delete collections and build result groups.
