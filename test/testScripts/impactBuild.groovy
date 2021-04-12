@@ -25,7 +25,7 @@ impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 impactBuildCommand << (props.verbose ? "--verbose" : "")
-impactBuildCommand << (props.propFiles ? "--f ${props.propFiles}" : "")
+impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
