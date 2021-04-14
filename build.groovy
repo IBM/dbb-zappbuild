@@ -4,11 +4,11 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.html.*
+import com.ibm.dbb.build.report.records.*
 import groovy.util.*
 import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
-import com.ibm.jzos.ZFile
 
 
 // define script properties
@@ -17,6 +17,7 @@ import com.ibm.jzos.ZFile
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
+@Field String giturlPrefix = ':giturl:'
 @Field RepositoryClient repositoryClient
 
 // start time message
@@ -476,31 +477,13 @@ def createBuildList() {
 
 def finalizeBuildProcess(Map args) {
 
-	// create build report data file
-	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
-	println "** Writing build report data to ${jsonOutputFile}"
-	def buildReportEncoding = "UTF-8"
-	def buildReport = BuildReportFactory.getBuildReport()
-	buildReport.save(jsonOutputFile, buildReportEncoding)
 
-	// create build report html file
-	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
-	println "** Writing build report to ${htmlOutputFile}"
-	def htmlTemplate = null  // Use default HTML template.
-	def css = null       // Use default theme.
-	def renderScript = null  // Use default rendering.
-	def transformer = HtmlTransformer.getInstance()
-	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
+	def buildReport = BuildReportFactory.getBuildReport()
+	def buildResult = null
 
 	// update repository artifacts
 	if (repositoryClient) {
-		if (props.verbose)
-			println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
-		def buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
-		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
-		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
-		buildResult.setState(buildResult.COMPLETE)
+		buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 
 		// add git hashes for each build directory
 		List<String> srcDirs = []
@@ -511,21 +494,65 @@ def finalizeBuildProcess(Map args) {
 			dir = buildUtils.getAbsolutePath(dir)
 			if (props.verbose) println "*** Obtaining hash for directory $dir"
 			if (gitUtils.isGitDir(dir)) {
+				// store current hash 
 				String hash = gitUtils.getCurrentGitHash(dir)
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
 				buildResult.setProperty(key, hash)
 				if (props.verbose) println "** Setting property $key : $hash"
+				// store gitUrl
+				String url = gitUtils.getCurrentGitUrl(dir)
+				String gitURLkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
+				buildResult.setProperty(gitURLkey, url)
+				if (props.verbose) println "** Setting property $gitURLkey : $url"
 			}
 			else {
 				if (props.verbose) println "**! Directory $dir is not a Git repository"
 			}
 		}
 
-		// save build result
+		// add files processed and set state
+		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
+		buildResult.setState(buildResult.COMPLETE)
+
+		// save updates
 		buildResult.save()
 
+		// store build result properties in BuildReport.json
+		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
+		def buildResultProps = buildResult.getPropertyNames()
+		buildResultProps.each { buildResultPropName ->
+			buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
+		}
+		buildReport.addRecord(buildReportRecord)
 	}
 
+	// create build report data file
+	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
+	def buildReportEncoding = "UTF-8"
+	
+	// save json file
+	println "** Writing build report data to ${jsonOutputFile}"
+	buildReport.save(jsonOutputFile, buildReportEncoding)
+	
+	// create build report html file
+	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
+	println "** Writing build report to ${htmlOutputFile}"
+	def htmlTemplate = null  // Use default HTML template.
+	def css = null       // Use default theme.
+	def renderScript = null  // Use default rendering.
+	def transformer = HtmlTransformer.getInstance()
+	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
+	
+
+	// attach build report & result
+	if (repositoryClient) {
+		buildReport.save(jsonOutputFile, buildReportEncoding)
+		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
+		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
+		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
+		buildResult.save()
+	}
+	
 	// print end build message
 	def endTime = new Date()
 	def duration = TimeCategory.minus(endTime, args.start)
