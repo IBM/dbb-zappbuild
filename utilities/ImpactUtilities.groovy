@@ -297,7 +297,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 				
-				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile)
+				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile.getFile())
 				println tempTest
 				
 				//DBEHM TEST add new dependency
