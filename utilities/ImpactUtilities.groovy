@@ -296,6 +296,14 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+				
+				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile)
+				println tempTest
+				
+				//DBEHM TEST add new dependency
+				logicalFile.addLogicalDependency(new LogicalDependency("ABC","PROPER","PROPERTY"))
+				
+				
 				logicalFiles.add(logicalFile)
 			} catch (Exception e) {
 
