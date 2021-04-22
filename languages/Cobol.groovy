@@ -341,7 +341,6 @@ def getRepositoryClient() {
 }
 
 boolean buildListContainsTests(List<String> buildList) {
-	boolean testFound = false
 	// iterate through build list
 	buildList.each { buildFile ->
 	
@@ -349,8 +348,8 @@ boolean buildListContainsTests(List<String> buildList) {
 		isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 		
 		if (isZUnitTestCase) {
-			testFound = true
+			return true
 		}
 	}
-	return testFound
+	return false
 }
