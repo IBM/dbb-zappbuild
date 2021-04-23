@@ -214,7 +214,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 
 				def scanner = buildUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
-				
+
 				String member = CopyToPDS.createMemberName(buildFile)
 				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
 
@@ -296,14 +296,33 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
-				
+
 				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile.getFile())
 				println tempTest
-				
+				if (logicalFile.language == COB){
+					//General
+					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
+					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
+
+
+					//CICS
+					if(logicalFile.isCICS()){
+						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
+					}
+
+					//DB2
+
+					if(logicalFile.isDb2()){
+						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
+					}
+				}
+
+
+
 				//DBEHM TEST add new dependency
-				logicalFile.addLogicalDependency(new LogicalDependency("ABC","PROPER","PROPERTY"))
-				
-				
+
+
+
 				logicalFiles.add(logicalFile)
 			} catch (Exception e) {
 
