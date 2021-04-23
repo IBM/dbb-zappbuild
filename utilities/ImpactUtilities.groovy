@@ -65,7 +65,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-			ImpactResolver impactResolver = createImpactResolver(changedFile, props.impactResolutionRules, repositoryClient)
+			
+			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
 
 			// get excludeListe
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
