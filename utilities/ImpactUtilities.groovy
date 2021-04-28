@@ -99,15 +99,17 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 		// perform impact analysis on changed file
 		if (props.verbose) println "** Performing impact analysis on property $changedProp"
-		ImpactResolver impactResolver = createImpactResolver(changedProp, props.impactResolutionRules, repositoryClient)
+		
+		LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
+		logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+		
 
 		// get excludeListe
 		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-		def impacts = impactResolver.resolve()
-		if (props.verbose) println "**$changedProp impacts $impacts"
-		impacts.each { impact ->
-			def impactFile = impact.getFile()
+		if (props.verbose) println "**$changedProp impacts $logicalFileList"
+		logicalFileList.each { logicalFile ->
+			def impactFile = logicalFile.getFile()
 			if (props.verbose) println "** Found impacted file $impactFile"
 			// only add impacted files that have a build script mapped to it
 			if (ScriptMappings.getScriptName(impactFile)) {
@@ -335,7 +337,6 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 					//General
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
-					logicalFile.addLogicalDependency(new LogicalDependency("COBOL_COMPILERVERSION","PROPER","PROPERTY"))
 					
 
 
