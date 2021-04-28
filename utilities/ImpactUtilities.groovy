@@ -316,7 +316,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 //						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
 //					}
 				}
-
+				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+				
 				logicalFiles.add(logicalFile)
 			} catch (Exception e) {
 
