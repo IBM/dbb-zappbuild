@@ -54,4 +54,4 @@ samples/application-conf | The `application-conf` folder contains application sp
 samples/MortgageApplication | This is an updated version of the original [MortgageApplication](https://github.com/IBM/dbb/tree/master/Build/MortgageApplication) sample designed to be built by zAppBuild. | [samples/MortgageApplication/README.md](samples/MortgageApplication/README.md)
 utilities | This folder contains utility scripts which provide common utility functions used by the various zAppBuild build scripts. | [utilities/README.md](utilities/README.md)
 build.groovy | This is the main build script that is called to start the build process. | [BUILD.md](BUILD.md)
-
+test | This folder contains testing framework for ZAppBuild which includes test scripts and related test content.| [test/README.md](/test/README.md)
