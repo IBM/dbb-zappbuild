@@ -94,7 +94,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
-	changedProperties = ["cobol_compilerVersion, COBOL_COMPILERVERSION"]
+	changedProperties = ["cobol_compilerVersion", "COBOL_COMPILERVERSION"]
 	changedProperties.each { changedProp ->
 
 		// perform impact analysis on changed file
