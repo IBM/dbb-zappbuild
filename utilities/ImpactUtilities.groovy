@@ -94,6 +94,38 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
+	changedProperties = ["cobol_compilerVersion"]
+	changedProperties.each { changedProp ->
+
+		// perform impact analysis on changed file
+		if (props.verbose) println "** Performing impact analysis on property $changedProp"
+		ImpactResolver impactResolver = createImpactResolver(changedProp, props.impactResolutionRules, repositoryClient)
+
+		// get excludeListe
+		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+
+		def impacts = impactResolver.resolve()
+		if (props.verbose) println "**$changedProp impacts $impacts"
+		impacts.each { impact ->
+			def impactFile = impact.getFile()
+			if (props.verbose) println "** Found impacted file $impactFile"
+			// only add impacted files that have a build script mapped to it
+			if (ScriptMappings.getScriptName(impactFile)) {
+				// only add impacted files, that are in scope of the build.
+				if (!matches(impactFile, excludeMatchers)){
+					buildSet.add(impactFile)
+					if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+				}
+				else {
+					// impactedFile found, but on Exclude List
+					//   Possible reasons: Exclude of file was defined after building the collection.
+					//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+					if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+				}
+			}
+		}
+	}
+
 	return [buildSet, deletedFiles]
 }
 
@@ -297,27 +329,27 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
-//				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile.getFile())
-//				println tempTest
+				//				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile.getFile())
+				//				println tempTest
 				if (logicalFile.language == "COB"){
 					//General
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
 
 
-//					//CICS
-//					if(logicalFile.isCICS()){
-//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
-//					}
-//
-//					//DB2
-//
-//					if(logicalFile.isDb2()){
-//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
-//					}
+					//					//CICS
+					//					if(logicalFile.isCICS()){
+					//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
+					//					}
+					//
+					//					//DB2
+					//
+					//					if(logicalFile.isDb2()){
+					//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
+					//					}
 				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
-				
+
 				logicalFiles.add(logicalFile)
 			} catch (Exception e) {
 
