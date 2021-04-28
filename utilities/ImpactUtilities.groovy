@@ -94,7 +94,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
-	changedProperties = ["cobol_compilerVersion"]
+	changedProperties = ["cobol_compilerVersion, COBOL_COMPILERVERSION"]
 	changedProperties.each { changedProp ->
 
 		// perform impact analysis on changed file
@@ -335,6 +335,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 					//General
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
+					logicalFile.addLogicalDependency(new LogicalDependency("COBOL_COMPILERVERSION","PROPER","PROPERTY"))
+					
 
 
 					//					//CICS
