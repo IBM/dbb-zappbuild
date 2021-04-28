@@ -46,6 +46,11 @@ try {
 		def process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
 		process.waitForProcessOutput(outputStream, System.err)
 		
+		println "** Writing build log ... "
+		new File("${props.outDir}/impactBuildLog.log").withOutputStream { stream ->
+			stream.write(outputStream)
+		}
+		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
 	}
