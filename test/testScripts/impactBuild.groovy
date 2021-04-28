@@ -51,9 +51,7 @@ try {
 		process.waitForProcessOutput(outputStream, System.err)
 
 		println "** Writing build log ... "
-		new File("${props.outDir}/impactBuildLog.log").withWriter { writer ->
-			outputLines.each { line -> writer.writeLine line }
-		}
+		println outputStream.toString()
 
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
