@@ -27,11 +27,13 @@ test.groovy script has three optional argument that can be present during each i
 
 # Examples of running an end to end test:
 
- NOTE - For this invocation of the test framework, it is assumed to have the dataset.properties defined to the actual execution environment
+NOTE - For this invocation of the test framework, it is assumed to have the dataset.properties defined to the actual execution environment.
 
 ```
 $DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u urlToDbbWebApp -i userID -p pwd
 ``` 
+
+Note -  With the invocation any kind of build properties, they are passed to zAppBuild.
 ```
 $DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u urlToDbbWebApp -i userID -p pwd --propFiles /pathToDatasets/datasets.properties --outDir /pathToOutDir/out
 ```
