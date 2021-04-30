@@ -281,8 +281,8 @@ def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {
 	]
 }
 
-def getChangedProperties(String gitDir, String currentHash, String propertiesFile) {
-	String cmd = "git -C $gitDir show --ignore-all-space --no-prefix -U0 $currentHash $propertiesFile"
+def getChangedProperties(String gitDir, String baseline, String currentHash, String propertiesFile) {
+	String cmd = "git -C $gitDir diff --ignore-all-space --no-prefix -U0 $baseline $currentHash $propertiesFile"
 
 	def gitDiff = new StringBuffer()
 	def gitError = new StringBuffer()
@@ -297,7 +297,6 @@ def getChangedProperties(String gitDir, String currentHash, String propertiesFil
 			println line
 			try {
 				gitDiffOutput = line.substring(1)
-				println gitDiffOutput
 				changedProperties.load(new StringReader(gitDiffOutput));
 			}
 			catch (Exception e) {
