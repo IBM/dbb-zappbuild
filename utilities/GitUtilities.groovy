@@ -10,6 +10,7 @@ import groovy.transform.*
  * @param  String dir  		Directory to test
  * @return boolean		
  */
+
 def isGitDir(String dir) {
 	String cmd = "git -C $dir rev-parse --is-inside-work-tree"
 	StringBuffer gitResponse = new StringBuffer()
@@ -199,7 +200,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 			gitDiffOutput = line.split()
 			action = gitDiffOutput[0]
 			file = gitDiffOutput[1]
-			
+
 			if (action == "M" || action == "A") { // handle changed and new added files
 				changedFiles.add(file)
 			} else if (action == "D") {// handle deleted files
@@ -252,7 +253,7 @@ def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {
 			gitDiffOutput = line.split()
 			action = gitDiffOutput[0]
 			file = gitDiffOutput[1]
-			
+
 			if (action == "M" || action == "A") { // handle changed and new added files
 				changedFiles.add(file)
 			} else if (action == "D") {// handle deleted files
@@ -280,3 +281,30 @@ def getCurrentChangedFiles(String gitDir, String currentHash, String verbose) {
 	]
 }
 
+def getChangedProperties(String gitDir, String currentHash, String propertiesFile) {
+	String cmd = "git -C $gitDir show --ignore-all-space --no-prefix -U0 $currentHash $propertiesFile"
+
+	def gitDiff = new StringBuffer()
+	def gitError = new StringBuffer()
+	Properties changedProperties = new Properties()
+
+	Process process = cmd.execute()
+	process.waitForProcessOutput(gitDiff, gitError)
+
+	for (line in gitDiff.toString().split("\n")) {
+
+		if (line.startsWith("+") && line.contains("=")){
+			println line
+			try {
+				gitDiffOutput = line.substring(1)
+				println gitDiffOutput
+				changedProperties.load(new StringReader(gitDiffOutput));
+			}
+			catch (Exception e) {
+				// no changes or unhandled format
+			}
+		}
+	}
+	
+	return changedProperties.propertyNames()
+}
