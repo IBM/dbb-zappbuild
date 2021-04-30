@@ -97,40 +97,46 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
-	changedBuildProperties.each { changedProp ->
+	if (props.impactBuildOnBuildPropertyChanges){
+		if (props.verbose) println "** Calculate impacted files by property changes."
 
-		//if (changedProp in list of impactingProp){
+		changedBuildProperties.each { changedProp ->
 
-			// perform impact analysis on changed file
-			if (props.verbose) println "** Performing impact analysis on property $changedProp"
+			if (props.impactBuildOnBuildPropertyList.contains(changedProp)){
 
-			LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
-			logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+				// perform impact analysis on changed property
+				if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+				LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
+				logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
 
 
-			// get excludeListe
-			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+				// get excludeListe
+				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-			if (props.verbose) println "**$changedProp impacts $logicalFileList"
-			logicalFileList.each { logicalFile ->
-				def impactFile = logicalFile.getFile()
-				if (props.verbose) println "** Found impacted file $impactFile"
-				// only add impacted files that have a build script mapped to it
-				if (ScriptMappings.getScriptName(impactFile)) {
-					// only add impacted files, that are in scope of the build.
-					if (!matches(impactFile, excludeMatchers)){
-						buildSet.add(impactFile)
-						if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
-					}
-					else {
-						// impactedFile found, but on Exclude List
-						//   Possible reasons: Exclude of file was defined after building the collection.
-						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-						if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+				if (props.verbose) println "**$changedProp impacts $logicalFileList"
+				logicalFileList.each { logicalFile ->
+					def impactFile = logicalFile.getFile()
+					if (props.verbose) println "** Found impacted file $impactFile"
+					// only add impacted files that have a build script mapped to it
+					if (ScriptMappings.getScriptName(impactFile)) {
+						// only add impacted files, that are in scope of the build.
+						if (!matches(impactFile, excludeMatchers)){
+							buildSet.add(impactFile)
+							if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+						}
+						else {
+							// impactedFile found, but on Exclude List
+							//   Possible reasons: Exclude of file was defined after building the collection.
+							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+							if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+						}
 					}
 				}
 			}
-		//}
+		}
+	}else {
+		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped to configuration. "
 	}
 
 	return [buildSet, deletedFiles]
@@ -211,8 +217,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if (props.verbose) println "**** $file"
 
 				//retrieving changed build properties
-				if (file.endsWith(".properties")){
-					changedBuildProperties.add(gitUtils.getChangedProperties(dir, current, file))
+				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
+					changedBuildProperties.addAll(gitUtils.getChangedProperties(dir, baseline, current, file))
 				}
 			}
 			//	}
@@ -342,30 +348,24 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+				
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+					if (props.verbose) println "*** Adding LogicalDependencies for Build Properties"
+					if (logicalFile.language == "COB"){
+						buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyList, logicalFile)
+						if (buildUtils.isCICS(logicalFile)) { // if CICS
+							buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyListCICS, logicalFile)
+						}
+						if (buildUtils.isSQL(logicalFile)) { // if Db2
+							buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyListSQL, logicalFile)
+						}
+					}
 
-				//				LogicalFile tempTest = repositoryClient.getLogicalFile(props.applicationCollectionName, logicalFile.getFile())
-				//				println tempTest
-				if (logicalFile.language == "COB"){
-					//General
-					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
-					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
 
-
-
-					//					//CICS
-					//					if(logicalFile.isCICS()){
-					//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
-					//					}
-					//
-					//					//DB2
-					//
-					//					if(logicalFile.isDb2()){
-					//						logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
-					//					}
+					if (props.verbose) println "*DBEHM* Logical file for $file =\n$logicalFile"
 				}
-				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
-
 				logicalFiles.add(logicalFile)
+
 			} catch (Exception e) {
 
 				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
