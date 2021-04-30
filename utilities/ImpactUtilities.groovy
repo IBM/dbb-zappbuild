@@ -133,10 +133,12 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 						}
 					}
 				}
+			}else {
+				if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 			}
 		}
 	}else {
-		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped to configuration. "
+		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 	}
 
 	return [buildSet, deletedFiles]
@@ -218,8 +220,10 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				}
 				//retrieving changed build properties
 				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
-					changedBuildProperties.addAll(gitUtils.getChangedProperties(dir, baseline, current, file))
-				}
+					if (props.verbose) println "**** $file"
+					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
+					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
+					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))				}
 			}
 		}
 
