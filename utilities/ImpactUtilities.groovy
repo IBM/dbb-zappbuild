@@ -102,7 +102,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 		changedBuildProperties.each { changedProp ->
 
-			if (props.impactBuildOnBuildPropertyList.contains(changedProp)){
+			if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
 
 				// perform impact analysis on changed property
 				if (props.verbose) println "** Performing impact analysis on property $changedProp"
@@ -210,18 +210,17 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			//	if ( !matches(file, excludeMatchers)) {
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
-				changedFiles << file
-				if (props.verbose) println "**** $file"
-
+				if ( !matches(file, excludeMatchers)) {
+					changedFiles << file
+					if (props.verbose) println "**** $file"
+				}
 				//retrieving changed build properties
 				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
 					changedBuildProperties.addAll(gitUtils.getChangedProperties(dir, baseline, current, file))
 				}
 			}
-			//	}
 		}
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
@@ -348,7 +347,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
-				
+
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 					if (props.verbose) println "*** Adding LogicalDependencies for Build Properties"
 					if (logicalFile.language == "COB"){

@@ -292,9 +292,7 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 	process.waitForProcessOutput(gitDiff, gitError)
 
 	for (line in gitDiff.toString().split("\n")) {
-
 		if (line.startsWith("+") && line.contains("=")){
-			println line
 			try {
 				gitDiffOutput = line.substring(1)
 				changedProperties.load(new StringReader(gitDiffOutput));
