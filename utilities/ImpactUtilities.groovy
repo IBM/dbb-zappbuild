@@ -54,6 +54,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 
 	// create build list using impact analysis
+	if (props.verbose) println "*** Perform impacted analysis for changed files."
+	
 	Set<String> buildSet = new HashSet<String>()
 	Set<String> changedBuildPropertyFiles = new HashSet<String>()
 	changedFiles.each { changedFile ->
@@ -98,7 +100,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	if (props.impactBuildOnBuildPropertyChanges){
-		if (props.verbose) println "** Calculate impacted files by property changes."
+		if (props.verbose) println "*** Perform impacted analysis for property changes."
 
 		changedBuildProperties.each { changedProp ->
 
@@ -363,9 +365,6 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 							buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyListSQL, logicalFile)
 						}
 					}
-
-
-					if (props.verbose) println "*DBEHM* Logical file for $file =\n$logicalFile"
 				}
 				logicalFiles.add(logicalFile)
 
