@@ -116,7 +116,6 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				// get excludeListe
 				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-				if (props.verbose) println "**$changedProp impacts $logicalFileList"
 				logicalFileList.each { logicalFile ->
 					def impactFile = logicalFile.getFile()
 					if (props.verbose) println "** Found impacted file $impactFile"
