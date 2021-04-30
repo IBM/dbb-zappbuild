@@ -20,13 +20,14 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 
 	// calculate changed files
 	if (lastBuildResult) {
-		(changedFiles, deletedFiles, renamedFiles) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else if (props.topicBranchBuild) {
 		// if this is the first topic branch build get the main branch build result
@@ -51,8 +52,10 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
 
+
 	// create build list using impact analysis
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> changedBuildPropertyFiles = new HashSet<String>()
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -94,15 +97,14 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
-	changedProperties = ["cobol_compilerVersion", "COBOL_COMPILERVERSION"]
-	changedProperties.each { changedProp ->
+	changedBuildProperties.each { changedProp ->
 
 		// perform impact analysis on changed file
 		if (props.verbose) println "** Performing impact analysis on property $changedProp"
-		
+
 		LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
 		logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
-		
+
 
 		// get excludeListe
 		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
@@ -122,7 +124,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 					// impactedFile found, but on Exclude List
 					//   Possible reasons: Exclude of file was defined after building the collection.
 					//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-					if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+					if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
 				}
 			}
 		}
@@ -139,6 +141,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// create a list of source directories to search
 	List<String> directories = []
@@ -203,6 +206,11 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if ( file != null ) {
 					changedFiles << file
 					if (props.verbose) println "**** $file"
+					
+					//retrieving changed build properties
+					if (file.endsWith(".properties")){
+						changedBuildProperties.add(gitUtils.getChangedFiles(dir, current, file))
+					}
 				}
 			}
 		}
@@ -229,7 +237,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	return [
 		changedFiles,
 		deletedFiles,
-		renamedFiles
+		renamedFiles,
+		changedBuildProperties
 	]
 }
 
@@ -337,7 +346,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 					//General
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compilerVersion","PROPER","PROPERTY"))
 					logicalFile.addLogicalDependency(new LogicalDependency("cobol_compileParms","PROPER","PROPERTY"))
-					
+
 
 
 					//					//CICS
