@@ -395,3 +395,14 @@ def getLangPrefix(String scriptName){
 	return langPrefix
 }
 
+/*
+ * 
+ */
+def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile){
+		String[] buildProps = buildProperties.split(',')
+
+		buildProps.each { buildProp ->
+			buildProp = buildProp.trim()
+			logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","PROPER","PROPERTY"))
+		}
+}
