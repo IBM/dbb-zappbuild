@@ -201,7 +201,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			if ( !matches(file, excludeMatchers)) {
+		//	if ( !matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, true, null)
 				if ( file != null ) {
 					changedFiles << file
@@ -212,7 +212,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 						changedBuildProperties.add(gitUtils.getChangedFiles(dir, current, file))
 					}
 				}
-			}
+		//	}
 		}
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
