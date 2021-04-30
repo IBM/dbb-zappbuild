@@ -99,35 +99,38 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	changedBuildProperties.each { changedProp ->
 
-		// perform impact analysis on changed file
-		if (props.verbose) println "** Performing impact analysis on property $changedProp"
+		//if (changedProp in list of impactingProp){
 
-		LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
-		logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+			// perform impact analysis on changed file
+			if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+			LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
+			logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
 
 
-		// get excludeListe
-		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			// get excludeListe
+			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-		if (props.verbose) println "**$changedProp impacts $logicalFileList"
-		logicalFileList.each { logicalFile ->
-			def impactFile = logicalFile.getFile()
-			if (props.verbose) println "** Found impacted file $impactFile"
-			// only add impacted files that have a build script mapped to it
-			if (ScriptMappings.getScriptName(impactFile)) {
-				// only add impacted files, that are in scope of the build.
-				if (!matches(impactFile, excludeMatchers)){
-					buildSet.add(impactFile)
-					if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
-				}
-				else {
-					// impactedFile found, but on Exclude List
-					//   Possible reasons: Exclude of file was defined after building the collection.
-					//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-					if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+			if (props.verbose) println "**$changedProp impacts $logicalFileList"
+			logicalFileList.each { logicalFile ->
+				def impactFile = logicalFile.getFile()
+				if (props.verbose) println "** Found impacted file $impactFile"
+				// only add impacted files that have a build script mapped to it
+				if (ScriptMappings.getScriptName(impactFile)) {
+					// only add impacted files, that are in scope of the build.
+					if (!matches(impactFile, excludeMatchers)){
+						buildSet.add(impactFile)
+						if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+					}
+					else {
+						// impactedFile found, but on Exclude List
+						//   Possible reasons: Exclude of file was defined after building the collection.
+						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+						if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+					}
 				}
 			}
-		}
+		//}
 	}
 
 	return [buildSet, deletedFiles]
@@ -201,18 +204,18 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-		//	if ( !matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, true, null)
-				if ( file != null ) {
-					changedFiles << file
-					if (props.verbose) println "**** $file"
-					
-					//retrieving changed build properties
-					if (file.endsWith(".properties")){
-						changedBuildProperties.add(gitUtils.getChangedFiles(dir, current, file))
-					}
+			//	if ( !matches(file, excludeMatchers)) {
+			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			if ( file != null ) {
+				changedFiles << file
+				if (props.verbose) println "**** $file"
+
+				//retrieving changed build properties
+				if (file.endsWith(".properties")){
+					changedBuildProperties.add(gitUtils.getChangedProperties(dir, current, file))
 				}
-		//	}
+			}
+			//	}
 		}
 
 		if (props.verbose) println "*** Deleted files for directory $dir:"
