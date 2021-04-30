@@ -214,21 +214,18 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			// retrieving changed build properties, if it is a property file
-			if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
-				if (props.verbose) println "**** $file"
-				String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
-				String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
-				changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
-			}
-			else { // default case
-				(file, mode) = fixGitDiffPath(file, dir, true, null)
-				if ( file != null ) {
-					if ( !matches(file, excludeMatchers)) {
-						changedFiles << file
-						if (props.verbose) println "**** $file"
-					}
-
+			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			if ( file != null ) {
+				if ( !matches(file, excludeMatchers)) {
+					changedFiles << file
+					if (props.verbose) println "**** $file"
+				}
+				//retrieving changed build properties
+				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
+					if (props.verbose) println "**** $file"
+					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
+					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
+					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
 				}
 			}
 		}
