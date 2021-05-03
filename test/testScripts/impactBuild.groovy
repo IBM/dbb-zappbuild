@@ -36,23 +36,16 @@ println("** Processing changed files from impactBuild_changedFiles property : ${
 try {
 	changedFiles.each { changedFile ->
 		println "\n** Running impact build test for changed file $changedFile"
-
+		
 		// update changed file in Git repo test branch
 		copyAndCommit(changedFile)
-
+		
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
 		def outputStream = new StringBuffer()
-		def process = [
-			'bash',
-			'-c',
-			impactBuildCommand.join(" ")
-		].execute()
+		def process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
 		process.waitForProcessOutput(outputStream, System.err)
-
-		println "** Writing build log ... "
-		println outputStream.toString()
-
+		
 		// validate build results
 		validateImpactBuild(changedFile, filesBuiltMappings, outputStream)
 	}
@@ -60,14 +53,14 @@ try {
 finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
-		println "\n***"
-		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
-		println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
-		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
-		println "***"
-	}
+        println "\n***"
+	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
+	println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
+	println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
+	println "***"
+  }
 }
-// script end
+// script end  
 
 //*************************************************************
 // Method Definitions
@@ -90,36 +83,36 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
+	
+    try{
+	// Validate clean build
+	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
-	try{
-		// Validate clean build
-		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
+	// Validate expected number of files built
+	def numImpactFiles = expectedFilesBuiltList.size()
+	assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
 
-		// Validate expected number of files built
-		def numImpactFiles = expectedFilesBuiltList.size()
-		assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
-
-		// Validate expected built files in output stream
-		assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
-
-		println "**"
-		println "** IMPACT BUILD TEST : PASSED FOR $changedFile **"
-		println "**"
-	}
-	catch(AssertionError e) {
-		def result = e.getMessage()
-		assertionList << result;
-	}
+	// Validate expected built files in output stream
+	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
+	
+	println "**"
+	println "** IMPACT BUILD TEST : PASSED FOR $changedFile **"
+	println "**"
+    }
+    catch(AssertionError e) {
+        def result = e.getMessage()
+        assertionList << result;
+ }
 }
 def cleanUpDatasets() {
 	def segments = props.impactBuild_datasetsToCleanUp.split(',')
-
+	
 	println "Deleting impact build PDSEs ${segments}"
 	segments.each { segment ->
-		def pds = "'${props.hlq}.${segment}'"
-		if (ZFile.dsExists(pds)) {
-			if (props.verbose) println "** Deleting ${pds}"
-			ZFile.remove("//$pds")
-		}
+	    def pds = "'${props.hlq}.${segment}'"
+	    if (ZFile.dsExists(pds)) {
+	       if (props.verbose) println "** Deleting ${pds}"
+	       ZFile.remove("//$pds")
+	    }
 	}
 }
