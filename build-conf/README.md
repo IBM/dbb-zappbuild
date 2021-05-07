@@ -39,6 +39,9 @@ buildListFileExt | File extension that indicates the build file is really a buil
 languagePropertyQualifiers | List of language script property qualifiers. Each language script property has a unique qualifier to avoid collision with other language script properties.
 applicationConfRootDir | Alternate root directory for application-conf location.  Allows for the deployment of the application-conf directories to a static location.  Defaults to ${workspace}/${application}
 requiredBuildProperties | Comma separated list of required build properties for zAppBuild/build.groovy. Build and language scripts will validate that *required* build properties have been set before the script runs.  If any are missing or empty, then a validation error will be thrown.
+continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
+createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true. 
+dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
 dbb.RepositoryClient.url | DBB configuration property for web application URL.  ***Can be overridden by build.groovy option -url, --url***
 dbb.RepositoryClient.userId | DBB configuration property for web application logon id.  ***Can be overridden by build.groovy option -id, --id***
