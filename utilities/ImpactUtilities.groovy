@@ -109,7 +109,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				// perform impact analysis on changed property
 				if (props.verbose) println "** Performing impact analysis on property $changedProp"
 
-				LogicalDependency lDependency = new LogicalDependency("$changedProp","PROPER","PROPERTY")
+				// create logical dependency and query collections for logical files with this dependency
+				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
 				logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
 
 
@@ -575,14 +576,14 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 		// language COB
 		if (langPrefix != null ){
 			// generic properties
-			buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
 			// cics properties
 			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
-				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
 			}
 			// sql properties
 			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
-				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
 			}
 		}
 
@@ -590,6 +591,18 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 }
 
 
+/**
+ * addBuildPropertyDependencies
+ * method to logical dependencies records to a logical file for a DBB build property
+ */
+def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile){
+	String[] buildProps = buildProperties.split(',')
 
+	buildProps.each { buildProp ->
+		buildProp = buildProp.trim()
+		if (props.verbose) println "*** Adding LogicalDependency for Build prop $buildProp for $buildFile"
+		logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","BUILDPROPERTIES","PROPERTY"))
+	}
+}
 
 
