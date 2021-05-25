@@ -201,7 +201,7 @@ def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFi
 	String assember_cicsprecompiler = props.getFileProperty('assember_cicsprecompiler', buildFile)
 	String assember_cicsprecompilerParms = props.getFileProperty('assember_cicsprecompilerParms', buildFile)
 	
-	MVSExec assembler_CICStranslator = new MVSExec().file(buildFile).pgm(assember_cicsprecompiler).parm()
+	MVSExec assembler_CICStranslator = new MVSExec().file(buildFile).pgm(assember_cicsprecompiler).parm(assember_cicsprecompilerParms)
 
 	// add DD statements to the compile command
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
