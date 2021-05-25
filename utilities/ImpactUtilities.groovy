@@ -355,17 +355,9 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-					if (props.verbose) println "*** Adding LogicalDependencies for Build Properties"
-					if (logicalFile.language == "COB"){
-						buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyList, logicalFile)
-						if (buildUtils.isCICS(logicalFile)) { // if CICS
-							buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyListCICS, logicalFile)
-						}
-						if (buildUtils.isSQL(logicalFile)) { // if Db2
-							buildUtils.addBuildPropertyDependencies(props.cobol_impactPropertyListSQL, logicalFile)
-						}
-					}
+					createPropertyDependency(logicalFile)
 				}
+
 				logicalFiles.add(logicalFile)
 
 			} catch (Exception e) {
@@ -568,6 +560,33 @@ def createPathMatcherPattern(String property) {
 		}
 	}
 	return pathMatchers
+}
+
+/**
+ * createPropertyDependency
+ * method to add a dependency to a property key 
+ */
+def createPropertyDependency(LogicalFile buildFile){
+	if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
+	// get language prefix
+	def scriptMapping = ScriptMappings.getScriptName(buildFile)
+	if(scriptMapping != null){
+		def langPrefix = buildUtils.getLangPrefix(scriptMapping)
+		// language COB
+		if (langPrefix != null ){
+			// generic properties
+			buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			// cics properties
+			if (buildUtils.isCICS(logicalFile)) { 
+				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
+			}
+			// sql properties
+			if (buildUtils.isSQL(logicalFile)) { 
+				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
+			}
+		}
+
+	}
 }
 
 
