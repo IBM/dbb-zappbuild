@@ -185,8 +185,6 @@ Property | Description | Overridable
 --- | --- | ---
 acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
-acbgen_impactPropertyList | List of build properties causing programs to rebuild when changed | false
-
 
 ### ZunitConfig.properties
 Application properties used by zAppBuild/language/ZunitConfig.groovy
