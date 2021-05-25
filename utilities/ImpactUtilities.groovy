@@ -355,7 +355,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-					createPropertyDependency(logicalFile)
+					createPropertyDependency(file, logicalFile)
 				}
 
 				logicalFiles.add(logicalFile)
@@ -566,7 +566,7 @@ def createPathMatcherPattern(String property) {
  * createPropertyDependency
  * method to add a dependency to a property key 
  */
-def createPropertyDependency(LogicalFile buildFile){
+def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 	if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
 	// get language prefix
 	def scriptMapping = ScriptMappings.getScriptName(buildFile)
@@ -577,11 +577,11 @@ def createPropertyDependency(LogicalFile buildFile){
 			// generic properties
 			buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
 			// cics properties
-			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") { 
+			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
 				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
 			}
 			// sql properties
-			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") { 
+			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
 				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
 			}
 		}
