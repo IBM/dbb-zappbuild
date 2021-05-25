@@ -3,23 +3,25 @@ This folder contains application specific configuration properties used by the z
 
 At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded into the [DBB BuildProperties class](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.4/scriptorg.html#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
 
+Properties can be overwritten on a per file basis through DBB Build Properties file properties. The tables below indicate which properties keys can be overwritten. It is recommended to manage these overwrites in file.properties.
+
 ## Property File Descriptions
 Since all properties will be loaded into a single static instance of BuildProperties, the organization and naming convention of the *property files* are somewhat arbitrary and targeted more for self documentation and understanding.
 
 ### application.properties
 This property file is loaded automatically at the beginning of the build and contains application specific properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts. Additional property files are loaded based on the content of the `applicationPropFiles` property.
 
-Property | Description
---- | ---
-runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `false`, to enable zUnit Tests, set value to `true`.
-applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/.
-applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}.
-buildOrder | Comma separated list of the build script processing order.
-mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application.
-excludeFileList | Files to exclude when scanning or running full build.
-skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
-jobCard | JOBCARD for JCL execs
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
+Property | Description | Overridable
+--- | --- | ---
+runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `false`, to enable zUnit Tests, set value to `true`. | false
+applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/. | false
+applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}. | false
+buildOrder | Comma separated list of the build script processing order. | false
+mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application. | false
+excludeFileList | Files to exclude when scanning or running full build. | false
+skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
+jobCard | JOBCARD for JCL execs | false
+impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. | true, recommended in file.properties
 
 ### file.properties
 Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides. 
@@ -28,6 +30,10 @@ Property | Description
 --- | --- 
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
 dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+isSQL | File property overwrite to indicate that a file requires to include SQL parameters
+isCICS | File property overwrite to indicate that a file requires to include CICS parameters
+isMQ | File property overwrite to indicate that a file requires to include MQ parameters
+isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
 ### Assembler.properties
