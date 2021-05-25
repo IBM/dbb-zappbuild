@@ -600,7 +600,7 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
 
 	buildProps.each { buildProp ->
 		buildProp = buildProp.trim()
-		if (props.verbose) println "*** Adding LogicalDependency for Build prop $buildProp for $buildFile"
+		if (props.verbose) println "*** Adding LogicalDependency for build prop $buildProp for $logicalFile.file()"
 		logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","BUILDPROPERTIES","PROPERTY"))
 	}
 }
