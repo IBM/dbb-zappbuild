@@ -22,13 +22,13 @@ buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
-if (props.runzTests && props.runzTests.toBoolean()) {
+// sort the build list based on build file rank if provided
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
+
+if (buildListContainsTests(sortedList)) {
 	langQualifier = "cobol_test"
 	buildUtils.createLanguageDatasets(langQualifier)
 }
-
-// sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
 
 // iterate through build list
 sortedList.each { buildFile ->
@@ -341,4 +341,9 @@ def getRepositoryClient() {
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
 	return repositoryClient
+}
+
+boolean buildListContainsTests(List<String> buildList) {
+	boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('cobol_testcase', buildFile).equals('true')}
+	return containsZUnitTestCase ? true : false
 }
