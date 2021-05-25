@@ -577,11 +577,11 @@ def createPropertyDependency(LogicalFile buildFile){
 			// generic properties
 			buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
 			// cics properties
-			if (buildUtils.isCICS(logicalFile)) { 
+			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") { 
 				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
 			}
 			// sql properties
-			if (buildUtils.isSQL(logicalFile)) { 
+			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") { 
 				buildUtils.addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
 			}
 		}
