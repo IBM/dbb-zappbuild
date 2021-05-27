@@ -18,7 +18,7 @@ import groovy.xml.*
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
-@Field String gitcompareurlPrefix = ':gitcompareurl:'
+@Field String gitchangedfilesPrefix = ':gitchangedfiles:'
 @Field RepositoryClient repositoryClient
 
 // start time message
@@ -511,14 +511,17 @@ def finalizeBuildProcess(Map args) {
 				buildResult.setProperty(giturlkey, url)
 				// Git compare link
 				if (url.startsWith("http") && props.impactBuild){
-					String gitcomparekey = "$gitcompareurlPrefix${buildUtils.relativizePath(dir)}"
+					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-					// todo ... first featureBranchBuilds
+					if (lastBuildResult == null){
+						String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
+						lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+					}
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
-						String gitProviderLink = url[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
-						if (props.verbose) println "** Setting property $gitcomparekey : $gitProviderLink"
-						buildResult.setProperty(gitcomparekey, gitProviderLink)
+						String gitchangedfilesLink = url.trim()[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
+						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLink"
+						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
 
 					}
 				}
