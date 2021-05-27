@@ -514,12 +514,12 @@ def finalizeBuildProcess(Map args) {
 					String gitComparekey = "$gitcompareurlPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 					// todo ... first featureBranchBuilds
-					if (lastBuildResult){						
+					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
 						String gitProviderUrl = gitURLkey[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
 						if (props.verbose) println "** Setting property $gitComparekey : $url"
 						buildResult.setProperty(gitComparekey, gitProviderUrl)
-			
+
 					}
 				}
 			}
