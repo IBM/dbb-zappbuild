@@ -510,7 +510,7 @@ def finalizeBuildProcess(Map args) {
 				if (props.verbose) println "** Setting property $gitURLkey : $url"
 				buildResult.setProperty(gitURLkey, url)
 				// Git compare link
-				if (url.startsWith("http"){
+				if (url.startsWith("http")){
 					String gitComparekey = "$gitcompareurlPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 					// todo ... first featureBranchBuilds
