@@ -507,7 +507,7 @@ def finalizeBuildProcess(Map args) {
 				// store gitUrl
 				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
-				if (props.verbose) println "** Setting property $gitURLkey : $url"
+				if (props.verbose) println "** Setting property $giturlkey : $url"
 				buildResult.setProperty(giturlkey, url)
 				// Git compare link
 				if (url.startsWith("http") && props.impactBuild){
