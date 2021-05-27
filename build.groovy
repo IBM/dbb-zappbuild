@@ -500,25 +500,25 @@ def finalizeBuildProcess(Map args) {
 			if (props.verbose) println "*** Obtaining hash for directory $dir"
 			if (gitUtils.isGitDir(dir)) {
 				// store current hash
-				String currenthash = gitUtils.getCurrentGitHash(dir)
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
+				String currenthash = gitUtils.getCurrentGitHash(dir)
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl
+				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
-				String gitURLkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				if (props.verbose) println "** Setting property $gitURLkey : $url"
-				buildResult.setProperty(gitURLkey, url)
+				buildResult.setProperty(giturlkey, url)
 				// Git compare link
-				if (url.startsWith("http")){
-					String gitComparekey = "$gitcompareurlPrefix${buildUtils.relativizePath(dir)}"
+				if (url.startsWith("http") && props.impactBuild){
+					String gitcomparekey = "$gitcompareurlPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 					// todo ... first featureBranchBuilds
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
-						String gitProviderUrl = gitURLkey[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
-						if (props.verbose) println "** Setting property $gitComparekey : $url"
-						buildResult.setProperty(gitComparekey, gitProviderUrl)
+						String gitProviderLink = url[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
+						if (props.verbose) println "** Setting property $gitcomparekey : $gitProviderLink"
+						buildResult.setProperty(gitcomparekey, gitProviderLink)
 
 					}
 				}
