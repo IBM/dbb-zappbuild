@@ -519,7 +519,7 @@ def finalizeBuildProcess(Map args) {
 					}
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = url.trim()[0..-4] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
+						String gitchangedfilesLink = url.trim()[0..-5] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
 						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLink"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
 
