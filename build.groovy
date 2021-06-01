@@ -510,19 +510,14 @@ def finalizeBuildProcess(Map args) {
 				if (props.verbose) println "** Setting property $giturlkey : $url"
 				buildResult.setProperty(giturlkey, url)
 				// Git compare link
-				if (url.startsWith("http") && props.impactBuild){
+				if (props.impactBuild && props.gitRepositoryURL){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
-					def lastBuildResult= repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-					if (lastBuildResult == null){
-						String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
-						lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-					}
+					def lastBuildResult= impactUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = url.trim()[0..-5] << "/compare/" << baselineHash << "..." << currenthash //removes .git and adds baseline...current
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash 
 						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLink"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
-
 					}
 				}
 			}

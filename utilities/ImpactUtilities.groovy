@@ -65,7 +65,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-			
+
 			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
 			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
 
@@ -216,7 +216,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 
 				def scanner = buildUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
-				
+
 				String member = CopyToPDS.createMemberName(buildFile)
 				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
 
@@ -499,6 +499,28 @@ def createPathMatcherPattern(String property) {
 		}
 	}
 	return pathMatchers
+}
+
+/**
+ * retrieveLastBuildResult()
+ * returns last successful build result
+ *  
+ */
+
+def retrieveLastBuildResult(){
+
+	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+
+	if (lastBuildResult == null){
+		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
+		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	}
+
+	if (lastBuildResult == null){
+		println "** No previous build result found."
+	}
+	
+	return lastBuildResult
 }
 
 
