@@ -507,7 +507,7 @@ def createPathMatcherPattern(String property) {
  *  
  */
 
-def retrieveLastBuildResult(){
+def retrieveLastBuildResult(RepositoryClient repositoryClient){
 
 	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 
