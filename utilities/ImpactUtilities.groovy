@@ -95,12 +95,13 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// query external collections to produce externalImpactList
 			String memberName = CopyToPDS.createMemberName(changedFile)
 			repositoryClient.getAllCollections().each{ collection ->
-				Set<String> externalImpactedFiles = new HashSet<String>()
+				def Set<String> externalImpactedFiles = new HashSet<String>()
 				if (collection != props.applicationCollectionName){
 					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
 					externalImpactedFiles.each{ externalImpact ->
-						println("\t${externalImpact.getLname()}");
-						externalImpactedFiles.add(externalImpact.getLname())
+						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
+						println(impactRecord);
+						externalImpactedFiles.add(impactRecord)
 					}
 				}
 				// output found external impacts
