@@ -99,7 +99,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			repositoryClient.getAllCollections().each{ collection ->
 				def Set<String> externalImpactList = new HashSet<String>()
 				String cName = collection.getName()
-				if(createMatcherPatterns(cName,collectionMatcherPatterns)){
+				if(matchesCollectionPattern(cName,collectionMatcherPatterns)){
 					if (cName != props.applicationCollectionName){
 						externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
 						externalImpactedFiles.each{ externalImpact ->
