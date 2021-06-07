@@ -93,45 +93,15 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				}
 			}
 
-			// query external collections to produce externalImpactList
-			String memberName = CopyToPDS.createMemberName(changedFile)
-			List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
-			repositoryClient.getAllCollections().each{ collection ->
-				def Set<String> externalImpactList = new HashSet<String>()
-				String cName = collection.getName()
-				if(matchesCollectionPattern(cName,collectionMatcherPatterns)){
-					if (cName != props.applicationCollectionName){
-						externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
-						externalImpactedFiles.each{ externalImpact ->
-							def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName"
-							println(impactRecord);
-							externalImpactList.add(impactRecord)
-						}
-					}
-					// output found external impacts
-					if (externalImpactList.size()!=0){
-						// write impactedFiles per application
-						String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${cName}.${props.buildListFileExt}"
-						File impactListFile = new File(impactListFileLoc)
-						String enc = props.logEncoding ?: 'IBM-1047'
-						impactListFile.withWriter(enc) { writer ->
-							externalImpactList.each { file ->
-								if (props.verbose) println file
-								writer.write("$file\n")
-							}
-						}
-					}
-				}
-				else{
-					println("$cName does not match pattern: $collectionMatcherPatterns")
-				}
-			}
-
 		}else {
 			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 		}
 	}
 
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (props.verbose) println "** Create reports of external impacts."
+		reportExternalImpacts(changedFiles)
+	}
 
 
 	return [buildSet, deletedFiles]
@@ -276,6 +246,59 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 			}
 		}
 	}
+}
+
+/**
+ * 
+ */
+
+def reportExternalImpacts(Set<String> changedFiles){
+	// query external collections to produce externalImpactList
+
+	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>()
+
+	// caluclated and collect external impacts
+	changedFiles.each{ changedFile ->
+		String memberName = CopyToPDS.createMemberName(changedFile)
+		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
+		repositoryClient.getAllCollections().each{ collection ->
+			if(matchesPattern(cName,collectionMatcherPatterns)){
+				String cName = collection.getName()
+				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+				if (cName != props.applicationCollectionName){
+					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+					externalImpactedFiles.each{ externalImpact ->
+						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName"
+						println(impactRecord);
+						externalImpactList.add(impactRecord)
+					}
+					collectionImpactsSetMap.put(cName,externalImpactList)
+				}
+			}
+			else{
+				println("$cName does not match pattern: $collectionMatcherPatterns")
+			}
+		}
+	}
+
+
+	// print external impacts output found external impacts
+	collectionImpactsSetMap.each{ entry ->
+		externalImpactList = entry.value
+		if (externalImpactList.size()!=0){
+			// write impactedFiles per application
+			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+			File impactListFile = new File(impactListFileLoc)
+			String enc = props.logEncoding ?: 'IBM-1047'
+			impactListFile.withWriter(enc) { writer ->
+				externalImpactList.each { file ->
+					if (props.verbose) println file
+					writer.write("$file\n")
+				}
+			}
+		}
+	}
+
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -539,9 +562,8 @@ def createPathMatcherPattern(String property) {
 	return pathMatchers
 }
 
-
 /**
- * createPattern
+ * create List of Regex Patterns
  */
 
 def createMatcherPatterns(String property) {
@@ -555,9 +577,13 @@ def createMatcherPatterns(String property) {
 	return patterns
 }
 
-def matchesCollectionPattern(String collection, List<Pattern> patterns) {
+/**
+ * match a String against a list of patterns
+ */
+
+def matchesPattern(String name, List<Pattern> patterns) {
 	def result = patterns.any { pattern ->
-		if (pattern.matcher(collection).matches())
+		if (pattern.matcher(name).matches())
 		{
 			return true
 		}
