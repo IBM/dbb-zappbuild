@@ -96,10 +96,11 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			String memberName = CopyToPDS.createMemberName(changedFile)
 			repositoryClient.getAllCollections().each{ collection ->
 				def Set<String> externalImpactList = new HashSet<String>()
-				if (collection != props.applicationCollectionName){
+				String cName = collection.getName()
+				if (cName != props.applicationCollectionName){
 					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
 					externalImpactedFiles.each{ externalImpact ->
-						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $collection}"
+						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName}"
 						println(impactRecord);
 						externalImpactList.add(impactRecord)
 					}
@@ -107,7 +108,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				// output found external impacts
 				if (externalImpactList.size()!=0){
 					// write impactedFiles per application
-					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${collection}.${props.buildListFileExt}"
+					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${cName}.${props.buildListFileExt}"
 					File impactListFile = new File(impactListFileLoc)
 					String enc = props.logEncoding ?: 'IBM-1047'
 					impactListFile.withWriter(enc) { writer ->
