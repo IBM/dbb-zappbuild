@@ -65,7 +65,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-			
+
 			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
 			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
 
@@ -91,10 +91,39 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 					}
 				}
 			}
+
+			// query external collections to produce externalImpactList
+			String memberName = CopyToPDS.createMemberName(changedFile)
+			repositoryClient.getAllCollections().each{ collection ->
+				Set<String> externalImpactedFiles = new HashSet<String>()
+				if (collection != props.applicationCollectionName){
+					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+					externalImpactedFiles.each{ externalImpact ->
+						println("\t${externalImpact.getLname()}");
+						externalImpactedFiles.add(externalImpact.getLname())
+					}
+				}
+				// output found external impacts
+				if (externalImpactedFiles.size()!=0){
+					// write impactedFiles per application
+					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${collection}.${props.buildListFileExt}"
+					File impactListFile = new File(impactListFileLoc)
+					String enc = props.logEncoding ?: 'IBM-1047'
+					impactListFile.withWriter(enc) { writer ->
+						externalImpactedFiles.each { file ->
+							if (props.verbose) println file
+							writer.write("$file\n")
+						}
+					}
+				}
+			}
+
 		}else {
 			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 		}
 	}
+
+
 
 	return [buildSet, deletedFiles]
 }
@@ -216,7 +245,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 
 				def scanner = buildUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
-				
+
 				String member = CopyToPDS.createMemberName(buildFile)
 				String loadPDSMember = props."${langPrefix}_loadPDS"+"($member)"
 
