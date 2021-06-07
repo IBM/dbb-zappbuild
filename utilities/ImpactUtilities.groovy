@@ -262,8 +262,8 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		String memberName = CopyToPDS.createMemberName(changedFile)
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
+			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){
-				String cName = collection.getName()
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				if (cName != props.applicationCollectionName){
 					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
