@@ -263,7 +263,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		String memberName = CopyToPDS.createMemberName(changedFile)
 		
 		// build resolver
-		ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient).setResolutionRules(buildUtils.parseResolutionRules(props.impactResolutionRules))
+		ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
 		
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
@@ -277,6 +277,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
+		
+		impactResolver.setResolutionRules(buildUtils.parseResolutionRules(props.impactResolutionRules))
+		
 		// resolve
 		
 		impactResolver.getCollections().each{println "$it"}
