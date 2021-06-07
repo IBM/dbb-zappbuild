@@ -257,16 +257,6 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>()
 
-
-	ImpactResolver resolver = new ImpactResolver().file(changedFile)
-			.collection(props.applicationCollectionName)
-			.collection(props.applicationOutputsCollectionName)
-			.repositoryClient(repositoryClient)
-	// add resolution rules
-	if (rules)
-		resolver.setResolutionRules(buildUtils.parseResolutionRules(rules))
-
-
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
 
