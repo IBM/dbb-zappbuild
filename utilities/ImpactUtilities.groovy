@@ -257,32 +257,49 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>()
 
+
+	ImpactResolver resolver = new ImpactResolver().file(changedFile)
+			.collection(props.applicationCollectionName)
+			.collection(props.applicationOutputsCollectionName)
+			.repositoryClient(repositoryClient)
+	// add resolution rules
+	if (rules)
+		resolver.setResolutionRules(buildUtils.parseResolutionRules(rules))
+
+
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
+
 		String memberName = CopyToPDS.createMemberName(changedFile)
+		
+		// build resolver
+		ImpactResolver resolver = new ImpactResolver().file(changedFile)
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){
-				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				if (cName != props.applicationCollectionName){
-					ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
-					//externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
-					externalImpactedFiles = impactResolver.resolve()
-					externalImpactedFiles.each{ externalImpact ->
-						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName"
-						println(impactRecord);
-						externalImpactList.add(impactRecord)
-					}
-					collectionImpactsSetMap.put(cName,externalImpactList)
+					resolver.addCollection(cName)
 				}
 			}
 			else{
 				if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
+		// resolve
+		externalImpactedFiles = impactResolver.resolve()
+		
+		// report scanning results
+		externalImpactedFiles.each{ externalImpact ->
+			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
+			def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
+			println(impactRecord);
+			externalImpactList.add(impactRecord)
+			collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList)
+		}
 	}
 
+	println collectionImpactsSetMap
 
 	// print external impacts output found external impacts
 	collectionImpactsSetMap.each{ entry ->
