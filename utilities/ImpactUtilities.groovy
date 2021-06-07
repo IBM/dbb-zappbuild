@@ -94,29 +94,35 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 			// query external collections to produce externalImpactList
 			String memberName = CopyToPDS.createMemberName(changedFile)
+			List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 			repositoryClient.getAllCollections().each{ collection ->
 				def Set<String> externalImpactList = new HashSet<String>()
 				String cName = collection.getName()
-				if (cName != props.applicationCollectionName){
-					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
-					externalImpactedFiles.each{ externalImpact ->
-						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName}"
-						println(impactRecord);
-						externalImpactList.add(impactRecord)
-					}
-				}
-				// output found external impacts
-				if (externalImpactList.size()!=0){
-					// write impactedFiles per application
-					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${cName}.${props.buildListFileExt}"
-					File impactListFile = new File(impactListFileLoc)
-					String enc = props.logEncoding ?: 'IBM-1047'
-					impactListFile.withWriter(enc) { writer ->
-						externalImpactList.each { file ->
-							if (props.verbose) println file
-							writer.write("$file\n")
+				if(createMatcherPatterns(cName,collectionMatcherPatterns)){
+					if (cName != props.applicationCollectionName){
+						externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+						externalImpactedFiles.each{ externalImpact ->
+							def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName"
+							println(impactRecord);
+							externalImpactList.add(impactRecord)
 						}
 					}
+					// output found external impacts
+					if (externalImpactList.size()!=0){
+						// write impactedFiles per application
+						String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${cName}.${props.buildListFileExt}"
+						File impactListFile = new File(impactListFileLoc)
+						String enc = props.logEncoding ?: 'IBM-1047'
+						impactListFile.withWriter(enc) { writer ->
+							externalImpactList.each { file ->
+								if (props.verbose) println file
+								writer.write("$file\n")
+							}
+						}
+					}
+				}
+				else{
+					println("$cName does not match pattern: $collectionMatcherPatterns")
 				}
 			}
 
@@ -533,6 +539,28 @@ def createPathMatcherPattern(String property) {
 }
 
 
+/**
+ * createPattern
+ */
 
+def createMatcherPatterns(String property) {
+	List<Pattern> patterns = new ArrayList<Pattern>()
+	if (property) {
+		property.split(',').each{ patternString ->
+			Pattern pattern = Pattern.compile(patternString);
+		}
+	}
+	return patterns
+}
+
+def matchesCollectionPattern(String collection, List<Pattern> patterns) {
+	def result = patterns.any { pattern ->
+		if (pattern.matcher(collection).matches())
+		{
+			return true
+		}
+	}
+	return result
+}
 
 
