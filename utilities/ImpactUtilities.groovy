@@ -270,28 +270,27 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){
 				if (cName != props.applicationCollectionName){
+					if (props.verbose) println("** Adding $cName to analysis of external impacts")
 					impactResolver.addCollection(cName)
 				}
 			}
 			else{
-				if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
+				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
 		
 		impactResolver.setResolutionRules(buildUtils.parseResolutionRules(props.impactResolutionRules))
 		
 		// resolve
-		
-		impactResolver.getCollections().each{println "$it"}
-		
 		def externalImpactedFiles = impactResolver.resolve()
 		println externalImpactedFiles.size()
 		// report scanning results
 		externalImpactedFiles.each{ externalImpact ->
 			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
 			def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-			println(impactRecord);
+			if (props.verbose) println("** Identified following external impacts : $impactRecord")
 			externalImpactList.add(impactRecord)
+			
 			collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList)
 		}
 	}
