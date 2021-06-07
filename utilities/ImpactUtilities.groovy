@@ -97,7 +97,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			repositoryClient.getAllCollections().each{ collection ->
 				def Set<String> externalImpactedFiles = new HashSet<String>()
 				if (collection != props.applicationCollectionName){
-					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+					def externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
 					externalImpactedFiles.each{ externalImpact ->
 						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $collection}"
 						println(impactRecord);
