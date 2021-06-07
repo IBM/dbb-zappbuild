@@ -549,6 +549,7 @@ def createMatcherPatterns(String property) {
 	if (property) {
 		property.split(',').each{ patternString ->
 			Pattern pattern = Pattern.compile(patternString);
+			patterns.add(pattern)
 		}
 	}
 	return patterns
