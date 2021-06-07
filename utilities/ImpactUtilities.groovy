@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.nio.file.PathMatcher
 import groovy.json.JsonSlurper
 import groovy.transform.*
+import java.util.regex.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
