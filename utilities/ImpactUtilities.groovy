@@ -270,7 +270,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){
 				if (cName != props.applicationCollectionName){
-					if (props.verbose) println("** Adding $cName to analysis of external impacts")
+					//if (props.verbose) println("** Adding $cName to analysis of external impacts")
 					impactResolver.addCollection(cName)
 				}
 			}
@@ -283,19 +283,18 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		
 		// resolve
 		def externalImpactedFiles = impactResolver.resolve()
-		println externalImpactedFiles.size()
 		// report scanning results
+		if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified following external impacts for $changedFile")
 		externalImpactedFiles.each{ externalImpact ->
 			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
 			def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-			if (props.verbose) println("** Identified following external impacts : $impactRecord")
+			if (props.verbose) println("*** $impactRecord")
 			externalImpactList.add(impactRecord)
 			
 			collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList)
 		}
 	}
 
-	println collectionImpactsSetMap
 
 	// print external impacts output found external impacts
 	collectionImpactsSetMap.each{ entry ->
@@ -303,6 +302,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		if (externalImpactList.size()!=0){
 			// write impactedFiles per application
 			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+			if (props.verbose) println("** Writing external impacts to file $impactListFileLoc")
 			File impactListFile = new File(impactListFileLoc)
 			String enc = props.logEncoding ?: 'IBM-1047'
 			impactListFile.withWriter(enc) { writer ->
