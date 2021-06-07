@@ -266,7 +266,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			if(matchesPattern(cName,collectionMatcherPatterns)){
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				if (cName != props.applicationCollectionName){
-					externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+					ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+					//externalImpactedFiles = repositoryClient.getAllLogicalFiles(collection.getName(),memberName)
+					externalImpactedFiles = impactResolver.resolve()
 					externalImpactedFiles.each{ externalImpact ->
 						def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t $cName"
 						println(impactRecord);
@@ -276,7 +278,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				}
 			}
 			else{
-				println("$cName does not match pattern: $collectionMatcherPatterns")
+				if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
 	}
