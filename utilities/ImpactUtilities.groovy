@@ -263,7 +263,8 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		String memberName = CopyToPDS.createMemberName(changedFile)
 		
 		// build resolver
-		ImpactResolver impactResolver = new ImpactResolver().file(changedFile)
+		ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
+		
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
 			String cName = collection.getName()
@@ -277,6 +278,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			}
 		}
 		// resolve
+		
+		println impactResolver
+		
 		externalImpactedFiles = impactResolver.resolve()
 		
 		// report scanning results
