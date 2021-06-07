@@ -100,7 +100,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (props.verbose) println "** Create reports of external impacts."
-		reportExternalImpacts(changedFiles)
+		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
 
@@ -252,7 +252,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
  * 
  */
 
-def reportExternalImpacts(Set<String> changedFiles){
+def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
 	// query external collections to produce externalImpactList
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>()
