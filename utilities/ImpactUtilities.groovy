@@ -263,13 +263,13 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		String memberName = CopyToPDS.createMemberName(changedFile)
 		
 		// build resolver
-		ImpactResolver resolver = new ImpactResolver().file(changedFile)
+		ImpactResolver impactResolver = new ImpactResolver().file(changedFile)
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){
 				if (cName != props.applicationCollectionName){
-					resolver.addCollection(cName)
+					impactResolver.addCollection(cName)
 				}
 			}
 			else{
