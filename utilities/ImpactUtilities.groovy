@@ -279,10 +279,10 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		}
 		// resolve
 		
-		println impactResolver
+		impactResolver.getCollections().each{println "$it"}
 		
-		externalImpactedFiles = impactResolver.resolve()
-		
+		def externalImpactedFiles = impactResolver.resolve()
+		println externalImpactedFiles.size()
 		// report scanning results
 		externalImpactedFiles.each{ externalImpact ->
 			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
