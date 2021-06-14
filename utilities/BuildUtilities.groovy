@@ -160,7 +160,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
-	// update build results only in non-userbuild scenarios 
+	// update build results only in non-userbuild scenarios
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
@@ -348,13 +348,13 @@ def getScanner(String buildFile){
 def createLanguageDatasets(String lang) {
 	if (props."${lang}_srcDatasets")
 		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
-		
+
 	if (props."${lang}_loadDatasets")
 		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
-	
+
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
-	
+
 }
 
 /*
@@ -395,3 +395,27 @@ def getLangPrefix(String scriptName){
 	return langPrefix
 }
 
+/*
+ * retrieveLastBuildResult(RepositoryClient)
+ * returns last successful build result
+ *
+ */
+
+def retrieveLastBuildResult(RepositoryClient repositoryClient){
+
+	// get the last build result
+	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+
+	if (lastBuildResult == null && props.topicBranchBuild){
+		// if this is the first topic branch build get the main branch build result
+		if (props.verbose) println "** No previous successful topic branch build result. Retrieving last successful main branch build result."
+		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
+		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	}
+
+	if (lastBuildResult == null) {
+		println "*! No previous topic branch build result or main branch build result exists. Cannot calculate file changes."
+	}
+
+	return lastBuildResult
+}

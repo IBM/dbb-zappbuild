@@ -22,30 +22,17 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> renamedFiles = new HashSet<String>()
 
 	// get the last build result to get the baseline hashes
-	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
 	// calculate changed files
 	if (lastBuildResult) {
 		(changedFiles, deletedFiles, renamedFiles) = calculateChangedFiles(lastBuildResult)
-	}
-	else if (props.topicBranchBuild) {
-		// if this is the first topic branch build get the main branch build result
-		if (props.verbose) println "** No previous topic branch successful build result. Retrieving last successful main branch build result."
-		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
-		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-		if (lastBuildResult) {
-			(changedFiles, deletedFiles) = calculateChangedFiles(lastBuildResult)
-		}
-		else {
-			println "*! No previous topic branch build result or main branch build result exists. Cannot calculate file changes."
-		}
 	}
 	else {
 		// else create a fullBuild list
 		println "*! No prior build result located.  Building all programs"
 		changedFiles = buildUtils.createFullBuildList()
 	}
-
 
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
@@ -499,28 +486,6 @@ def createPathMatcherPattern(String property) {
 		}
 	}
 	return pathMatchers
-}
-
-/**
- * retrieveLastBuildResult()
- * returns last successful build result
- *  
- */
-
-def retrieveLastBuildResult(RepositoryClient repositoryClient){
-
-	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-
-	if (lastBuildResult == null){
-		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
-		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
-	}
-
-	if (lastBuildResult == null){
-		println "** No previous build result found."
-	}
-	
-	return lastBuildResult
 }
 
 
