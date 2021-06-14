@@ -515,8 +515,9 @@ def finalizeBuildProcess(Map args) {
 					def lastBuildResult= buildUtils.retrieveLastBuildResult(repositoryClient)
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = new URI(props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash).normalize().toString()
-						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLink"
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
+						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
+						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLinkUrl"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
 					}
 				}
