@@ -95,42 +95,16 @@ sortedList.each { buildFile ->
 //********************************************************************
 
 /*
- * createREXXParms - Builds up the REXX compiler parameter list from build and file properties
- */
-def createREXXParms(String buildFile, LogicalFile logicalFile) {
-	def parms = props.getFileProperty('REXX_compileParms', buildFile) ?: ""
-	def cics = props.getFileProperty('REXX_compileCICSParms', buildFile) ?: ""
-	def sql = props.getFileProperty('REXX_compileSQLParms', buildFile) ?: ""
-	def errPrefixOptions = props.getFileProperty('REXX_compileErrorPrefixParms', buildFile) ?: ""
-	def compileDebugParms = props.getFileProperty('REXX_compileDebugParms', buildFile)
-
-	if (props.errPrefix)
-		parms = "$parms,$errPrefixOptions"
-
-	// add debug options
-	if (props.debug)  {
-		parms = "$parms,$compileDebugParms"
-	}
-
-	if (parms.startsWith(','))
-		parms = parms.drop(1)
-
-	if (props.verbose) println "REXX compiler parms for $buildFile = $parms"
-	return parms
-}
-
-/*
  * createCompileCommand - creates a MVSExec command for compiling the REXX program (buildFile)
  */
 def createCompileCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
-	String parms = createREXXParms(buildFile, logicalFile)
+	def parms = props.getFileProperty('REXX_compileParms', buildFile) ?: ""
 	String compiler = props.getFileProperty('REXX_compiler', buildFile)
 
 	// define the MVSExec command to compile the program
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	
 	compile.dd(new DDStatement().name("SYSIN").dsn("${props.REXX_srcPDS}($member)").options('shr').report(true))
 	
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.REXX_printTempOptions))
