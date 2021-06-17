@@ -16,7 +16,7 @@ import com.ibm.jzos.ZFile
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
-buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.REXX_requiredBuildProperties)
 
 // create language datasets
 def langQualifier = "REXX"
@@ -40,7 +40,11 @@ sortedList.each { buildFile ->
 	if (logFile.exists())
 		logFile.delete()
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	File linkEditLogFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.LinkEdit.log" : "${props.buildOutDir}/${member}.REXX.LinkEdit.log")
+	if (linkEditLogFile.exists())
+		linkEditLogFile.delete()
+	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, linkEditLogFile)
+
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -107,22 +111,16 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// add DD statements to the compile command
 	compile.dd(new DDStatement().name("SYSIN").dsn("${props.REXX_srcPDS}($member)").options('shr').report(true))
 	
-	compile.dd(new DDStatement().name("SYSPRINT").options(props.REXX_printTempOptions))
-	compile.dd(new DDStatement().name("SYSTERM").options(props.REXX_printTempOptions))
-
+	compile.dd(new DDStatement().name("SYSPRINT").options(props.REXX_REXXPrintTempOptions))
+	compile.dd(new DDStatement().name("SYSTERM").options(props.REXX_tempOptions))
+	
 	// Write SYSLIN to temporary dataset if performing link edit or to physical dataset
 	String doLinkEdit = props.getFileProperty('REXX_linkEdit', buildFile)
 	String linkEditStream = props.getFileProperty('REXX_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('REXX_linkDebugExit', buildFile)
 
-	if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
-		compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.REXX_objPDS}($member)").options('shr').output(true))
-	} else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
-		compile.dd(new DDStatement().name("SYSPUNCH").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
-	} else {
-		compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.REXX_objPDS}($member)").options('shr').output(true))
-	}
-	compile.dd(new DDStatement().name("CEXEC").dsn("${props.REXX_loadPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.REXX_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.REXX_REXXLoadPDS}($member)").options('shr').output(true).deployType('LOAD'))
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.REXX_srcPDS).options("shr"))
@@ -136,7 +134,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 		
 	// add a tasklib to the compile command 
-	compile.dd(new DDStatement().name("TASKLIB").dsn(props."SFANLMD").options("shr"))
+	compile.dd(new DDStatement().name("TASKLIB").dsn(props.SFANLMD).options("shr"))
 
 	if (props.SFELLOAD)
 		compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))
@@ -189,7 +187,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().name("OBJECT").dsn("${props.REXX_objPDS}($member)").options('shr'))
 
 	} else { // no debug && no link card
-		// Use &&TEMP from Compile
+		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.REXX_objPDS}($member)").options('shr'))
 	}
 
 	// add DD statements to the linkedit command
