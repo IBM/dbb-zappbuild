@@ -187,6 +187,7 @@ Cobol compiler parms for MortgageApplication/cobol/epsnbrvl.cbl = LIB
 In this build scenario, the build scope is defined through a text file, which references files to be build. The files are scanned and dependency metadata and a build result are stored in the DBB WebApp.
 Either provide an absolute path to the build list file; otherwise it is assumed to be relative path within the workspace
 
+Sample build list stored at `/var/dbb/MortgageApplication/myBuildList.txt` contains:
 ```
 MortgageApplication/bms/epsmort.bms
 MortgageApplication/cobol/epscmort.cbl
@@ -506,12 +507,11 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Build finished
 ```
 
-
 ### Perform Impact Build 
 
 `--impactBuild` builds only programs impacted by source files that have changed since the last successful build.
 
-This build scenario identifies the changed files based on diffing the git baseline hash and the current hash; then the list of changed files is passed into the impact analysis phase, which will detect the impacted files based on the `impactResolutionRules` which are defined in application.properties. It 
+This build scenario identifies the changed files based on diffing the git baseline hash and the current hash; then the list of changed files is passed into the impact analysis phase, which will detect the impacted files based on the `impactResolutionRules` which are defined in application.properties.
 
 ```
 groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
@@ -653,7 +653,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Total build time  : 17.239 seconds
 ```
 
-### Peroform ImpactBuilds for topic branches 
+### Perform ImpactBuilds for topic branches 
 
 zAppBuild is able to detect when building a topic branch for the first time. It will automatically clone the dependency data collections from the main build branch (see `mainBuildBranch` build property in application.properties) in order to avoid having to rescan the entire application.
 
