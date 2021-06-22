@@ -22,13 +22,13 @@ buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
-if (props.runzTests && props.runzTests.toBoolean()) {
+// sort the build list based on build file rank if provided
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
+
+if (buildListContainsTests(sortedList)) {
 	langQualifier = "cobol_test"
 	buildUtils.createLanguageDatasets(langQualifier)
 }
-
-// sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cobol_fileBuildRank')
 
 // iterate through build list
 sortedList.each { buildFile ->
@@ -321,6 +321,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	
+	if (buildUtils.isSQL(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
 	String isMQ = props.getFileProperty('cobol_isMQ', buildFile)
 	if (isMQ && isMQ.toBoolean())
@@ -338,4 +341,9 @@ def getRepositoryClient() {
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
 	return repositoryClient
+}
+
+boolean buildListContainsTests(List<String> buildList) {
+	boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('cobol_testcase', buildFile).equals('true')}
+	return containsZUnitTestCase ? true : false
 }

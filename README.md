@@ -2,9 +2,12 @@
 zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs.
 
 ## Resources
-* [IBM Dependency Based Build Product Page](https://developer.ibm.com/mainframe/products/ibm-dependency-based-build/)
-* [IBM DBB Community](https://www.ibm.com/developerworks/community/groups/service/html/communitystart?communityUuid=eb5571db-e187-47c1-bd64-d5da2bd73e73)
-* [IBM DBB Knowledge Center](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.7/welcome.html)
+* [IBM Dependency Based Build Product Page](https://www.ibm.com/products/dependency-based-build)
+* [IBM DBB Knowledge Center](https://www.ibm.com/docs/en/dbb/1.1.0)
+* [IBM/dbb Repository](https://github.com/IBM/dbb/)
+* [IBM IDZ Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=f461c55d-159c-4a94-b708-9f7fe11d972b)
+* [IBM DBB Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=20c9b889-9450-4ab6-8f11-8a5eb2b3342d)
+
 
 ## Contributing
 For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
@@ -39,7 +42,9 @@ zAppBuild supports a number of build scenarios:
 * **Full Build** - Build all programs (or buildable files) of an application.
 * **Impact Build** - Build only programs impacted by source files that have changed since the last successful build.
 * **Topic Branch Build** - Detects when building a topic branch for the first time and will automatically clone the dependency data collections from the main build branch in order to avoid having to rescan the entire application.
-* **Scan Only** - Skip the actual building and only scan source files for dependency data.
+* **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
+* **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
+
 
 Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md).
 
@@ -52,4 +57,4 @@ samples/application-conf | The `application-conf` folder contains application sp
 samples/MortgageApplication | This is an updated version of the original [MortgageApplication](https://github.com/IBM/dbb/tree/master/Build/MortgageApplication) sample designed to be built by zAppBuild. | [samples/MortgageApplication/README.md](samples/MortgageApplication/README.md)
 utilities | This folder contains utility scripts which provide common utility functions used by the various zAppBuild build scripts. | [utilities/README.md](utilities/README.md)
 build.groovy | This is the main build script that is called to start the build process. | [BUILD.md](BUILD.md)
-
+test | This folder contains testing framework for ZAppBuild which includes test scripts and related test content.| [test/README.md](/test/README.md)

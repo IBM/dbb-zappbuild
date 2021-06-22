@@ -37,15 +37,10 @@ buildUtils.createLanguageDatasets(langQualifier)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 
 	// Parse the playback from the bzucfg file
-	String xml = new File(buildUtils.getAbsolutePath(buildFile)).getText("IBM-1047")
+	Boolean hasPlayback = false
+	String playback
+	(hasPlayback, playback) = getPlaybackFile(buildFile);
 
-	String playback;
-	for (line in xml.split('\n')) {
-		if (line.contains("runner:playback moduleName")) {
-			playback = line.split("=")[1].split("\"")[1]
-		}
-	}
-	
 	// Upload BZUCFG file to a BZUCFG Dataset
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
 
@@ -65,22 +60,52 @@ buildUtils.createLanguageDatasets(langQualifier)
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
 //  PARM=('STOP=E,REPORT=XML')
-//REPLAY.BZUPLAY DD DISP=SHR,
-// DSN=${props.zunit_bzuplayPDS}(${playback})
+"""
+	if (hasPlayback) { // bzucfg contains reference to a playback file
+		jcl +=
+		"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
+		"// DSN=${props.zunit_bzuplayPDS}(${playback}) \n"
+	} else { // no playbackfile referenced
+		jcl +=
+		"//REPLAY.BZUPLAY DD DUMMY   \n"
+	}
+
+	jcl += """\
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
-if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-   jcl +=
-   "//CEEOPTS DD *                        \n"   +
-   ( ( props.codeCoverageHeadlessHost != null && props.codeCoverageHeadlessPort != null ) ?
-       "TEST(,,,TCPIP&${props.codeCoverageHeadlessHost}%${props.codeCoverageHeadlessPort}:*)  \n" :
-       "TEST(,,,DBMDT:*)  \n" ) +
-   "ENVAR(                                \n" +
-   '"'+ "EQA_STARTUP_KEY=CC,${member},testid=${member},moduleinclude=${member}" + '")' + "\n" +
-   "/* \n"
-}
-jcl += """\
+	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
+	        // codeCoverageHost
+		if (props.codeCoverageHeadlessHost != null)
+			codeCoverageHost = props.codeCoverageHeadlessHost
+               else
+			codeCoverageHost = props.getFileProperty('zunit_CodeCoverageHost', buildFile)
+	        // codeCoveragePort
+		if (props.codeCoverageHeadlessPort != null)
+			codeCoveragePort = props.codeCoverageHeadlessPort
+               else
+			codeCoveragePort = props.getFileProperty('zunit_CodeCoveragePort', buildFile)
+		// codeCoverageOptions
+		if (props.codeCoverageOptions != null)
+			codeCoverageOptions = props.codeCoverageOptions
+               else
+			codeCoverageOptions = props.getFileProperty('zunit_CodeCoverageOptions', buildFile)
+	
+		jcl +=
+		"//CEEOPTS DD *                        \n"   +
+		( ( codeCoverageHost != null && codeCoveragePort != null ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
+		"ENVAR(\n"
+		if (codeCoverageOptions != null) {
+			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
+			optionsParms.each { optionParm ->
+				jcl += optionParm + "\n";
+			}
+		} else {
+			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
+		}
+   		jcl += "/* \n"
+	}
+	jcl += """\
 //*
 //IFGOOD IF RC<=4 THEN
 //GOODRC  EXEC PGM=IEFBR14
@@ -90,7 +115,7 @@ jcl += """\
 //       ENDIF
 """
 	if (props.verbose) println(jcl)
-		
+
 	def dbbConf = System.getenv("DBB_CONF")
 
 	// Create jclExec
@@ -107,22 +132,22 @@ jcl += """\
 	// Save Job Spool to logFile
 	zUnitRunJCL.saveOutput(logFile, props.logEncoding)
 
-	//	// Extract Job BZURPT as XML
-	//	def logEncoding = "UTF-8"
-	//	zUnitRunJCL.getAllDDNames().each({ ddName ->
-	//		if (ddName == 'XML') {
-	//			def file = new File("${workDir}/zUnitRunJCLiew${ddName}.xml")
-	//			zUnitRunJCL.saveOutput(ddName, file, logEncoding)
-	//		}
-	//		if (ddName == 'JUNIT') {
-	//			def file = new File("${workDir}/zUnitRunJCLiew${ddName}.xml")
-	//			zUnitRunJCL.saveOutput(ddName, file, logEncoding)
-	//		}
-	//		if (ddName == 'CSV') {
-	//			def file = new File("${workDir}/zUnitRunJCLiew${ddName}.csv")
-	//			zUnitRunJCL.saveOutput(ddName, file, logEncoding)
-	//		}
-	//	})
+	//  // Extract Job BZURPT as XML
+	//  def logEncoding = "UTF-8"
+	//  zUnitRunJCL.getAllDDNames().each({ ddName ->
+	//    if (ddName == 'XML') {
+	//      def file = new File("${workDir}/zUnitRunJCLiew${ddName}.xml")
+	//      zUnitRunJCL.saveOutput(ddName, file, logEncoding)
+	//    }
+	//    if (ddName == 'JUNIT') {
+	//      def file = new File("${workDir}/zUnitRunJCLiew${ddName}.xml")
+	//      zUnitRunJCL.saveOutput(ddName, file, logEncoding)
+	//    }
+	//    if (ddName == 'CSV') {
+	//      def file = new File("${workDir}/zUnitRunJCLiew${ddName}.csv")
+	//      zUnitRunJCL.saveOutput(ddName, file, logEncoding)
+	//    }
+	//  })
 
 
 	/**
@@ -146,7 +171,7 @@ jcl += """\
 			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
-			// printReport 
+			// printReport
 			printReport(reportLogFile)
 		} else if (rc <= props.zunit_maxWarnRC.toInteger()){
 			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
@@ -184,6 +209,19 @@ def getRepositoryClient() {
 	return repositoryClient
 }
 
+/*
+ * returns containsPlayback, 
+ */
+def getPlaybackFile(String xmlFile) {
+	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
+	def parser = new XmlParser().parseText(xml)
+	if (parser.'runner:playback'.playbackFile.size()==0) return [false, null]
+	else {
+		String playbackFileName = parser.'runner:playback'.@moduleName[0]
+		return [true, playbackFileName]
+	}
+}
+
 /**
  *  Parsing the result file and prints summary of the result
  */
@@ -214,5 +252,13 @@ def printReport(File resultFile) {
 
 }
 
-
-
+def splitCCParms(String parms) {
+	def outParms = []
+	for (int chunk = 0; chunk <= (parms.length().intdiv(72)); chunk++) {
+		maxLength = (parms.length() - (chunk * 72))
+		if (maxLength > 72)
+			maxLength = 72
+		outParms.add(parms.substring((chunk * 72), (chunk * 72) + maxLength));
+	}
+	return outParms
+}
