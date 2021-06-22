@@ -1,9 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.repository.*
-import com.ibm.dbb.dependency.*
-import com.ibm.dbb.build.*
-import groovy.transform.*
-import com.ibm.jzos.ZFile
 
 
 // define script properties
@@ -16,23 +12,23 @@ import com.ibm.jzos.ZFile
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
-buildUtils.assertBuildProperties(props.REXX_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.rexx_requiredBuildProperties)
 
 // create language datasets
-def langQualifier = "REXX"
+def langQualifier = "rexx"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'REXX_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'rexx_fileBuildRank')
 
 // iterate through build list
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('REXX_resolutionRules', buildFile)
+	String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, props.REXX_srcPDS, props.REXX_srcPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, props.rexx_srcPDS, dependencyResolver)
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -52,7 +48,7 @@ sortedList.each { buildFile ->
 
 	// compile the cobol program
 	int rc = compile.execute()
-	int maxRC = props.getFileProperty('REXX_compileMaxRC', buildFile).toInteger()
+	int maxRC = props.getFileProperty('rexx_compileMaxRC', buildFile).toInteger()
 
 	boolean bindFlag = true
 
@@ -65,10 +61,10 @@ sortedList.each { buildFile ->
 	}
 	else {
 		// if this program needs to be link edited . . .
-		String needsLinking = props.getFileProperty('REXX_linkEdit', buildFile)
+		String needsLinking = props.getFileProperty('rexx_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
-			maxRC = props.getFileProperty('REXX_linkEditMaxRC', buildFile).toInteger()
+			maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
 
 			if (rc > maxRC) {
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
@@ -79,7 +75,7 @@ sortedList.each { buildFile ->
 			else {
 				if (!props.userBuild){
 					// only scan the load module if load module scanning turned on for file
-					String scanLoadModule = props.getFileProperty('REXX_scanLoadModule', buildFile)
+					String scanLoadModule = props.getFileProperty('rexx_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
 				}
@@ -102,31 +98,31 @@ sortedList.each { buildFile ->
  * createCompileCommand - creates a MVSExec command for compiling the REXX program (buildFile)
  */
 def createCompileCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
-	def parms = props.getFileProperty('REXX_compileParms', buildFile) ?: ""
-	String compiler = props.getFileProperty('REXX_compiler', buildFile)
+	def parms = props.getFileProperty('rexx_compileParms', buildFile) ?: ""
+	String compiler = props.getFileProperty('rexx_compiler', buildFile)
 
 	// define the MVSExec command to compile the program
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	compile.dd(new DDStatement().name("SYSIN").dsn("${props.REXX_srcPDS}($member)").options('shr').report(true))
+	compile.dd(new DDStatement().name("SYSIN").dsn("${props.rexx_srcPDS}($member)").options('shr').report(true))
 	
-	compile.dd(new DDStatement().name("SYSPRINT").options(props.REXX_REXXPrintTempOptions))
-	compile.dd(new DDStatement().name("SYSTERM").options(props.REXX_tempOptions))
+	compile.dd(new DDStatement().name("SYSPRINT").options(props.rexx_rexxPrintTempOptions))
+	compile.dd(new DDStatement().name("SYSTERM").options(props.rexx_tempOptions))
 	
 	// Write SYSLIN to temporary dataset if performing link edit or to physical dataset
-	String doLinkEdit = props.getFileProperty('REXX_linkEdit', buildFile)
-	String linkEditStream = props.getFileProperty('REXX_linkEditStream', buildFile)
-	String linkDebugExit = props.getFileProperty('REXX_linkDebugExit', buildFile)
+	String doLinkEdit = props.getFileProperty('rexx_linkEdit', buildFile)
+	String linkEditStream = props.getFileProperty('rexx_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
-	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.REXX_objPDS}($member)").options('shr').output(true))
-	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.REXX_REXXLoadPDS}($member)").options('shr').output(true).deployType('LOAD'))
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType('LOAD'))
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
-	compile.dd(new DDStatement().name("SYSLIB").dsn(props.REXX_srcPDS).options("shr"))
+	compile.dd(new DDStatement().name("SYSLIB").dsn(props.rexx_srcPDS).options("shr"))
 		
 	// add custom concatenation
-	def compileSyslibConcatenation = props.getFileProperty('REXX_compileSyslibConcatenation', buildFile) ?: ""
+	def compileSyslibConcatenation = props.getFileProperty('rexx_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
 		def String[] syslibDatasets = compileSyslibConcatenation.split(',');
 		for (String syslibDataset : syslibDatasets )
@@ -157,10 +153,10 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
  * createLinkEditCommand - creates a MVSExec command for link editing the REXX object module produced by the compile
  */
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
-	String parms = props.getFileProperty('REXX_linkEditParms', buildFile)
-	String linker = props.getFileProperty('REXX_linkEditor', buildFile)
-	String linkEditStream = props.getFileProperty('REXX_linkEditStream', buildFile)
-	String linkDebugExit = props.getFileProperty('REXX_linkDebugExit', buildFile)
+	String parms = props.getFileProperty('rexx_linkEditParms', buildFile)
+	String linker = props.getFileProperty('rexx_linkEditor', buildFile)
+	String linkEditStream = props.getFileProperty('rexx_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
@@ -184,20 +180,20 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		// Alloc SYSLIN
 		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
 		// add the obj DD
-		linkedit.dd(new DDStatement().name("OBJECT").dsn("${props.REXX_objPDS}($member)").options('shr'))
+		linkedit.dd(new DDStatement().name("OBJECT").dsn("${props.rexx_objPDS}($member)").options('shr'))
 
 	} else { // no debug && no link card
-		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.REXX_objPDS}($member)").options('shr'))
+		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.rexx_objPDS}($member)").options('shr'))
 	}
 
 	// add DD statements to the linkedit command
 	String linkedit_deployType = props.getFileProperty('linkedit_deployType', buildFile)
 	if ( linkedit_deployType == null )
 		linkedit_deployType = 'LOAD'
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.REXX_loadPDS}($member)").options('shr').output(true).deployType(linkedit_deployType))
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.rexx_loadPDS}($member)").options('shr').output(true).deployType(linkedit_deployType))
 	
-	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.REXX_printTempOptions))
-	linkedit.dd(new DDStatement().name("SYSUT1").options(props.REXX_tempOptions))
+	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.rexx_printTempOptions))
+	linkedit.dd(new DDStatement().name("SYSUT1").options(props.rexx_tempOptions))
 
 	// add RESLIB if needed
 	if ( props.RESLIB ) {
@@ -205,10 +201,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	}
 
 	// add a syslib to the compile command with optional CICS concatenation
-	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.REXX_objPDS).options("shr"))
+	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.rexx_objPDS).options("shr"))
 	
 	// add custom concatenation
-	def linkEditSyslibConcatenation = props.getFileProperty('REXX_linkEditSyslibConcatenation', buildFile) ?: ""
+	def linkEditSyslibConcatenation = props.getFileProperty('rexx_linkEditSyslibConcatenation', buildFile) ?: ""
 	if (linkEditSyslibConcatenation) {
 		def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
 		for (String syslibDataset : syslibDatasets )
