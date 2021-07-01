@@ -70,7 +70,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-			
+
 			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
 			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
 
@@ -578,7 +578,9 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 		// language COB
 		if (langPrefix != null ){
 			// generic properties
-			addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			if (props."${langPrefix}_impactPropertyList"){
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			}
 			// cics properties
 			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
 				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
