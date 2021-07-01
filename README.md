@@ -46,7 +46,7 @@ zAppBuild supports a number of build scenarios:
 * **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
 
 
-Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md).
+Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console log.
 
 ## Repository Legend
 Folder/File | Description | Documentation Link
