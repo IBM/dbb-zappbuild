@@ -19,7 +19,7 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
 // create language datasets
-def langQualifier = "cobol"
+@Field def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
