@@ -418,7 +418,7 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 	if(deployType == null )
 		deployType = 'LOAD'
 
-	if (props."${langQualifier}_deployType" != deployType){ // check if a file level overwrite was used
+	if (props."${langQualifier}_deployType" == deployType){ // check if a file level overwrite was used
 		if(isCICS(logicalFile)){ // if CICS
 			String cicsDeployType = props.getFileProperty("${langQualifier}_deployTypeCICS", buildFile)
 			print "xxxx + ${langQualifier}_deployTypeCICS + $cicsDeployType"
@@ -427,6 +427,8 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 			String dliDeployType = props.getFileProperty("${langQualifier}_deployTypeDLI", buildFile)
 			if (dliDeployType != null) deployType = dliDeployType
 		}
+	} else{
+		// a file level overwrite was used
 	}
 	
 	return deployType
