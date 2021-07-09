@@ -74,7 +74,8 @@ def createCopyGenCommand(String buildFile, String member, File logFile) {
 	// add DD statements to the compile command
 	compile.dd(new DDStatement().name("SYSIN").dsn("${props.bms_srcPDS}($member)").options('shr').report(true))
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.bms_tempOptions))
-	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.bms_cpyPDS}($member)").options('shr').output(true))
+	String deployType = buildUtils.getDeployType("bms_copy", buildFile, null)
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.bms_cpyPDS}($member)").options('shr').output(true).deployType(deployType))
 	[1,2,3].each { num ->
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.bms_tempOptions))
 	}
