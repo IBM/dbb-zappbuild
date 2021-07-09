@@ -412,7 +412,7 @@ def getLangPrefix(String scriptName){
 /*
  * returns the deployType for a logicalFile depending on the isCICS, isDLI setting
  */
-def getDeployType(String langQualifier, LogicalFile logicalFile){
+def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFile){
 	// getDefault
 	String deployType = props.getFileProperty('${langQualifier}_deployType', buildFile)
 	if(deployType == null )
