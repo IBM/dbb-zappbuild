@@ -130,11 +130,9 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 	MVSExec mfsPhase2 = new MVSExec().file(buildFile).pgm(props.mfs_phase2processor).parm(parameters)
 	
 	// add DD statements to the mfsPhase2 command
-	String mfs_deployType = props.getFileProperty('mfs_deployType', buildFile)
-	if ( mfs_deployType == null )
-		mfs_deployType = 'LOAD'
+	String deployType = buildUtils.getDeployType("mfs", buildFile, logicalFile)
 	
-	mfsPhase2.dd(new DDStatement().name("FORMAT").dsn(props.mfs_tformatPDS).options("shr").output(true).deployType(mfs_deployType))
+	mfsPhase2.dd(new DDStatement().name("FORMAT").dsn(props.mfs_tformatPDS).options("shr").output(true).deployType(deployType))
 	// mfsPhase2.dd(new DDStatement().name("DUMMY").dsn("${props.PROCLIB}(FMTCPY)").options("shr"))
 	mfsPhase2.dd(new DDStatement().name("TASKLIB").dsn(props.SDFSRESL).options("shr"))
 	
