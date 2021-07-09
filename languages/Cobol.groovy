@@ -286,7 +286,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	}
 
 	// add DD statements to the linkedit command
-	String deployType = buildUtils.getDeployType('${langQualifier}_deployType', buildFile)
+	String deployType = buildUtils.getDeployType('${langQualifier}_deployType', logicalFile)
 	if(isZUnitTestCase){
 		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cobol_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
 	}
