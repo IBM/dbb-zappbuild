@@ -19,7 +19,7 @@ println("** Building files mapped to ${this.class.getName()}.groovy script")
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
 // create language datasets
-@Field def langQualifier = "cobol"
+def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
@@ -286,7 +286,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	}
 
 	// add DD statements to the linkedit command
-	String deployType = buildUtils.getDeployType(langQualifier, buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
 	if(isZUnitTestCase){
 		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cobol_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
 	}
