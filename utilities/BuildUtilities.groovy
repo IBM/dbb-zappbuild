@@ -414,16 +414,17 @@ def getLangPrefix(String scriptName){
  */
 def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFile){
 	// getDefault
-	String deployType = props.getFileProperty('${langQualifier}_deployType', buildFile)
+	String deployType = props.getFileProperty("${langQualifier}_deployType", buildFile)
 	if(deployType == null )
 		deployType = 'LOAD'
 
-	if (props.'${langQualifier}_deployType' != deployType){ // check if a file level overwrite was used
+	if (props."${langQualifier}_deployType" != deployType){ // check if a file level overwrite was used
 		if(isCICS(logicalFile)){ // if CICS
-			String cicsDeployType = props.getFileProperty('${langQualifier}_deployTypeCICS', buildFile)
+			String cicsDeployType = props.getFileProperty("${langQualifier}_deployTypeCICS", buildFile)
+			println "xxxx + $cicsDeployType"
 			if (cicsDeployType != null) deployType = cicsDeployType
 		} else if (isDLI(logicalFile)){
-			String dliDeployType = props.getFileProperty('${langQualifier}_deployTypeDLI', buildFile)
+			String dliDeployType = props.getFileProperty("${langQualifier}_deployTypeDLI", buildFile)
 			if (dliDeployType != null) deployType = dliDeployType
 		}
 	}
