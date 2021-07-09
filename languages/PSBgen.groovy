@@ -170,10 +170,8 @@ def createPSBLinkEditCommand(String buildFile, String member, File logFile) {
 
 	// add DD statements to the linkedit command
 	String psbgen_loadPDS = props.getFileProperty('psbgen_loadPDS', buildFile)
-	String psbgen_deployType = props.getFileProperty('psbgen_deployType', buildFile)
-	if ( psbgen_deployType == null )
-		psbgen_deployType = 'LOAD'
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${psbgen_loadPDS}($member)").options('shr').output(true).deployType(psbgen_deployType))
+	String deployType = buildUtils.getDeployType("psbgen", buildFile, logicalFile)
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${psbgen_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.psbgen_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.psbgen_tempOptions))
 
@@ -223,10 +221,8 @@ def createACBgenCommand(String buildFile, String member, File logFile) {
 
 	// retrieve target pds and deploytype
 	String acbgen_loadPDS = props.getFileProperty('acbgen_loadPDS', buildFile)
-	String acbgen_deployType = props.getFileProperty('acbgen_deployType', buildFile)
-	if ( acbgen_deployType == null )
-		acbgen_deployType = 'LOAD'
-	acbgen.dd(new DDStatement().name("IMSACB").dsn("${acbgen_loadPDS}").options('shr').output(true).deployType(acbgen_deployType))
+	String deployType = buildUtils.getDeployType("acbgen", buildFile, logicalFile)
+	acbgen.dd(new DDStatement().name("IMSACB").dsn("${acbgen_loadPDS}").options('shr').output(true).deployType(deployType))
 
 	// addional allocations
 	acbgen.dd(new DDStatement().name("SYSPRINT").options(props.psbgen_tempOptions))
