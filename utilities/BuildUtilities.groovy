@@ -422,7 +422,6 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 		if (logicalFile != null){
 			if(isCICS(logicalFile)){ // if CICS
 				String cicsDeployType = props.getFileProperty("${langQualifier}_deployTypeCICS", buildFile)
-				print "xxxx + ${langQualifier}_deployTypeCICS + $cicsDeployType"
 				if (cicsDeployType != null) deployType = cicsDeployType
 			} else if (isDLI(logicalFile)){
 				String dliDeployType = props.getFileProperty("${langQualifier}_deployTypeDLI", buildFile)
