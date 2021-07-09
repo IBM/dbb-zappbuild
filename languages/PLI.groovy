@@ -217,7 +217,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
-	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("pli", buildFile, logicalFile)
 	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.pli_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.pli_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.pli_tempOptions))

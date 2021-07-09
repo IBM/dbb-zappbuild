@@ -170,7 +170,7 @@ def createPSBLinkEditCommand(String buildFile, String member, File logFile) {
 
 	// add DD statements to the linkedit command
 	String psbgen_loadPDS = props.getFileProperty('psbgen_loadPDS', buildFile)
-	String deployType = buildUtils.getDeployType("psbgen", buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("psbgen", buildFile, null)
 	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${psbgen_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.psbgen_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.psbgen_tempOptions))

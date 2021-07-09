@@ -124,7 +124,7 @@ def createLinkEditCommand(String buildFile, String member, File logFile) {
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.bms_linkEditor).parm(parameters)
 	
 	// add DD statements to the linkedit command
-	String deployType = buildUtils.getDeployType("bms", buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("bms", buildFile, null)
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options("shr"))
 	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.bms_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.bms_tempOptions))
