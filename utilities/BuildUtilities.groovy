@@ -160,7 +160,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
-	// update build results only in non-userbuild scenarios 
+	// update build results only in non-userbuild scenarios
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
@@ -348,13 +348,13 @@ def getScanner(String buildFile){
 def createLanguageDatasets(String lang) {
 	if (props."${lang}_srcDatasets")
 		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
-		
+
 	if (props."${lang}_loadDatasets")
 		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
-	
+
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
-		
+
 	if (props."${lang}_cexecDatasets")
 		createDatasets(props."${lang}_cexecDatasets".split(','), props."${lang}_cexecOptions")
 }
@@ -407,4 +407,27 @@ def getLangPrefix(String scriptName){
 			break;
 	}
 	return langPrefix
+}
+
+/*
+ * returns the deployType for a logicalFile depending on the isCICS, isDLI setting
+ */
+def getDeployType(String langQualifier, LogicalFile logicalFile){
+	// getDefault
+	String deployType = props.getFileProperty('${langQualifier}_deployType', buildFile)
+	if(deployType == null )
+		deployType = 'LOAD'
+
+	if (props.'${langQualifier}_deployType' != deployType){ // check if a file level overwrite was used
+		if(isCICS(buildFile)){ // if CICS
+			String cicsDeployType = props.getFileProperty('${langQualifier}_deployTypeCICS', buildFile)
+			if (cicsDeployType != null) deployType = cicsDeployType
+		} else if (isDLI(buildFile)){
+			String dliDeployType = props.getFileProperty('${langQualifier}_deployTypeDLI', buildFile)
+			if (dliDeployType != null) deployType = dliDeployType
+		}
+	}
+	
+	return deployType
+
 }
