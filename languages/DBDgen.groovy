@@ -148,10 +148,8 @@ def createDBDLinkEditCommand(String buildFile, String member, File logFile) {
 
 	// add DD statements to the linkedit command
 	String dbdgen_loadPDS = props.getFileProperty('dbdgen_loadPDS', buildFile)
-	String dbdgen_deployType = props.getFileProperty('dbdgen_deployType', buildFile)
-	if ( dbdgen_deployType == null )
-		dbdgen_deployType = 'LOAD'
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${dbdgen_loadPDS}($member)").options('shr').output(true).deployType(dbdgen_deployType))
+	String deployType = buildUtils.getDeployType('dbdgen', buildFile, logicalFile)
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${dbdgen_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.dbdgen_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.dbdgen_tempOptions))
 
