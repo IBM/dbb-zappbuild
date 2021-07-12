@@ -222,3 +222,20 @@ zunit_resolutionRules | Default resolution rules for zUnit. | true
 zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
+
+### REXX.properties
+Application properties used by zAppBuild/language/REXX.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+rexx_compileMaxRC | Default compile maximum RC allowed. | true
+rexx_linkEditMaxRC | Default link edit maximum RC allowed. | true
+rexx_resolutionRules | Default resolution rules for zUnit. | true
+rexx_compileParms | Default base compile parameters. | true
+rexx_compiler | Default REXX compiler | true
+rexx_linkEdit | Flag indicating to execute the link edit step to produce a compiled rexx for the source file. | true
+rexx_linkEditParms | Default link edit parameters. | true
+rexx_deployType | default deployType | true
+rexx_cexec_deployType | default deployType CEXEC | true
+rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
