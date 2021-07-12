@@ -52,6 +52,9 @@ assembler_impactPropertyList | List of build properties causing programs to rebu
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+assembler_deployType | default deployType for build output | true
+assembler_deployTypeCICS | deployType for build output for build files where isCICS=true | true
+assembler_deployTypeDLI | deployType for build output for build files with isDLI=true | true
 assembler_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 assembler_assemblySyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during assembly step | true
 assembler_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
@@ -67,6 +70,8 @@ bms_copyGenParms | Default parameters for the copybook generation step. | true
 bms_compileParms | Default parameters for the compilation step. | true
 bms_linkEditParms | Default parameters for the link edit step. | true
 bms_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+bms_deployType | deployType for build output | true
+bms_copy_deployType | deployType for generated copybooks | true
 
 
 ### Cobol.properties
@@ -89,9 +94,12 @@ cobol_impactPropertyListCICS | List of CICS build properties causing programs to
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 cobol_isMQ | Flag indicating that the program contains MQ calls | true
+cobol_deployType | default deployType for build output | true
+cobol_deployTypeCICS | deployType for build output for build files where isCICS=true | true
+cobol_deployTypeDLI | deployType for build output for build files with isDLI=true | true
 cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 cobol_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
-cobol_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+cobol_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### LinkEdit.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
@@ -102,8 +110,11 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_deployType | default deployType for build output | true
+linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
+linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
-linkEdit_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+linkEdit_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### PLI.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
@@ -127,9 +138,12 @@ pli_impactPropertyList | List of build properties causing programs to rebuild wh
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
+pli_deployType | default deployType for build output | true
+pli_deployTypeCICS | deployType for build output for build files where isCICS=true | true
+pli_deployTypeDLI | deployType for build output for build files with isDLI=true | true
 pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
-pli_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### bind.properties
 Application properties used by zAppBuild/language/COBOL.groovy
@@ -155,6 +169,7 @@ mfs_phase2MaxRC | Default MFS Phase 2 maximum RC allowed. | true
 mfs_phase1Parms | Default parameters for the phase 1 step. | true
 mfs_phase2Parms | Default parameters for the phase 2 step. | true
 mfs_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+mfs_deployType | default deployType for build output | true
 
 ### DBDgen.properties
 Application properties used by zAppBuild/language/DBDgen.groovy
@@ -168,6 +183,7 @@ dbdgen_compileErrorPrefixParms | Default parameters to support remote error feed
 dbdgen_assemblerMaxRC | Default link edit maximum RC allowed. | true
 dbdgen_linkEditMaxRC | Default link edit maximum RC allowed. | true
 dbdgen_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+dbdgen_deployType | default deployType for build output | true
 
 
 ### PSBgen.properties
@@ -183,14 +199,16 @@ psbgen_runACBgen | Parameter if ACBgen should be executed right after PSBgen (de
 psbgen_assemblerMaxRC | Default link edit maximum RC allowed. | true
 psbgen_linkEditMaxRC | Default link edit maximum RC allowed. | true
 psbgen_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+psbgen_deployType | default deployType for build output | true
 
 ### ACBgen.properties
-Application properties used by zAppBuild/language/ACBgen.groovy
+Application properties used by zAppBuild/language/PSBgen.groovy
 
 Property | Description | Overridable
 --- | --- | ---
 acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
+acbgen_deployType | default deployType for build output | true
 
 ### ZunitConfig.properties
 Application properties used by zAppBuild/language/ZunitConfig.groovy
@@ -200,4 +218,7 @@ Property | Description | Overridable
 zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_resolutionRules | Default resolution rules for zUnit. | true 
+zunit_resolutionRules | Default resolution rules for zUnit. | true
+zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
+zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
+zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
