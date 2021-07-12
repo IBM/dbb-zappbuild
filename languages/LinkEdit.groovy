@@ -82,11 +82,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
-	String linkedit_deployType = props.getFileProperty('linkedit_deployType', buildFile)
-	if ( linkedit_deployType == null )
-		linkedit_deployType = 'LOAD'
+	// deployType requires a file level overwrite to define isCICS and isDLI, while the linkcard does not carry isCICS, isDLI attributes
+	String deployType = buildUtils.getDeployType("linkedit", buildFile, logicalFile)
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr").report(true))
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($member)").options('shr').output(true).deployType(linkedit_deployType))
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.linkedit_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.linkedit_tempOptions))
 

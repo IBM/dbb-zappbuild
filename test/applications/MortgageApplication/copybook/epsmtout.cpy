@@ -1,4 +1,4 @@
-* OUTPUTS
+      * OUTPUTS
           10 EPSPCOM-RETURN-MONTH-PAYMENT
                                       PIC S9(7)V99 COMP.
           10 EPSPCOM-ERRMSG           PIC X(80).

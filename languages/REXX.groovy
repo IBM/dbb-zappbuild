@@ -116,7 +116,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
 	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true))
-	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType('LOAD'))
+	String deployType = buildUtils.getDeployType("rexx_exec", buildFile, null)
+	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType(deployType))
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.rexx_srcPDS).options("shr"))
@@ -187,10 +188,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	}
 
 	// add DD statements to the linkedit command
-	String linkedit_deployType = props.getFileProperty('linkedit_deployType', buildFile)
-	if ( linkedit_deployType == null )
-		linkedit_deployType = 'LOAD'
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.rexx_loadPDS}($member)").options('shr').output(true).deployType(linkedit_deployType))
+	String deployType = buildUtils.getDeployType("rexx", buildFile, logicalFile)
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.rexx_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.rexx_printTempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.rexx_tempOptions))

@@ -74,7 +74,8 @@ def createCopyGenCommand(String buildFile, String member, File logFile) {
 	// add DD statements to the compile command
 	compile.dd(new DDStatement().name("SYSIN").dsn("${props.bms_srcPDS}($member)").options('shr').report(true))
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.bms_tempOptions))
-	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.bms_cpyPDS}($member)").options('shr').output(true))
+	String deployType = buildUtils.getDeployType("bms_copy", buildFile, null)
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.bms_cpyPDS}($member)").options('shr').output(true).deployType(deployType))
 	[1,2,3].each { num ->
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.bms_tempOptions))
 	}
@@ -124,8 +125,9 @@ def createLinkEditCommand(String buildFile, String member, File logFile) {
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.bms_linkEditor).parm(parameters)
 	
 	// add DD statements to the linkedit command
+	String deployType = buildUtils.getDeployType("bms", buildFile, null)
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options("shr"))
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.bms_loadPDS}($member)").options('shr').output(true).deployType('MAPLOAD'))
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.bms_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.bms_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.bms_tempOptions))
 	
