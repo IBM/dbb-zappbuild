@@ -344,6 +344,11 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
 	}
 
+	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
+		sortFileList(changedFiles);
+		if (props.verbose) println "*** Sorted list of changed files: $changedFiles"		
+	}
+	
 	// scan changed files
 	changedFiles.each { file ->
 
@@ -609,4 +614,33 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
 	}
 }
 
+/**
+ * isMappedAsZUnitConfigFile
+ * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
+ */
+def isMappedAsZUnitConfigFile(mapping, file) {
+	return (mapping.isMapped("ZUnitConfigScanner", file))
+}
 
+/**
+ * sortFileList
+ * sort a list, putting the lines that defines files mapped as zUnit CFG files to the end
+ */
+def sortFileList(list) {
+	def mapping = new PropertyMappings("dbb.scannerMapping")
+	list.sort{s1, s2 -> 
+		if (isMappedAsZUnitConfigFile(mapping, s1)) {
+			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else {
+			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+				return -1;
+			} else {
+				return 0;
+			}
+		}
+	}
+}

@@ -88,6 +88,8 @@ build options:
  -ccp,--cccPort           Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
  -cco,--cccOptions        Headless Code Coverage Collector Options
  
+ -ctd,--crTestcaseDep     Flag to enable the creation of a dependency to program for a Testcase	
+ 
 
 web application credentials
  -url,--url <arg>         DBB repository URL

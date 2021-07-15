@@ -197,7 +197,9 @@ options:
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
-
+	// createTestcaseDependency
+	cli.ctd(longOpt:'crTestcaseDep', 'Flag to enable the creation of a dependency to program for a Testcase')
+	
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 
@@ -335,6 +337,9 @@ def populateBuildProperties(String[] args) {
 		}
 	}
 
+	// set createTestcaseDependency flag
+	if (opts.ctd) props.createTestcaseDependency = 'true'
+	
 	// set DBB configuration properties
 	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
 	if (opts.id) props.'dbb.RepositoryClient.userId' = opts.id
