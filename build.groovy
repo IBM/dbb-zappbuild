@@ -201,6 +201,9 @@ options:
 	// build framework options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
+	// IDz Dependency Options
+	cli.df(longOpt:'dependencyFile', args:1, argName:'Absolute or relative (from workspace) path to file containing list of build dependencies for user ')
+
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 
@@ -247,6 +250,9 @@ def populateBuildProperties(String[] args) {
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
 	buildUtils.assertBuildProperties('workspace,outDir')
+
+	// support IDz dependency file parameter
+	if (opts.df) props.userBuildDependencyFile = opts.df
 
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
