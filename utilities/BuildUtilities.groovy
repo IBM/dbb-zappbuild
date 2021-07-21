@@ -66,8 +66,6 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  * dependencies from USS directories to data sets
  */
 
- // , String userBuildDependencyFile)
-
 def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, DependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
@@ -78,8 +76,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				.execute()
 	}
 
-	// should this be placed inside following if statement? 
-	if (dependencyPDS && props.userBuildDependencyFile) {
+	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
+		// userBuildDependencyFile present passed from the IDE
 		// skip dependency resolution and copy files from dependency file to dependency dataset
 		def depFilePath = props.userBuildDependencyFile
 		File depFile = new File(depFilePath)
@@ -90,21 +88,21 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 			if (!copiedFileCache.contains(dependency)) {
 				copiedFileCache.add(dependency)
 
-				//retrieve zUnitFileExtension plbck
+				// retrieve zUnitFileExtension plbck
 				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 
 				// original
 				// ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))
 				// get index of last '.' in file path to extract the file extension
-				def extIndex = dependency.lastIndexOf('.');
-
+				def extIndex = dependency.lastIndexOf('.')
 				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependency.substring(extIndex).contains(zunitFileExtension))){
 					new CopyToPDS().file(new File(dependency))
 							.copyMode(CopyMode.BINARY)
 							.dataset(dependencyPDS)
 							.member(CopyToPDS.createMemberName(dependency)) // do I need this? 
 							.execute()
-				} else
+				} 
+				else
 				{
 					new CopyToPDS().file(new File(dependency))
 							.dataset(dependencyPDS)
@@ -114,17 +112,17 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 			}
 		}
 
-		// scan the source file to obtain isMQ flags
+		// scan the source file to obtain isCICS,SQL,DLI,MQ flags
 		if (dependencyResolver) {
-			DependencyScanner scanner = dependencyResolver.getScanner();
+			DependencyScanner scanner = dependencyResolver.getScanner()
 			// get file and source Dir
-			String sourceDir = dependencyResolver.getSourceDir();
-			String sourceFile = dependencyResolver.getFile();
+			String sourceDir = dependencyResolver.getSourceDir()
+			String sourceFile = dependencyResolver.getFile()
 
 			// run manual scan to identify flags
-			LogicalFile lfile = scanner.scan(sourceFile, sourceDir);
+			LogicalFile lfile = scanner.scan(sourceFile, sourceDir)
 			// save lfile to dependency resolver
-			dependencyResolver.setLogicalFile(lfile);
+			dependencyResolver.setLogicalFile(lfile)
 		}
 
 	}
