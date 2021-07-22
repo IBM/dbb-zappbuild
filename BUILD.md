@@ -55,51 +55,53 @@ If buildFile is a text file (*.txt), then it is assumed to be a build list file.
 Options:
 
 required options:
- -w,--workspace <arg>     Absolute path to workspace (root) directory
-                          containing all required source directories
- -a,--application <arg>   Application directory name (relative to workspace)
- -o,--outDir <arg>        Absolute path to the build output root directory
- -h,--hlq <arg>           High level qualifier for partition data sets
+ -w,--workspace <arg>         Absolute path to workspace (root) directory
+                              containing all required source directories
+ -a,--application <arg>       Application directory name (relative to workspace)
+ -o,--outDir <arg>            Absolute path to the build output root directory
+ -h,--hlq <arg>               High level qualifier for partition data sets
 
 build options:
- -p,--propFiles           Comma separated list of additional property files 
-                          to load. Absolute paths or relative to workspace
- -f,--fullBuild           Flag indicating to build all programs for
-                          the application
- -i,--impactBuild         Flag indicating to build only programs impacted
-                          by changed files since last successful build.
+ -p,--propFiles               Comma separated list of additional property files 
+                              to load. Absolute paths or relative to workspace
+ -f,--fullBuild               Flag indicating to build all programs for
+                              the application
+ -i,--impactBuild             Flag indicating to build only programs impacted
+                              by changed files since last successful build.
                           
- -s,--scanOnly            Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
- -ss,--scanSource         Flag indicating to only scan source files for application without building anything
- -sl,--scanLoad           Flag indicating to only scan load modules for application without building anything
- -sa,--scanAll            Flag indicating to scan both source files and load modules for application without building anything
+ -s,--scanOnly                Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
+ -ss,--scanSource             Flag indicating to only scan source files for application without building anything
+ -sl,--scanLoad               Flag indicating to only scan load modules for application without building anything
+ -sa,--scanAll                Flag indicating to scan both source files and load modules for application without building anything
  
- -r,--reset               Deletes the application's dependency collections 
-                          and build result group from the DBB repository
- -v,--verbose             Flag to turn on script trace
- -d,--debug               Flag to build modules for debugging with
-                          IBM Debug for z/OS
- -l,--logEncoding <arg>   Encoding of output logs. Default is EBCDIC 
-                             directory for user build
- -zTest,--runzTests       Specify if zUnit Tests should be run
+ -r,--reset                   Deletes the application's dependency collections 
+                              and build result group from the DBB repository
+ -v,--verbose                 Flag to turn on script trace
+ -d,--debug                   Flag to build modules for debugging with
+                              IBM Debug for z/OS
+ -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC 
+                              directory for user build
+ -zTest,--runzTests           Specify if zUnit Tests should be run
  
- -cc,--ccczUnit           Flag to indicate to collect code coverage reports during zUnit step
- -cch,--cccHost           Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
- -ccp,--cccPort           Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
- -cco,--cccOptions        Headless Code Coverage Collector Options
+ -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
+ -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
+ -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ -cco,--cccOptions            Headless Code Coverage Collector Options
+
+ -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
  
 
 web application credentials
- -url,--url <arg>         DBB repository URL
- -id,--id <arg>           DBB repository id
- -pw,--pw <arg>           DBB repository password
- -pf,--pwFile <arg>       Absolute or relative (from workspace) path to
-                          file containing DBB password
+ -url,--url <arg>             DBB repository URL
+ -id,--id <arg>               DBB repository id
+ -pw,--pw <arg>               DBB repository password
+ -pf,--pwFile <arg>           Absolute or relative (from workspace) path to
+                              file containing DBB password
 
 IDz/ZOD User Build options
- -u,--userBuild           Flag indicating running a user build
- -e,--errPrefix <arg>     Unique id used for IDz error message datasets
+ -u,--userBuild               Flag indicating running a user build
+ -e,--errPrefix <arg>         Unique id used for IDz error message datasets
 
 utility options
- -help,--help             Prints this message
+ -help,--help                 Prints this message
  ```

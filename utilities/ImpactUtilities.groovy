@@ -99,7 +99,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "** Create reports of external impacts."
+		if (props.verbose) println "** Analyse and report external impacted files."
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
@@ -262,16 +262,18 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 		String memberName = CopyToPDS.createMemberName(changedFile)
 		
-		// build resolver
+		// Configure impact resolver
 		ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
+		
+		String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+		impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
 		
 		List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
 		repositoryClient.getAllCollections().each{ collection ->
 			String cName = collection.getName()
-			if(matchesPattern(cName,collectionMatcherPatterns)){
-				if (cName != props.applicationCollectionName){
-					//if (props.verbose) println("** Adding $cName to analysis of external impacts")
-					impactResolver.addCollection(cName)
+			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+				if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+					impactResolver.addCollection(cName) // add collection of foreign application
 				}
 			}
 			else{
@@ -279,35 +281,32 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			}
 		}
 		
-		impactResolver.setResolutionRules(buildUtils.parseResolutionRules(props.impactResolutionRules))
-		
-		// resolve
+		// resolve external impacted files
 		def externalImpactedFiles = impactResolver.resolve()
+		
 		// report scanning results
-		if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified following external impacts for $changedFile")
+		if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified impacts for changed file $changedFile")
 		externalImpactedFiles.each{ externalImpact ->
 			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
 			def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-			if (props.verbose) println("*** $impactRecord")
+			// if (props.verbose) println("*** $impactRecord")
 			externalImpactList.add(impactRecord)
-			
-			collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList)
+			collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files> 
 		}
 	}
 
-
-	// print external impacts output found external impacts
+	// generate reports by collection / application
 	collectionImpactsSetMap.each{ entry ->
 		externalImpactList = entry.value
 		if (externalImpactList.size()!=0){
-			// write impactedFiles per application
+			// write impactedFiles per application to build workspace
 			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
 			if (props.verbose) println("** Writing external impacts to file $impactListFileLoc")
 			File impactListFile = new File(impactListFileLoc)
 			String enc = props.logEncoding ?: 'IBM-1047'
 			impactListFile.withWriter(enc) { writer ->
 				externalImpactList.each { file ->
-					if (props.verbose) println file
+					// if (props.verbose) println file
 					writer.write("$file\n")
 				}
 			}

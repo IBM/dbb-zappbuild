@@ -197,7 +197,9 @@ options:
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
-
+	// build framework options
+	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
+	
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 
@@ -334,6 +336,9 @@ def populateBuildProperties(String[] args) {
 			props.codeCoverageOptions = opts.cco
 		}
 	}
+	
+	// set buildframe options
+	if (opts.re) props.reportExternalImpacts = 'true'
 
 	// set DBB configuration properties
 	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
