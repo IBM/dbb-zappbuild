@@ -285,7 +285,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		def externalImpactedFiles = impactResolver.resolve()
 		
 		// report scanning results
-		if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified impacts for changed file $changedFile")
+		if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
 		externalImpactedFiles.each{ externalImpact ->
 			def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
 			def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
@@ -301,7 +301,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		if (externalImpactList.size()!=0){
 			// write impactedFiles per application to build workspace
 			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
-			if (props.verbose) println("** Writing external impacts to file $impactListFileLoc")
+			if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
 			File impactListFile = new File(impactListFileLoc)
 			String enc = props.logEncoding ?: 'IBM-1047'
 			impactListFile.withWriter(enc) { writer ->
