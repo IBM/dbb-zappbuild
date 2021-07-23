@@ -150,7 +150,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	// Perform analysis and build report of external impacts
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "** Analyze and report external impacted files."
+		if (props.verbose) println "*** Analyze and report external impacted files."
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
