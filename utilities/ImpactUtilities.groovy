@@ -260,7 +260,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
 
-		if (props.reportExternalImpactsAnaylsisDepths == "simple"){ 	
+		if (props.reportExternalImpactsAnaylsisDepths == "simple"){
 			// Simple resolution without recursive resolution
 			String memberName = CopyToPDS.createMemberName(changedFile)
 
@@ -319,9 +319,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
 			}
 		}
-	}
-	else {
-		println("*! props.reportExternalImpactsAnaylsisDepths has in invalid value. Set: ${props.reportExternalImpactsAnaylsisDepths} , Valid: simple | deep")
+		else {
+			println("*! props.reportExternalImpactsAnaylsisDepths has in invalid value. Set: ${props.reportExternalImpactsAnaylsisDepths} , Valid: simple | deep")
+		}
 	}
 	
 	// generate reports by collection / application
