@@ -99,7 +99,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "** Analyse and report external impacted files."
+		if (props.verbose) println "** Analyze and report external impacted files."
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
@@ -248,82 +248,90 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 	}
 }
 
-/**
- * 
+/*
+ * Method to query the DBB collections with a list of changed files  
+ * Configured through reportExternalImpacts* build properties
  */
 
 def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
 	// query external collections to produce externalImpactList
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
+	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
 
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
 
-		if (props.reportExternalImpactsAnaylsisDepths == "simple"){
-			// Simple resolution without recursive resolution
-			String memberName = CopyToPDS.createMemberName(changedFile)
+		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFilter)
+		
+		if(matches(changedFile, fileMatchers)){
 
-			def ldepFile = new LogicalDependency(memberName, null, null);
-			List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
-			repositoryClient.getAllCollections().each{ collection ->
-				String cName = collection.getName()
-				if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-					if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-						def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-						def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
-						logicalFiles.each{ logicalFile ->
-							def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-							// if (props.verbose) println("*** $impactRecord")
-							externalImpactList.add(impactRecord)
+			if (props.reportExternalImpactsAnaylsisDepths == "simple"){
+				// Simple resolution without recursive resolution
+				String memberName = CopyToPDS.createMemberName(changedFile)
+
+				def ldepFile = new LogicalDependency(memberName, null, null);
+				repositoryClient.getAllCollections().each{ collection ->
+					String cName = collection.getName()
+					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+							def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+							def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+							logicalFiles.each{ logicalFile ->
+								def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+								// if (props.verbose) println("*** $impactRecord")
+								externalImpactList.add(impactRecord)
+							}
+							collectionImpactsSetMap.put(cName, externalImpactList)
 						}
-						collectionImpactsSetMap.put(cName, externalImpactList)
+					}
+					else{
+						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 					}
 				}
-				else{
-					//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-				}
 			}
-		}
-		else if(props.reportExternalImpactsAnaylsisDepths == "deep"){
-			// Recursive analysis to support nested scenarios
+			else if(props.reportExternalImpactsAnaylsisDepths == "deep"){
+				// Recursive analysis to support nested scenarios
 
-			// Configure impact resolver
-			ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
+				// Configure impact resolver
+				ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
 
-			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-			impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
+				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+				impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
 
-			List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.collectionPatternsReportExternalImpacts)
-			repositoryClient.getAllCollections().each{ collection ->
-				String cName = collection.getName()
-				if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-					if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-						impactResolver.addCollection(cName) // add collection of foreign application
+				repositoryClient.getAllCollections().each{ collection ->
+					String cName = collection.getName()
+					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+							impactResolver.addCollection(cName) // add collection of foreign application
+						}
+					}
+					else{
+						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 					}
 				}
-				else{
-					//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
+				// resolve external impacted files
+				def externalImpactedFiles = impactResolver.resolve()
+
+				// report scanning results
+				if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
+				externalImpactedFiles.each{ externalImpact ->
+					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
+					def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
+					// if (props.verbose) println("*** $impactRecord")
+					externalImpactList.add(impactRecord)
+					collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
 				}
 			}
-			// resolve external impacted files
-			def externalImpactedFiles = impactResolver.resolve()
-
-			// report scanning results
-			if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
-			externalImpactedFiles.each{ externalImpact ->
-				def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
-				def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-				// if (props.verbose) println("*** $impactRecord")
-				externalImpactList.add(impactRecord)
-				collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
+			else {
+				println("*! props.reportExternalImpactsAnaylsisDepths has in invalid value. Set: ${props.reportExternalImpactsAnaylsisDepths} , Valid: simple | deep")
 			}
 		}
 		else {
-			println("*! props.reportExternalImpactsAnaylsisDepths has in invalid value. Set: ${props.reportExternalImpactsAnaylsisDepths} , Valid: simple | deep")
+			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (build property reportExternalImpactsAnalysisFilter)")
 		}
 	}
-	
+
 	// generate reports by collection / application
 	collectionImpactsSetMap.each{ entry ->
 		externalImpactList = entry.value
