@@ -21,13 +21,14 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 
 	// calculate changed files
 	if (lastBuildResult) {
-		(changedFiles, deletedFiles, renamedFiles) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else if (props.topicBranchBuild) {
 		// if this is the first topic branch build get the main branch build result
@@ -52,8 +53,12 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
 
+
 	// create build list using impact analysis
+	if (props.verbose) println "*** Perform impacted analysis for changed files."
+
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> changedBuildPropertyFiles = new HashSet<String>()
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -98,12 +103,58 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}
 
+	// Perform impact analysis for property changes
+	if (props.impactBuildOnBuildPropertyChanges){
+		if (props.verbose) println "*** Perform impacted analysis for property changes."
+
+		changedBuildProperties.each { changedProp ->
+
+			if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
+
+				// perform impact analysis on changed property
+				if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+				// create logical dependency and query collections for logical files with this dependency
+				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
+				logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+
+
+				// get excludeListe
+				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+
+				logicalFileList.each { logicalFile ->
+					def impactFile = logicalFile.getFile()
+					if (props.verbose) println "** Found impacted file $impactFile"
+					// only add impacted files that have a build script mapped to it
+					if (ScriptMappings.getScriptName(impactFile)) {
+						// only add impacted files, that are in scope of the build.
+						if (!matches(impactFile, excludeMatchers)){
+							buildSet.add(impactFile)
+							if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+						}
+						else {
+							// impactedFile found, but on Exclude List
+							//   Possible reasons: Exclude of file was defined after building the collection.
+							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+							if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+						}
+					}
+				}
+			}else {
+				if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
+			}
+		}
+	}else {
+		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
+	}
+
+	// Perform analysis and build report of external impacts
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (props.verbose) println "** Analyze and report external impacted files."
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
-
+	
 	return [buildSet, deletedFiles]
 }
 
@@ -115,6 +166,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// create a list of source directories to search
 	List<String> directories = []
@@ -174,11 +226,18 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 		if (props.verbose) println "*** Changed files for directory $dir:"
 		changed.each { file ->
-			if ( !matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, true, null)
-				if ( file != null ) {
+			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			if ( file != null ) {
+				if ( !matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (props.verbose) println "**** $file"
+				}
+				//retrieving changed build properties
+				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
+					if (props.verbose) println "**** $file"
+					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
+					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
+					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
 				}
 			}
 		}
@@ -205,7 +264,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	return [
 		changedFiles,
 		deletedFiles,
-		renamedFiles
+		renamedFiles,
+		changedBuildProperties
 	]
 }
 
@@ -410,7 +470,13 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			try {
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+					createPropertyDependency(file, logicalFile)
+				}
+
 				logicalFiles.add(logicalFile)
+
 			} catch (Exception e) {
 
 				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
@@ -614,6 +680,7 @@ def createPathMatcherPattern(String property) {
 }
 
 /**
+<<<<<<< HEAD
  * create List of Regex Patterns
  */
 
@@ -631,7 +698,6 @@ def createMatcherPatterns(String property) {
 /**
  * match a String against a list of patterns
  */
-
 def matchesPattern(String name, List<Pattern> patterns) {
 	def result = patterns.any { pattern ->
 		if (pattern.matcher(name).matches())
@@ -640,6 +706,49 @@ def matchesPattern(String name, List<Pattern> patterns) {
 		}
 	}
 	return result
+}
+
+/**
+* createPropertyDependency
+* method to add a dependency to a property key
+*/
+def createPropertyDependency(String buildFile, LogicalFile logicalFile){
+   if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
+   // get language prefix
+   def scriptMapping = ScriptMappings.getScriptName(buildFile)
+   if(scriptMapping != null){
+	   def langPrefix = buildUtils.getLangPrefix(scriptMapping)
+	   // language COB
+	   if (langPrefix != null ){
+		   // generic properties
+		   if (props."${langPrefix}_impactPropertyList"){
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+		   }
+		   // cics properties
+		   if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
+		   }
+		   // sql properties
+		   if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
+		   }
+	   }
+
+   }
+}
+
+/**
+ * addBuildPropertyDependencies
+ * method to logical dependencies records to a logical file for a DBB build property
+ */
+def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile){
+	String[] buildProps = buildProperties.split(',')
+
+	buildProps.each { buildProp ->
+		buildProp = buildProp.trim()
+		if (props.verbose) println "*** Adding LogicalDependency for build prop $buildProp for $logicalFile.file"
+		logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","BUILDPROPERTIES","PROPERTY"))
+	}
 }
 
 

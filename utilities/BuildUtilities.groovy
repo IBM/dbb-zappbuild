@@ -354,7 +354,9 @@ def createLanguageDatasets(String lang) {
 	
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
-	
+		
+	if (props."${lang}_cexecDatasets")
+		createDatasets(props."${lang}_cexecDatasets".split(','), props."${lang}_cexecOptions")
 }
 
 /*
@@ -388,10 +390,21 @@ def getLangPrefix(String scriptName){
 		case "Assembler.groovy":
 			langPrefix = 'assembler'
 			break;
+		case "BMS.groovy":
+			langPrefix = 'bms'
+			break;
+		case "DBDgen.groovy":
+			langPrefix = 'dbdgen'
+			break;
+		case "MFS.groovy":
+			langPrefix = 'mfs'
+			break;
+		case "PSBgen.groovy":
+			langPrefix = 'psbgen'
+			break;
 		default:
-			if (props.verbose) println ("*** No language prefix defined for $scriptName.")
+			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
 			break;
 	}
 	return langPrefix
 }
-

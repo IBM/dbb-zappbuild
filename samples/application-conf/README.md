@@ -48,6 +48,9 @@ assembler_compileErrorPrefixParms | Default parameters to support remote error f
 assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 assembler_maxRC | Default Assembler maximum RC allowed. | true
 assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
+assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
+assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
 assembler_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 assembler_assemblySyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during assembly step | true
@@ -63,6 +66,8 @@ bms_maxRC | Default BMS maximum RC allowed. | true
 bms_copyGenParms | Default parameters for the copybook generation step. | true
 bms_compileParms | Default parameters for the compilation step. | true
 bms_linkEditParms | Default parameters for the link edit step. | true
+bms_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+
 
 ### Cobol.properties
 Application properties used by zAppBuild/language/Cobol.groovy
@@ -79,6 +84,9 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
+cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 cobol_isMQ | Flag indicating that the program contains MQ calls | true
 cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
@@ -93,6 +101,7 @@ Property | Description | Overridable
 linkedit_fileBuildRank | Default link card build rank. Used to sort link card build sub-list. Leave empty. | true
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
+linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 linkEdit_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
@@ -110,7 +119,13 @@ pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
+pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
+pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
+pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
@@ -139,6 +154,7 @@ mfs_phase1MaxRC | Default MFS Phase 1 maximum RC allowed. | true
 mfs_phase2MaxRC | Default MFS Phase 2 maximum RC allowed. | true
 mfs_phase1Parms | Default parameters for the phase 1 step. | true
 mfs_phase2Parms | Default parameters for the phase 2 step. | true
+mfs_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 
 ### DBDgen.properties
 Application properties used by zAppBuild/language/DBDgen.groovy
@@ -151,6 +167,8 @@ dbdgen_linkEditParms | Default parameters for the link edit step. | true
 dbdgen_compileErrorPrefixParms | Default parameters to support remote error feedback in user build scenarios | true
 dbdgen_assemblerMaxRC | Default link edit maximum RC allowed. | true
 dbdgen_linkEditMaxRC | Default link edit maximum RC allowed. | true
+dbdgen_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+
 
 ### PSBgen.properties
 Application properties used by zAppBuild/language/PSBgen.groovy
@@ -164,6 +182,7 @@ psbgen_compileErrorPrefixParms | Default parameters to support remote error feed
 psbgen_runACBgen | Parameter if ACBgen should be executed right after PSBgen (default: true) | true
 psbgen_assemblerMaxRC | Default link edit maximum RC allowed. | true
 psbgen_linkEditMaxRC | Default link edit maximum RC allowed. | true
+psbgen_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 
 ### ACBgen.properties
 Application properties used by zAppBuild/language/ACBgen.groovy
