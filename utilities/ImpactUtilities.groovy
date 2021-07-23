@@ -255,7 +255,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
 	// query external collections to produce externalImpactList
 
-	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>()
+	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords> 
 
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
@@ -269,13 +269,14 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
 				if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
 					def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 					logicalFiles.each{ logicalFile ->
 						def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
 						// if (props.verbose) println("*** $impactRecord")
 						externalImpactList.add(impactRecord)
-						collectionImpactsSetMap.put(cName, externalImpactList) // <collection,list of impacted files>
 					}
+					collectionImpactsSetMap.put(cName, externalImpactList)
 				}
 			}
 			else{
