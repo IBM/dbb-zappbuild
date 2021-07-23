@@ -328,7 +328,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			}
 		}
 		else {
-			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (build property reportExternalImpactsAnalysisFilter)")
+			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
 		}
 	}
 
