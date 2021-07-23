@@ -262,7 +262,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 	// caluclated and collect external impacts
 	changedFiles.each{ changedFile ->
 
-		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFilter)
+		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
 		
 		if(matches(changedFile, fileMatchers)){
 
