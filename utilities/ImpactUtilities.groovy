@@ -266,7 +266,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		
 		if(matches(changedFile, fileMatchers)){
 
-			if (props.reportExternalImpactsAnaylsisDepths == "simple"){
+			if (props.reportExternalImpactsAnalysisDepths == "simple"){
 				// Simple resolution without recursive resolution
 				String memberName = CopyToPDS.createMemberName(changedFile)
 
@@ -290,7 +290,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 					}
 				}
 			}
-			else if(props.reportExternalImpactsAnaylsisDepths == "deep"){
+			else if(props.reportExternalImpactsAnalysisDepths == "deep"){
 				// Recursive analysis to support nested scenarios
 
 				// Configure impact resolver
@@ -324,7 +324,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				}
 			}
 			else {
-				println("*! props.reportExternalImpactsAnaylsisDepths has in invalid value. Set: ${props.reportExternalImpactsAnaylsisDepths} , Valid: simple | deep")
+				println("*! build property reportExternalImpactsAnalysisDepths has in invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
 			}
 		}
 		else {

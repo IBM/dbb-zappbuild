@@ -48,6 +48,14 @@ dbb.RepositoryClient.userId | DBB configuration property for web application log
 dbb.RepositoryClient.password | DBB configuration property for web application logon password.  ***Can be overridden by build.groovy option -pw, --pw***
 dbb.RepositoryClient.passwordFile | DBB configuration property for web application logon password file.  ***Can be overridden by build.groovy option -pf, --pf***
 
+### dependencyReport.properties
+Propertes used by the impact utilities to generate a report of external impacted files
+
+--- | ---
+reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections ***Can be overridden by build.groovy option -re, --reportExternalImpacts***
+reportExternalImpactsAnaylsisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) *** Can be overridden by application-conf *** 
+reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files *** Can be overridden by application-conf *** 
+reportExternalImpactsCollectionPatterns | comma-separated list of regex patterns of DBB collection names for which external impacts should be documented *** Can be overridden by application-conf *** 
 
 ### Assembler.properties
 Build properties used by zAppBuild/language/Assembler.groovy
