@@ -269,7 +269,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
 				if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
+					def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 					def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 					logicalFiles.each{ logicalFile ->
 						def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
