@@ -680,7 +680,6 @@ def createPathMatcherPattern(String property) {
 }
 
 /**
-<<<<<<< HEAD
  * create List of Regex Patterns
  */
 
