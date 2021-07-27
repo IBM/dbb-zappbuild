@@ -81,8 +81,27 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// skip dependency resolution and copy files from dependency file to dependency dataset
 		def depFilePath = props.userBuildDependencyFile
 		File depFile = new File(depFilePath)
-		// copy each dependency from file to dependencies list (by line)
-		List<String> dependencies = file.readLines()
+
+		JsonSlurper slurper = new groovy.json.JsonSlurper()
+		def uBuildJson = slurper.parse(depFile)
+
+		// Create logical file name
+		String lname = CopyToPDS.createMemberName(buildFile)
+
+		// get language from File property
+		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
+
+		// create logical file
+		LogicalFile lfile = new LogicalFile(lname, buildFile, language, uBuildJson.isCICS, uBuildJson.isSQL, uBuildJson.isDLI, uBuildJson.isMQ)
+
+		// save logical file to dependency resolver
+		if (dependencyResolver)
+			dependencyResolver.setLogicalFile(lfile)
+
+ 		// get list of dependencies from userBuildDependencyFile
+		List<String> dependencies = uBuildJson.dependencies
+		
+		// copy each dependency from USS to member of depedencyPDS
 		dependencies.each { dependency ->
 			// only copy the dependency file once per script invocation
 			if (!copiedFileCache.contains(dependency)) {
@@ -110,7 +129,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 							.execute()
 				}			
 			}
-		}
+		} 
+		/*
 
 		// scan the source file to obtain isCICS,SQL,DLI,MQ flags
 		if (dependencyResolver) {
@@ -123,7 +143,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 			LogicalFile lfile = scanner.scan(sourceFile, sourceDir)
 			// save lfile to dependency resolver
 			dependencyResolver.setLogicalFile(lfile)
-		}
+		} */
 
 	}
 	else if (dependencyPDS && dependencyResolver) {
@@ -205,7 +225,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
- * updateBuildResult - used by language scripts to update the build result after a build step
+ * updateBuildResult - used by language scripts to update the build uBuildJson after a build step
  */
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
@@ -214,7 +234,7 @@ def updateBuildResult(Map args) {
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
-			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
+			println "*! No build uBuildJson found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
 		}
 
@@ -225,7 +245,7 @@ def updateBuildResult(Map args) {
 
 		}
 
-		// add warning message, but keep result status
+		// add warning message, but keep uBuildJson status
 		if (args.warningMsg) {
 			// buildResult.setStatus(buildResult.WARNING)
 			buildResult.addProperty("warning", args.warningMsg)
@@ -240,7 +260,7 @@ def updateBuildResult(Map args) {
 			}
 		}
 
-		// save result
+		// save uBuildJson
 		buildResult.save()
 	}
 }
