@@ -83,7 +83,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		File depFile = new File(depFilePath)
 
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		def uBuildJson = slurper.parse(depFile)
+		def depFileData = slurper.parse(depFile)
 
 		// Create logical file name
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -92,14 +92,14 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 
 		// create logical file
-		LogicalFile lfile = new LogicalFile(lname, buildFile, language, uBuildJson.isCICS, uBuildJson.isSQL, uBuildJson.isDLI, uBuildJson.isMQ)
+		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI, depFileData.isMQ)
 
 		// save logical file to dependency resolver
 		if (dependencyResolver)
 			dependencyResolver.setLogicalFile(lfile)
 
  		// get list of dependencies from userBuildDependencyFile
-		List<String> dependencies = uBuildJson.dependencies
+		List<String> dependencies = depFileData.dependencies
 		
 		// copy each dependency from USS to member of depedencyPDS
 		dependencies.each { dependency ->
@@ -225,7 +225,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
- * updateBuildResult - used by language scripts to update the build uBuildJson after a build step
+ * updateBuildResult - used by language scripts to update the build depFileData after a build step
  */
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
@@ -234,7 +234,7 @@ def updateBuildResult(Map args) {
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
-			println "*! No build uBuildJson found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
+			println "*! No build depFileData found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
 		}
 
@@ -245,7 +245,7 @@ def updateBuildResult(Map args) {
 
 		}
 
-		// add warning message, but keep uBuildJson status
+		// add warning message, but keep depFileData status
 		if (args.warningMsg) {
 			// buildResult.setStatus(buildResult.WARNING)
 			buildResult.addProperty("warning", args.warningMsg)
@@ -260,7 +260,7 @@ def updateBuildResult(Map args) {
 			}
 		}
 
-		// save uBuildJson
+		// save depFileData
 		buildResult.save()
 	}
 }
