@@ -305,10 +305,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// add DD statements to the linkedit command
 	String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-	String assembler_deployType = props.getFileProperty('assembler_deployType', buildFile)
-	if ( assembler_deployType == null )
-		assembler_deployType = 'LOAD'
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${assembler_loadPDS}($member)").options('shr').output(true).deployType(assembler_deployType))
+	String deployType = buildUtils.getDeployType("linkedit", buildFile, logicalFile)
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${assembler_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.assembler_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
