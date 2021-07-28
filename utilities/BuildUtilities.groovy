@@ -410,6 +410,30 @@ def getLangPrefix(String scriptName){
 }
 
 /*
+ * retrieveLastBuildResult(RepositoryClient)
+ * returns last successful build result
+ *
+ */
+def retrieveLastBuildResult(RepositoryClient repositoryClient){
+
+	// get the last build result
+	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+
+	if (lastBuildResult == null && props.topicBranchBuild){
+		// if this is the first topic branch build get the main branch build result
+		if (props.verbose) println "** No previous successful topic branch build result. Retrieving last successful main branch build result."
+		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
+		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	}
+
+	if (lastBuildResult == null) {
+		println "*! No previous topic branch build result or main branch build result exists. Cannot calculate file changes."
+	}
+
+	return lastBuildResult
+}
+
+/*
  * returns the deployType for a logicalFile depending on the isCICS, isDLI setting
  */
 def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFile){
@@ -431,7 +455,5 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 	} else{
 		// a file level overwrite was used
 	}
-
 	return deployType
-
 }
