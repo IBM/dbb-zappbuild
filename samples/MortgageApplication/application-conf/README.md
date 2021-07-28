@@ -31,22 +31,6 @@ dbb.scriptMapping | DBB configuration file properties association build files to
 dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
-### Assembler.properties
-Application properties used by zAppBuild/language/Assembler.groovy
-
-Property | Description | Overridable
---- | --- | ---
-assembler_fileBuildRank | Default Assemble program build rank. Used to sort Assembler build file sub-list. Leave empty. | true
-assembler_pgmParms | Default Assembler parameters. | true
-assembler_linkEditParms | Default parameters for the link edit step. | true
-assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-assembler_maxRC | Default Assembler maximum RC allowed. | true
-assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
-assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
-assembler_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
-assembler_assemblySyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during assembly step | true
-assembler_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
-
 ### BMS.properties
 Application properties used by zAppBuild/language/BMS.groovy
 
@@ -57,6 +41,9 @@ bms_maxRC | Default BMS maximum RC allowed. | true
 bms_copyGenParms | Default parameters for the copybook generation step. | true
 bms_compileParms | Default parameters for the compilation step. | true
 bms_linkEditParms | Default parameters for the link edit step. | true
+bms_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+bms_deployType | deployType for build output | true
+bms_copy_deployType | deployType for generated copybooks | true
 
 ### Cobol.properties
 Application properties used by zAppBuild/language/Cobol.groovy
@@ -73,11 +60,17 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
+cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 cobol_isMQ | Flag indicating that the program contains MQ calls | true
+cobol_deployType | default deployType for build output | true
+cobol_deployTypeCICS | deployType for build output for build files where isCICS=true | true
+cobol_deployTypeDLI | deployType for build output for build files with isDLI=true | true
 cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 cobol_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
-cobol_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+cobol_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### LinkEdit.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
@@ -87,25 +80,10 @@ Property | Description | Overridable
 linkedit_fileBuildRank | Default link card build rank. Used to sort link card build sub-list. Leave empty. | true
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
+linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_deployType | default deployType for build output | true
+linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
+linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
-linkEdit_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+linkEdit_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
-### PLI.properties
-Application properties used by zAppBuild/language/LinkEdit.groovy
-
-Property | Description | Overridable
---- | --- | ---
-pli_fileBuildRank | Default PLI program build rank. Used to sort PLI program sub-list. Leave empty. | true
-pli_resolutionRules | PLI dependency resolution rules used to create a PLI dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
-pli_compilerVersion | Default PLI compiler version. | true
-pli_compileMaxRC | Default compile maximum RC allowed. | true
-pli_linkEditMaxRC | Default link edit maximum RC allowed. | true
-pli_compileParms | Default base compile parameters. | true
-pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
-pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
-pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
-pli_linkEditParms | Default link edit parameters. | true
-pli_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
-pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
-pli_linkEditSyslibConcatenation |  A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true

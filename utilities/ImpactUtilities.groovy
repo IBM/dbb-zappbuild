@@ -565,7 +565,9 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 		// language COB
 		if (langPrefix != null ){
 			// generic properties
-			addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			if (props."${langPrefix}_impactPropertyList"){
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			}
 			// cics properties
 			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
 				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
