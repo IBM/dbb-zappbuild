@@ -18,6 +18,7 @@ import groovy.xml.*
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
+@Field String gitchangedfilesPrefix = ':gitchangedfiles:'
 @Field RepositoryClient repositoryClient
 
 // start time message
@@ -173,7 +174,7 @@ options:
 	cli.ss(longOpt:'scanSource', 'Flag indicating to only scan source files for application without building anything')
 	cli.sl(longOpt:'scanLoad', 'Flag indicating to only scan load modules for application without building anything')
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
-	
+
 	// web application credentials (overrides properties in build.properties)
 	cli.url(longOpt:'url', args:1, 'DBB repository URL')
 	cli.id(longOpt:'id', args:1, 'DBB repository id')
@@ -506,16 +507,28 @@ def finalizeBuildProcess(Map args) {
 			dir = buildUtils.getAbsolutePath(dir)
 			if (props.verbose) println "*** Obtaining hash for directory $dir"
 			if (gitUtils.isGitDir(dir)) {
-				// store current hash 
-				String hash = gitUtils.getCurrentGitHash(dir)
+				// store current hash
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-				buildResult.setProperty(key, hash)
-				if (props.verbose) println "** Setting property $key : $hash"
+				String currenthash = gitUtils.getCurrentGitHash(dir)
+				if (props.verbose) println "** Setting property $key : $currenthash"
+				buildResult.setProperty(key, currenthash)
 				// store gitUrl
+				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
-				String gitURLkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
-				buildResult.setProperty(gitURLkey, url)
-				if (props.verbose) println "** Setting property $gitURLkey : $url"
+				if (props.verbose) println "** Setting property $giturlkey : $url"
+				buildResult.setProperty(giturlkey, url)
+				// document changed files - Git compare link
+				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
+					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
+					def lastBuildResult= buildUtils.retrieveLastBuildResult(repositoryClient)
+					if (lastBuildResult){
+						String baselineHash = lastBuildResult.getProperty(key)
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
+						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
+						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLinkUrl"
+						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
+					}
+				}
 			}
 			else {
 				if (props.verbose) println "**! Directory $dir is not a Git repository"
@@ -541,11 +554,11 @@ def finalizeBuildProcess(Map args) {
 	// create build report data file
 	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
 	def buildReportEncoding = "UTF-8"
-	
+
 	// save json file
 	println "** Writing build report data to ${jsonOutputFile}"
 	buildReport.save(jsonOutputFile, buildReportEncoding)
-	
+
 	// create build report html file
 	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
 	println "** Writing build report to ${htmlOutputFile}"
@@ -554,7 +567,7 @@ def finalizeBuildProcess(Map args) {
 	def renderScript = null  // Use default rendering.
 	def transformer = HtmlTransformer.getInstance()
 	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
-	
+
 
 	// attach build report & result
 	if (repositoryClient) {
@@ -564,7 +577,7 @@ def finalizeBuildProcess(Map args) {
 		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
 		buildResult.save()
 	}
-	
+
 	// print end build message
 	def endTime = new Date()
 	def duration = TimeCategory.minus(endTime, args.start)
