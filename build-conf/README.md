@@ -51,7 +51,7 @@ dbb.RepositoryClient.password | DBB configuration property for web application l
 dbb.RepositoryClient.passwordFile | DBB configuration property for web application logon password file.  ***Can be overridden by build.groovy option -pf, --pf***
 
 ### dependencyReport.properties
-Propertes used by the impact utilities to generate a report of external impacted files
+Properties used by the impact utilities to generate a report of external impacted files
 
 --- | ---
 reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections ***Can be overridden by build.groovy option -re, --reportExternalImpacts***
