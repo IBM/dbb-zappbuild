@@ -369,13 +369,16 @@ def populateBuildProperties(String[] args) {
 	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
-
 	if (props.userBuild) {	// do not create a subfolder for user builds
 		props.buildOutDir = "${props.outDir}" as String }
 	else {// validate createBuildOutputSubfolder build property
 		props.buildOutDir = ((props.createBuildOutputSubfolder && props.createBuildOutputSubfolder.toBoolean()) ? "${props.outDir}/${props.applicationBuildLabel}" : "${props.outDir}") as String
 	}
 	
+	// Validate Build Properties  
+	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
+		
+	// Print all build properties + some envionment variables 
 	if (props.verbose) {
 		println("java.version="+System.getProperty("java.runtime.version"))
 		println("java.home="+System.getProperty("java.home"))
