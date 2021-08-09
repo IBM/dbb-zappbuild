@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.nio.file.PathMatcher
 import groovy.json.JsonSlurper
 import groovy.transform.*
+import java.util.regex.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -83,11 +84,13 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 					}
 				}
 			}
+
 		}else {
 			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 		}
 	}
 
+	// Perform impact analysis for property changes
 	if (props.impactBuildOnBuildPropertyChanges){
 		if (props.verbose) println "*** Perform impacted analysis for property changes."
 
@@ -132,6 +135,13 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 	}
 
+	// Perform analysis and build report of external impacts
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (props.verbose) println "*** Analyze and report external impacted files."
+		reportExternalImpacts(repositoryClient, changedFiles)
+	}
+
+	
 	return [buildSet, deletedFiles]
 }
 
@@ -283,6 +293,110 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 			}
 		}
 	}
+}
+
+/*
+ * Method to query the DBB collections with a list of changed files  
+ * Configured through reportExternalImpacts* build properties
+ */
+
+def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
+	// query external collections to produce externalImpactList
+
+	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
+	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
+
+	// caluclated and collect external impacts
+	changedFiles.each{ changedFile ->
+
+		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
+		
+		if(matches(changedFile, fileMatchers)){
+
+			if (props.reportExternalImpactsAnalysisDepths == "simple"){
+				// Simple resolution without recursive resolution
+				String memberName = CopyToPDS.createMemberName(changedFile)
+
+				def ldepFile = new LogicalDependency(memberName, null, null);
+				repositoryClient.getAllCollections().each{ collection ->
+					String cName = collection.getName()
+					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+							def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+							def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+							logicalFiles.each{ logicalFile ->
+								def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+								// if (props.verbose) println("*** $impactRecord")
+								externalImpactList.add(impactRecord)
+							}
+							collectionImpactsSetMap.put(cName, externalImpactList)
+						}
+					}
+					else{
+						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
+					}
+				}
+			}
+			else if(props.reportExternalImpactsAnalysisDepths == "deep"){
+				// Recursive analysis to support nested scenarios
+
+				// Configure impact resolver
+				ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
+
+				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+				impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
+
+				repositoryClient.getAllCollections().each{ collection ->
+					String cName = collection.getName()
+					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+							impactResolver.addCollection(cName) // add collection of foreign application
+						}
+					}
+					else{
+						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
+					}
+				}
+				// resolve external impacted files
+				def externalImpactedFiles = impactResolver.resolve()
+
+				// report scanning results
+				if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
+				externalImpactedFiles.each{ externalImpact ->
+					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
+					def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
+					// if (props.verbose) println("*** $impactRecord")
+					externalImpactList.add(impactRecord)
+					collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
+				}
+			}
+			else {
+				println("*! build property reportExternalImpactsAnalysisDepths has in invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
+			}
+		}
+		else {
+			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
+		}
+	}
+
+	// generate reports by collection / application
+	collectionImpactsSetMap.each{ entry ->
+		externalImpactList = entry.value
+		if (externalImpactList.size()!=0){
+			// write impactedFiles per application to build workspace
+			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+			if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+			File impactListFile = new File(impactListFileLoc)
+			String enc = props.logEncoding ?: 'IBM-1047'
+			impactListFile.withWriter(enc) { writer ->
+				externalImpactList.each { file ->
+					// if (props.verbose) println file
+					writer.write("$file\n")
+				}
+			}
+		}
+	}
+
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -553,34 +667,61 @@ def createPathMatcherPattern(String property) {
 }
 
 /**
- * createPropertyDependency
- * method to add a dependency to a property key 
+ * create List of Regex Patterns
  */
-def createPropertyDependency(String buildFile, LogicalFile logicalFile){
-	if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
-	// get language prefix
-	def scriptMapping = ScriptMappings.getScriptName(buildFile)
-	if(scriptMapping != null){
-		def langPrefix = buildUtils.getLangPrefix(scriptMapping)
-		// language COB
-		if (langPrefix != null ){
-			// generic properties
-			if (props."${langPrefix}_impactPropertyList"){
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
-			}
-			// cics properties
-			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
-			}
-			// sql properties
-			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
-			}
-		}
 
+def createMatcherPatterns(String property) {
+	List<Pattern> patterns = new ArrayList<Pattern>()
+	if (property) {
+		property.split(',').each{ patternString ->
+			Pattern pattern = Pattern.compile(patternString);
+			patterns.add(pattern)
+		}
 	}
+	return patterns
 }
 
+/**
+ * match a String against a list of patterns
+ */
+def matchesPattern(String name, List<Pattern> patterns) {
+	def result = patterns.any { pattern ->
+		if (pattern.matcher(name).matches())
+		{
+			return true
+		}
+	}
+	return result
+}
+
+/**
+* createPropertyDependency
+* method to add a dependency to a property key
+*/
+def createPropertyDependency(String buildFile, LogicalFile logicalFile){
+   if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
+   // get language prefix
+   def scriptMapping = ScriptMappings.getScriptName(buildFile)
+   if(scriptMapping != null){
+	   def langPrefix = buildUtils.getLangPrefix(scriptMapping)
+	   // language COB
+	   if (langPrefix != null ){
+		   // generic properties
+		   if (props."${langPrefix}_impactPropertyList"){
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+		   }
+		   // cics properties
+		   if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
+		   }
+		   // sql properties
+		   if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
+			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
+		   }
+	   }
+
+   }
+}
 
 /**
  * addBuildPropertyDependencies

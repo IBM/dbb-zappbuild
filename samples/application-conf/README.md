@@ -37,6 +37,16 @@ isMQ | File property overwrite to indicate that a file requires to include MQ pa
 isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
+### dependencyReport.properties
+Properties used by the impact utilities to generate a report of external impacted files. Sample properties file to all application-conf to overwrite central build-conf configuration.
+
+--- | ---
+reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections 
+reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) 
+reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files 
+reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented 
+
+
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
 
