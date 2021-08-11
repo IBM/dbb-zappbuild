@@ -202,7 +202,7 @@ options:
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
 	// IDz Dependency Options
-	cli.df(longOpt:'dependencyFile', args:1, argName:'Absolute or relative (from workspace) path to file containing list of build dependencies for user ')
+	cli.df(longOpt:'dependencyFile', args:1, argName:'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
 
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')

@@ -110,8 +110,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				// retrieve zUnitFileExtension plbck
 				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 
-				// original
-				// ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependency.lastIndexOf('.')
 				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependency.substring(extIndex).contains(zunitFileExtension))){
@@ -130,21 +128,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				}			
 			}
 		} 
-		/*
-
-		// scan the source file to obtain isCICS,SQL,DLI,MQ flags
-		if (dependencyResolver) {
-			DependencyScanner scanner = dependencyResolver.getScanner()
-			// get file and source Dir
-			String sourceDir = dependencyResolver.getSourceDir()
-			String sourceFile = dependencyResolver.getFile()
-
-			// run manual scan to identify flags
-			LogicalFile lfile = scanner.scan(sourceFile, sourceDir)
-			// save lfile to dependency resolver
-			dependencyResolver.setLogicalFile(lfile)
-		} */
-
 	}
 	else if (dependencyPDS && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
