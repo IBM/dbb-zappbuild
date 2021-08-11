@@ -198,7 +198,7 @@ options:
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
 	// IDz Dependency Options
-	cli.df(longOpt:'dependencyFile', args:1, argName:'Absolute or relative (from workspace) path to file containing list of build dependencies for user ')
+	cli.df(longOpt:'dependencyFile', args:1, argName:'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
 
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
