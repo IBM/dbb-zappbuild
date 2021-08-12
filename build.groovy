@@ -247,9 +247,6 @@ def populateBuildProperties(String[] args) {
 	if (opts.wrkDir) props.outDir = opts.wrkDir
 	buildUtils.assertBuildProperties('workspace,outDir')
 
-	// support IDz dependency file parameter
-	if (opts.df) props.userBuildDependencyFile = opts.df
-
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
 	props.load(new File("${buildConf}/build.properties"))
@@ -350,6 +347,8 @@ def populateBuildProperties(String[] args) {
 	if (opts.e) props.errPrefix = opts.e
 	if (opts.u) props.userBuild = 'true'
 	if (opts.t) props.team = opts.t
+	// support IDz dependency file parameter
+	if (opts.df) props.userBuildDependencyFile = opts.df
 
 	// set build file from first non-option argument
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
