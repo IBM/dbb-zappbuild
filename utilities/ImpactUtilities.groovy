@@ -366,6 +366,45 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 					createPropertyDependency(file, logicalFile)
 				}
 
+								if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
+					// If the file is a zUnit configuration file (BZUCFG)
+					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+						def logicalDependencies = logicalFile.getLogicalDependencies()
+						logicalDependencies.each { logicalDependency ->
+							if (logicalDependency.getLibrary().equals("SYSTEST")) {
+								// Search for the testcase logical file in the logicalFiles list
+								def testcaseLogicalFile
+								def foundTestcaseLogicalFile = false
+								logicalFiles.each { listedLogicalFile ->
+									if (listedLogicalFile.getLname().equals(logicalDependency.getLname())) {
+										foundTestcaseLogicalFile = true
+										testcaseLogicalFile = listedLogicalFile
+										if (props.verbose) println "*** Found logical file ${testcaseLogicalFile.getLname()} in the list of changed file. Reusing it."
+									}
+								}
+
+								//if the logicial file was not found as part of the list, we create it
+								if (!foundTestcaseLogicalFile) {
+									if (props.verbose) println "*** Logical file for Testcase ${logicalDependency.getLname()} not found in the list of changed file. Creating the reference."
+									def physicalDependencies = logicalFile.resolveDependencies(props.workspace, logicalDependency.getLname())
+									physicalDependencies.each { physicalDependency ->
+										testcaseLogicalFile = repositoryClient.getLogicalFile(props.applicationCollectionName, physicalDependency.getFile())
+									}
+								}
+								logicalDependencies.each { testcaseLogicalDependency ->
+									if (testcaseLogicalDependency.getLibrary().equals("SYSPROG")) {
+										testcaseLogicalFile.addLogicalDependency(testcaseLogicalDependency)
+									}
+								}
+								if (props.verbose) println "*** Logical file for Testcase ${testcaseLogicalFile.getLname()}\n$testcaseLogicalFile"
+								if (!foundTestcaseLogicalFile) {
+									logicalFiles.add(testcaseLogicalFile)
+								}
+							}
+						}
+					}
+				}
+
 				logicalFiles.add(logicalFile)
 
 			} catch (Exception e) {
