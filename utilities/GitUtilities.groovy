@@ -212,7 +212,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 				renamedFiles.add(renamedFile)
 				//evaluate similarity score
 				similarityScore = action.substring(1) as int
-				if (similarityScore > 50){
+				if (similarityScore < 50){
 					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $renamedFile : $similarityScore with new file $newFileName. ")
 				}
 
