@@ -232,7 +232,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.verbose) println "*** Deleted files for directory $dir:"
 		deleted.each { file ->
 			if ( !matches(file, excludeMatchers)) {
-				file = fixGitDiffPath(file, dir, false, mode)
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
 			}
@@ -241,7 +241,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.verbose) println "*** Renamed files for directory $dir:"
 		renamed.each { file ->
 			if ( !matches(file, excludeMatchers)) {
-				file = fixGitDiffPath(file, dir, false, mode)
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
 			}
@@ -618,7 +618,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	}
 
 	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue]
+	return [defaultValue, null]
 }
 
 def matches(String file, List<PathMatcher> pathMatchers) {
