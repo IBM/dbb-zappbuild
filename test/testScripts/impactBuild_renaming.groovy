@@ -24,7 +24,7 @@ impactBuildCommand << "--logEncoding UTF-8"
 impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-impactBuildCommand << (props.verbose ? "--verbose" : "")
+impactBuildCommand << "--verbose"
 impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
 
@@ -105,6 +105,9 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 		// Validate expected built files in output stream
 		assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $renameFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 
+		// Validate message that file renamed was deleted from collections
+		assert outputStream.contains("*** Deleting renamed logical file for ${props.app}/${renameFile}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
+				
 		println "**"
 		println "** IMPACT BUILD TEST RENAME : PASSED FOR $renameFile **"
 		println "**"
