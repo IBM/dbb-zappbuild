@@ -467,7 +467,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 					createPropertyDependency(file, logicalFile)
 				}
 
-								if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
+				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
 					// If the file is a zUnit configuration file (BZUCFG)
 					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 						def logicalDependencies = logicalFile.getLogicalDependencies()
