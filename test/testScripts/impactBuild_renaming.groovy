@@ -92,6 +92,8 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(renameFile).split(',')
 
+	println("*** Outputstream: $outputStream")
+	
 	try{
 		// Validate clean build
 		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $renameFile\nOUTPUT STREAM:\n$outputStream\n"
@@ -113,7 +115,7 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 	}
 }
 def cleanUpDatasets() {
-	def segments = props.impactBuild_datasetsToCleanUp.split(',')
+	def segments = props.impactBuild_rename_datasetsToCleanUp.split(',')
 
 	println "Deleting impact build PDSEs ${segments}"
 	segments.each { segment ->
