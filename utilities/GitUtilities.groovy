@@ -206,15 +206,14 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 			} else if (action == "D") {// handle deleted files
 				deletedFiles.add(file)
 			} else if (action.startsWith("R")) { // handle renamed file
+				renamedFile = gitDiffOutput[1]
+				newFileName = gitDiffOutput[2]
+				changedFiles.add(newFileName) // will rebuild file
+				renamedFiles.add(renamedFile)
+				//evaluate similarity score
 				similarityScore = action.substring(1) as int
-				if (similarityScore > 75){
-					renamedFile = gitDiffOutput[1]
-					newFileName = gitDiffOutput[2]
-					changedFiles.add(newFileName) // will rebuild file
-					renamedFiles.add(renamedFile)
-				}
-				else {
-					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $file : $similarityScore. ")
+				if (similarityScore > 50){
+					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $renamedFile : $similarityScore with new file $newFileName. ")
 				}
 
 			}
