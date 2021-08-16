@@ -160,7 +160,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
-	// update build results only in non-userbuild scenarios 
+	// update build results only in non-userbuild scenarios
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
@@ -348,13 +348,13 @@ def getScanner(String buildFile){
 def createLanguageDatasets(String lang) {
 	if (props."${lang}_srcDatasets")
 		createDatasets(props."${lang}_srcDatasets".split(','), props."${lang}_srcOptions")
-		
+
 	if (props."${lang}_loadDatasets")
 		createDatasets(props."${lang}_loadDatasets".split(','), props."${lang}_loadOptions")
-	
+
 	if (props."${lang}_reportDatasets")
 		createDatasets(props."${lang}_reportDatasets".split(','), props."${lang}_reportOptions")
-		
+
 	if (props."${lang}_cexecDatasets")
 		createDatasets(props."${lang}_cexecDatasets".split(','), props."${lang}_cexecOptions")
 }
@@ -407,4 +407,53 @@ def getLangPrefix(String scriptName){
 			break;
 	}
 	return langPrefix
+}
+
+/*
+ * retrieveLastBuildResult(RepositoryClient)
+ * returns last successful build result
+ *
+ */
+def retrieveLastBuildResult(RepositoryClient repositoryClient){
+
+	// get the last build result
+	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+
+	if (lastBuildResult == null && props.topicBranchBuild){
+		// if this is the first topic branch build get the main branch build result
+		if (props.verbose) println "** No previous successful topic branch build result. Retrieving last successful main branch build result."
+		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
+		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	}
+
+	if (lastBuildResult == null) {
+		println "*! No previous topic branch build result or main branch build result exists. Cannot calculate file changes."
+	}
+
+	return lastBuildResult
+}
+
+/*
+ * returns the deployType for a logicalFile depending on the isCICS, isDLI setting
+ */
+def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFile){
+	// getDefault
+	String deployType = props.getFileProperty("${langQualifier}_deployType", buildFile)
+	if(deployType == null )
+		deployType = 'LOAD'
+
+	if (props."${langQualifier}_deployType" == deployType){ // check if a file level overwrite was used
+		if (logicalFile != null){
+			if(isCICS(logicalFile)){ // if CICS
+				String cicsDeployType = props.getFileProperty("${langQualifier}_deployTypeCICS", buildFile)
+				if (cicsDeployType != null) deployType = cicsDeployType
+			} else if (isDLI(logicalFile)){
+				String dliDeployType = props.getFileProperty("${langQualifier}_deployTypeDLI", buildFile)
+				if (dliDeployType != null) deployType = dliDeployType
+			}
+		}
+	} else{
+		// a file level overwrite was used
+	}
+	return deployType
 }
