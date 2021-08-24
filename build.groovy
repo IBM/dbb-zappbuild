@@ -198,7 +198,7 @@ options:
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
 	// IDz Dependency Options
-	cli.df(longOpt:'dependencyFile', args:1, argName:'depFilePath', 'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
+	cli.df(longOpt:'dependencyFile', args:1, 'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
 
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
@@ -348,7 +348,7 @@ def populateBuildProperties(String[] args) {
 	if (opts.u) props.userBuild = 'true'
 	if (opts.t) props.team = opts.t
 	// support IDE passing dependency file parameter
-	if (opts.df) props.userBuildDependencyFile = opts.depFilePath
+	if (opts.df) props.userBuildDependencyFile = opts.df
 
 	// set build file from first non-option argument
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
