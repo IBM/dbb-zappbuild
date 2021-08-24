@@ -77,6 +77,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 	}
 
 	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
+		println("User Build Dep File Present... Skipping scan and dep. resolution!")
 		// userBuildDependencyFile present (passed from the IDE)
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
