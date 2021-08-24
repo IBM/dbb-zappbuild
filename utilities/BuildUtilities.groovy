@@ -92,7 +92,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
-		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI, depFileData.isMQ)
+		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
 
 		// save logical file to dependency resolver
 		if (dependencyResolver)
