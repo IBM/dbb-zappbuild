@@ -84,11 +84,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		String depFilePath = props.userBuildDependencyFile
 		// if depFilePath is relatvie, convert to absolute path
 		String depFileLoc = getAbsolutePath(depFilePath)
-		String depFileJSON = new File(depFileLoc).text
-		
+		String depFileJSON = new File(depFileLoc).text // convert JSON dep file to String
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		if (props.verbose) println "*** Dependency File ${depFileLoc}: \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
-		// parse dependency File JSON Data
+		if (props.verbose) println "*** Dependency File (${depFileLoc}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
+		// parse dependency File JSON String as Text
 		def depFileData = slurper.parseText(depFileJSON)
 
 		// Manually create logical file for the user build program
@@ -152,21 +151,24 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				// only copy the dependency file once per script invocation
 				if (!copiedFileCache.contains(physicalDependencyLoc)) {
 					copiedFileCache.add(physicalDependencyLoc)
-
+					// create member name
+					String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
 					//retrieve zUnitFileExtension plbck
 					zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 
 					if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
+						if (props.verbose) println "** Copying dependency ${physicalDependencyLoc} to ${dependencyPDS}:${memberName} as BINARY"
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.copyMode(CopyMode.BINARY)
 								.dataset(dependencyPDS)
-								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.member(memberName)
 								.execute()
 					} else
 					{
+						if (props.verbose) println "** Copying dependency ${physicalDependencyLoc} to ${dependencyPDS}:${memberName}"
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.dataset(dependencyPDS)
-								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.member(memberName)
 								.execute()
 					}
 				}
