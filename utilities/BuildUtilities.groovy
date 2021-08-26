@@ -116,7 +116,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependencyLoc.lastIndexOf('.')
 				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
-					if (props.verbose) println "** Copying dependency ${dependencyLoc} to ${dependencyPDS}:${memberName} as BINARY"
 					new CopyToPDS().file(new File(dependencyLoc))
 							.copyMode(CopyMode.BINARY)
 							.dataset(dependencyPDS)
@@ -125,7 +124,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				} 
 				else
 				{
-					if (props.verbose) println "** Copying dependency ${dependencyLoc} to ${dependencyPDS}:${memberName}"
 					new CopyToPDS().file(new File(dependencyLoc))
 							.dataset(dependencyPDS)
 							.member(memberName)
