@@ -157,7 +157,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 					zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 
 					if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
-						if (props.verbose) println "** Copying dependency ${physicalDependencyLoc} to ${dependencyPDS}:${memberName} as BINARY"
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.copyMode(CopyMode.BINARY)
 								.dataset(dependencyPDS)
@@ -165,7 +164,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 								.execute()
 					} else
 					{
-						if (props.verbose) println "** Copying dependency ${physicalDependencyLoc} to ${dependencyPDS}:${memberName}"
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.dataset(dependencyPDS)
 								.member(memberName)
