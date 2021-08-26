@@ -90,8 +90,6 @@ build options:
 
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
  
- -ctd,--crTestcaseDep     Flag to enable the creation of a dependency to program for a Testcase	
- 
 
 web application credentials
  -url,--url <arg>             DBB repository URL
