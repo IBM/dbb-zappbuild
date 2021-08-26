@@ -77,7 +77,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 	}
 
 	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
-		println("User Build Dep File Present. Skipping DBB Scan...")
+		if (props.verbose) println "*** User Build Dep File Present. Skipping DBB Scan"
 		// userBuildDependencyFile present (passed from the IDE)
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
@@ -88,6 +88,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// parse JSON dependency file
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
 		def depFileData = slurper.parse(depFile)
+		if (props.verbose) println "UserBuild Dependency File: \n" + depFileData
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
