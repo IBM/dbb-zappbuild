@@ -77,25 +77,24 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 	}
 
 	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
-		if (props.verbose) println "*** User Build Dep File Present. Skipping DBB Scan"
+		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
 		String depFilePath = props.userBuildDependencyFile
 		// if depFilePath is relatvie, convert to absolute path
-		String depFileLoc = depFilePath.startsWith('/') ? depFilePath : props.workspace + '/' + depFilePath
-		File depFile = new File(depFileLoc)
-		// parse JSON dependency file
+		String depFileLoc = getAbsolutePath(depFilePath)
+		String depFileJSON = new File(depFileLoc).text
+		
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		def depFileData = slurper.parse(depFile)
-		def jsonString = groovy.json.JsonOutput.toJson(depFileData)
-		if (props.verbose) println "UserBuild Dependency File: \n" + groovy.json.JsonOutput.prettyPrint(jsonString)
+		if (props.verbose) println "*** Dependency File ${depFileLoc}: \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
+		// parse dependency File JSON Data
+		def depFileData = slurper.parseText(depFileJSON)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-
 		// save logical file to dependency resolver
 		if (dependencyResolver)
 			dependencyResolver.setLogicalFile(lfile)
@@ -106,29 +105,31 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// copy each dependency from USS to member of depedencyPDS
 		dependencyPaths.each { dependencyPath ->
 			// if dependency is relative, convert to absolute path
-			String dependencyLoc = dependencyPath.startsWith('/') ? dependencyPath : props.workspace + '/' + dependencyPath
+			String dependencyLoc = getAbsolutePath(dependencyPath)
 
 			// only copy the dependency file once per script invocation
 			if (!copiedFileCache.contains(dependencyLoc)) {
 				copiedFileCache.add(dependencyLoc)
-			
-				// retrieve zUnitFileExtension plbck
+				// create member name
+				String memberName = CopyToPDS.createMemberName(dependencyPath)
+				// retrieve zUnit playback file extension
 				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
-
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependencyLoc.lastIndexOf('.')
 				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
+					if (props.verbose) println "** Copying dependency ${dependencyLoc} to ${dependencyPDS}:${memberName} as BINARY"
 					new CopyToPDS().file(new File(dependencyLoc))
 							.copyMode(CopyMode.BINARY)
 							.dataset(dependencyPDS)
-							.member(CopyToPDS.createMemberName(dependencyPath))
+							.member(memberName)
 							.execute()
 				} 
 				else
 				{
+					if (props.verbose) println "** Copying dependency ${dependencyLoc} to ${dependencyPDS}:${memberName}"
 					new CopyToPDS().file(new File(dependencyLoc))
 							.dataset(dependencyPDS)
-							.member(CopyToPDS.createMemberName(dependencyPath))
+							.member(memberName)
 							.execute()
 				}			
 			}
