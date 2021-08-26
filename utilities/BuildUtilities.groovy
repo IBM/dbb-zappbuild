@@ -88,7 +88,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// parse JSON dependency file
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
 		def depFileData = slurper.parse(depFile)
-		if (props.verbose) println "UserBuild Dependency File: \n" + depFileData.toString()
+		def jsonString = groovy.json.JsonOutput.toJson(depFileData)
+		if (props.verbose) println "UserBuild Dependency File: \n" + groovy.json.JsonOutput.prettyPrint(jsonString)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
