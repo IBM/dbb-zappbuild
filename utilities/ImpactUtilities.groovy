@@ -27,7 +27,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
 	// calculate changed files
-	if (lastBuildResult) {
+	if (lastBuildResult || props.baselineHash) {
 		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
@@ -178,8 +178,23 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		dir = buildUtils.getAbsolutePath(dir)
 		if (props.verbose) println "** Getting baseline hash for directory $dir"
 		String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-		String hash = lastBuildResult.getProperty(key)
 		String relDir = buildUtils.relativizePath(dir)
+		String hash
+		// retrieve overwrite if set
+		if (props.baselineHash){
+			String[] baselineMap = "props.baselineHash".split(",")
+			baselineMap.each{
+				(appSrcDir, gitReference) = it.split(":")
+				if (appSrcDir.equals(relDir)){
+					if (props.verbose) println "** Baseline hash for directory $dir retrieve from overwrite."
+					hash = gitReference
+				}
+			}
+		}
+		// return from lastBuildResult
+		if(!hash) {
+			hash = lastBuildResult.getProperty(key)
+		}
 		if (props.verbose) println "** Storing $relDir : $hash"
 		baselineHashes.put(relDir,hash)
 	}
@@ -475,7 +490,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 
 						def logicalDependencies = logicalFile.getLogicalDependencies()
 
-						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg  
+						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
 						def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
 
 						if (sysTestDependency){
@@ -634,7 +649,10 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 			"$dirName/$file" as String,
 			2
 		]
-	if (mode==2 && !mustExist) return ["$dirName/$file" as String, 2]
+	if (mode==2 && !mustExist) return [
+			"$dirName/$file" as String,
+			2
+		]
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
@@ -647,7 +665,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// returns null or assumed fullPath to file
 	if (mustExist){
 		if (props.verbose) println "!! (fixGitDiffPath) File not found."
-		return [null,null]
+		return [null, null]
 	}
 
 	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
