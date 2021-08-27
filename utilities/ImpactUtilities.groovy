@@ -232,7 +232,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.verbose) println "*** Deleted files for directory $dir:"
 		deleted.each { file ->
 			if ( !matches(file, excludeMatchers)) {
-				file = fixGitDiffPath(file, dir, false, mode)
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
 			}
@@ -241,7 +241,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.verbose) println "*** Renamed files for directory $dir:"
 		renamed.each { file ->
 			if ( !matches(file, excludeMatchers)) {
-				file = fixGitDiffPath(file, dir, false, mode)
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
 			}
@@ -625,7 +625,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 1];
-	if (mode==1 && !mustExist) return fixedFileName
+	if (mode==1 && !mustExist) return [fixedFileName, 1]
 
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
@@ -634,7 +634,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 			"$dirName/$file" as String,
 			2
 		]
-	if (mode==2 && !mustExist) return "$dirName/$file" as String
+	if (mode==2 && !mustExist) return ["$dirName/$file" as String, 2]
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
@@ -642,16 +642,16 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 3];
-	if (mode==3 && !mustExist) return fixedFileName
+	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
 	// returns null or assumed fullPath to file
 	if (mustExist){
 		if (props.verbose) println "!! (fixGitDiffPath) File not found."
-		return [null]
+		return [null,null]
 	}
 
 	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue]
+	return [defaultValue, null]
 }
 
 def matches(String file, List<PathMatcher> pathMatchers) {

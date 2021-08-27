@@ -205,11 +205,17 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 				changedFiles.add(file)
 			} else if (action == "D") {// handle deleted files
 				deletedFiles.add(file)
-			} else if (action == "R100") { // handle renamed file
+			} else if (action.startsWith("R")) { // handle renamed file
 				renamedFile = gitDiffOutput[1]
 				newFileName = gitDiffOutput[2]
 				changedFiles.add(newFileName) // will rebuild file
 				renamedFiles.add(renamedFile)
+				//evaluate similarity score
+				similarityScore = action.substring(1) as int
+				if (similarityScore < 50){
+					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $renamedFile : $similarityScore with new file $newFileName. ")
+				}
+
 			}
 			else {
 				println ("*! (GitUtils.getChangedFiles) Error in determining action in git diff. ")
@@ -302,6 +308,6 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 			}
 		}
 	}
-	
+
 	return changedProperties.propertyNames()
 }
