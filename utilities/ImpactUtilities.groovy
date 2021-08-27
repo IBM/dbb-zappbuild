@@ -182,7 +182,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		String hash
 		// retrieve overwrite if set
 		if (props.baselineHash){
-			String[] baselineMap = "props.baselineHash".split(",")
+			String[] baselineMap = (props.baselineHash).split(",")
 			baselineMap.each{
 				(appSrcDir, gitReference) = it.split(":")
 				if (appSrcDir.equals(relDir)){
