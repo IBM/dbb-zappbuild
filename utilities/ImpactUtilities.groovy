@@ -141,7 +141,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
-	
+
 	return [buildSet, deletedFiles]
 }
 
@@ -310,7 +310,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 	changedFiles.each{ changedFile ->
 
 		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
-		
+
 		if(matches(changedFile, fileMatchers)){
 
 			if (props.reportExternalImpactsAnalysisDepths == "simple"){
@@ -445,6 +445,11 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
 	}
 
+	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
+		sortFileList(changedFiles);
+		if (props.verbose) println "*** Sorted list of changed files: $changedFiles"
+	}
+
 	// scan changed files
 	changedFiles.each { file ->
 
@@ -458,8 +463,36 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				def logicalFile = scanner.scan(file, props.workspace)
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
+				// Update logical file with dependencies to build properties
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 					createPropertyDependency(file, logicalFile)
+				}
+
+				// If configured, update test case program dependencies
+				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
+					// If the file is a zUnit configuration file (BZUCFG)
+					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+
+						def logicalDependencies = logicalFile.getLogicalDependencies()
+
+						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg  
+						def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
+
+						if (sysTestDependency){
+							// find in local list of logical files first (batch processing)
+							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
+							if (!testCaseFiles){ // alternate retrieve it from the collection
+								testCaseFiles = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, sysTestDependency.getLname()).find{
+									it.getLanguage().equals("COB")
+								}
+							}
+							testCaseFiles.each{
+								it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
+								if (props.verbose) println "*** Updating dependencies for test case program ${it.getFile()} =\n$it"
+								logicalFiles.add(it)
+							}
+						}
+					}
 				}
 
 				logicalFiles.add(logicalFile)
@@ -695,32 +728,32 @@ def matchesPattern(String name, List<Pattern> patterns) {
 }
 
 /**
-* createPropertyDependency
-* method to add a dependency to a property key
-*/
+ * createPropertyDependency
+ * method to add a dependency to a property key
+ */
 def createPropertyDependency(String buildFile, LogicalFile logicalFile){
-   if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
-   // get language prefix
-   def scriptMapping = ScriptMappings.getScriptName(buildFile)
-   if(scriptMapping != null){
-	   def langPrefix = buildUtils.getLangPrefix(scriptMapping)
-	   // language COB
-	   if (langPrefix != null ){
-		   // generic properties
-		   if (props."${langPrefix}_impactPropertyList"){
-			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
-		   }
-		   // cics properties
-		   if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
-			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
-		   }
-		   // sql properties
-		   if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
-			   addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
-		   }
-	   }
+	if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
+	// get language prefix
+	def scriptMapping = ScriptMappings.getScriptName(buildFile)
+	if(scriptMapping != null){
+		def langPrefix = buildUtils.getLangPrefix(scriptMapping)
+		// language COB
+		if (langPrefix != null ){
+			// generic properties
+			if (props."${langPrefix}_impactPropertyList"){
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
+			}
+			// cics properties
+			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
+			}
+			// sql properties
+			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
+				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
+			}
+		}
 
-   }
+	}
 }
 
 /**
@@ -737,4 +770,33 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
 	}
 }
 
+/**
+ * isMappedAsZUnitConfigFile
+ * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
+ */
+def isMappedAsZUnitConfigFile(mapping, file) {
+	return (mapping.isMapped("ZUnitConfigScanner", file))
+}
 
+/**
+ * sortFileList
+ * sort a list, putting the lines that defines files mapped as zUnit CFG files to the end
+ */
+def sortFileList(list) {
+	def mapping = new PropertyMappings("dbb.scannerMapping")
+	list.sort{s1, s2 ->
+		if (isMappedAsZUnitConfigFile(mapping, s1)) {
+			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else {
+			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+				return -1;
+			} else {
+				return 0;
+			}
+		}
+	}
+}
