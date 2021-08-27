@@ -259,12 +259,14 @@ def updateBuildResult(Map args) {
 def createDependencyResolver(String buildFile, String rules) {
 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
 
-	def scanner = getScanner(buildFile)
-
 	// create a dependency resolver for the build file
 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
 			.sourceDir(props.workspace)
-			.scanner(scanner)
+	
+	// add scanner if userBuild Dep File not provided, or not a user build
+	if (!props.userBuildDependencyFile || !props.userBuild)
+		resolver.setScanner(getScanner(buildFile))
+
 	// add resolution rules
 	if (rules)
 		resolver.setResolutionRules(parseResolutionRules(rules))
