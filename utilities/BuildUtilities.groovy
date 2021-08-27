@@ -86,7 +86,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		String depFileLoc = getAbsolutePath(depFilePath)
 		String depFileJSON = new File(depFileLoc).text // convert JSON dep file to String
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		if (props.verbose) println "*** Dependency File (${depFileLoc}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
+		if (props.verbose) println "  Dependency File (${depFileLoc}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
 		// parse dependency File JSON String as Text
 		def depFileData = slurper.parseText(depFileJSON)
 
