@@ -7,6 +7,9 @@ import com.ibm.dbb.build.report.records.*
 import com.ibm.dbb.extensions.*
 import com.ibm.jzos.ZFile
 
+@Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+
+
 /*
  * Method to iterate over deleted files list to generate Delete Records in BuildReport.
  */
