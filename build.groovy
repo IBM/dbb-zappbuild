@@ -166,7 +166,7 @@ options:
 	cli.l(longOpt:'logEncoding', args:1, 'Encoding of output logs. Default is EBCDIC')
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
-	cli.b(longOpt:'baselineRef',args:1,'Build option to set the baselineHash in an impactBuild scenario.')
+	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
