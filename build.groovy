@@ -16,6 +16,7 @@ import groovy.xml.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def buildReportUtils= loadScript(new File("utilities/BuildReportUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -29,8 +30,11 @@ println("\n** Build start at $props.startTime")
 // initialize build
 initializeBuildProcess(args)
 
-// create build list
-List<String> buildList = createBuildList()
+// create build list and list of deletedFiles
+List<String> buildList = new ArrayList() 
+List<String> deletedFiles = new ArrayList()
+
+(buildList, deletedFiles) = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
@@ -63,6 +67,12 @@ else {
 		println ("** Scanning load modules.")
 		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
 	}
+}
+
+// document deletions in build report
+if (deletedFiles.size() != 0) {
+	println("** Document deleted files in Build Report.")
+	buildReportUtilities.processDeletedFilesList(deletedFiles)
 }
 
 // finalize build process
@@ -451,6 +461,10 @@ def createBuildList() {
 	buildList.addAll(buildSet)
 	buildSet = null
 
+	// 
+	List<String> deleteList = new ArrayList<String>()
+	deleteList.addAll(deletedFiles)
+	
 	// write out build list to file (for documentation, not actually used by build scripts)
 	String buildListFileLoc = "${props.buildOutDir}/buildList.${props.buildListFileExt}"
 	println "** Writing build list file to $buildListFileLoc"
@@ -484,7 +498,7 @@ def createBuildList() {
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 
-	return buildList
+	return [buildList, deleteList]
 }
 
 
