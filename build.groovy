@@ -72,7 +72,7 @@ else {
 // document deletions in build report
 if (deletedFiles.size() != 0) {
 	println("** Document deleted files in Build Report.")
-	buildReportUtilities.processDeletedFilesList(deletedFiles)
+	buildReportUtils.processDeletedFilesList(deletedFiles)
 }
 
 // finalize build process
