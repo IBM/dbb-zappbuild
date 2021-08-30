@@ -785,16 +785,15 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 
 ### Perform ImpactBuilds by overwriting the baseline reference for the analysis of changed files
 
-Implementing a release based development approach, will lead to combine several features into the release candidate, which is formed in a release branch. For more information please have a look to the documentation about git flow.
+Implementing a release-based approach will lead to combining several features into the release candidate, which is formed in a release branch. For more information please have a look to the documentation about git flow.
 
-In this case, the build framework should create a consolidated build for all changed files including their impacts (potentially with the optimized compile time options) for the incremental release candidate. The scenario for the first build on the release branch is expected to be slightly different from the impact build of topic branches. 
+To create an incremental release candidate, the build framework needs to perform a consolidated build that includes all changed files and their impacts (potentially this build can use optimized compile options). In this situation, the first build on the release branch must be slightly different from the typical impact build of topic branches.
 
-The invocation is similar to other impact builds, but provides an additional option `--baselineRef`. The commandline option `--baselineRef` allows you to overwrite the baseline hash for each directory for the analysis phase for changed files. The referenced directory needs to be in the list of the `applicationSrcDirs` build preference.
+The invocation for this consolidated build is performed through the `--impactBuild` parameter with the use of an additional option, called `--baselineRef`. The command-line option `--baselineRef` allows you to specify the baseline hash/tag for each directory when running an impact analysis: each file that was changed, renamed or deleted between the baseline hash/tag and the current hash will be managed by the build framework, and will impact the scope of the impact build. The referenced directory needs to be in the list of the `applicationSrcDirs` build property.
 
 The syntax for --baselineRef is a comma-seperated list of mappings for each application source dir. Each mapping is seperated by a colon:
 `--baselineRef <application source dir>:<gitReference>,<application source dir>:<gitReference>,...`
-Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`
-`gitReference` can be anything in the history - a git commit, a git tag .
+Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`. `gitReference` can either be a git commit hash or a git tag in the history.
 
 Another scenario of this build setup is to run the build with the DBB reportOnly option to build a cumulative deployment package without rebuilding the binaries.
 
