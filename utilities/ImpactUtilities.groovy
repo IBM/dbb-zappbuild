@@ -27,7 +27,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
 	// calculate changed files
-	if (lastBuildResult || props.baselineHash) {
+	if (lastBuildResult || props.baselineRef) {
 		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
@@ -181,18 +181,29 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		String relDir = buildUtils.relativizePath(dir)
 		String hash
 		// retrieve overwrite if set
-		if (props.baselineHash){
-			String[] baselineMap = (props.baselineHash).split(",")
+		if (props.baselineRef){
+			String[] baselineMap = (props.baselineRef).split(",")
 			baselineMap.each{
-				(appSrcDir, gitReference) = it.split(":")
-				if (appSrcDir.equals(relDir)){
-					if (props.verbose) println "** Baseline hash for directory $dir retrieve from overwrite."
+				// case: baselineRef gitref
+				if(it.split(":").size==1 && dir.equals(props.application)){
+					if (props.verbose) println "*** Baseline hash for directory $dir retrieved from overwrite."
 					hash = gitReference
 				}
+				// case: baselineRef folder:gitref
+				else if(it.split(":").size>1){
+					(appSrcDir, gitReference) = it.split(":")
+					if (appSrcDir.equals(relDir)){
+						if (props.verbose) println "*** Baseline hash for directory $dir retrieved from overwrite."
+						hash = gitReference
+					}
+				}
+				//case: no reference defined
+				else {
+					hash = lastBuildResult.getProperty(key)
+				}
 			}
-		}
-		// return from lastBuildResult
-		if(!hash) {
+		} else {
+			// return from lastBuildResult
 			hash = lastBuildResult.getProperty(key)
 		}
 		if (props.verbose) println "** Storing $relDir : $hash"
