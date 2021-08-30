@@ -187,7 +187,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				// case: baselineRef gitref
 				if(it.split(":").size()==1 && relDir.equals(props.application)){
 					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-					hash = gitReference
+					hash = it
 				}
 				// case: baselineRef folder:gitref
 				else if(it.split(":").size()>1){
