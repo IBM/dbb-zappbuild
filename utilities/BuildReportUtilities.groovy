@@ -24,28 +24,30 @@ def processDeletedFilesList(List deletedList){
 
 				String member = CopyToPDS.createMemberName(deletedFile)
 
-				props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
+				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", deletedFile)
+				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy" || isLinkEdited == null){
 
-					// outputRecord
-					String outputRecord = "$outputDS"+"($member)"
+					DeleteRecord deleteRecord = new DeleteRecord()
+					deleteRecord.setFile(deletedFile)
 
-					String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", deletedFile)
-					if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy" || isLinkEdited == null){
+					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
+						// outputRecord
+						String outputRecord = "$outputDS"+"($member)"
 
-						DeleteRecord deleteRecord = new DeleteRecord()
-						deleteRecord.setFile(deletedFile)
 						deleteRecord.addOutput(outputRecord)
-						BuildReportFactory.getBuildReport().addRecord(deleteRecord)
 
 						if (ZFile.dsExists("//'$outputRecord'")) {
-						   if (props.verbose) println "** Deleting ${outputRecord}"
-						   ZFile.remove("//'$outputRecord'")
+							if (props.verbose) println "** Deleting ${outputRecord}"
+							ZFile.remove("//'$outputRecord'")
 						}
-						
+
 					}
-					else {
-						if (props.verbose) println ("*** Skipped $deletedFile.")
-					}
+
+					if(deleteRecord.getOutputs().size() > 0 ) BuildReportFactory.getBuildReport().addRecord(deleteRecord)
+
+				}
+				else {
+					if (props.verbose) println ("*** Skipped $deletedFile.")
 				}
 			} else {
 				if (props.verbose) println ("*** No Delete Record generated for $deletedFile. No language prefix found.")
