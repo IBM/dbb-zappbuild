@@ -184,37 +184,32 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		if (props.baselineRef){
 			String[] baselineMap = (props.baselineRef).split(",")
 			baselineMap.each{
-				// case: baselineRef gitref
+				// case: baselineRef (gitref)
 				if(it.split(":").size()==1 && relDir.equals(props.application)){
 					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
 					hash = it
 				}
-				// case: baselineRef folder:gitref
+				// case: baselineRef (folder:gitref)
 				else if(it.split(":").size()>1){
 					(appSrcDir, gitReference) = it.split(":")
 					if (appSrcDir.equals(relDir)){
 						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
 						hash = gitReference
 					}
-					//case: no reference defined
-					else if (lastBuildResult){
-						hash = lastBuildResult.getProperty(key)
-					}
-					else {
-						if (props.verbose) println "!** Could not obtain the baseline hash for directory $relDir."
-					}
 				}
-				else if (lastBuildResult){
-					hash = lastBuildResult.getProperty(key)
-				}
+			}
+			// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
+			if (hash == null && lastBuildResult) {
+				hash = lastBuildResult.getProperty(key)
 			}
 		} else if (lastBuildResult){
 			// return from lastBuildResult
 			hash = lastBuildResult.getProperty(key)
-		} else {
-			if (props.verbose) println "!** Could not obtain the baseline hash for directory $relDir."
 		}
-
+		if (hash == null){
+			println "!** Could not obtain the baseline hash for directory $relDir."
+		}
+		
 		if (props.verbose) println "** Storing $relDir : $hash"
 		baselineHashes.put(relDir,hash)
 	}
