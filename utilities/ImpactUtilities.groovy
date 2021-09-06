@@ -180,7 +180,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
 		String relDir = buildUtils.relativizePath(dir)
 		String hash
-		// retrieve overwrite if set
+		// retrieve baseline reference overwrite if set
 		if (props.baselineRef){
 			String[] baselineMap = (props.baselineRef).split(",")
 			baselineMap.each{
@@ -198,14 +198,17 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 					}
 				}
 				//case: no reference defined
-				else {
+				else if (lastBuildResult){
 					hash = lastBuildResult.getProperty(key)
 				}
 			}
-		} else {
+		} else if (lastBuildResult){
 			// return from lastBuildResult
 			hash = lastBuildResult.getProperty(key)
+		} else {
+			if (props.verbose) println "!** Could not obtain the baseline hash for directory $relDir."
 		}
+
 		if (props.verbose) println "** Storing $relDir : $hash"
 		baselineHashes.put(relDir,hash)
 	}
