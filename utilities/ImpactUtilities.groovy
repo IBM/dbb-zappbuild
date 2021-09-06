@@ -196,8 +196,14 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
 						hash = gitReference
 					}
+					//case: no reference defined
+					else if (lastBuildResult){
+						hash = lastBuildResult.getProperty(key)
+					}
+					else {
+						if (props.verbose) println "!** Could not obtain the baseline hash for directory $relDir."
+					}
 				}
-				//case: no reference defined
 				else if (lastBuildResult){
 					hash = lastBuildResult.getProperty(key)
 				}
