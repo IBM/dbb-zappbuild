@@ -116,8 +116,8 @@ utility options
 - [Build a List of Programs](#build-a-list-of-programs)
 - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
 - [Perform Impact Build](#perform-impact-build)
-- [Perform ImpactBuilds for topic branches](#perform-impactbuilds-for-topic-branches)
-- [Perform ImpactBuilds by overwriting the baseline reference for the analysis of changed files](#perform-impactbuilds-by-overwriting-the-baseline-reference-for-the-analysis-of-changed-files)
+- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
 - [Perform a Scan Source build](#perform-a-scan-source-build)
 - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
 
@@ -672,7 +672,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 </details>
 
-### Perform ImpactBuilds for topic branches 
+### Perform Impact Build for topic branches 
 
 zAppBuild is able to detect when building a topic branch for the first time. It will automatically clone the dependency data collections from the main build branch (see `mainBuildBranch` build property in application.properties) in order to avoid having to rescan the entire application.
 
@@ -783,7 +783,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 
 </details>
 
-### Perform ImpactBuilds by overwriting the baseline reference for the analysis of changed files
+### Perform Impact Build by providing baseline reference for the analysis of changed files
 
 Implementing a release-based approach will lead to combining several features into the release candidate, which is formed in a release branch. For more information please have a look to the documentation about git flow.
 
@@ -791,9 +791,14 @@ To create an incremental release candidate, the build framework needs to perform
 
 The invocation for this consolidated build is performed through the `--impactBuild` parameter with the use of an additional option, called `--baselineRef`. The command-line option `--baselineRef` allows you to specify the baseline hash/tag for each directory when running an impact analysis: each file that was changed, renamed or deleted between the baseline hash/tag and the current hash will be managed by the build framework, and will impact the scope of the impact build. The referenced directory needs to be in the list of the `applicationSrcDirs` build property.
 
-The syntax for --baselineRef is a comma-seperated list of mappings for each application source dir. Each mapping is seperated by a colon:
-`--baselineRef <application source dir>:<gitReference>,<application source dir>:<gitReference>,...`
-Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`. `gitReference` can either be a git commit hash or a git tag in the history.
+The syntax for `--baselineRef` is a comma-seperated list of mappings for each application source dir. Each mapping is seperated by a colon:
+```
+--baselineRef <application source dir>:<gitReference>,<application source dir>:<gitReference>,...
+```
+
+Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`. 
+
+`gitReference` can either be a git commit hash or a git tag in the history.
 
 Another scenario of this build setup is to run the build with the DBB reportOnly option to build a cumulative deployment package without rebuilding the binaries.
 
