@@ -206,7 +206,7 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
- * updateBuildResult - used by language scripts to update the build depFileData after a build step
+ * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
@@ -215,7 +215,7 @@ def updateBuildResult(Map args) {
 	if (args.client && !props.userBuild) {
 		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
-			println "*! No build depFileData found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
+			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
 		}
 
@@ -226,7 +226,7 @@ def updateBuildResult(Map args) {
 
 		}
 
-		// add warning message, but keep depFileData status
+		// add warning message, but keep result status
 		if (args.warningMsg) {
 			// buildResult.setStatus(buildResult.WARNING)
 			buildResult.addProperty("warning", args.warningMsg)
@@ -241,7 +241,7 @@ def updateBuildResult(Map args) {
 			}
 		}
 
-		// save depFileData
+		// save result
 		buildResult.save()
 	}
 }
@@ -525,7 +525,7 @@ def validateDependencyFile(String depFilePath) {
 	// parse dependency File JSON String
 	def depFileData = slurper.parseText(depFileJSON)
 
-	// List of required fields in the user build dependnecy file:
+	// List of required fields in the user build dependency file:
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
 	
 	// make assertions on required fields from dependency file
