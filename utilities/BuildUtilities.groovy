@@ -81,14 +81,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// userBuildDependencyFile present (passed from the IDE)
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
-		String depFilePath = props.userBuildDependencyFile
-		// if depFilePath is relatvie, convert to absolute path
-		String depFileLoc = getAbsolutePath(depFilePath)
-		String depFileJSON = new File(depFileLoc).text // convert JSON dep file to String
-		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		if (props.verbose) println "Dependency File (${depFileLoc}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
-		// parse dependency File JSON String as Text
-		def depFileData = slurper.parseText(depFileJSON)
+		// parse JSON and validate fields of userBuildDependencyFile
+		def depFileData = validateDependencyFile(props.userBuildDependencyFile)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -515,4 +509,29 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 		// a file level overwrite was used
 	}
 	return deployType
+
+	/*
+	 * parse and validates the user build dependency file, returns a parsed json object 
+	 */
+	def validateDependencyFile(String depFilePath) {
+		// if depFilePath is relatvie, convert to absolute path
+		depFilePath = getAbsolutePath(depFilePath)
+		String depFileJSON = new File(depFilePath).text // convert JSON dep file to String
+		JsonSlurper slurper = new groovy.json.JsonSlurper()
+		
+		if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
+		
+		// parse dependency File JSON String
+		def depFileData = sluper.parseText(depFileJSON)
+
+		// List of required fields in the user build dependnecy file:
+		String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
+		
+		// make assertions on required fields from dependency file
+		reqDepFileProps.each { depFileProp ->
+			assert depFileData."$depFileProp" : "*! Missing required user build dependency file property '$depFilePath'.'$depFileProp'"
+		}
+
+		return depFileData // return the parsed JSON object
+	}
 }
