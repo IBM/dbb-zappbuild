@@ -530,7 +530,7 @@ def validateDependencyFile(String depFilePath) {
 	
 	// make assertions on required fields from dependency file
 	reqDepFileProps.each { depFileProp ->
-		assert depFileData."$depFileProp" != null : "*! Missing required user build dependency file field '$depFileProp'"
+		assert depFileData.${depFileProp} != null : "*! Missing required user build dependency file field '$depFileProp'"
 	}
 
 	return depFileData // return the parsed JSON object
