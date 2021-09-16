@@ -523,7 +523,7 @@ def validateDependencyFile(String depFilePath) {
 	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
 	
 	// parse dependency File JSON String
-	def depFileData = sluper.parseText(depFileJSON)
+	def depFileData = slurper.parseText(depFileJSON)
 
 	// List of required fields in the user build dependnecy file:
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
