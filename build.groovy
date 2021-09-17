@@ -201,7 +201,7 @@ options:
 	// build framework options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
-	// IDz Dependency Options
+	// IDE user build dependency options
 	cli.df(longOpt:'dependencyFile', args:1, 'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
 
 	// utility options
