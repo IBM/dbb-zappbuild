@@ -82,7 +82,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
 		// parse JSON and validate fields of userBuildDependencyFile
-		def depFileData = validateDependencyFile(props.userBuildDependencyFile)
+		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -514,24 +514,28 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
  * parse and validates the user build dependency file 
  * returns a parsed json object 
  */
-def validateDependencyFile(String depFilePath) {
+def validateDependencyFile(String buildFile, String depFilePath) {
 	// if depFilePath is relatvie, convert to absolute path
 	depFilePath = getAbsolutePath(depFilePath)
-	String depFileJSON = new File(depFilePath).text // convert JSON dep file to String
+	File depFile = new File(depFilePath)
+	assert depFile.exists() : "*! [ERROR] Dependency file not found: ${depFilePath}"
 	JsonSlurper slurper = new groovy.json.JsonSlurper()
 	
-	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFileJSON)
+	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFile.getText())
 	
 	// parse dependency File JSON String
-	def depFileData = slurper.parseText(depFileJSON)
+	def depFileData = slurper.parse(depFile)
 
 	// List of required fields in the user build dependency file:
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
 	
 	// make assertions on required fields from dependency file
 	reqDepFileProps.each { depFileProp ->
-		assert depFileData."${depFileProp}" != null : "*! Missing required user build dependency file field '$depFileProp'"
+		assert depFileData."${depFileProp}" != null : "*! [ERROR] Missing required dependency file field '$depFileProp'"
 	}
+
+	// validate that depFileData.fileName == buildFile
+	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! [ERROR] Dependency file mismatch: fileName does not match build "
 
 	return depFileData // return the parsed JSON object
 }
