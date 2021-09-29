@@ -518,24 +518,18 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	// if depFilePath is relatvie, convert to absolute path
 	depFilePath = getAbsolutePath(depFilePath)
 	File depFile = new File(depFilePath)
-	assert depFile.exists() : "*! [ERROR] Dependency file not found: ${depFilePath}"
+	assert depFile.exists() : "*! Dependency file not found: ${depFilePath}"
 	JsonSlurper slurper = new groovy.json.JsonSlurper()
-	
 	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFile.getText())
-	
-	// parse dependency File JSON String
+	// parse dependency File
 	def depFileData = slurper.parse(depFile)
 
-	// List of required fields in the user build dependency file:
+	/* Begin Validation */ 
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
-	
-	// make assertions on required fields from dependency file
 	reqDepFileProps.each { depFileProp ->
-		assert depFileData."${depFileProp}" != null : "*! [ERROR] Missing required dependency file field '$depFileProp'"
+		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
 	}
-
 	// validate that depFileData.fileName == buildFile
-	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! [ERROR] Dependency file mismatch: fileName does not match build file."
-
+	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file."
 	return depFileData // return the parsed JSON object
 }
