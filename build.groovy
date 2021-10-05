@@ -166,6 +166,7 @@ options:
 	cli.l(longOpt:'logEncoding', args:1, 'Encoding of output logs. Default is EBCDIC')
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
+	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
@@ -308,7 +309,8 @@ def populateBuildProperties(String[] args) {
 	if (opts.i) props.impactBuild = 'true'
 	if (opts.r) props.reset = 'true'
 	if (opts.v) props.verbose = 'true'
-
+	if (opts.b) props.baselineRef = opts.b
+	
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
 	if (opts.ss) props.scanOnly = 'true'
@@ -378,7 +380,8 @@ def populateBuildProperties(String[] args) {
 	
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
-		
+	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
+	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
 		println("java.version="+System.getProperty("java.runtime.version"))

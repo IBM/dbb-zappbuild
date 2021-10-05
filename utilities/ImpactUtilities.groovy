@@ -27,7 +27,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
 	// calculate changed files
-	if (lastBuildResult) {
+	if (lastBuildResult || props.baselineRef) {
 		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
@@ -178,8 +178,38 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		dir = buildUtils.getAbsolutePath(dir)
 		if (props.verbose) println "** Getting baseline hash for directory $dir"
 		String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-		String hash = lastBuildResult.getProperty(key)
 		String relDir = buildUtils.relativizePath(dir)
+		String hash
+		// retrieve baseline reference overwrite if set
+		if (props.baselineRef){
+			String[] baselineMap = (props.baselineRef).split(",")
+			baselineMap.each{
+				// case: baselineRef (gitref)
+				if(it.split(":").size()==1 && relDir.equals(props.application)){
+					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+					hash = it
+				}
+				// case: baselineRef (folder:gitref)
+				else if(it.split(":").size()>1){
+					(appSrcDir, gitReference) = it.split(":")
+					if (appSrcDir.equals(relDir)){
+						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+						hash = gitReference
+					}
+				}
+			}
+			// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
+			if (hash == null && lastBuildResult) {
+				hash = lastBuildResult.getProperty(key)
+			}
+		} else if (lastBuildResult){
+			// return from lastBuildResult
+			hash = lastBuildResult.getProperty(key)
+		}
+		if (hash == null){
+			println "!** Could not obtain the baseline hash for directory $relDir."
+		}
+		
 		if (props.verbose) println "** Storing $relDir : $hash"
 		baselineHashes.put(relDir,hash)
 	}
@@ -475,7 +505,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 
 						def logicalDependencies = logicalFile.getLogicalDependencies()
 
-						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg  
+						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
 						def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
 
 						if (sysTestDependency){
@@ -634,7 +664,10 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 			"$dirName/$file" as String,
 			2
 		]
-	if (mode==2 && !mustExist) return ["$dirName/$file" as String, 2]
+	if (mode==2 && !mustExist) return [
+			"$dirName/$file" as String,
+			2
+		]
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
@@ -647,7 +680,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// returns null or assumed fullPath to file
 	if (mustExist){
 		if (props.verbose) println "!! (fixGitDiffPath) File not found."
-		return [null,null]
+		return [null, null]
 	}
 
 	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
