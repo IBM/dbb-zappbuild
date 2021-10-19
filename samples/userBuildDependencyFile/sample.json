@@ -7,8 +7,8 @@
     "dependencies": [
         "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtcom.cpy",
         "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsnbrpm.cpy",
-        "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtinp.cpy",
-        "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtout.cpy"
+        "MortgageApplication/copybook/epsmtinp.cpy",
+        "MortgageApplication/copybook/epsmtout.cpy"
     ],
     "schemaVersion": "1.0"
 }
