@@ -457,3 +457,22 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 	}
 	return deployType
 }
+
+/*
+ * Creates a Generic PropertyRecord with the provided db2 information in bind.properties
+ */
+def generateDb2InfoRecord(String buildFile){
+	
+	// New Generic Property Record
+	PropertiesRecord db2BindInfo = new PropertiesRecord("db2BindInfo:${buildFile}")
+	
+	// Link to buildFile
+	db2BindInfo.addProperty("file", buildFile)
+	
+	// Add all properties, which are defined for bind - see application-conf/bind.properties 
+	db2BindInfo.addProperty("bind_collectionID",props.getFileProperty("bind_collectionID",props.getFileProperty))
+	db2BindInfo.addProperty("bind_packageOwner",props.getFileProperty("bind_packageOwner",props.getFileProperty))
+	db2BindInfo.addProperty("bind_qualifier",props.getFileProperty("bind_qualifier",props.getFileProperty))
+	
+	return db2BindInfo		
+}

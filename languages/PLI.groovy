@@ -58,6 +58,14 @@ sortedList.each { buildFile ->
 	}
 	else {
 		// if this program needs to be link edited . . .
+
+		// Store db2 bind information as a generic property record in the BuildReport
+		String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
+		if (buildUtils.isSQL(logicalFile) && generateDb2BindInfoRecord.toBoolean() ){
+			PropertiesRecord db2BindInfoRecord = buildUtils.generateDb2InfoRecord(buildFile)
+			BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
+		}
+
 		String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
