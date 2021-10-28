@@ -469,11 +469,14 @@ def generateDb2InfoRecord(String buildFile){
 	
 	// Link to buildFile
 	db2BindInfo.addProperty("file", buildFile)
-	
-	// Add all properties, which are defined for bind - see application-conf/bind.properties 
-	db2BindInfo.addProperty("bind_collectionID",props.getFileProperty("bind_collectionID",props.getFileProperty))
-	db2BindInfo.addProperty("bind_packageOwner",props.getFileProperty("bind_packageOwner",props.getFileProperty))
-	db2BindInfo.addProperty("bind_qualifier",props.getFileProperty("bind_qualifier",props.getFileProperty))
-	
+
+	// Iterate over list of Db2InfoRecord properties
+	String[] generateDb2InfoRecordPropertiesList = props.getFileProperty("generateDb2InfoRecordProperties", buildFile).split(',')
+	generateDb2InfoRecordPropertiesList.each { db2Prop ->
+		// Add all properties, which are defined for bind - see application-conf/bind.properties
+		String bindPropertyValue = props.getFileProperty("${db2Prop}", buildFile)
+		if (bindPropertyValue != null ) db2BindInfo.addProperty("${db2Prop}",bindPropertyValue)
+	}
+		
 	return db2BindInfo		
 }
