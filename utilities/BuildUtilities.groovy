@@ -5,6 +5,7 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
+import com.ibm.dbb.build.report.records.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
