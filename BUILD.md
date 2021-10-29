@@ -44,6 +44,10 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --cc --cch localhost --ccp 8009 --cco "e=CCPDF"
 ```
+ **Build one program using a [user build dependency file](samples/userBuildDependencyFile) predefining dependency information to skip DBB scans and dependency resolution.**
+```
+$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --userBuild --dependencyFile userBuildDependencyFile.json app1/cobol/epsmpmt.cbl
+```
 
 ## Command Line Options Summary
 ```
@@ -101,6 +105,7 @@ web application credentials
 IDz/ZOD User Build options
  -u,--userBuild               Flag indicating running a user build
  -e,--errPrefix <arg>         Unique id used for IDz error message datasets
+ -df,--dependencyFile <arg>   Absolute or relative path (from workspace) to user build JSON file containing dependency information.
 
 utility options
  -help,--help                 Prints this message
