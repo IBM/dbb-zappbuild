@@ -381,6 +381,9 @@ def populateBuildProperties(String[] args) {
 		props.buildOutDir = ((props.createBuildOutputSubfolder && props.createBuildOutputSubfolder.toBoolean()) ? "${props.outDir}/${props.applicationBuildLabel}" : "${props.outDir}") as String
 	}
 	
+	// Validate User Build Dependency file used with user build
+	if (props.userBuildDependencyFile) assert (props.userBuild)
+
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
 		
