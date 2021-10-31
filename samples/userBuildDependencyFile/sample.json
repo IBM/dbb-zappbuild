@@ -1,0 +1,14 @@
+{
+    "fileName": "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/cobol/epscmort.cbl",
+    "isCICS": true,
+    "isSQL": true,
+    "isDLI": false,
+    "isMQ": false,
+    "dependencies": [
+        "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtcom.cpy",
+        "/u/burgess/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsnbrpm.cpy",
+        "MortgageApplication/copybook/epsmtinp.cpy",
+        "MortgageApplication/copybook/epsmtout.cpy"
+    ],
+    "schemaVersion": "1.0"
+}
