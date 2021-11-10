@@ -50,7 +50,6 @@ PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expected
 def changedPropFile = props.impactBuild_properties_changedFiles
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
 try {
-	changedFiles.each { changedFile ->
 		
 		println "\n** Running build to set baseline"
 				
@@ -74,7 +73,6 @@ try {
 		
 		// validate build results
 		validateImpactBuild(changedPropFile, filesBuiltMappings, outputStream)
-	}
 }
 finally {
 	cleanUpDatasets()
