@@ -68,8 +68,8 @@ try {
 		
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
-		def outputStream = new StringBuffer()
-		def process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
+		outputStream = new StringBuffer()
+		process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
 		process.waitForProcessOutput(outputStream, System.err)
 		
 		// validate build results
