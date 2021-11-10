@@ -78,9 +78,9 @@ finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
 		println "\n***"
-	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
-	println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
-	println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
+	println "**START OF FAILED IMPACT BUILD ON PROPERTY CHANGE TEST RESULTS**\n"
+	println "*FAILED IMPACT BUILD ON PROPERT CHANGE TEST  RESULTS*\n" + assertionList
+	println "\n**END OF FAILED IMPACT BUILD ON PROPERTY CHANGE TEST RESULTS**"
 	println "***"
   }
 }
