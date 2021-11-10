@@ -6,7 +6,7 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild.groovy"
+println "\n** Executing test script impactBuild_properties.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -25,7 +25,7 @@ fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile},${props.propFiles}" : "")
+fullBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${impactBuild_properties_buildPropSetting},${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"
 
 // create impact build command
@@ -41,7 +41,7 @@ impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 impactBuildCommand << (props.verbose ? "--verbose" : "")
-impactBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile},${props.propFiles}" : "")
+impactBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${impactBuild_properties_buildPropSetting},${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
