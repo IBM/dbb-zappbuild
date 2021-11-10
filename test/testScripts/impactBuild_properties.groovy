@@ -46,7 +46,7 @@ impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
 @Field def assertionList = []
-PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expectedFilesBuilt')
+PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_properties_expectedFilesBuilt')
 def changedPropFile = props.impactBuild_properties_changedFile
 println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
 try {
@@ -106,6 +106,8 @@ def copyAndCommit(String changedFile) {
 def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
 	println "** Validating impact build results"
+	println changedFile
+	println filesBuiltMappings
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
 	
 	try{
@@ -120,7 +122,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD PROPERTY CHANGE $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 	
 	println "**"
-	println "** IMPACT BUILD PROPERTY CHANGE : PASSED FOR $changedFile **"
+	println "** IMPACT BUILD ON PROPERTY CHANGE : PASSED FOR $changedFile **"
 	println "**"
 	}
 	catch(AssertionError e) {
