@@ -6,7 +6,7 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild_properties.groovy"
+println "\n### Executing test script impactBuild_properties.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -47,8 +47,8 @@ impactBuildCommand << "--impactBuild"
 // iterate through change files to test impact build
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expectedFilesBuilt')
-def changedPropFile = props.impactBuild_properties_changedFiles
-println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
+def changedPropFile = props.impactBuild_properties_changedFile
+println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
 try {
 		
 		println "\n** Running build to set baseline"
