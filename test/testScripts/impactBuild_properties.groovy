@@ -106,8 +106,6 @@ def copyAndCommit(String changedFile) {
 def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
 	println "** Validating impact build results"
-	println changedFile
-	println filesBuiltMappings
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(changedFile).split(',')
 	
 	try{
