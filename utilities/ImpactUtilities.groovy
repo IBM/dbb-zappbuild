@@ -91,7 +91,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	// Perform impact analysis for property changes
-	if (props.impactBuildOnBuildPropertyChanges){
+	if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 		if (props.verbose) println "*** Perform impacted analysis for property changes."
 
 		changedBuildProperties.each { changedProp ->
@@ -250,7 +250,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 					if (props.verbose) println "**** $file"
 				}
 				//retrieving changed build properties
-				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
 					if (props.verbose) println "**** $file"
 					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
 					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
