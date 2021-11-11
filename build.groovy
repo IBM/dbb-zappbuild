@@ -92,6 +92,8 @@ def initializeBuildProcess(String[] args) {
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
 	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion}"
 	
+	// verify required dbb toolkit
+	buildUtils.assertDbbBuildToolkitVersion(dbbToolkitVersion)
 
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)

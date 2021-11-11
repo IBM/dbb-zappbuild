@@ -510,6 +510,7 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 	}
 	return deployType
 }
+
 /*
  * parse and validates the user build dependency file 
  * returns a parsed json object 
@@ -532,4 +533,31 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	// validate that depFileData.fileName == buildFile
 	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
 	return depFileData // return the parsed JSON object
+}
+
+/*
+ * Validates the current Dbb Toolkit version
+ * exits the process, if it does not meet the minimum required version of zAppBuild.
+ * 
+ */
+def assertDbbBuildToolkitVersion(String currentVersion){
+
+	try {
+		// Tokenize current version
+		List currentVersionList = currentVersion.tokenize(".")
+		List requiredVersionList = props.requiredDBBToolkitVersion.tokenize(".")
+
+		// validate the version formats, current version is allowed have more labels.
+		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
+
+		// validate each label
+		currentVersionList.eachWithIndex{ it, i ->
+			if(requiredVersionList.size() >= i +1 )  assert (it as int) >= ((requiredVersionList[i]) as int)
+		}
+
+	} catch(AssertionError e) {
+		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
+		println e.getMessage()
+		System.exit(1)
+	}
 }

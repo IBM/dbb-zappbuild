@@ -38,6 +38,7 @@ buildPropFiles | Comma separated list of additional build property files to load
 buildListFileExt | File extension that indicates the build file is really a build list.
 languagePropertyQualifiers | List of language script property qualifiers. Each language script property has a unique qualifier to avoid collision with other language script properties.
 applicationConfRootDir | Alternate root directory for application-conf location.  Allows for the deployment of the application-conf directories to a static location.  Defaults to ${workspace}/${application}
+requiredDBBToolkitVersion | Minimum required DBB ToolkitVersion to run this version of zAppBuild.
 requiredBuildProperties | Comma separated list of required build properties for zAppBuild/build.groovy. Build and language scripts will validate that *required* build properties have been set before the script runs.  If any are missing or empty, then a validation error will be thrown.
 impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds on changes of build properties within the application repository
 impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
