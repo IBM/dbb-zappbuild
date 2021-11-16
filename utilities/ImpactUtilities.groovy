@@ -291,7 +291,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				baseline = props.mainBuildBranch
 				current = "HEAD"
 				
-				if (props.verbose) println "** Triple-dot Diffing configuration baseline $baseline -> current HEAD"
+				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
 		}	
