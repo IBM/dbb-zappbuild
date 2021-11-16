@@ -442,7 +442,7 @@ def createBuildList() {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
 				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
 		else {
-			println "*! Impact build requires a repository client connection to a DBB web application"
+			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
 	}
 
@@ -505,7 +505,7 @@ def createBuildList() {
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
-	if (!props.impactBuild && !props.userBuild) {
+	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
