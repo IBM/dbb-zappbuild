@@ -3,6 +3,8 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import com.ibm.dbb.build.report.*
+import com.ibm.dbb.build.report.records.*
 
 
 // define script properties
@@ -60,6 +62,13 @@ sortedList.each { buildFile ->
 			println(errorMsg)
 			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		} else {
+			// Store db2 bind information as a generic property record in the BuildReport
+			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
+			if (generateDb2BindInfoRecord.toBoolean()){
+				PropertiesRecord db2BindInfoRecord = buildUtils.generateDb2InfoRecord(buildFile)
+				BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
+			}
 		}
 	}
 
