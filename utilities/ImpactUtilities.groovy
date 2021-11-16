@@ -174,6 +174,7 @@ def createOutgoingChangeBuildList(RepositoryClient repositoryClient){
 			buildSet.add(changedFile)
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
+	}
 	
 	return [ buildSet, deletedFiles	]
 }
