@@ -292,7 +292,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				current = "HEAD"
 				
 				if (props.verbose) println "** Triple-dot Diffing configuration baseline $baseline -> current HEAD"
-				(changed, deleted, renamed) = gitUtils.getOutgoingChanges(dir, baseline)
+				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
 		}	
 		else {
