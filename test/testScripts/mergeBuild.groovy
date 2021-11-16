@@ -12,6 +12,9 @@ println "\n** Executing test script mergeBuild.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
+// prepare properties file
+writePropsFile()
+
 // create merge build command
 def mergeBuildCommand = []
 mergeBuildCommand << "${dbbHome}/bin/groovyz"
@@ -65,6 +68,18 @@ finally {
 //*************************************************************
 // Method Definitions
 //*************************************************************
+
+def writePropsFile() {
+	println "** Writing propFile ${props.mergeBuild_buildPropSetting} for overwriting the mainBuildBranch"
+	def commands = """
+    echo "# Overwriting the mainBuildBranch for the mergeBuild scenario \nmainBuildBranch=${props.branch}" > ${props.zAppBuildDir}/test/applications/${props.app}/${props.mergeBuild_buildPropSetting}
+    cat ${props.zAppBuildDir}/test/applications/${props.app}/${props.mergeBuild_buildPropSetting}
+"""
+		def task = ['bash', '-c', commands].execute()
+		def outputStream = new StringBuffer();
+		task.waitForProcessOutput(outputStream, System.err)
+	
+}
 
 def copyAndCommit(String changedFile) {
 	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
