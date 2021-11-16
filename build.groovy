@@ -440,7 +440,7 @@ def createBuildList() {
 		println "** --outgoingChangesBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
 		if (repositoryClient) {
 			assert (props.topicBranchBuild) : "*! Build type --outgoingChangesBuild can only be run on for topic branch builds."
-				(buildSet, deletedFiles) = impactUtils.createOutgoingChangeBuildList(repositoryClient)		
+				(buildSet, deletedFiles) = impactUtils.createOutgoingChangeBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
