@@ -167,7 +167,7 @@ options:
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
 	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
-	cli.oc(longOpt:'outgoingChangesBuild',args:1,'Flag indicating to build only changes which will flow back to the mainBuildBranch.')	
+	cli.oc(longOpt:'outgoingChangesBuild', 'Flag indicating to build only changes which will flow back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
