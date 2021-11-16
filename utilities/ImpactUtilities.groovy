@@ -152,7 +152,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
  *
  */
 
-def createOutgoingChangeBuildList(){
+def createOutgoingChangeBuildList(RepositoryClient repositoryClient){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
