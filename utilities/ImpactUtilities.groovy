@@ -162,6 +162,20 @@ def createOutgoingChangeBuildList(RepositoryClient repositoryClient){
 	
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
+	
+	// iterate over changed file and add them to the buildSet
+	
+	Set<String> buildSet = new HashSet<String>()
+	
+	
+	changedFiles.each { changedFile ->
+		// if the changed file has a build script then add to build list
+		if (ScriptMappings.getScriptName(changedFile)) {
+			buildSet.add(changedFile)
+			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+		}
+	
+	return [ buildSet, deletedFiles	]
 }
 
 
