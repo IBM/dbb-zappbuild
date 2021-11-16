@@ -147,12 +147,12 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 
 /*
- * createOutgoingChangeBuildList - calculates the changed and deleted files flowing back to the mainBuildBranch
- *  implements the build type --outgoingChangesBuild
+ * createMergeBuildList - calculates the changed and deleted files flowing back to the mainBuildBranch
+ *  implements the build type --mergeBuild
  *
  */
 
-def createOutgoingChangeBuildList(RepositoryClient repositoryClient){
+def createMergeBuildList(RepositoryClient repositoryClient){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
@@ -285,7 +285,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			}
 			// when no build result is provided but the outgoingChangesBuild,
 			//   calculate the outgoing changes
-			else if(props.outgoingChangesBuild) {
+			else if(props.mergeBuild) {
 				
 				// set git references
 				baseline = props.mainBuildBranch

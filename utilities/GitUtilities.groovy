@@ -188,11 +188,11 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 }
 
 /*
- * getOutgoingChanges - assembles a git triple-dot diff command to support outgoingChangesBuild scenarios 
+ * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios 
  *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
  *  
  */
-def getOutgoingChanges(String gitDir, String baselineReference) {
+def getMergeChanges(String gitDir, String baselineReference) {
 	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD"
 	return getChangedFiles(gitCmd)
 }
