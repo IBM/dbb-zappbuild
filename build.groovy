@@ -167,6 +167,7 @@ options:
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
 	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
+	cli.oc(longOpt:'outgoingChangesBuild',args:1,'Flag indicating to build only changes which will flow back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
@@ -313,6 +314,7 @@ def populateBuildProperties(String[] args) {
 	if (opts.r) props.reset = 'true'
 	if (opts.v) props.verbose = 'true'
 	if (opts.b) props.baselineRef = opts.b
+	if (opts.oc) props.outgoingChangesBuild = 'true'
 	
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -419,13 +421,26 @@ def createBuildList() {
 	// check if full build
 	if (props.fullBuild) {
 		println "** --fullBuild option selected. $action all programs for application ${props.application}"
-		buildSet = buildUtils.createFullBuildList()
+		if (repositoryClient) {
+			buildSet = buildUtils.createFullBuildList() }
+		else {
+			println "*! Full build requires a repository client connection to a DBB web application"
+		}	
 	}
 	// check if impact build
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		if (repositoryClient) {
 			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
+		else {
+			println "*! Impact build requires a repository client connection to a DBB web application"
+		}
+	}
+	else if (props.outgoingChangesBuild){
+		println "** --outgoingChangesBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
+		if (repositoryClient) {
+			assert (props.topicBranchBuild) : "*! Build type --outgoingChangesBuild can only be run on for topic branch builds."
+				(buildSet, deletedFiles) = impactUtils.createOutgoingChangeBuildList(repositoryClient)		
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}

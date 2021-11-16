@@ -28,6 +28,10 @@ def assertBuildProperties(String requiredProps) {
 	}
 }
 
+/*
+ * createFullBuildList() - returns all existing files of the build workspace for the --fullBuild build type
+ * 
+ */
 def createFullBuildList() {
 	Set<String> buildSet = new HashSet<String>()
 	// create the list of build directories
@@ -59,7 +63,6 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
 
 	return fileSet
 }
-
 
 /*
  * copySourceFiles - copies both the program being built and the program
