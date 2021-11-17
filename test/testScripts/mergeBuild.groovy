@@ -85,6 +85,7 @@ def copyAndCommit(String changedFile) {
 	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
 	def commands = """
     cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
+    echo ' ' >> ${props.appLocation}/${changedFile}
     cd ${props.appLocation}/
     git add .
     git commit . -m "edited program file"
