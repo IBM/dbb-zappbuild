@@ -429,11 +429,7 @@ def createBuildList() {
 	// check if full build
 	if (props.fullBuild) {
 		println "** --fullBuild option selected. $action all programs for application ${props.application}"
-		if (repositoryClient) {
-			buildSet = buildUtils.createFullBuildList() }
-		else {
-			println "*! Full build requires a repository client connection to a DBB web application"
-		}	
+		buildSet = buildUtils.createFullBuildList()
 	}
 	// check if impact build
 	else if (props.impactBuild) {
