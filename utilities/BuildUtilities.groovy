@@ -5,6 +5,7 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
+import com.ibm.dbb.build.report.records.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -513,6 +514,31 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 	}
 	return deployType
 }
+
+/*
+ * Creates a Generic PropertyRecord with the provided db2 information in bind.properties
+ */
+def generateDb2InfoRecord(String buildFile){
+	
+	// New Generic Property Record
+	PropertiesRecord db2BindInfo = new PropertiesRecord("db2BindInfo:${buildFile}")
+	
+	// Link to buildFile
+	db2BindInfo.addProperty("file", buildFile)
+
+	// Iterate over list of Db2InfoRecord properties
+	if (props.generateDb2BindInfoRecordProperties) {
+		String[] generateDb2InfoRecordPropertiesList = props.getFileProperty("generateDb2BindInfoRecordProperties", buildFile).split(',')
+		generateDb2InfoRecordPropertiesList.each { db2Prop ->
+			// Add all properties, which are defined for bind - see application-conf/bind.properties
+			String bindPropertyValue = props.getFileProperty("${db2Prop}", buildFile)
+			if (bindPropertyValue != null ) db2BindInfo.addProperty("${db2Prop}",bindPropertyValue)
+		}
+	}
+		
+	return db2BindInfo		
+}
+
 /*
  * parse and validates the user build dependency file 
  * returns a parsed json object 
@@ -535,4 +561,31 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	// validate that depFileData.fileName == buildFile
 	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
 	return depFileData // return the parsed JSON object
+}
+
+/*
+ * Validates the current Dbb Toolkit version
+ * exits the process, if it does not meet the minimum required version of zAppBuild.
+ * 
+ */
+def assertDbbBuildToolkitVersion(String currentVersion){
+
+	try {
+		// Tokenize current version
+		List currentVersionList = currentVersion.tokenize(".")
+		List requiredVersionList = props.requiredDBBToolkitVersion.tokenize(".")
+
+		// validate the version formats, current version is allowed have more labels.
+		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
+
+		// validate each label
+		currentVersionList.eachWithIndex{ it, i ->
+			if(requiredVersionList.size() >= i +1 )  assert (it as int) >= ((requiredVersionList[i]) as int)
+		}
+
+	} catch(AssertionError e) {
+		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
+		println e.getMessage()
+		System.exit(1)
+	}
 }
