@@ -175,6 +175,7 @@ options:
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
 	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
+	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
@@ -321,6 +322,7 @@ def populateBuildProperties(String[] args) {
 	if (opts.r) props.reset = 'true'
 	if (opts.v) props.verbose = 'true'
 	if (opts.b) props.baselineRef = opts.b
+	if (opts.m) props.mergeBuild = 'true'
 	
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -438,6 +440,15 @@ def createBuildList() {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
 	}
+	else if (props.mergeBuild){
+		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
+		if (repositoryClient) {
+			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
+				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
+		else {
+			println "*! Merge build requires a repository client connection to a DBB web application"
+		}
+	}
 
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {
@@ -498,7 +509,7 @@ def createBuildList() {
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
-	if (!props.impactBuild && !props.userBuild) {
+	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
