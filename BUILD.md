@@ -970,6 +970,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 + /usr/lpp/dbb/v1r0/bin/groovyz /var/dbb/dbb-zappbuild/build.groovy --sourceDir /var/dbb/dbb-zappbuild/samples --workDir /var/dbb/out/MortgageApplication --hlq DBB.ZAPP.MERGE.BUILD --application MortgageApplication --verbose --mergeBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties
 
@@ -1071,6 +1072,8 @@ Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
 ** Total files processed : 1
 ** Total build time  : 5.468 seconds
 ```
+
+
 </details>
 
 ### Perform a Scan Source build
@@ -1084,6 +1087,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 ** Build start at 20210622.104821.048
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanSource --verbose
@@ -1219,6 +1223,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 ** Build start at 20210622.105915.059
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanAll --verbose
@@ -1374,4 +1379,5 @@ HTTP/1.1 200 OK
 ** Total files processed : 15
 ** Total build time  : 23.718 seconds
 ```
+
 </details>
