@@ -129,7 +129,7 @@ utility options
 - [Perform Impact Build](#perform-impact-build)
 - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
 - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform Merge Build](some link)
+- [Perform a Merge build](#perform-a-merge-build)
 - [Perform a Scan Source build](#perform-a-scan-source-build)
 - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
 
@@ -1070,7 +1070,7 @@ Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
 ** Build State : CLEAN
 ** Total files processed : 1
 ** Total build time  : 5.468 seconds
-``
+```
 </details>
 
 ### Perform a Scan Source build
