@@ -76,8 +76,58 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				.execute()
 	}
 
-	// resolve the logical dependencies to physical files to copy to data sets
-	if (dependencyPDS && dependencyResolver) {
+	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
+		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
+		// userBuildDependencyFile present (passed from the IDE)
+		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
+
+		// parse JSON and validate fields of userBuildDependencyFile
+		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
+
+		// Manually create logical file for the user build program
+		String lname = CopyToPDS.createMemberName(buildFile)
+		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
+		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
+		// save logical file to dependency resolver
+		if (dependencyResolver)
+			dependencyResolver.setLogicalFile(lfile)
+
+ 		// get list of dependencies from userBuildDependencyFile
+		List<String> dependencyPaths = depFileData.dependencies
+		
+		// copy each dependency from USS to member of depedencyPDS
+		dependencyPaths.each { dependencyPath ->
+			// if dependency is relative, convert to absolute path
+			String dependencyLoc = getAbsolutePath(dependencyPath)
+
+			// only copy the dependency file once per script invocation
+			if (!copiedFileCache.contains(dependencyLoc)) {
+				copiedFileCache.add(dependencyLoc)
+				// create member name
+				String memberName = CopyToPDS.createMemberName(dependencyPath)
+				// retrieve zUnit playback file extension
+				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+				// get index of last '.' in file path to extract the file extension
+				def extIndex = dependencyLoc.lastIndexOf('.')
+				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
+					new CopyToPDS().file(new File(dependencyLoc))
+							.copyMode(CopyMode.BINARY)
+							.dataset(dependencyPDS)
+							.member(memberName)
+							.execute()
+				} 
+				else
+				{
+					new CopyToPDS().file(new File(dependencyLoc))
+							.dataset(dependencyPDS)
+							.member(memberName)
+							.execute()
+				}			
+			}
+		} 
+	}
+	else if (dependencyPDS && dependencyResolver) {
+		// resolve the logical dependencies to physical files to copy to data sets
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
@@ -93,7 +143,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				// only copy the dependency file once per script invocation
 				if (!copiedFileCache.contains(physicalDependencyLoc)) {
 					copiedFileCache.add(physicalDependencyLoc)
-
+					// create member name
+					String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
 					//retrieve zUnitFileExtension plbck
 					zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 
@@ -101,13 +152,13 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.copyMode(CopyMode.BINARY)
 								.dataset(dependencyPDS)
-								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.member(memberName)
 								.execute()
 					} else
 					{
 						new CopyToPDS().file(new File(physicalDependencyLoc))
 								.dataset(dependencyPDS)
-								.member(CopyToPDS.createMemberName(physicalDependency.getFile()))
+								.member(memberName)
 								.execute()
 					}
 				}
@@ -202,12 +253,14 @@ def updateBuildResult(Map args) {
 def createDependencyResolver(String buildFile, String rules) {
 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
 
-	def scanner = getScanner(buildFile)
-
 	// create a dependency resolver for the build file
 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
 			.sourceDir(props.workspace)
-			.scanner(scanner)
+	
+	// add scanner if userBuild Dep File not provided, or not a user build
+	if (!props.userBuildDependencyFile || !props.userBuild)
+		resolver.setScanner(getScanner(buildFile))
+
 	// add resolution rules
 	if (rules)
 		resolver.setResolutionRules(parseResolutionRules(rules))
@@ -456,4 +509,27 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 		// a file level overwrite was used
 	}
 	return deployType
+}
+/*
+ * parse and validates the user build dependency file 
+ * returns a parsed json object 
+ */
+def validateDependencyFile(String buildFile, String depFilePath) {
+	// if depFilePath is relatvie, convert to absolute path
+	depFilePath = getAbsolutePath(depFilePath)
+	File depFile = new File(depFilePath)
+	assert depFile.exists() : "*! Dependency file not found: ${depFilePath}"
+	JsonSlurper slurper = new groovy.json.JsonSlurper()
+	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFile.getText())
+	// parse dependency File
+	def depFileData = slurper.parse(depFile)
+
+	/* Begin Validation */ 
+	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
+	reqDepFileProps.each { depFileProp ->
+		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
+	}
+	// validate that depFileData.fileName == buildFile
+	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
+	return depFileData // return the parsed JSON object
 }

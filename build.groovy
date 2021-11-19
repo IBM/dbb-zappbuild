@@ -202,6 +202,9 @@ options:
 	// build framework options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
+	// IDE user build dependency file options
+	cli.df(longOpt:'dependencyFile', args:1, 'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
+
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 
@@ -353,6 +356,8 @@ def populateBuildProperties(String[] args) {
 	if (opts.e) props.errPrefix = opts.e
 	if (opts.u) props.userBuild = 'true'
 	if (opts.t) props.team = opts.t
+	// support IDE passing dependency file parameter
+	if (opts.df) props.userBuildDependencyFile = opts.df
 
 	// set build file from first non-option argument
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
@@ -378,6 +383,9 @@ def populateBuildProperties(String[] args) {
 		props.buildOutDir = ((props.createBuildOutputSubfolder && props.createBuildOutputSubfolder.toBoolean()) ? "${props.outDir}/${props.applicationBuildLabel}" : "${props.outDir}") as String
 	}
 	
+	// Validate User Build Dependency file is used only with user build
+	if (props.userBuildDependencyFile) assert (props.userBuild) : "*! User Build Dependency File requires User Build option."
+
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
 	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
