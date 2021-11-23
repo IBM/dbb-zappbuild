@@ -320,13 +320,6 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
-			
-			// calculate upstream changed files
-			if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()) {
-				if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.mainBuildBranch} to capture upstream changes"
-				(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.mainBuildBranch)
-			}
-			
 		}	
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
@@ -374,35 +367,42 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			}
 		}
 		
-		if (props.verbose) println "*** Changed upstream files for directory $dir:"
-		upstreamChanged.each { file ->
-			(file, mode) = fixGitDiffPath(file, dir, true, null)
-			if ( file != null ) {
+		// calculate upstream changed files
+		if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && gitUtils.isGitDir(dir)) {
+			if (props.verbose) println "** Calculating upstream changes for directory $dir"
+			if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.mainBuildBranch} to capture upstream changes"
+			(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.mainBuildBranch)
+
+
+			if (props.verbose) println "*** Changed upstream files for directory $dir:"
+			upstreamChanged.each { file ->
+				(file, mode) = fixGitDiffPath(file, dir, true, null)
+				if ( file != null ) {
+					if ( !matches(file, excludeMatchers)) {
+						upstreamChangedFiles << file
+						if (props.verbose) println "**** $file"
+					}
+				}
+			}
+
+			if (props.verbose) println "*** Deleted upstream files for directory $dir:"
+			upstreamDeleted.each { file ->
 				if ( !matches(file, excludeMatchers)) {
-					upstreamChangedFiles << file
+					(file, mode) = fixGitDiffPath(file, dir, false, mode)
+					upstreamDeletedFiles << file
+					if (props.verbose) println "**** $file"
+				}
+			}
+
+			if (props.verbose) println "*** Renamed upstream files for directory $dir:"
+			upstreamRenamed.each { file ->
+				if ( !matches(file, excludeMatchers)) {
+					(file, mode) = fixGitDiffPath(file, dir, false, mode)
+					upstreamRenamedFiles << file
 					if (props.verbose) println "**** $file"
 				}
 			}
 		}
-
-		if (props.verbose) println "*** Deleted upstream files for directory $dir:"
-		upstreamDeleted.each { file ->
-			if ( !matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, false, mode)
-				upstreamDeletedFiles << file
-				if (props.verbose) println "**** $file"
-			}
-		}
-
-		if (props.verbose) println "*** Renamed upstream files for directory $dir:"
-		upstreamRenamed.each { file ->
-			if ( !matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, false, mode)
-				upstreamRenamedFiles << file
-				if (props.verbose) println "**** $file"
-			}
-		}
-		
 		
 	}
 
