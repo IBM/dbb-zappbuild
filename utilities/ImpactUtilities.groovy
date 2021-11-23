@@ -22,13 +22,18 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-
+	Set<String> upstreamChangedFiles = new HashSet<String>()
+	Set<String> upstreamRenamedFiles = new HashSet<String>()
+	Set<String> upstreamDeletedFiles = new HashSet<String>()
+	
+	
+	
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -141,6 +146,11 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
+	// Document upstream change
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+		if (props.verbose) println "*** Document upstream changes."
+		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
+	}
 
 	return [buildSet, deletedFiles]
 }
@@ -157,8 +167,11 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
+	Set<String> upstreamChangedFiles = new HashSet<String>()
+	Set<String> upstreamRenamedFiles = new HashSet<String>()
+	Set<String> upstreamDeletedFiles = new HashSet<String>()
 	
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles) = calculateChangedFiles(null)
 	
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
@@ -174,6 +187,12 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 			buildSet.add(changedFile)
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
+	}
+	
+	// Document upstream change
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+		if (props.verbose) println "*** Document upstream changes."
+		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
 	}
 	
 	return [ buildSet, deletedFiles	]
@@ -196,7 +215,11 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-
+	Set<String> upstreamChangedFiles = new HashSet<String>()
+	Set<String> upstreamDeletedFiles = new HashSet<String>()
+	Set<String> upstreamRenamedFiles = new HashSet<String>()
+	
+		
 	// create a list of source directories to search
 	List<String> directories = []
 	if (props.applicationSrcDirs)
@@ -266,6 +289,9 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		def changed = []
 		def deleted = []
 		def renamed = []
+		def upstreamChanged = []
+		def upstreamDeleted = []
+		def upstreamRenamed = []
 		String baseline
 		String current
 		
@@ -294,6 +320,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
+			
+			// calculate upstream changed files
+			if (props.reportUpstreamChanges) {
+				if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/$baseline to capture upstream changes"
+				(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, baseline)
+			}
+			
 		}	
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
@@ -340,13 +373,47 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if (props.verbose) println "**** $file"
 			}
 		}
+		
+		if (props.verbose) println "*** Changed upstream files for directory $dir:"
+		upstreamChanged.each { file ->
+			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			if ( file != null ) {
+				if ( !matches(file, excludeMatchers)) {
+					upstreamChangedFiles << file
+					if (props.verbose) println "**** $file"
+				}
+			}
+		}
+
+		if (props.verbose) println "*** Deleted upstream files for directory $dir:"
+		upstreamDeleted.each { file ->
+			if ( !matches(file, excludeMatchers)) {
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
+				upstreamDeletedFiles << file
+				if (props.verbose) println "**** $file"
+			}
+		}
+
+		if (props.verbose) println "*** Renamed upstream files for directory $dir:"
+		upstreamRenamed.each { file ->
+			if ( !matches(file, excludeMatchers)) {
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
+				upstreamRenamedFiles << file
+				if (props.verbose) println "**** $file"
+			}
+		}
+		
+		
 	}
 
 	return [
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
-		changedBuildProperties
+		changedBuildProperties,
+		upstreamChangedFiles,
+		upstreamDeletedFiles,
+		upstreamRenamedFiles
 	]
 }
 
@@ -491,6 +558,44 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		}
 	}
 
+}
+
+/*
+ * Method to generate the Upstream Changes reports 
+ */
+
+def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles){
+	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges.${props.buildListFileExt}"
+	println("*** Writing report of upstream changes to $upstreamChangesReportLoc")
+
+	File upstreamChangesReportFile = new File(upstreamChangesReportLoc)
+	String enc = props.logEncoding ?: 'IBM-1047'
+	upstreamChangesReportFile.withWriter(enc) { writer ->
+
+		writer.write("** Upstream Changed Files \n")
+		if (upstreamChangedFiles.size() != 0) {
+			upstreamChangedFiles.each { file ->
+				if (props.verbose) println "Changed: ${file}"
+				writer.write("$file\n")
+			}
+		} else { println "** No upstream changed files found." }
+
+		if (upstreamRenamedFiles.size() != 0) {
+			writer.write("** Upstream Renamed Files \n")
+			upstreamRenamedFiles.each { file ->
+				if (props.verbose) println "Renamed: ${file}"
+				writer.write("$file\n")
+			}
+		} else { println "** No upstream renamed files found." }
+
+		if (upstreamDeletedFiles.size() != 0) {
+			writer.write("** Upstream Deleted Files \n")
+			upstreamDeletedFiles.each { file ->
+				if (props.verbose) println "Deleted: ${file}"
+				writer.write("$file\n")
+			}
+		} else { println "** No upstream deleted files found." }
+	}
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {

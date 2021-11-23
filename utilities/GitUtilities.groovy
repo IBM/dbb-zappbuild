@@ -198,6 +198,16 @@ def getMergeChanges(String gitDir, String baselineReference) {
 }
 
 /*
+ * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios
+ *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
+ *
+ */
+def getUpstreamChanges(String gitDir, String baselineReference) {
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
+	return getChangedFiles(gitCmd)
+}
+
+/*
  * getChangedFiles - internal method to submit the a gitDiff command and calucate and classify the idenfified changes 
  */
 def getChangedFiles(String cmd) {
