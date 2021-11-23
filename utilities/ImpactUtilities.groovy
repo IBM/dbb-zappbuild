@@ -322,8 +322,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			}
 			
 			// calculate upstream changed files
-			if (props.reportUpstreamChanges) {
-				if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/$baseline to capture upstream changes"
+			if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()) {
+				if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.mainBuildBranch} to capture upstream changes"
 				(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.mainBuildBranch)
 			}
 			
