@@ -30,9 +30,6 @@ buildList.each { buildFile ->
 
 	// local variables and log file
 	String member = CopyToPDS.createMemberName(buildFile)
-	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.copy.log")
-	if (logFile.exists())
-		logFile.delete()
 
 	// evaluate the datasetmapping, which maps build files to targetDataset defintions 
 	PropertyMappings dsMapping = new PropertyMappings("nonbuildable_datasetMapping")
@@ -40,19 +37,29 @@ buildList.each { buildFile ->
 	// obtain the target dataset based on the mapped dataset key
 	String targetDataset = props.getProperty(dsMapping.getValue(buildFile))
 	
-	// allocate target dataset
-	// TODO: Create a cache of targets which got allocated
-	buildUtils.createDatasets([targetDataset], props.nonbuildable_srcOptions)
+	if (targetDataset != null) {
+
+		// allocate target dataset
+		// TODO: Create a cache of targets which got allocated
+		buildUtils.createDatasets(targetDataset.split(), props.nonbuildable_srcOptions)
+
+		// copy the file to the target dataset
+		String deployType = buildUtils.getDeployType("nonbuildable", buildFile, null)
+		int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
 		
-	// copy the file to the target dataset
-	String deployType = buildUtils.getDeployType("nonbuildable", buildFile, logicalFile)
-	int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
-	if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
-	if (rc!=0){
-		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+		if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
+		
+		if (rc!=0){
+			String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		}
+	} else {
+		String errorMsg =  "*! Target dataset for $buildFile could not be obtained. "
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 }
 
