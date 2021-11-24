@@ -251,3 +251,13 @@ zunit_loadOptions | BPXWDYN creation options for creating 'load module' type dat
 zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 
+### nonBuildable.properties
+Build properties used by zAppBuild/language/nonBuildable.groovy
+
+Property | Description 
+--- | --- 
+nonbuildable_requiredBuildProperties | Comma separated list of required build properties for language/nonBuildable.groovy
+nonbuildable_srcPDS | Dataset of any type of source
+nonbuildable_jclPDS | Sample dataset for JCL members
+nonbuildable_xmlPDS | Sample dataset for xml members
+nonbuildable_srcOptions | BPXWDYN creation options for creating 'source' type data sets
