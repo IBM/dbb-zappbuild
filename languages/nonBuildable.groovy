@@ -63,4 +63,11 @@ buildList.each { buildFile ->
 	}
 }
 
-// end script
+// internal methoda
+ 
+def getRepositoryClient() {
+	if (!repositoryClient && props."dbb.RepositoryClient.url")
+		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
+
+	return repositoryClient
+}
