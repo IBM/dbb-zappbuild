@@ -7,14 +7,16 @@ import com.ibm.dbb.build.report.*
 import groovy.transform.*
 
 /***
- * 
- * 
- * 
+ * Language script, which just copies files to the defined target dataset 
+ * and reports the file as a build output file in the build report
  */
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
+// Set to keep information about which datasets where already checked/created
+@Field HashSet<String> verifiedBuildDatasets = new HashSet<String>()
+
 @Field RepositoryClient repositoryClient
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
@@ -40,8 +42,10 @@ buildList.each { buildFile ->
 	if (targetDataset != null) {
 
 		// allocate target dataset
-		// TODO: Create a cache of targets which got allocated
-		buildUtils.createDatasets(targetDataset.split(), props.nonbuildable_srcOptions)
+		if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
+			verifiedBuildDatasets.add(targetDataset)
+			buildUtils.createDatasets(targetDataset.split(), props.nonbuildable_srcOptions)
+		}
 
 		// copy the file to the target dataset
 		String deployType = buildUtils.getDeployType("nonbuildable", buildFile, null)
@@ -63,7 +67,7 @@ buildList.each { buildFile ->
 	}
 }
 
-// internal methoda
+// internal methods
  
 def getRepositoryClient() {
 	if (!repositoryClient && props."dbb.RepositoryClient.url")
