@@ -22,7 +22,7 @@ import groovy.transform.*
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
-buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.nonbuildable_requiredBuildProperties)
 
 List<String> buildList = argMap.buildList
 
