@@ -7,8 +7,20 @@ import com.ibm.dbb.build.report.*
 import groovy.transform.*
 
 /***
- * Language script, which just copies files to the defined target dataset 
- * and reports the file as a build output file in the build report
+ * 
+ * Language script, which transfers files to the defined target dataset 
+ * and reports the file as a build output file in the build report.
+ * 
+ * Can be used for JCL, XML, Shared Copybooks and any other type of source code
+ * which needs to be packaged and processed by the pipeline.
+ * 
+ * Please note:
+ * 
+ * * Verify the allocation options and adjust to your needs.
+ * 
+ * * File names cannot exeed more than 8 characters, so they can be stored in
+ *   the target dataset.
+ * 
  */
 
 // define script properties
