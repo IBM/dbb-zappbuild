@@ -252,8 +252,8 @@ rexx_compileSyslibConcatenation | A comma-separated list of libraries to be conc
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### nonBuildable.properties
-Application properties used by zAppBuild/language/nonBuildable.groovy
+Application properties used by zAppBuild/language/Transfer.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-nonbuildable_deployType | deployType | true
+transfer_deployType | deployType | true

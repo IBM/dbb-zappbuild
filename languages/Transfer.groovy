@@ -22,7 +22,7 @@ import groovy.transform.*
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
-buildUtils.assertBuildProperties(props.nonbuildable_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.transfer_requiredBuildProperties)
 
 List<String> buildList = argMap.buildList
 
@@ -34,7 +34,7 @@ buildList.each { buildFile ->
 	String member = CopyToPDS.createMemberName(buildFile)
 
 	// evaluate the datasetmapping, which maps build files to targetDataset defintions 
-	PropertyMappings dsMapping = new PropertyMappings("nonbuildable_datasetMapping")
+	PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
 	
 	// obtain the target dataset based on the mapped dataset key
 	String targetDataset = props.getProperty(dsMapping.getValue(buildFile))
@@ -44,7 +44,7 @@ buildList.each { buildFile ->
 		// allocate target dataset
 		if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
 			verifiedBuildDatasets.add(targetDataset)
-			buildUtils.createDatasets(targetDataset.split(), props.nonbuildable_srcOptions)
+			buildUtils.createDatasets(targetDataset.split(), props.transfer_srcOptions)
 		}
 
 		// copy the file to the target dataset
