@@ -60,7 +60,7 @@ buildList.each { buildFile ->
 		}
 
 		// copy the file to the target dataset
-		String deployType = buildUtils.getDeployType("nonbuildable", buildFile, null)
+		String deployType = buildUtils.getDeployType("transfer", buildFile, null)
 		int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
 		
 		if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
