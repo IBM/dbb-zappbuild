@@ -251,7 +251,7 @@ zunit_loadOptions | BPXWDYN creation options for creating 'load module' type dat
 zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 
-### nonBuildable.properties
+### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
 
 Property | Description 
