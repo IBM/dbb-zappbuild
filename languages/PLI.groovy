@@ -145,7 +145,6 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	// add DD statements to the compile command
 	
 	if (isZUnitTestCase){
 		compile.dd(new DDStatement().name("SYSIN").dsn("${props.pli_testcase_srcPDS}($member)").options('shr').report(true))
@@ -241,11 +240,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
 
 	}
-
-
-	// define the MVSExec command to link edit the program
-	if(isZUnitTestCase)
-	   parms = "DYNAM(DLL)"
 
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
