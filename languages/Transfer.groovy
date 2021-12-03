@@ -40,47 +40,64 @@ List<String> buildList = argMap.buildList
 
 // iterate through build list
 buildList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** Transferring file $buildFile"
 
 	// local variables and log file
 	String member = CopyToPDS.createMemberName(buildFile)
 
-	// evaluate the datasetmapping, which maps build files to targetDataset defintions 
-	PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
-	
-	// obtain the target dataset based on the mapped dataset key
-	String targetDataset = props.getProperty(dsMapping.getValue(buildFile))
-	
-	if (targetDataset != null) {
+	// validate lenght of member name
+	def memberLen = member.size()
 
-		// allocate target dataset
-		if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
-			verifiedBuildDatasets.add(targetDataset)
-			buildUtils.createDatasets(targetDataset.split(), props.transfer_srcOptions)
-		}
+	if (memberLen > 8) {
+		errorMsg = "*! Warning. Member name (${member}) exceeds length of 8 characters. "
+		println(errorMsg)
+		props.error = "true"
+		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+	} else {
 
-		// copy the file to the target dataset
-		String deployType = buildUtils.getDeployType("transfer", buildFile, null)
-		int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
-		
-		if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
-		
-		if (rc!=0){
-			String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
+		// evaluate the datasetmapping, which maps build files to targetDataset defintions
+		PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
+
+		// obtain the target dataset based on the mapped dataset key
+		String targetDataset = props.getProperty(dsMapping.getValue(buildFile))
+
+		if (targetDataset != null) {
+
+			// allocate target dataset
+			if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
+				verifiedBuildDatasets.add(targetDataset)
+				buildUtils.createDatasets(targetDataset.split(), props.transfer_srcOptions)
+			}
+
+			// copy the file to the target dataset
+			String deployType = buildUtils.getDeployType("transfer", buildFile, null)
+
+			try {
+				int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
+				if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
+
+				if (rc!=0){
+					String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
+					println(errorMsg)
+					props.error = "true"
+					buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+				}
+			} catch (BuildException e) { // Catch potential exceptions like file truncation
+				String errorMsg = "*! The CopyToPDS failed with an exception ${e.getMessage()}."
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+			}
+		} else {
+			String errorMsg =  "*! Target dataset for $buildFile could not be obtained from file properties. "
 			println(errorMsg)
 			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 		}
-	} else {
-		String errorMsg =  "*! Target dataset for $buildFile could not be obtained. "
-		println(errorMsg)
-		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 }
 
 // internal methods
- 
 def getRepositoryClient() {
 	if (!repositoryClient && props."dbb.RepositoryClient.url")
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
