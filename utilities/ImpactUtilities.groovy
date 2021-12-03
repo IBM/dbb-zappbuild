@@ -198,7 +198,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	// Validate potential mismatches
 	// && reportMismatches
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
-		upstreamChangedFiles.intersects(changedFiles).each { it ->
+		changedFiles.retainAll(upstreamChangedFiles).each { it ->
 			println "*!! $it is changed on the mainBuildBranch and the current branch."
 			props.error = "true"
 		}
