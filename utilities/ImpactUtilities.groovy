@@ -589,7 +589,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Changed: ${file}"
 				writer.write("$file\n")
 			}
-		} else { println "** No upstream changed files found." }
+		} else { if (props.verbose) println "** No upstream changed files found." }
 
 		if (upstreamRenamedFiles.size() != 0) {
 			writer.write("** Upstream Renamed Files \n")
@@ -597,7 +597,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Renamed: ${file}"
 				writer.write("$file\n")
 			}
-		} else { println "** No upstream renamed files found." }
+		} else { if (props.verbose) println "** No upstream renamed files found." }
 
 		if (upstreamDeletedFiles.size() != 0) {
 			writer.write("** Upstream Deleted Files \n")
@@ -605,7 +605,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Deleted: ${file}"
 				writer.write("$file\n")
 			}
-		} else { println "** No upstream deleted files found." }
+		} else { if (props.verbose) println "** No upstream deleted files found." }
 	}
 }
 
