@@ -207,6 +207,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linker = props.getFileProperty('pli_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
 
+	// obtain githash for buildfile
+	String ssi = buildUtils.getShortGitHash(buildFile)
+	if (ssi != null) parms = parms + ",SSI=$ssi"
+	
 	// Create the link stream if needed
 	if ( linkEditStream != null ) {
 		def langQualifier = "linkedit"

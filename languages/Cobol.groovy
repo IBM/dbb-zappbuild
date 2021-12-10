@@ -266,6 +266,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 
+	// obtain githash for buildfile
+	String ssi = buildUtils.getShortGitHash(buildFile)
+	if (ssi != null) parms = parms + ",SSI=$ssi"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
