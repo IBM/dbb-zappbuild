@@ -46,6 +46,10 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	Set<String> buildSet = new HashSet<String>()
 	Set<String> changedBuildPropertyFiles = new HashSet<String>()
+	
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
+	
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -73,6 +77,17 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				if (ScriptMappings.getScriptName(impactFile)) {
 					// only add impacted files, that are in scope of the build.
 					if (!matches(impactFile, excludeMatchers)){
+						
+						// calculate abbreviated gitHash for impactFile
+						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+						println filePattern
+						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+							println githashBuildableFilesMap
+						}
+						
+						// add file to buildset
 						buildSet.add(impactFile)
 						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 					}
@@ -191,12 +206,17 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	// local variables
 	Map<String,String> currentHashes = new HashMap<String,String>()
+	Map<String,String> currentAbbrevHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
+	// PropertyMappings
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
+	
 	// create a list of source directories to search
 	List<String> directories = []
 	if (props.applicationSrcDirs)
@@ -209,12 +229,15 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			dir = buildUtils.getAbsolutePath(dir)
 			if (props.verbose) println "** Getting current hash for directory $dir"
 			String hash = null
+			String abbrevHash = null
 			if (gitUtils.isGitDir(dir)) {
-				hash = gitUtils.getCurrentGitHash(dir)
+				hash = gitUtils.getCurrentGitHash(dir, false)
+				abbrevHash = gitUtils.getCurrentGitHash(dir, true)
 			}
 			String relDir = buildUtils.relativizePath(dir)
 			if (props.verbose) println "** Storing $relDir : $hash"
 			currentHashes.put(relDir,hash)
+			currentAbbrevHashes.put(relDir, abbrevHash)
 		}
 
 		// get the baseline hash for all build directories
@@ -268,13 +291,17 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		def renamed = []
 		String baseline
 		String current
+		String abbrevCurrent
 		
 		if (gitUtils.isGitDir(dir)){
+			// obtain git hashes for directory
+			baseline = baselineHashes.get(buildUtils.relativizePath(dir))
+			current = currentHashes.get(buildUtils.relativizePath(dir))
+			abbrevCurrent = currentAbbrevHashes.get(buildUtils.relativizePath(dir))
+			
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
 			if (lastBuildResult != null && props.impactBuild){
-				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
-				current = currentHashes.get(buildUtils.relativizePath(dir))
 				if (!baseline || !current) {
 					if (props.verbose) println "*! Skipping directory $dir because baseline or current hash does not exist.  baseline : $baseline current : $current"
 				}
@@ -311,6 +338,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			if ( file != null ) {
 				if ( !matches(file, excludeMatchers)) {
 					changedFiles << file
+					githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
 				}
 				//retrieving changed build properties
