@@ -96,7 +96,7 @@ jcl += """\
 	
 		jcl +=
 		"//CEEOPTS DD *                        \n"   +
-		( ( codeCoverageHost != null && codeCoveragePort != null ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
+		( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
 		"ENVAR(\n"
 		if (codeCoverageOptions != null) {
 			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
