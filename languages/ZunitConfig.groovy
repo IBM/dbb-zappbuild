@@ -59,7 +59,10 @@ buildUtils.createLanguageDatasets(langQualifier)
 // BZUCFG=${props.zunit_bzucfgPDS}(${member}),
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
-//  PARM=('STOP=E,REPORT=XML')
+"""
+zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
+jcl += """\
+//  PARM=('$zunitParms')
 """
 	if (hasPlayback) { // bzucfg contains reference to a playback file
 		jcl +=
