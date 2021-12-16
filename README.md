@@ -43,6 +43,7 @@ zAppBuild supports a number of build scenarios:
 * **Impact Build** - Build only programs impacted by source files that have changed since the last successful build.
 * **Impact Build with baseline reference** - Build only programs impacted by source files that have changed by diff'ing to a previous configuration reference.
 * **Topic Branch Build** - Detects when building a topic branch for the first time and will automatically clone the dependency data collections from the main build branch in order to avoid having to rescan the entire application.
+* **Merge Build** - Build only changed programs which will be merged back into the mainBuildBranch by using a triple-dot git diff. 
 * **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
 * **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
 

@@ -252,3 +252,10 @@ rexx_deployType | default deployType | true
 rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### nonBuildable.properties
+Application properties used by zAppBuild/language/Transfer.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+transfer_deployType | deployType | true

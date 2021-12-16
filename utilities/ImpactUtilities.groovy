@@ -91,7 +91,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	// Perform impact analysis for property changes
-	if (props.impactBuildOnBuildPropertyChanges){
+	if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 		if (props.verbose) println "*** Perform impacted analysis for property changes."
 
 		changedBuildProperties.each { changedProp ->
@@ -146,6 +146,48 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 }
 
 
+/*
+ * createMergeBuildList - calculates the changed and deleted files flowing back to the mainBuildBranch
+ *  implements the build type --mergeBuild
+ *
+ */
+
+def createMergeBuildList(RepositoryClient repositoryClient){
+	Set<String> changedFiles = new HashSet<String>()
+	Set<String> deletedFiles = new HashSet<String>()
+	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedBuildProperties = new HashSet<String>()
+	
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
+	
+	// scan files and update source collection
+	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
+	
+	// iterate over changed file and add them to the buildSet
+	
+	Set<String> buildSet = new HashSet<String>()
+	
+	
+	changedFiles.each { changedFile ->
+		// if the changed file has a build script then add to build list
+		if (ScriptMappings.getScriptName(changedFile)) {
+			buildSet.add(changedFile)
+			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+		}
+	}
+	
+	return [ buildSet, deletedFiles	]
+}
+
+
+/*
+ * calculateChangedFiles - method to caluclate the the changed files
+ * 
+ *  If a BuildResult is provided, this method will diff between the different states in the repository
+ *   if no BuildResult is provided, the method will diff the changes from the topic branch to the main build branch
+ * 
+ */
+
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	// local variables
 	Map<String,String> currentHashes = new HashMap<String,String>()
@@ -160,58 +202,61 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	if (props.applicationSrcDirs)
 		directories.addAll(props.applicationSrcDirs.split(','))
 
-	// get the current Git hash for all build directories
-	directories.each { dir ->
-		dir = buildUtils.getAbsolutePath(dir)
-		if (props.verbose) println "** Getting current hash for directory $dir"
-		String hash = null
-		if (gitUtils.isGitDir(dir)) {
-			hash = gitUtils.getCurrentGitHash(dir)
+	// when a build result is provided, calculate the baseline hash for each directory
+	if (lastBuildResult != null){
+		// get the current Git hash for all build directories
+		directories.each { dir ->
+			dir = buildUtils.getAbsolutePath(dir)
+			if (props.verbose) println "** Getting current hash for directory $dir"
+			String hash = null
+			if (gitUtils.isGitDir(dir)) {
+				hash = gitUtils.getCurrentGitHash(dir)
+			}
+			String relDir = buildUtils.relativizePath(dir)
+			if (props.verbose) println "** Storing $relDir : $hash"
+			currentHashes.put(relDir,hash)
 		}
-		String relDir = buildUtils.relativizePath(dir)
-		if (props.verbose) println "** Storing $relDir : $hash"
-		currentHashes.put(relDir,hash)
-	}
 
-	// get the baseline hash for all build directories
-	directories.each { dir ->
-		dir = buildUtils.getAbsolutePath(dir)
-		if (props.verbose) println "** Getting baseline hash for directory $dir"
-		String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-		String relDir = buildUtils.relativizePath(dir)
-		String hash
-		// retrieve baseline reference overwrite if set
-		if (props.baselineRef){
-			String[] baselineMap = (props.baselineRef).split(",")
-			baselineMap.each{
-				// case: baselineRef (gitref)
-				if(it.split(":").size()==1 && relDir.equals(props.application)){
-					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-					hash = it
-				}
-				// case: baselineRef (folder:gitref)
-				else if(it.split(":").size()>1){
-					(appSrcDir, gitReference) = it.split(":")
-					if (appSrcDir.equals(relDir)){
+		// get the baseline hash for all build directories
+		directories.each { dir ->
+			dir = buildUtils.getAbsolutePath(dir)
+			if (props.verbose) println "** Getting baseline hash for directory $dir"
+			String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
+			String relDir = buildUtils.relativizePath(dir)
+			String hash
+			// retrieve baseline reference overwrite if set
+			if (props.baselineRef){
+				String[] baselineMap = (props.baselineRef).split(",")
+				baselineMap.each{
+					// case: baselineRef (gitref)
+					if(it.split(":").size()==1 && relDir.equals(props.application)){
 						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-						hash = gitReference
+						hash = it
+					}
+					// case: baselineRef (folder:gitref)
+					else if(it.split(":").size()>1){
+						(appSrcDir, gitReference) = it.split(":")
+						if (appSrcDir.equals(relDir)){
+							if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+							hash = gitReference
+						}
 					}
 				}
-			}
-			// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
-			if (hash == null && lastBuildResult) {
+				// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
+				if (hash == null && lastBuildResult) {
+					hash = lastBuildResult.getProperty(key)
+				}
+			} else if (lastBuildResult){
+				// return from lastBuildResult
 				hash = lastBuildResult.getProperty(key)
 			}
-		} else if (lastBuildResult){
-			// return from lastBuildResult
-			hash = lastBuildResult.getProperty(key)
+			if (hash == null){
+				println "!** Could not obtain the baseline hash for directory $relDir."
+			}
+
+			if (props.verbose) println "** Storing $relDir : $hash"
+			baselineHashes.put(relDir,hash)
 		}
-		if (hash == null){
-			println "!** Could not obtain the baseline hash for directory $relDir."
-		}
-		
-		if (props.verbose) println "** Storing $relDir : $hash"
-		baselineHashes.put(relDir,hash)
 	}
 
 	// calculate the changed and deleted files by diff'ing the current and baseline hashes
@@ -221,16 +266,35 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		def changed = []
 		def deleted = []
 		def renamed = []
-		String baseline = baselineHashes.get(buildUtils.relativizePath(dir))
-		String current = currentHashes.get(buildUtils.relativizePath(dir))
-		if (!baseline || !current) {
-			if (props.verbose) println "*! Skipping directory $dir because baseline or current hash does not exist.  baseline : $baseline current : $current"
-		}
-		else if (gitUtils.isGitDir(dir)) {
-			if (props.verbose) println "** Diffing baseline $baseline -> current $current"
-			(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current )
-
-		}
+		String baseline
+		String current
+		
+		if (gitUtils.isGitDir(dir)){
+			// when a build result is provided and build type impactBuild,
+			//   calculate changed between baseline and current state of the repository
+			if (lastBuildResult != null && props.impactBuild){
+				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
+				current = currentHashes.get(buildUtils.relativizePath(dir))
+				if (!baseline || !current) {
+					if (props.verbose) println "*! Skipping directory $dir because baseline or current hash does not exist.  baseline : $baseline current : $current"
+				}
+				else {
+					if (props.verbose) println "** Diffing baseline $baseline -> current $current"
+					(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current)
+				}
+			}
+			// when no build result is provided but the outgoingChangesBuild,
+			//   calculate the outgoing changes
+			else if(props.mergeBuild) {
+				
+				// set git references
+				baseline = props.mainBuildBranch
+				current = "HEAD"
+				
+				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
+				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
+			}
+		}	
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
 		}
@@ -250,7 +314,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 					if (props.verbose) println "**** $file"
 				}
 				//retrieving changed build properties
-				if (props.impactBuildOnBuildPropertyChanges && file.endsWith(".properties")){
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
 					if (props.verbose) println "**** $file"
 					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
 					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
