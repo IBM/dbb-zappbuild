@@ -77,7 +77,7 @@ jcl += """\
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
-	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
+	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean() && props.debug) {
 	        // codeCoverageHost
 		if (props.codeCoverageHeadlessHost != null)
 			codeCoverageHost = props.codeCoverageHeadlessHost
@@ -107,6 +107,10 @@ jcl += """\
 			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
 		}
    		jcl += "/* \n"
+	} else if (props.debug && props.userBuild) { // initiate debug session of test case via DBMDT for userBuilds with debug flag
+		jcl +=
+		"//CEEOPTS DD *                        \n"   +
+		  "TEST(,,,DBMDT:*)  \n"
 	}
 	jcl += """\
 //*
