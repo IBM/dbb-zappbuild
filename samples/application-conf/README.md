@@ -231,6 +231,7 @@ zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything be
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
 zunit_resolutionRules | Default resolution rules for zUnit. | true
 zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
+zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
 zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
