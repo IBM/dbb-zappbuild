@@ -201,6 +201,7 @@ options:
 
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
+	cli.dz(longOpt:'debugzUnitTestcase', 'Flag to indicate if zUnit Tests should launch a debug session')
 
 	// code coverage options
 	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
@@ -341,6 +342,8 @@ def populateBuildProperties(String[] args) {
 	// set debug flag
 	if (opts.d) props.debug = 'true'
 
+	if (opts.dz) props.debugzUnitTestcase = 'true'
+	
 	// set code coverage flag
 	if (opts.cc) {
 		props.codeZunitCoverage = 'true'
