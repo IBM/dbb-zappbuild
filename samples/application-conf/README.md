@@ -40,6 +40,7 @@ cobol_testcase | File property to indicate a generated zUnit cobol test case to 
 ### reports.properties
 Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
 
+Property | Description 
 --- | ---
 reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections
 reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)

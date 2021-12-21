@@ -2,13 +2,13 @@
 
 zAppBuild provides a set of reporting capabilities, which are part of the build framework itself to address some common demands of mainframe development teams.
 
-Developers are particularly interested if
-* a change of an element impacts other application components which are managed in a different repository.
-* their changes on an isolated feature branch potentially cause a conflict with some concurrent development done by others within the same repository.
+Developers are particularly interested if:
+* A change of an element impacts other application components which are managed in a different repository.
+* Their changes on an isolated feature branch potentially cause a conflict with some concurrent development done by others within the same repository.
 
-While during the analysis phase of a new task, the developer leverages application dependency understanding tools such as IBM Application Discovery, it is beneficial to enable also the build framework to automatically generate reports to answer the above questions.
+During the analysis phase, while a developer can leverages application dependency tools such as IBM Application Discovery, it is also beneficial to enable the build framework to automatically generate reports to answer the above questions.
 
-By default these reporting capabilities are turned off, while they don't belong to the core functionalities of a build framewoek.
+By default these reporting capabilities are turned off since it is normally not part of the standard build framework workflow.
 
 ## Report External Impacts 
 
@@ -18,12 +18,13 @@ The _Reporting External Impacts_ feature enables the build framework to generate
 
 ### Pre-requisites
 
-Technically, this feature analyzes the list of changed files and queries the collection of other applications within the DBB WebApp, so it requires that the other applications are also processed through the CI/CD pipeline with DBB. It requires a repository connection.
+Technically, this feature analyzes the list of changed files for the current application and then queries the collections of other applications within the DBB WebApp. Therefore, to fully analyze cross application impacts, the other applications must also be part of and processed through the CI/CD pipeline with DBB. It requires a DBB WebApp repository connection.
 
 ### Configuration
 
-You can configure the feature through [application-conf/reports.properties](samples/application-conf/reports.properties). Within the property file, you can activate it and further configure a filter to run the analysis only for a subset of files in your repository see `reportExternalImpactsAnalysisFileFilter` and limit the scope of the external collections (see `reportExternalImpactsCollectionPatterns`), which should be queried.
+You can configure the feature through [application-conf/reports.properties](samples/application-conf/reports.properties). Please check out the description of the properties also in [README.md](samples/application-conf/README.md#reportsproperties)
 
+Within the property file, you can activate it and further configure a filter to run the analysis only for a subset of files in your repository see `reportExternalImpactsAnalysisFileFilter` and limit the scope of the external collections (see `reportExternalImpactsCollectionPatterns`), which should be queried.
 ### Sample invocation
 
 In the below sample, the MortgageApplication was split into two applications App-EPSC and App-EPSM to demonstrate the feature from a user perspective:
@@ -55,7 +56,7 @@ EPSCMORT 	 App-EPSC/cobol/epscmort.cbl 	 App-EPSC-master
 
 Concurrent development activies in separated isolated branches on the same source code, lead to the need to merge the code at some point in time. Git does an excellent job for this task and supports the developer for this task. 
 
-While pessimistic locking is a common practise on the mainframe, developer will need to keep an eye on what is happening on the repository.
+While pessimistic locking is a common practise on the mainframe, developers will need to keep an eye on what is happening on the repository.
 
 The _Report potential conflicts_ feature can be activated to generate reports to document changes in the common code base configuration.
 
@@ -71,6 +72,79 @@ The feature relies on git functionality. Therefore it is only available in pipel
 
 It requires that the cloned repository in the build workspace contains the git references (git-refs) to function.
 
+### Configuration
+
+Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of upstream changes. This features does not work on the git branch which is configured as the mainBuildBranch.
 ### Sample invocation
 
-to be documented
+To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked. 
+
+In the first sample, the communication copybook `MortgageApplication/copybook/epsmtcom.cpy` was changed on the branch `reportUpstreamChanges`. During an impactBuild scenario, the the below build list is identified: 
+
+```
+MortgageApplication/cobol/epsmlist.cbl
+MortgageApplication/cobol/epscsmrt.cbl
+MortgageApplication/cobol/epscmort.cbl
+MortgageApplication/link/epsmlist.lnk 
+```
+While the above build list intersects with the changes on the mainBuildBranch main, a warning is written to the build console output:
+```
+** Build start at 20211221.110944.009
+** Repository client created for https://10.3.20.96:10443/dbb
+** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.110944.009
+** Build result created for BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
+** --impactBuild option selected. Building impacted programs for application MortgageApplication
+** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/upstreamChanges.txt
+*!! MortgageApplication/cobol/epscsmrt.cbl is changed on the mainBuildBranch (main) and intersects with the current build list.
+** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/buildList.txt
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
+** Building files mapped to Cobol.groovy script
+*** Building file MortgageApplication/cobol/epsmlist.cbl
+*** Building file MortgageApplication/cobol/epscsmrt.cbl
+*** Building file MortgageApplication/cobol/epscmort.cbl
+** Building files mapped to LinkEdit.groovy script
+*** Building file MortgageApplication/link/epsmlist.lnk
+** Writing build report data to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/BuildReport.json
+** Writing build report to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/BuildReport.html
+** Updating build result BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
+** Build ended at Tue Dec 21 23:09:56 GMT+01:00 2021
+** Build State : ERROR
+** Total files processed : 4
+** Total build time  : 11.836 seconds
+
+** Build finished
+````
+Contents of the upstreamChanges.txt file look like:
+```
+** Upstream Changed Files 
+MortgageApplication/cobol/epscsmrt.cbl                            
+````
+
+Applying the feature in a mergeBuild scenario, where the build list does not intersect with the changes on the mainBuildBranch, the build passes as expected.
+
+```
+** Build start at 20211221.111003.010
+** Repository client created for https://10.3.20.96:10443/dbb
+** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.111003.010
+** Build result created for BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
+** --mergeBuild option selected. Building changed programs for application MortgageApplication flowing back to main
+** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/upstreamChanges.txt
+** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/buildList.txt
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
+** Building files mapped to Cobol.groovy script
+*** Building file MortgageApplication/cobol/epsmlist.cbl
+** Writing build report data to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/BuildReport.json
+** Writing build report to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/BuildReport.html
+** Updating build result BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
+** Build ended at Tue Dec 21 23:10:09 GMT+01:00 2021
+** Build State : CLEAN
+** Total files processed : 1
+** Total build time  : 5.158 seconds
+
+** Build finished
+```
+Contents of the upstreamChanges.txt file look like:
+```
+** Upstream Changed Files 
+MortgageApplication/cobol/epscsmrt.cbl                            
+````
