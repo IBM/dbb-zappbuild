@@ -100,6 +100,7 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
 cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
@@ -140,6 +141,7 @@ pli_linkEditMaxRC | Default link edit maximum RC allowed. | true
 pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
+pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
@@ -250,3 +252,10 @@ rexx_deployType | default deployType | true
 rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### nonBuildable.properties
+Application properties used by zAppBuild/language/Transfer.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+transfer_deployType | deployType | true
