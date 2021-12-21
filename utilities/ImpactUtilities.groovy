@@ -576,7 +576,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles){
 	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges.${props.buildListFileExt}"
-	println("*** Writing report of upstream changes to $upstreamChangesReportLoc")
+	println("** Writing report of upstream changes to $upstreamChangesReportLoc")
 
 	File upstreamChangesReportFile = new File(upstreamChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
@@ -588,7 +588,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Changed: ${file}"
 				writer.write("$file\n")
 			}
-		} else { if (props.verbose) println "** No upstream changed files found." }
+		}
 
 		if (upstreamRenamedFiles.size() != 0) {
 			writer.write("** Upstream Renamed Files \n")
@@ -596,7 +596,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Renamed: ${file}"
 				writer.write("$file\n")
 			}
-		} else { if (props.verbose) println "** No upstream renamed files found." }
+		}
 
 		if (upstreamDeletedFiles.size() != 0) {
 			writer.write("** Upstream Deleted Files \n")
@@ -604,7 +604,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				if (props.verbose) println "Deleted: ${file}"
 				writer.write("$file\n")
 			}
-		} else { if (props.verbose) println "** No upstream deleted files found." }
+		}
 	}
 }
 
