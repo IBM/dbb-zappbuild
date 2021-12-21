@@ -146,10 +146,15 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
-	// Document upstream change
+	// Document and validate upstream changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
 		if (props.verbose) println "*** Document upstream changes."
+		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
+		// verify that build set does not intersect with upstream changes
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles)
 	}
 
 	return [buildSet, deletedFiles]
@@ -189,21 +194,15 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		}
 	}
 	
-	// Document upstream change
+	// Document and validate upstream changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
 		if (props.verbose) println "*** Document upstream changes."
+		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
-	}
-	
-	// Validate potential mismatches
-	// && reportMismatches
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
-		Set<String> intersection = new HashSet<String>(changedFiles)
-		intersection.retainAll(upstreamChangedFiles) // intersection contains all elements on both sets
-		intersection.each { it ->
-			println "*!! $it is changed on the mainBuildBranch and the current branch."
-			props.error = "true"
-		}
+		// verify that build set does not intersect with upstream changes
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles)
 	}
 	
 	return [ buildSet, deletedFiles	]
@@ -606,6 +605,21 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 				writer.write("$file\n")
 			}
 		} else { if (props.verbose) println "** No upstream deleted files found." }
+	}
+}
+
+/**
+ * Method to verify if the list of upstream changes intersects with the build list
+ */
+def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges) {
+	// Validate potential mismatches and report mismatches
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
+		Set<String> intersection = new HashSet<String>(buildList)
+		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
+		intersection.each { it ->
+			println "*!! $it is changed on the mainBuildBranch and the current branch."
+			props.error = "true"
+		}
 	}
 }
 
