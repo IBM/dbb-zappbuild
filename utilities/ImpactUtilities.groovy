@@ -626,7 +626,6 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 			}
 		}
 	}
-	}
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
