@@ -619,8 +619,10 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 		intersection.each { it ->
 			println "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
-				println "*!!   Flag build state as ERROR. 
+				String errorMsg = "*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes."
+				println(errorMsg)
 				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 			}
 		}
 	}
@@ -1030,4 +1032,14 @@ def sortFileList(list) {
 			}
 		}
 	}
+}
+
+/**
+ * getRepositoryClient
+ */
+def getRepositoryClient() {
+	if (!repositoryClient && props."dbb.RepositoryClient.url")
+		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
+
+	return repositoryClient
 }
