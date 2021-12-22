@@ -47,6 +47,7 @@ reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when 
 reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files
 reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented
 reportUpstreamChanges | Flag to indicate if a topic branch build creates reports of upstream changes to understand recent changes on the mainBuildBranch which don't exist on your configuration
+reportUpstreamChangesIntersectionFailsBuild | Flag to indicated if the build is marked as error, when the verification identifies, that the list of changes on the mainBuildBranch overlap with the current build list
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy

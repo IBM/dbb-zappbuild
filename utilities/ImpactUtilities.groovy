@@ -620,11 +620,10 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 			String msg = "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
 			println(msg)
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
-				String errorMsg = "*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes."
-				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,client:repositoryClient)
 				buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
+			} else {
+				buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
 			}
 		}
 	}

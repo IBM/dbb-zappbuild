@@ -50,6 +50,8 @@ zAppBuild supports a number of build scenarios:
 
 Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console log.
 
+zAppBuild additionally delivers a set of reporting features to support the developer in answering questions about impact of changes across multiple applications or potential conflicts due to concurrent development activities within their application. An overview of these features are documented in [REPORT.md](REPORT.md).
+
 ## Repository Legend
 Folder/File | Description | Documentation Link
 --- | --- | ---
