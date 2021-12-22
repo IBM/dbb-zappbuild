@@ -380,8 +380,8 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		// calculate upstream changed files
 		if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && gitUtils.isGitDir(dir)) {
 			if (props.verbose) println "** Calculating upstream changes for directory $dir"
-			if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.mainBuildBranch} to capture upstream changes"
-			(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.mainBuildBranch)
+			if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.reportUpstreamChangesUpstreamBranch} to capture upstream changes"
+			(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.reportUpstreamChangesUpstreamBranch)
 
 
 			if (props.verbose) println "*** Changed upstream files for directory $dir:"
@@ -575,7 +575,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  */
 
 def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles){
-	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges.${props.buildListFileExt}"
+	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges_${props.reportUpstreamChangesUpstreamBranch}.${props.buildListFileExt}"
 	println("** Writing report of upstream changes to $upstreamChangesReportLoc")
 
 	File upstreamChangesReportFile = new File(upstreamChangesReportLoc)
@@ -617,7 +617,7 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 		Set<String> intersection = new HashSet<String>(buildList)
 		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
-			String msg = "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
+			String msg = "*!! $it is changed on the upstream branch (${props.reportUpstreamChangesUpstreamBranch}) and intersects with the current build list."
 			println(msg)
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
 				props.error = "true"

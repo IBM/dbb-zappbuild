@@ -62,9 +62,9 @@ The _Report potential conflicts_ feature can be activated to generate reports to
 
 ### Functionality
 
-This feature compares two different configurations via a `git diff`. It runs a git diff between the `mainBuildBranch` and the current configuration to capture changes on the mainBuildBranch, which are not yet applied to the topic branch. These changes are reported within the build console output (when running in verbose mode) as well produce a log file within the build output directory. 
+This feature compares two different configurations via a `git diff`. It runs a git diff between the configured upstream target branch (`reportUpstreamChangesUpstreamBranch`) and the current configuration to capture changes of the upstream configuration, which are not yet applied to the topic branch. These changes are reported within the build console output (when running in verbose mode) as well produce a log file within the build output directory. 
 
-Additionally to the reporting, it verifies if the list of the current build files intersect with the identified changes of the mainBuildBranch. If the lists intersect, another notification is reported in the build log which can make the build be marked as failed and force the development team to integrate changes and rebase the code before they move on.  
+Additionally to the reporting, it verifies if the list of the current build files intersect with the identified changes of the upstream branch. If the lists intersect, another notification is reported in the build log which can make the build be marked as failed and force the development team to integrate changes and rebase the code before they move on.  
 
 ### Pre-requisites
 
@@ -74,7 +74,7 @@ It requires that the cloned repository in the build workspace contains the git r
 
 ### Configuration
 
-Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of upstream changes. This feature is not available for builds of the git branch which is configured as the mainBuildBranch.
+Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of upstream changes. This feature is not available for builds of the git branch which is configured as the upstream branch.
 ### Sample invocation
 
 To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked. 
@@ -87,7 +87,7 @@ MortgageApplication/cobol/epscsmrt.cbl
 MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk 
 ```
-While the above build list intersects with the changes on the mainBuildBranch main and the setting `reportUpstreamChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
+While the above build list intersects with the changes on the upstream branch main and the setting `reportUpstreamChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
 ```
 ** Build start at 20211221.110944.009
 ** Repository client created for https://10.3.20.96:10443/dbb
@@ -96,6 +96,7 @@ While the above build list intersects with the changes on the mainBuildBranch ma
 ** --impactBuild option selected. Building impacted programs for application MortgageApplication
 ** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/upstreamChanges.txt
 *!! MortgageApplication/cobol/epscsmrt.cbl is changed on the mainBuildBranch (main) and intersects with the current build list.
+*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes.
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
@@ -120,7 +121,7 @@ Contents of the upstreamChanges.txt file look like:
 MortgageApplication/cobol/epscsmrt.cbl                            
 ````
 
-In a mergeBuild scenario, where the build list does not intersect with the changes on the mainBuildBranch, the build passes as expected.
+In a mergeBuild scenario, where the build list does not intersect with the changes on the upstream branch, the build passes as expected.
 
 ```
 ** Build start at 20211221.111003.010
