@@ -147,7 +147,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	// Document and validate upstream changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
 		if (props.verbose) println "*** Document upstream changes."
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
@@ -195,7 +195,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	}
 	
 	// Document and validate upstream changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
 		if (props.verbose) println "*** Document upstream changes."
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
@@ -617,8 +617,8 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 		Set<String> intersection = new HashSet<String>(buildList)
 		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
-			println "*!! $it is changed on the mainBuildBranch and the current branch."
-			props.error = "true"
+			println "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
+			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) props.error = "true"
 		}
 	}
 }
