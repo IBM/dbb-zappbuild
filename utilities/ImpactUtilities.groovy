@@ -617,12 +617,14 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 		Set<String> intersection = new HashSet<String>(buildList)
 		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
-			println "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
+			String msg = "*!! $it is changed on the mainBuildBranch (${props.mainBuildBranch}) and intersects with the current build list."
+			println(msg)
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
 				String errorMsg = "*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes."
 				println(errorMsg)
 				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:msg,client:getRepositoryClient())
 			}
 		}
 	}
