@@ -152,9 +152,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
 		// verify that build set does not intersect with upstream changes
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient)
 	}
 
 	return [buildSet, deletedFiles]
@@ -200,9 +200,9 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
 		// verify that build set does not intersect with upstream changes
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient)
+		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient)
 	}
 	
 	return [ buildSet, deletedFiles	]
@@ -611,7 +611,7 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 /**
  * Method to verify if the list of upstream changes intersects with the build list
  */
-def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges) {
+def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges, RepositoryClient repositoryClient) {
 	// Validate potential mismatches and report mismatches
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
 		Set<String> intersection = new HashSet<String>(buildList)
@@ -623,8 +623,8 @@ def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> ups
 				String errorMsg = "*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes."
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
-				buildUtils.updateBuildResult(errorMsg:msg,client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:repositoryClient)
+				buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
 			}
 		}
 	}
@@ -1033,14 +1033,4 @@ def sortFileList(list) {
 			}
 		}
 	}
-}
-
-/**
- * getRepositoryClient
- */
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
 }
