@@ -59,7 +59,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 // BZUCFG=${props.zunit_bzucfgPDS}(${member}),
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
-//  PARM=('STOP=E,REPORT=XML')
+"""
+// Add parms for bzupplay proc / zUnit Runner	
+zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
+jcl += """\
+//  PARM=('$zunitParms')
 """
 	if (hasPlayback) { // bzucfg contains reference to a playback file
 		jcl +=
@@ -74,6 +78,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
+
+// Add parms for bzupplay proc / zUnit Runner
+zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFile)
+
+// if code coverage collection is activated
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
 	        // codeCoverageHost
 		if (props.codeCoverageHeadlessHost != null)
@@ -93,7 +102,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	
 		jcl +=
 		"//CEEOPTS DD *                        \n"   +
-		( ( codeCoverageHost != null && codeCoveragePort != null ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
+		( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "${zunitDebugParm}  \n" ) +
 		"ENVAR(\n"
 		if (codeCoverageOptions != null) {
 			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
@@ -104,6 +113,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
 		}
    		jcl += "/* \n"
+	} else if (props.debugzUnitTestcase && props.userBuild) {
+		// initiate debug session of test case 
+		jcl +=
+		"//CEEOPTS DD *                        \n"   +
+		  "${zunitDebugParm}  \n"
 	}
 	jcl += """\
 //*
