@@ -33,7 +33,7 @@ sortedList.each { buildFile ->
 	String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, props.assembler_macroPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, 'assembler_dependeciesDatasetMapping', dependencyResolver)
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()

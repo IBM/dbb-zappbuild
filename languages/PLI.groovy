@@ -33,7 +33,7 @@ sortedList.each { buildFile ->
 	// copy build file and dependency files to data sets
 	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, props.pli_incPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependeciesDatasetMapping', dependencyResolver)
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
