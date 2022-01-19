@@ -45,7 +45,7 @@ sortedList.each { buildFile ->
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, props.cobol_cpyPDS, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependeciesDatasetMapping', dependencyResolver)
 	}
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
