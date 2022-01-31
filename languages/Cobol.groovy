@@ -210,7 +210,6 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.cobol_BMS_PDS).options("shr"))
-		
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('cobol_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
@@ -228,6 +227,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (isZUnitTestCase)
 	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
 
+	// adding alternate library definitions
+	if (props.cobol_alternativeLibraryNamesMapping) {
+		alternateLibraryNameAllocations = evaluate(props.cobol_alternativeLibraryNamesMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
+			datasetDSN = props.getProperty(datasetDSN)
+			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(props.cobol_BMS_PDS).options("shr"))
+		}
+	}
+	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('cobol_compilerVersion', buildFile)
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."SIGYCOMP_$compilerVer").options("shr"))
