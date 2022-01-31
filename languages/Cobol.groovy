@@ -232,7 +232,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		alternateLibraryNameAllocations = evaluate(props.cobol_alternativeLibraryNamesMapping)
 		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
 			datasetDSN = props.getProperty(datasetDSN)
-			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(props.cobol_BMS_PDS).options("shr"))
+			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
 		}
 	}
 	
