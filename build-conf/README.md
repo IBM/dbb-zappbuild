@@ -99,7 +99,6 @@ bms_loadOptions | BPXWDYN creation options for 'load module' type data sets
 bms_tempOptions | BPXWDYN creation options for temporary data sets
 bms_assembler | MVS program name of the high level assembler
 bms_linkEditor | MVS program name of the link editor
-bms_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### Cobol.properties
 Build properties used by zAppBuild/language/Cobol.groovy
