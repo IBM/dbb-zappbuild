@@ -81,6 +81,7 @@ assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD
 assembler_pgm | MVS program name of the high level assembler
 assembler_linkEditor | MVS program name of the link editor
 dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
+assembler_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### BMS.properties
 Build properties used by zAppBuild/language/BMS.groovy
@@ -98,6 +99,7 @@ bms_loadOptions | BPXWDYN creation options for 'load module' type data sets
 bms_tempOptions | BPXWDYN creation options for temporary data sets
 bms_assembler | MVS program name of the high level assembler
 bms_linkEditor | MVS program name of the link editor
+bms_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### Cobol.properties
 Build properties used by zAppBuild/language/Cobol.groovy
@@ -124,6 +126,9 @@ cobol_test_loadOptions | BPXWDYN creation options for creating 'load module' typ
 cobol_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 cobol_compiler | MVS program name of the COBOL compiler
 cobol_linkEditor | MVS program name of the link editor
+cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
+cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
+
 dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### LinkEdit.properties
@@ -162,6 +167,8 @@ pli_loadOptions | BPXWDYN creation options for 'load module' type data sets
 pli_tempOptions | BPXWDYN creation options for temporary data sets
 pli_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 pli_listOptions | BPXWDYN creation options for LIST data sets
+pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
+pli_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
 dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### MFS.properties
@@ -250,6 +257,7 @@ zunit_loadDatasets | Comma separated list of 'load module' type data sets
 zunit_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
 zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
+zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
