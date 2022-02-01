@@ -33,7 +33,7 @@ sortedList.each { buildFile ->
 	// copy build file and dependency files to data sets
 	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependeciesDatasetMapping', dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
@@ -185,6 +185,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (buildUtils.isSQL(logicalFile))
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.pli_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
+	// adding alternate library definitions
+	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = evaluate(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
+			datasetDSN = props.getProperty(datasetDSN)
+			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+		}
+	}
+		
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
 		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))

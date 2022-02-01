@@ -68,9 +68,16 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
 /*
  * copySourceFiles - copies both the program being built and the program
  * dependencies from USS directories to data sets
+ * 
+ * parameters:
+ *  - build file
+ *  - target dataset for build file
+ *  - name of the DBB PropertyMapping for dependencies (optional)
+ *  - name of the map for alternate library names for PLI and COBOL (optional)
+ *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, DependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, DependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -143,15 +150,25 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
-		PropertyMappings dsMapping = new PropertyMappings(dependencyDatasetMapping)
+		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
 		physicalDependencies.each { physicalDependency ->
 			if (props.verbose) println physicalDependency
 
 			if (physicalDependency.isResolved()) {
 
-				// optain target dataset based on PropertyMapping dsMapping
-				String dependencyPDS = props.getProperty(dsMapping.getValue(physicalDependency.getFile()))
+				// obtain target dataset based on Mappings
+				// Order :
+				//    1. langprefix_dependenciesAlternativeLibraryNameMapping based on the library setting recognized by DBB (COBOL and PLI)
+				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
+				String dependencyPDS 
+				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
+					dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+				}
+				if (dependencyPDS == null && dependenciesDatasetMapping){
+					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
+				}
+				physicalDependency.getLibrary()
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
 
 				if (dependencyPDS != null) {
@@ -179,10 +196,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						}
 					}
 				} else {
-					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in PropertyMapping $dependencyDatasetMapping"
+					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in either in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping"
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg)
+					updateBuildResult(errorMsg:errorMsg)
 				}
 			}
 		}

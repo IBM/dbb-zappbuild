@@ -45,7 +45,7 @@ sortedList.each { buildFile ->
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependeciesDatasetMapping', dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
@@ -228,8 +228,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
 
 	// adding alternate library definitions
-	if (props.cobol_alternativeLibraryNamesMapping) {
-		alternateLibraryNameAllocations = evaluate(props.cobol_alternativeLibraryNamesMapping)
+	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = evaluate(props.cobol_dependenciesAlternativeLibraryNameMapping)
 		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
 			datasetDSN = props.getProperty(datasetDSN)
 			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))

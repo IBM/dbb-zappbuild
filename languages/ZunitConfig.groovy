@@ -42,7 +42,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	(hasPlayback, playback) = getPlaybackFile(buildFile);
 
 	// Upload BZUCFG file to a BZUCFG Dataset
-	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependeciesDatasetMapping', dependencyResolver)
+	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
