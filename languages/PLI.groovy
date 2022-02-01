@@ -159,7 +159,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
-		
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMappings dsMapping = new PropertyMappings('pli_dependenciesDatasetMapping')
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		if (targetDataset != 'pli_incPDS')
+			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+	}
+
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('pli_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
