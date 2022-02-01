@@ -41,10 +41,11 @@ sortedList.each { buildFile ->
 	// copy build file and dependency files to data sets
 	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	
 	if(isZUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null)
+		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
 	}else{
-    	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, props.pli_incPDS, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 
 	// create mvs commands
@@ -184,7 +185,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.pli_BMS_PDS).options("shr"))
-		
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMappings dsMapping = new PropertyMappings('pli_dependenciesDatasetMapping')
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		if (targetDataset != 'pli_incPDS')
+			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+	}
+
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('pli_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
@@ -214,6 +223,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (buildUtils.isSQL(logicalFile))
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.pli_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
+	// adding alternate library definitions
+	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = evaluate(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
+			datasetDSN = props.getProperty(datasetDSN)
+			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+		}
+	}
+		
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
 		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))

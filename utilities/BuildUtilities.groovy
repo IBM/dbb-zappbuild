@@ -68,9 +68,16 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
 /*
  * copySourceFiles - copies both the program being built and the program
  * dependencies from USS directories to data sets
+ * 
+ * parameters:
+ *  - build file
+ *  - target dataset for build file
+ *  - name of the DBB PropertyMapping for dependencies (optional)
+ *  - name of the map for alternate library names for PLI and COBOL (optional)
+ *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, DependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, DependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -79,14 +86,17 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 				.member(CopyToPDS.createMemberName(buildFile))
 				.execute()
 	}
-
-	if (dependencyPDS && props.userBuildDependencyFile && props.userBuild) {
+	
+	if (dependencyDatasetMapping && props.userBuildDependencyFile && props.userBuild) {
 		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
 		// parse JSON and validate fields of userBuildDependencyFile
 		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
+		
+		// Load property mapping containing the map of targetPDS and dependencyfile
+		PropertyMappings dsMapping = new PropertyMappings(dependencyDatasetMapping)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -96,9 +106,9 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		if (dependencyResolver)
 			dependencyResolver.setLogicalFile(lfile)
 
- 		// get list of dependencies from userBuildDependencyFile
+		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
-		
+
 		// copy each dependency from USS to member of depedencyPDS
 		dependencyPaths.each { dependencyPath ->
 			// if dependency is relative, convert to absolute path
@@ -119,18 +129,18 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 							.dataset(dependencyPDS)
 							.member(memberName)
 							.execute()
-				} 
+				}
 				else
 				{
 					new CopyToPDS().file(new File(dependencyLoc))
 							.dataset(dependencyPDS)
 							.member(memberName)
 							.execute()
-				}			
+				}
 			}
-		} 
+		}
 	}
-	else if (dependencyPDS && dependencyResolver) {
+	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
@@ -139,32 +149,57 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyPDS, Depen
 		}
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
+		// Load property mapping containing the map of targetPDS and dependencyfile
+		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
+		
 		physicalDependencies.each { physicalDependency ->
 			if (props.verbose) println physicalDependency
+
 			if (physicalDependency.isResolved()) {
+
+				// obtain target dataset based on Mappings
+				// Order :
+				//    1. langprefix_dependenciesAlternativeLibraryNameMapping based on the library setting recognized by DBB (COBOL and PLI)
+				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
+				String dependencyPDS 
+				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
+					dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+				}
+				if (dependencyPDS == null && dependenciesDatasetMapping){
+					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
+				}
+
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
 
-				// only copy the dependency file once per script invocation
-				if (!copiedFileCache.contains(physicalDependencyLoc)) {
-					copiedFileCache.add(physicalDependencyLoc)
-					// create member name
-					String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
-					//retrieve zUnitFileExtension plbck
-					zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+				if (dependencyPDS != null) {
 
-					if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
-						new CopyToPDS().file(new File(physicalDependencyLoc))
-								.copyMode(CopyMode.BINARY)
-								.dataset(dependencyPDS)
-								.member(memberName)
-								.execute()
-					} else
-					{
-						new CopyToPDS().file(new File(physicalDependencyLoc))
-								.dataset(dependencyPDS)
-								.member(memberName)
-								.execute()
+					// only copy the dependency file once per script invocation
+					if (!copiedFileCache.contains(physicalDependencyLoc)) {
+						copiedFileCache.add(physicalDependencyLoc)
+						// create member name
+						String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
+						//retrieve zUnitFileExtension plbck
+						zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+
+						if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
+							new CopyToPDS().file(new File(physicalDependencyLoc))
+									.copyMode(CopyMode.BINARY)
+									.dataset(dependencyPDS)
+									.member(memberName)
+									.execute()
+						} else
+						{
+							new CopyToPDS().file(new File(physicalDependencyLoc))
+									.dataset(dependencyPDS)
+									.member(memberName)
+									.execute()
+						}
 					}
+				} else {
+					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in either in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping"
+					println(errorMsg)
+					props.error = "true"
+					updateBuildResult(errorMsg:errorMsg)
 				}
 			}
 		}
