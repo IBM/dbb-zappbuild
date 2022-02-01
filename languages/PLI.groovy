@@ -25,15 +25,28 @@ buildUtils.createLanguageDatasets(langQualifier)
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'pli_fileBuildRank')
 
+if (buildListContainsTests(sortedList)) {
+	langQualifier = "pli_test"
+	buildUtils.createLanguageDatasets(langQualifier)
+}
+
 // iterate through build list
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
+
+	// Check if this a testcase
+	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
 
 	// copy build file to input data set
 	// copy build file and dependency files to data sets
 	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+	
+	if(isZUnitTestCase){
+		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
+	}else{
+		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+	}
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
@@ -81,7 +94,7 @@ sortedList.each { buildFile ->
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
-				if(!props.userBuild){
+				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
@@ -108,6 +121,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	def cics = props.getFileProperty('pli_compileCICSParms', buildFile) ?: ""
 	def sql = props.getFileProperty('pli_compileSQLParms', buildFile) ?: ""
 	def errPrefixOptions = props.getFileProperty('pli_compileErrorPrefixParms', buildFile) ?: ""
+	def compileDebugParms = props.getFileProperty('pli_compileDebugParms', buildFile)
 
 
 	if (buildUtils.isCICS(logicalFile))
@@ -119,7 +133,12 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	if (props.errPrefix)
 		parms = "$parms,$errPrefixOptions"
 
-	if (parms.startsWith(','))
+	// add debug options
+	if (props.debug)  {
+		parms = "$parms,$compileDebugParms"
+	}
+
+    if (parms.startsWith(','))
 		parms = parms.drop(1)
 
 	if (props.verbose) println "PLI compiler parms for $buildFile = $parms"
@@ -137,7 +156,14 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	compile.dd(new DDStatement().name("SYSIN").dsn("${props.pli_srcPDS}($member)").options('shr').report(true))
+	
+	if (isZUnitTestCase){
+		compile.dd(new DDStatement().name("SYSIN").dsn("${props.pli_testcase_srcPDS}($member)").options('shr').report(true))
+	}
+	else
+	{
+		compile.dd(new DDStatement().name("SYSIN").dsn("${props.pli_srcPDS}($member)").options('shr').report(true))
+	}
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.pli_listOptions))
 	compile.dd(new DDStatement().name("SYSMDECK").options(props.pli_tempOptions))
 	(1..17).toList().each { num ->
@@ -178,7 +204,11 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
-
+	
+	// add additional zunit libraries
+	if (isZUnitTestCase)
+		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."IBMZPLI_$compilerVer").options("shr"))
@@ -239,13 +269,16 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	}
 
-
-	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("pli", buildFile, logicalFile)
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.pli_loadPDS}($member)").options('shr').output(true).deployType(deployType))
+	if(isZUnitTestCase){
+		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.pli_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
+	}
+	else {
+		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.pli_loadPDS}($member)").options('shr').output(true).deployType(deployType))
+	}
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.pli_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.pli_tempOptions))
 
@@ -274,9 +307,13 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	// add dummy SYSDEFSD to avoid IEW2689W 4C40 DEFINITION SIDE FILE IS NOT DEFINED message from program binder
+	if (isZUnitTestCase)
+		linkedit.dd(new DDStatement().name("SYSDEFSD").options("DUMMY"))
+
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
-
+		
 	return linkedit
 }
 
@@ -286,4 +323,9 @@ def getRepositoryClient() {
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
 	return repositoryClient
+}
+
+boolean buildListContainsTests(List<String> buildList) {
+	boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('pli_testcase', buildFile).equals('true')}
+	return containsZUnitTestCase ? true : false
 }

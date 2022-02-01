@@ -10,8 +10,8 @@ Since all properties will be loaded into a single static instance of BuildProper
 ### datasets.properties
 Build properties for Partition Data Sets (PDS) used by zAppBuild language build scripts. ***Must be configured for your build machine!***
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 MACLIB | z/OS macro library. Example: SYS1.MACLIB
 SCEEMAC | Assembler macro library. Example: CEE.SCEEMAC
 SCEELKED | LE (Language Environment) load library. Example: CEE.SCEELKED
@@ -30,7 +30,7 @@ SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
 SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
 
 ### build.properties
-General properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts. 
+General properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts.
 
 Property | Description
 --- | ---
@@ -57,15 +57,15 @@ Properties used by the impact utilities to generate a report of external impacte
 
 --- | ---
 reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections ***Can be overridden by build.groovy option -re, --reportExternalImpacts***
-reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) *** Can be overridden by application-conf *** 
-reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files *** Can be overridden by application-conf *** 
-reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented *** Can be overridden by application-conf *** 
+reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) *** Can be overridden by application-conf ***
+reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files *** Can be overridden by application-conf ***
+reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented *** Can be overridden by application-conf ***
 
 ### Assembler.properties
 Build properties used by zAppBuild/language/Assembler.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 assembler_requiredBuildProperties | Comma separated list of required build properties for language/Assembler.groovy
 assembler_srcPDS | Dataset to move assembler source files to from USS
 assembler_macroPDS | Dataset to move macro files to from USS
@@ -86,8 +86,8 @@ assembler_dependenciesDatasetMapping | DBB property mapping to map dependencies 
 ### BMS.properties
 Build properties used by zAppBuild/language/BMS.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 bms_requiredBuildProperties | Comma separated list of required build properties for language/BMS.groovy
 bms_srcPDS | Dataset to move bms source files to from USS
 bms_copyPDS | Dataset to create generated BMS copybooks in from copy gen step
@@ -104,8 +104,8 @@ bms_dependenciesDatasetMapping | DBB property mapping to map dependencies to dif
 ### Cobol.properties
 Build properties used by zAppBuild/language/Cobol.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 cobol_requiredBuildProperties | Comma separated list of required build properties for language/Cobol.groovy
 cobol_srcPDS | Dataset to move COBOL source files to from USS
 cobol_cpyPDS | Dataset to move COBOL copybooks to from USS
@@ -134,8 +134,8 @@ dbb.DependencyScanner.languageHint | DBB configuration property used by the depe
 ### LinkEdit.properties
 Build properties used by zAppBuild/language/LinkEdit.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 linkedit_requiredBuildProperties | Comma separated list of required build properties for language/Cobol.groovy
 linkedit_linkEditor | MVS program name of the link editor
 linkedit_srcPDS | Dataset to move COBOL source files to from USS
@@ -150,8 +150,8 @@ linkedit_tempOptions | BPXWDYN creation options for temporary data sets
 ### PLI.properties
 Build properties used by zAppBuild/language/PLI.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 pli_requiredBuildProperties | Comma separated list of required build properties for language/Cobol.groovy
 pli_compiler | MVS program name of the COBOL compiler
 pli_linkEditor | MVS program name of the link editor
@@ -165,6 +165,12 @@ pli_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 pli_loadDatasets | Comma separated list of 'load module' type data sets
 pli_loadOptions | BPXWDYN creation options for 'load module' type data sets
 pli_tempOptions | BPXWDYN creation options for temporary data sets
+pli_test_case_srcPDS | Dataset to move PLI test source files to from USS
+pli_test_case_loadPDS | Dataset to create load modules in from link edit step
+pli_test_srcDatasets | Comma separated list of test 'source' type data sets
+pli_test_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+pli_test_loadDatasets | Comma separated list of test 'load module' type data sets
+pli_test_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
 pli_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 pli_listOptions | BPXWDYN creation options for LIST data sets
 pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
@@ -174,8 +180,8 @@ dbb.DependencyScanner.languageHint | DBB configuration property used by the depe
 ### MFS.properties
 Build properties used by zAppBuild/language/MFS.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 mfs_requiredBuildProperties | Comma separated list of required build properties for language/MFS.groovy
 mfs_srcPDS | Dataset to move mfs source files to from USS
 mfs_tformatPDS | Dataset to create format set from phase 2 step
@@ -191,8 +197,8 @@ mfs_deployType | deploy Type of format set
 ### DBDgen.properties
 Build properties used by zAppBuild/language/DBDgen.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 dbdgen_requiredBuildProperties | Comma separated list of required build properties for language/DBDgen.groovy
 dbdgen_srcPDS | Dataset to move assembler source files to from USS
 dbdgen_objPDS | Dataset to create object decks in from Assembler step
@@ -211,8 +217,8 @@ dbb.DependencyScanner.languageHint | DBB configuration property used by the depe
 ### PSBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 psbgen_requiredBuildProperties | Comma separated list of required build properties for language/PSBgen.groovy
 psbgen_srcPDS | Dataset to move assembler source files to from USS
 psbgen_objPDS | Dataset to create object decks in from Assembler step
@@ -231,8 +237,8 @@ dbb.DependencyScanner.languageHint | DBB configuration property used by the depe
 ### ACBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy; ACBgen is part of the PSBgen process
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 acbgen_requiredBuildProperties | Comma separated list of required build properties for language/PSBgen.groovy
 acbgen_psbPDS | Dataset to of PSBgen output
 acbgen_dbdPDS | Dataset to of DBDgen output
@@ -246,8 +252,8 @@ acbgen_deployType | Deploy Type of build outputs
 ### ZunitConfig.properties
 Build properties used by zAppBuild/language/ZunitConfig.groovy
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 zunit_bzucfgPDS | Dataset to move BZUCFG files to from USS
 zunit_bzureportPDS | Dataset where BZUCRPT files are stored
 zunit_bzuplayPDS | Dataset to move zUnit Playback files to from USS
