@@ -168,7 +168,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				if (dependencyPDS == null && dependenciesDatasetMapping){
 					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
 				}
-				physicalDependency.getLibrary()
+
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
 
 				if (dependencyPDS != null) {
