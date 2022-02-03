@@ -145,16 +145,27 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
-			dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			
+			if (props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
+				printResolutionRules(dependencyResolver)
+			} else {
+				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			}
 		}
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
+		if (physicalDependencies.size() != 0) {
+			if (props.verbose && props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
+				printPhysicalDependencies(physicalDependencies)
+				}
+		}
+		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose) println physicalDependency
-
+			if (props.verbose && !props.cleanConsoleOutput && !props.cleanConsoleOutput.toBoolean()) 	println physicalDependency
+			
 			if (physicalDependency.isResolved()) {
 
 				// obtain target dataset based on Mappings
@@ -622,5 +633,48 @@ def assertDbbBuildToolkitVersion(String currentVersion){
 		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
 		println e.getMessage()
 		System.exit(1)
+	}
+}
+
+/*
+ * Logs the resolution rules of the DependencyResolver in a table format
+ * 
+ */
+def printResolutionRules(DependencyResolver dependencyResolver) {
+
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(28) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(28,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
+
+	// iterate over rules configured for the dependencyResolver
+	dependencyResolver.getResolutionRules().each{ rule ->
+		searchPaths = rule.getSearchPath()
+		searchPaths.each { DependencyPath searchPath ->
+			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
+			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
+			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(28) : "N/A".padRight(28)
+			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(28) : "N/A".padRight(28)
+			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
+			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
+			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
+
+		}
+	}
+}
+
+/*
+ * Logs information about the physical dependencies in a table format
+ */
+def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(16) + "Name".padRight(10) + "Status".padRight(14) + "SourceDir/File".padRight(36))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(16,"-") + " ".padLeft(10,"-") + " ".padLeft(14,"-") + " ".padLeft(36,"-"))
+
+	// iterate over list and display info about the physical dependency
+	physicalDependencies.each { physicalDependency ->
+		def resolvedStatus = (physicalDependency.isResolved()) ? 'RESOLVED' : 'NOT RESOLVED'
+		def resolvedFlag = (physicalDependency.isResolved()) ? ' ' : '*'
+		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
+		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
 	}
 }

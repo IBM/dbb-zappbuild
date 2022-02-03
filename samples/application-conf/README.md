@@ -17,6 +17,7 @@ runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to 
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/. | false
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}. | false
 buildOrder | Comma separated list of the build script processing order. | false
+cleanConsoleOutput | Flag to log output in table views instead of printing raw JSON data | false
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application. | false
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
