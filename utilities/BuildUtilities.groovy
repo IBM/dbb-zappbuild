@@ -643,8 +643,8 @@ def assertDbbBuildToolkitVersion(String currentVersion){
 def printResolutionRules(List<ResolutionRule> rules) {
 
 	// Print header of table
-	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(40) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
-	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(40,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
+	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
 
 	// iterate over rules configured for the dependencyResolver
 	rules.each{ rule ->
@@ -652,7 +652,7 @@ def printResolutionRules(List<ResolutionRule> rules) {
 		searchPaths.each { DependencyPath searchPath ->
 			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
 			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
-			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(40) : "N/A".padRight(40)
+			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
 			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
 			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
 			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
