@@ -642,6 +642,8 @@ def assertDbbBuildToolkitVersion(String currentVersion){
  */
 def printResolutionRules(List<ResolutionRule> rules) {
 
+	println("*** Configured resulution rules:")
+	
 	// Print header of table
 	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
 	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
