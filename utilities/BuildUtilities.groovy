@@ -146,8 +146,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
 			
-			if (props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
-				printResolutionRules(dependencyResolver)
+			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+				printResolutionRules(dependencyResolver.getResolutionRules())
 			} else {
 				dependencyResolver.getResolutionRules().each{ rule -> println rule }
 			}
@@ -158,13 +158,13 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
 		if (physicalDependencies.size() != 0) {
-			if (props.verbose && props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
+			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				printPhysicalDependencies(physicalDependencies)
 				}
 		}
 		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose && !props.cleanConsoleOutput && !props.cleanConsoleOutput.toBoolean()) 	println physicalDependency
+			if (props.verbose && !props.formatConsoleOutput && !props.formatConsoleOutput.toBoolean()) 	println physicalDependency
 			
 			if (physicalDependency.isResolved()) {
 
@@ -640,20 +640,20 @@ def assertDbbBuildToolkitVersion(String currentVersion){
  * Logs the resolution rules of the DependencyResolver in a table format
  * 
  */
-def printResolutionRules(DependencyResolver dependencyResolver) {
+def printResolutionRules(List<ResolutionRule> rules) {
 
 	// Print header of table
 	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(28) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
 	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(28,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
 
 	// iterate over rules configured for the dependencyResolver
-	dependencyResolver.getResolutionRules().each{ rule ->
+	rules.each{ rule ->
 		searchPaths = rule.getSearchPath()
 		searchPaths.each { DependencyPath searchPath ->
 			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
 			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
 			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(28) : "N/A".padRight(28)
-			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(28) : "N/A".padRight(28)
+			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
 			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
 			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
 			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)

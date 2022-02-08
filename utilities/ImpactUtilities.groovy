@@ -65,6 +65,19 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// get excludeListe
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
+			// Print impactResolverConfiguration
+			if (props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
+				// print collection information
+				println("    " + "Collection".padRight(20) )
+				println("    " + " ".padLeft(20,"-"))
+				impactResolver.getCollections().each{ collectionName ->
+					println("    " + collectionName)
+				}
+				// print impact resolution rule in table format
+				buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+			}
+			
+			// resolving impacts
 			def impacts = impactResolver.resolve()
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
