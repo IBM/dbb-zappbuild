@@ -66,7 +66,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
 			// Print impactResolverConfiguration
-			if (props.cleanConsoleOutput && props.cleanConsoleOutput.toBoolean()) {
+			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				// print collection information
 				println("    " + "Collection".padRight(20) )
 				println("    " + " ".padLeft(20,"-"))
