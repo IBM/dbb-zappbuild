@@ -121,6 +121,10 @@ def createCompileCommand(String buildFile, String member, File logFile) {
 def createLinkEditCommand(String buildFile, String member, File logFile) {
 	String parameters = props.getFileProperty('bms_linkEditParms', buildFile)
 	
+	// obtain githash for buildfile
+	String ssi = buildUtils.getShortGitHash(buildFile)
+	if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.bms_linkEditor).parm(parameters)
 	
