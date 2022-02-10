@@ -691,15 +691,17 @@ def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
 		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
 		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
 	}
+}
 
 /*
  * Obtain the abbreviated git hash from the PropertyMappings table
+ *  returns null if no hash was found
  */
 def getShortGitHash(String buildFile) {
 	def abbrevGitHash
 	PropertyMappings githashChangedFilesMap = new PropertyMappings("githashBuildableFilesMap")
 	abbrevGitHash = githashChangedFilesMap.getValue(buildFile)
 	if (abbrevGitHash != null ) return abbrevGitHash
-	println "*! Could not obtain abbreviated githash for buildFile $buildFile"	
-	return null	
+	println "*! Could not obtain abbreviated githash for buildFile $buildFile"
+	return null
 }
