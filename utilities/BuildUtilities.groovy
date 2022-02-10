@@ -91,6 +91,9 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	if (dependencyDatasetMapping && props.userBuildDependencyFile && props.userBuild) {
 		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
+		// Load property mapping containing the map of targetPDS and dependencyfile
+		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
+		
 		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
 
 		// parse JSON and validate fields of userBuildDependencyFile
@@ -114,6 +117,18 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		dependencyPaths.each { dependencyPath ->
 			// if dependency is relative, convert to absolute path
 			String dependencyLoc = getAbsolutePath(dependencyPath)
+
+			// obtain target dataset based on Mappings
+			// Order :
+			//    1. langprefix_dependenciesAlternativeLibraryNameMapping based on the library setting recognized by DBB (COBOL and PLI)
+			//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
+			String dependencyPDS 
+			// if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
+			// 	dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+			// }
+			if (dependencyPDS == null && dependenciesDatasetMapping){
+				dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(dependencyPath))
+			}
 
 			// only copy the dependency file once per script invocation
 			if (!copiedFileCache.contains(dependencyLoc)) {
