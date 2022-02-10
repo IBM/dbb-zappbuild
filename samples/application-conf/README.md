@@ -17,6 +17,7 @@ runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to 
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/. | false
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}. | false
 buildOrder | Comma separated list of the build script processing order. | false
+formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data | false
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application. | false
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
@@ -101,6 +102,7 @@ cobol_compileSQLParms | Default SQL compile parameters. Appended to base paramet
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
 cobol_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
+cobol_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
@@ -122,6 +124,7 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 linkedit_deployType | default deployType for build output | true
 linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
 linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
@@ -147,6 +150,7 @@ pli_impactPropertyList | List of build properties causing programs to rebuild wh
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false

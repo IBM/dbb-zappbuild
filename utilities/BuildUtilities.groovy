@@ -36,6 +36,10 @@ def assertBuildProperties(String requiredProps) {
  */
 def createFullBuildList() {
 	Set<String> buildSet = new HashSet<String>()
+	
+	// PropertyMappings
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
 	// create the list of build directories
 	List<String> srcDirs = []
 	if (props.applicationSrcDirs)
@@ -43,7 +47,15 @@ def createFullBuildList() {
 
 	srcDirs.each{ dir ->
 		dir = getAbsolutePath(dir)
-		buildSet.addAll(getFileSet(dir, true, '**/*.*', props.excludeFileList))
+		Set<String> fileSet =getFileSet(dir, true, '**/*.*', props.excludeFileList)
+		buildSet.addAll(fileSet)
+		
+		// capture abbreviated gitHash for all buildable files
+		String abbrevHash = gitUtils.getCurrentGitHash(dir, true)
+		buildSet.forEach { buildableFile ->
+			githashBuildableFilesMap.addFilePattern(abbrevHash, buildableFile)
+		}
+		
 	}
 
 	return buildSet
@@ -148,16 +160,27 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
-			dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			
+			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+				printResolutionRules(dependencyResolver.getResolutionRules())
+			} else {
+				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			}
 		}
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
+		if (physicalDependencies.size() != 0) {
+			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+				printPhysicalDependencies(physicalDependencies)
+				}
+		}
+		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose) println physicalDependency
-
+			if (props.verbose && !props.formatConsoleOutput && !props.formatConsoleOutput.toBoolean()) 	println physicalDependency
+			
 			if (physicalDependency.isResolved()) {
 
 				// obtain target dataset based on Mappings
@@ -656,4 +679,62 @@ def retrieveHFSEncoding(File file) {
 		default: return "IBM-${i}"
 	}
 	
+}
+
+/*
+ * Logs the resolution rules of the DependencyResolver in a table format
+ * 
+ */
+def printResolutionRules(List<ResolutionRule> rules) {
+
+	println("*** Configured resulution rules:")
+	
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
+
+	// iterate over rules configured for the dependencyResolver
+	rules.each{ rule ->
+		searchPaths = rule.getSearchPath()
+		searchPaths.each { DependencyPath searchPath ->
+			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
+			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
+			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
+			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
+			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
+			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
+			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
+
+		}
+	}
+}
+
+/*
+ * Logs information about the physical dependencies in a table format
+ */
+def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(16) + "Name".padRight(10) + "Status".padRight(14) + "SourceDir/File".padRight(36))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(16,"-") + " ".padLeft(10,"-") + " ".padLeft(14,"-") + " ".padLeft(36,"-"))
+
+	// iterate over list and display info about the physical dependency
+	physicalDependencies.each { physicalDependency ->
+		def resolvedStatus = (physicalDependency.isResolved()) ? 'RESOLVED' : 'NOT RESOLVED'
+		def resolvedFlag = (physicalDependency.isResolved()) ? ' ' : '*'
+		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
+		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
+	}
+}
+
+/*
+ * Obtain the abbreviated git hash from the PropertyMappings table
+ *  returns null if no hash was found
+ */
+def getShortGitHash(String buildFile) {
+	def abbrevGitHash
+	PropertyMappings githashChangedFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	abbrevGitHash = githashChangedFilesMap.getValue(buildFile)
+	if (abbrevGitHash != null ) return abbrevGitHash
+	println "*! Could not obtain abbreviated githash for buildFile $buildFile"
+	return null
 }

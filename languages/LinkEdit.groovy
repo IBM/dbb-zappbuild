@@ -78,6 +78,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String parms = props.getFileProperty('linkEdit_parms', buildFile)
 	String linker = props.getFileProperty('linkedit_linkEditor', buildFile)
 
+	// obtain githash for buildfile
+	String linkedit_storeSSI = props.getFileProperty('linkedit_storeSSI', buildFile) 
+	if (linkedit_storeSSI && linkedit_storeSSI.toBoolean()) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parms = parms + ",SSI=$ssi"
+	}
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
