@@ -316,6 +316,10 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parameters = props.getFileProperty('assembler_linkEditParms', buildFile)
 
+	// obtain githash for buildfile
+	String ssi = buildUtils.getShortGitHash(buildFile)
+	if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
 

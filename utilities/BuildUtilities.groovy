@@ -35,6 +35,10 @@ def assertBuildProperties(String requiredProps) {
  */
 def createFullBuildList() {
 	Set<String> buildSet = new HashSet<String>()
+	
+	// PropertyMappings
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
 	// create the list of build directories
 	List<String> srcDirs = []
 	if (props.applicationSrcDirs)
@@ -42,7 +46,15 @@ def createFullBuildList() {
 
 	srcDirs.each{ dir ->
 		dir = getAbsolutePath(dir)
-		buildSet.addAll(getFileSet(dir, true, '**/*.*', props.excludeFileList))
+		Set<String> fileSet =getFileSet(dir, true, '**/*.*', props.excludeFileList)
+		buildSet.addAll(fileSet)
+		
+		// capture abbreviated gitHash for all buildable files
+		String abbrevHash = gitUtils.getCurrentGitHash(dir, true)
+		buildSet.forEach { buildableFile ->
+			githashBuildableFilesMap.addFilePattern(abbrevHash, buildableFile)
+		}
+		
 	}
 
 	return buildSet
@@ -679,4 +691,15 @@ def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
 		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
 		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
 	}
+
+/*
+ * Obtain the abbreviated git hash from the PropertyMappings table
+ */
+def getShortGitHash(String buildFile) {
+	def abbrevGitHash
+	PropertyMappings githashChangedFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	abbrevGitHash = githashChangedFilesMap.getValue(buildFile)
+	if (abbrevGitHash != null ) return abbrevGitHash
+	println "*! Could not obtain abbreviated githash for buildFile $buildFile"	
+	return null	
 }

@@ -542,7 +542,7 @@ def finalizeBuildProcess(Map args) {
 			if (gitUtils.isGitDir(dir)) {
 				// store current hash
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-				String currenthash = gitUtils.getCurrentGitHash(dir)
+				String currenthash = gitUtils.getCurrentGitHash(dir, false)
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl
