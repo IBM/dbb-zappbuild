@@ -4,8 +4,10 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
+import com.ibm.jzos.FileAttribute
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
