@@ -100,6 +100,7 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
@@ -121,6 +122,7 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 linkedit_deployType | default deployType for build output | true
 linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
 linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
@@ -145,6 +147,7 @@ pli_impactPropertyList | List of build properties causing programs to rebuild wh
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false

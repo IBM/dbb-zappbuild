@@ -208,8 +208,11 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
 
 	// obtain githash for buildfile
-	String ssi = buildUtils.getShortGitHash(buildFile)
-	if (ssi != null) parms = parms + ",SSI=$ssi"
+	String pli_storeSSI = props.getFileProperty('pli_storeSSI', buildFile)
+	if (pli_storeSSI && pli_storeSSI.toBoolean()) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parms = parms + ",SSI=$ssi"
+	}
 	
 	// Create the link stream if needed
 	if ( linkEditStream != null ) {
