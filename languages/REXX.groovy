@@ -28,7 +28,7 @@ sortedList.each { buildFile ->
 	// copy build file and dependency files to data sets
 	String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, props.rexx_srcPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, dependencyResolver)
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -121,7 +121,13 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.rexx_srcPDS).options("shr"))
-		
+
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMapping dsMapping = new PropertyMappings('rexx_dependenciesDatasetMapping')
+	dsMapping.getProperties().values().each { targetDatasets ->
+		if (targetDatasets != 'rexx_srcPDS') rexx.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
+	}
+			
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('rexx_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {

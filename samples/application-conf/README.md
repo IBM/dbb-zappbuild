@@ -1,5 +1,5 @@
 # Application Configuration
-This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed. 
+This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed.
 
 At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded into the [DBB BuildProperties class](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.4/scriptorg.html#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
 
@@ -25,10 +25,10 @@ jobCard | JOBCARD for JCL execs | false
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. | true, recommended in file.properties
 
 ### file.properties
-Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides. 
+Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides.
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
 dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
 isSQL | File property overwrite to indicate that a file requires to include SQL parameters
@@ -41,10 +41,10 @@ cobol_testcase | File property to indicate a generated zUnit cobol test case to 
 Properties used by the impact utilities to generate a report of external impacted files. Sample properties file to all application-conf to overwrite central build-conf configuration.
 
 --- | ---
-reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections 
-reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) 
-reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files 
-reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented 
+reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections
+reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)
+reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files
+reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented
 
 
 ### Assembler.properties
@@ -100,6 +100,7 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
 cobol_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
@@ -142,6 +143,7 @@ pli_linkEditMaxRC | Default link edit maximum RC allowed. | true
 pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
+pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
@@ -233,6 +235,8 @@ zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
 zunit_resolutionRules | Default resolution rules for zUnit. | true
+zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
+zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
 zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true

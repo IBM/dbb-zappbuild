@@ -27,7 +27,7 @@ sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
 	// copy build file to input data set
-	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null)
+	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null, null)
 
 	// create mvs commands
 	String rules = props.getFileProperty('linkedit_resolutionRules', buildFile)
