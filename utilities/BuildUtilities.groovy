@@ -91,16 +91,12 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	if (dependencyDatasetMapping && props.userBuildDependencyFile && props.userBuild) {
 		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
+		// Skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly dataset
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
-		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
-
 		// parse JSON and validate fields of userBuildDependencyFile
 		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
-		
-		// Load property mapping containing the map of targetPDS and dependencyfile
-		PropertyMappings dsMapping = new PropertyMappings(dependencyDatasetMapping)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -118,17 +114,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 			// if dependency is relative, convert to absolute path
 			String dependencyLoc = getAbsolutePath(dependencyPath)
 
-			// obtain target dataset based on Mappings
-			// Order :
-			//    1. langprefix_dependenciesAlternativeLibraryNameMapping based on the library setting recognized by DBB (COBOL and PLI)
-			//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
-			String dependencyPDS 
-			// if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
-			// 	dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
-			// }
-			if (dependencyPDS == null && dependenciesDatasetMapping){
-				dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(dependencyPath))
-			}
+			// Assume library is SYSLIB for all dependencies
+			String dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(dependencyPath))
 
 			// only copy the dependency file once per script invocation
 			if (!copiedFileCache.contains(dependencyLoc)) {
