@@ -575,25 +575,37 @@ def generateDb2InfoRecord(String buildFile){
 }
 
 /*
- * parse and validates the user build dependency file 
+ * Parses and validates the user build dependency file 
  * returns a parsed json object 
  */
 def validateDependencyFile(String buildFile, String depFilePath) {
-	// if depFilePath is relatvie, convert to absolute path
-	depFilePath = getAbsolutePath(depFilePath)
-	File depFile = new File(depFilePath)
-	assert depFile.exists() : "*! Dependency file not found: ${depFilePath}"
-	JsonSlurper slurper = new groovy.json.JsonSlurper()
-	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFile.getText())
-	// parse dependency File
-	def depFileData = slurper.parse(depFile)
-
-	/* Begin Validation */ 
+	String[] allowedEncodings = ["UTF-8", "IBM-1047"]
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
+	
+	// Load dependency file and verify existance
+	File depFile = new File(getAbsolutePath(depFilePath))
+	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
+	
+	// Parse the JSON file
+	String encoding = retrieveHFSEncoding(depFile) // Determine the encoding from filetag
+	JsonSlurper slurper = new JsonSlurper().setType(JsonParserType.INDEX_OVERLAY) // Use INDEX_OVERLAY, fastest parser
+	def depFileData
+	if (encoding) {
+		if (props.verbose) println "Parsing dependency file as ${encoding}: "
+		assert allowedEncodings.contains(encoding) : "*! Dependency file must be encoded and tagged as either UTF-8 or IBM-1047 but was ${encoding}"
+		depFileData = slurper.parse(depFile, encoding) // Parse dependency file with encoding
+	}
+	else {
+		if (props.verbose) println "[WARNING] Dependency file is untagged. \nParsing dependency file with default system encoding: "
+		depFileData = slurper.parse(depFile) // Assume default encoding for system
+	}
+	if (props.verbose) println new JsonBuilder(depFileData).toPrettyString() // Pretty print if verbose
+	
+	// Validate JSON structure
 	reqDepFileProps.each { depFileProp ->
 		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
 	}
-	// validate that depFileData.fileName == buildFile
+	// Validate depFileData.fileName == buildFile
 	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
 	return depFileData // return the parsed JSON object
 }
@@ -623,4 +635,22 @@ def assertDbbBuildToolkitVersion(String currentVersion){
 		println e.getMessage()
 		System.exit(1)
 	}
+}
+
+def retrieveHFSEncoding(File file) {
+	FileAttribute.Stat stat = FileAttribute.getStat(file.getAbsolutePath())
+    FileAttribute.Tag tag = stat.getTag()
+	int i = 0
+	if (tag != null)
+	{
+  		char x = tag.getCodeCharacterSetID()
+  		i = (int) x
+	}
+
+	switch(i) {
+		case 0: return null // Return null if file is untagged
+		case 1208: return "UTF-8"
+		default: return "IBM-${i}"
+	}
+	
 }
