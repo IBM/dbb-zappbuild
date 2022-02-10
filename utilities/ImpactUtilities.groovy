@@ -80,11 +80,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 						
 						// calculate abbreviated gitHash for impactFile
 						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-						println filePattern
 						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
 							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
 							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
-							println githashBuildableFilesMap
 						}
 						
 						// add file to buildset
@@ -213,7 +211,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
-	// PropertyMappings
+	// DBB property map to store changed files with their abbreviated git hash
 	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 	
 	
@@ -222,24 +220,24 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	if (props.applicationSrcDirs)
 		directories.addAll(props.applicationSrcDirs.split(','))
 
+	// get the current Git hash for all build directories
+	directories.each { dir ->
+		dir = buildUtils.getAbsolutePath(dir)
+		if (props.verbose) println "** Getting current hash for directory $dir"
+		String hash = null
+		String abbrevHash = null
+		if (gitUtils.isGitDir(dir)) {
+			hash = gitUtils.getCurrentGitHash(dir, false)
+			abbrevHash = gitUtils.getCurrentGitHash(dir, true)
+		}
+		String relDir = buildUtils.relativizePath(dir)
+		if (props.verbose) println "** Storing $relDir : $hash"
+		currentHashes.put(relDir,hash)
+		currentAbbrevHashes.put(relDir, abbrevHash)
+	}
+
 	// when a build result is provided, calculate the baseline hash for each directory
 	if (lastBuildResult != null){
-		// get the current Git hash for all build directories
-		directories.each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			if (props.verbose) println "** Getting current hash for directory $dir"
-			String hash = null
-			String abbrevHash = null
-			if (gitUtils.isGitDir(dir)) {
-				hash = gitUtils.getCurrentGitHash(dir, false)
-				abbrevHash = gitUtils.getCurrentGitHash(dir, true)
-			}
-			String relDir = buildUtils.relativizePath(dir)
-			if (props.verbose) println "** Storing $relDir : $hash"
-			currentHashes.put(relDir,hash)
-			currentAbbrevHashes.put(relDir, abbrevHash)
-		}
-
 		// get the baseline hash for all build directories
 		directories.each { dir ->
 			dir = buildUtils.getAbsolutePath(dir)
