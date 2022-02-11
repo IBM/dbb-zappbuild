@@ -702,6 +702,6 @@ def getShortGitHash(String buildFile) {
 	PropertyMappings githashChangedFilesMap = new PropertyMappings("githashBuildableFilesMap")
 	abbrevGitHash = githashChangedFilesMap.getValue(buildFile)
 	if (abbrevGitHash != null ) return abbrevGitHash
-	println "*! Could not obtain abbreviated githash for buildFile $buildFile"
+	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
 	return null
 }
