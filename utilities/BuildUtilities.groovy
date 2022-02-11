@@ -615,7 +615,7 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
 	
 	// Parse the JSON file
-	String encoding = retrieveHFSEncoding(depFile) // Determine the encoding from filetag
+	String encoding = retrieveHFSFileEncoding(depFile) // Determine the encoding from filetag
 	JsonSlurper slurper = new JsonSlurper().setType(JsonParserType.INDEX_OVERLAY) // Use INDEX_OVERLAY, fastest parser
 	def depFileData
 	if (encoding) {
