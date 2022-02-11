@@ -201,6 +201,7 @@ options:
 
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
+	cli.dz(longOpt:'debugzUnitTestcase', 'Flag to indicate if zUnit Tests should launch a debug session')
 
 	// code coverage options
 	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
@@ -341,6 +342,8 @@ def populateBuildProperties(String[] args) {
 	// set debug flag
 	if (opts.d) props.debug = 'true'
 
+	if (opts.dz) props.debugzUnitTestcase = 'true'
+	
 	// set code coverage flag
 	if (opts.cc) {
 		props.codeZunitCoverage = 'true'
@@ -539,7 +542,7 @@ def finalizeBuildProcess(Map args) {
 			if (gitUtils.isGitDir(dir)) {
 				// store current hash
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-				String currenthash = gitUtils.getCurrentGitHash(dir)
+				String currenthash = gitUtils.getCurrentGitHash(dir, false)
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl

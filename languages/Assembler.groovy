@@ -33,7 +33,7 @@ sortedList.each { buildFile ->
 	String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, props.assembler_macroPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
@@ -270,7 +270,14 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
-	// add custom concatenation
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMapping dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
+	dsMapping.getProperties().values().each { targetDatasets ->
+		if (targetDatasets != 'assembler_macroPDS')	assembler.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
+	}
+	
+	// add custom external concatenations
 	def assemblySyslibConcatenation = props.getFileProperty('assembler_assemblySyslibConcatenation', buildFile) ?: ""
 	if (assemblySyslibConcatenation) {
 		def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
@@ -309,6 +316,10 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parameters = props.getFileProperty('assembler_linkEditParms', buildFile)
 
+	// obtain githash for buildfile
+	String ssi = buildUtils.getShortGitHash(buildFile)
+	if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
 
