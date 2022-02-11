@@ -665,7 +665,11 @@ def assertDbbBuildToolkitVersion(String currentVersion){
 	}
 }
 
-def retrieveHFSEncoding(File file) {
+/*
+ * Returns a string representation of a file's encoding calculated from its tag.
+ * 
+ */
+def retrieveHFSFileEncoding(File file) {
 	FileAttribute.Stat stat = FileAttribute.getStat(file.getAbsolutePath())
     FileAttribute.Tag tag = stat.getTag()
 	int i = 0
