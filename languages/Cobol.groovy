@@ -284,8 +284,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 
 	// obtain githash for buildfile
-	String cobol_storeSSI = props.getFileProperty('cobol_storeSSI', buildFile) 
-	if (cobol_storeSSI && cobol_storeSSI.toBoolean()) {
+	String cobol_storeSSI = props.getFileProperty('cobol_storeSSI', buildFile)
+	if (cobol_storeSSI && cobol_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild)) {
 		String ssi = buildUtils.getShortGitHash(buildFile)
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
