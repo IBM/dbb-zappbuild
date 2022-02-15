@@ -273,8 +273,10 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
 	PropertyMappings dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
-	dsMapping.getProperties().values().each { targetDatasets ->
-		if (targetDatasets != 'assembler_macroPDS')	assembler.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults assembler_macroPDS
+		if (targetDataset != 'assembler_macroPDS')
+			assembler.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
 	
 	// add custom external concatenations

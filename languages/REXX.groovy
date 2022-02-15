@@ -124,8 +124,10 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
 	PropertyMappings dsMapping = new PropertyMappings('rexx_dependenciesDatasetMapping')
-	dsMapping.getProperties().values().each { targetDatasets ->
-		if (targetDatasets != 'rexx_srcPDS') rexx.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults rexx_srcPDS
+		if (targetDataset != 'rexx_srcPDS')
+			rexx.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
 			
 	// add custom concatenation
