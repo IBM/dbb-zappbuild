@@ -272,7 +272,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
 	
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
-	PropertyMapping dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
+	PropertyMappings dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
 	dsMapping.getProperties().values().each { targetDatasets ->
 		if (targetDatasets != 'assembler_macroPDS')	assembler.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
 	}

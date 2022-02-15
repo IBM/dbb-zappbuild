@@ -123,7 +123,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.rexx_srcPDS).options("shr"))
 
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
-	PropertyMapping dsMapping = new PropertyMappings('rexx_dependenciesDatasetMapping')
+	PropertyMappings dsMapping = new PropertyMappings('rexx_dependenciesDatasetMapping')
 	dsMapping.getProperties().values().each { targetDatasets ->
 		if (targetDatasets != 'rexx_srcPDS') rexx.dd(new DDStatement().dsn(props.getProperty(targetDatasets)).options("shr"))
 	}
