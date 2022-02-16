@@ -210,7 +210,7 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 
 	// obtain all current remote branches
 	// TODO: Handle branches from other repositories
-	Set<String> remoteBranches = getRemoteGitBranches(props.applicationSrcDirs)
+	Set<String> remoteBranches = gitUtils.getRemoteGitBranches(props.applicationSrcDirs)
 
 	// Run analysis for each remoteBranch, which matches the configured criteria
 	remoteBranches.each { gitReference ->
