@@ -566,7 +566,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  */
 
 def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
-	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges_$gitReference.txt"
+	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges_${gitReference}.txt"
 	println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
