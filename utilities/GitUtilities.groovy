@@ -80,26 +80,24 @@ def getCurrentGitDetachedBranch(String gitDir) {
 /*
  * Returns the current Git branch
  *
- * @param  String applicationSrcDirs  		list of applicationSrcDirs
+ * @param  String gitGit            		git directory
  * @return List 							list of remote branches
  */
-def getRemoteGitBranches(String applicationSrcDirs) {
+def getRemoteGitBranches(String gitDir) {
 
 	Set<String> remoteBranches = new HashSet<String>()
-	applicationSrcDirs.split(',').each{dir ->
-		String cmd = "git -C $dir branch -r"
+	String cmd = "git -C $gitDir branch -r"
 
-		StringBuffer gitOut = new StringBuffer()
-		StringBuffer gitError = new StringBuffer()
+	StringBuffer gitOut = new StringBuffer()
+	StringBuffer gitError = new StringBuffer()
 
-		Process process = cmd.execute()
-		process.waitForProcessOutput(gitOut, gitError)
-		if (gitError) {
-			println("*! Error executing Git command: $cmd error: $gitError")
-		} else {
-			for (line in gitOut.toString().split("\n")) {
-				remoteBranches.add(line)
-			}
+	Process process = cmd.execute()
+	process.waitForProcessOutput(gitOut, gitError)
+	if (gitError) {
+		println("*! Error executing Git command: $cmd error: $gitError")
+	} else {
+		for (line in gitOut.toString().split("\n")) {
+			remoteBranches.add(line)
 		}
 	}
 	return remoteBranches

@@ -209,9 +209,13 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 	List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
 
 	// obtain all current remote branches
-	// TODO: Handle branches from other repositories
-	Set<String> remoteBranches = gitUtils.getRemoteGitBranches(props.applicationSrcDirs)
-
+	// TODO: Handle / Exclude branches from other repositories
+	Set<String> remoteBranches = new HashSet<String>()
+	props.applicationSrcDirs.split(",").each { dir ->
+		dir = buildUtils.getAbsolutePath(dir)
+		remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
+	}
+	
 	// Run analysis for each remoteBranch, which matches the configured criteria
 	remoteBranches.each { gitReference ->
 
