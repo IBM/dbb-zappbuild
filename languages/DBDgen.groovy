@@ -26,7 +26,7 @@ sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
 	// copy build file to input data set
-	buildUtils.copySourceFiles(buildFile, props.dbdgen_srcPDS, null, null)
+	buildUtils.copySourceFiles(buildFile, props.dbdgen_srcPDS, null, null, null)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
