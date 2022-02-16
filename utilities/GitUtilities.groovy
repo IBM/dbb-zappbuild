@@ -97,7 +97,7 @@ def getRemoteGitBranches(String gitDir) {
 		println("*! Error executing Git command: $cmd error: $gitError")
 	} else {
 		for (line in gitOut.toString().split("\n")) {
-			remoteBranches.add(line)
+			remoteBranches.add(line.replaceAll(".*?/", ""))
 		}
 	}
 	return remoteBranches
@@ -229,7 +229,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
  *
  */
 def getConcurrentChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...$baselineReference"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
 	return getChangedFiles(gitCmd)
 }
 
