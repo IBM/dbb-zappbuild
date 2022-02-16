@@ -22,7 +22,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	
+
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
 
@@ -142,29 +142,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	// Document and validate concurrent changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		println "*** Calculate and document concurrent changes."
-		//a loop
-		
-		String gitReference = props.reportUpstreamChangesUpstreamBranch
-		
-		Set<String> concurrentChangedFiles = new HashSet<String>()
-		Set<String> concurrentRenamedFiles = new HashSet<String>()
-		Set<String> concurrentDeletedFiles = new HashSet<String>()
-		Set<String> concurrentBuildProperties = new HashSet<String>()
-		
-		if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-		
-		(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateConcurrentChanges(gitReference)
-		
-		// generate reports
-		generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
-		// verify that build set does not intersect with any conrurrent changes
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
-		
-		//loop end
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+		if (props.verbose) println "*** Calculate and document concurrent changes."
+		calculateConcurrentChanges()
 	}
 
 	return [buildSet, deletedFiles]
@@ -182,17 +162,17 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	
+
 	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
-	
+
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
-	
+
 	// iterate over changed file and add them to the buildSet
-	
+
 	Set<String> buildSet = new HashSet<String>()
-	
-	
+
+
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -200,34 +180,14 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
 	}
-	
+
 	// Document and validate concurrent changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		println "*** Calculate and document concurrent changes."
-		//a loop
-		
-		String gitReference = props.reportUpstreamChangesUpstreamBranch
-		
-		Set<String> concurrentChangedFiles = new HashSet<String>()
-		Set<String> concurrentRenamedFiles = new HashSet<String>()
-		Set<String> concurrentDeletedFiles = new HashSet<String>()
-		Set<String> concurrentBuildProperties = new HashSet<String>()
-		
-		if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-		
-		(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateConcurrentChanges(gitReference)
-		
-		// generate reports
-		generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
-		// verify that build set does not intersect with any conrurrent changes
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
-		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
-		
-		//loop end
+	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+		if (props.verbose) println "*** Calculate and document concurrent changes."
+		calculateConcurrentChanges()
 	}
-	
-	return [ buildSet, deletedFiles	]
+
+	return [buildSet, deletedFiles]
 }
 
 
@@ -243,16 +203,37 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-def calculateConcurrentChanges(String gitReference) {
-	return calculateChangedFiles(null, true, gitReference)
-}
+def calculateConcurrentChanges() {
+	
+	//a loop
+
+	String gitReference = props.reportUpstreamChangesUpstreamBranch
+
+	Set<String> concurrentChangedFiles = new HashSet<String>()
+	Set<String> concurrentRenamedFiles = new HashSet<String>()
+	Set<String> concurrentDeletedFiles = new HashSet<String>()
+	Set<String> concurrentBuildProperties = new HashSet<String>()
+
+	if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+
+	(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+
+	// generate reports
+	generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+	// verify that build set does not intersect with any conrurrent changes
+	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
+	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
+	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
+
+	//loop end
+	}
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurrentChanges, String gitReference) {
 	String msg = ""
-    if (calculateConcurrentChanges.toBoolean()) {
-		msg = "in configuration $gitReference" 
+	if (calculateConcurrentChanges.toBoolean()) {
+		msg = "in configuration $gitReference"
 	}
-	
+
 	// local variables
 	Map<String,String> currentHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
@@ -260,8 +241,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	
-		
+
+
 	// create a list of source directories to search
 	List<String> directories = []
 	if (props.applicationSrcDirs)
@@ -333,7 +314,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		def renamed = []
 		String baseline
 		String current
-		
+
 		if (gitUtils.isGitDir(dir)){
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
@@ -353,7 +334,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				// set git references
 				baseline = props.mainBuildBranch
 				current = "HEAD"
-				
+
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
@@ -361,7 +342,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			else if (calculateConcurrentChanges) {
 				(changed, deleted, renamed) = gitUtils.getConcurrentChanges(dir, gitReference)
 			}
-		}	
+		}
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
 		}
@@ -407,7 +388,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				if (props.verbose) println "**** $file"
 			}
 		}
-	
+
 	}
 
 	return [
@@ -417,6 +398,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changedBuildProperties
 	]
 }
+
 
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
@@ -573,26 +555,26 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
 	String enc = props.logEncoding ?: 'IBM-1047'
 	concurrentChangesReportFile.withWriter(enc) { writer ->
 
-		writer.write("** Concurrent Changed Files \n")
+		writer.write("** Changed Files \n")
 		if (concurrentChangedFiles.size() != 0) {
 			concurrentChangedFiles.each { file ->
-				if (props.verbose) println "Changed: ${file}"
+				if (props.verbose) println " Changed: ${file}"
 				writer.write("$file\n")
 			}
 		}
 
 		if (concurrentRenamedFiles.size() != 0) {
-			writer.write("** Concurrent Renamed Files \n")
+			writer.write("** Renamed Files \n")
 			concurrentRenamedFiles.each { file ->
-				if (props.verbose) println "Renamed: ${file}"
+				if (props.verbose) println " Renamed: ${file}"
 				writer.write("$file\n")
 			}
 		}
 
 		if (concurrentDeletedFiles.size() != 0) {
-			writer.write("** Concurrent Deleted Files \n")
+			writer.write("** Deleted Files \n")
 			concurrentDeletedFiles.each { file ->
-				if (props.verbose) println "Deleted: ${file}"
+				if (props.verbose) println " Deleted: ${file}"
 				writer.write("$file\n")
 			}
 		}
