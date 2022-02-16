@@ -3,6 +3,7 @@ import com.ibm.dbb.build.*
 import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import groovy.transform.*
+import groovy.cli.commons.CliBuilder
 
 /**
  * This script builds a DB2 application package for SQL programs in the application.
