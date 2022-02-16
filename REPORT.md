@@ -62,7 +62,7 @@ The _Report potential conflicts_ feature can be activated to generate reports to
 
 ### Functionality
 
-This feature compares two different configurations via a `git diff`. It runs a git diff between the configured upstream target branch (`reportUpstreamChangesUpstreamBranch`) and the current configuration to capture changes of the upstream configuration, which are not yet applied to the topic branch. These changes are reported within the build console output (when running in verbose mode) as well produce a log file within the build output directory. 
+This feature compares two different configurations via a `git diff`. It runs a git diff between the configured upstream target branch (`reportConcurrentChangesUpstreamBranch`) and the current configuration to capture changes of the upstream configuration, which are not yet applied to the topic branch. These changes are reported within the build console output (when running in verbose mode) as well produce a log file within the build output directory. 
 
 Additionally to the reporting, it verifies if the list of the current build files intersect with the identified changes of the upstream branch. If the lists intersect, another notification is reported in the build log which can make the build be marked as failed and force the development team to integrate changes and rebase the code before they move on.  
 
@@ -79,7 +79,7 @@ Please review the build properties defined in [application-conf/reports.properti
 
 To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked. 
 
-In the first sample, the communication copybook `MortgageApplication/copybook/epsmtcom.cpy` was changed on the branch `reportUpstreamChanges`. The impactBuild build type, identifies the the below build list: 
+In the first sample, the communication copybook `MortgageApplication/copybook/epsmtcom.cpy` was changed on the branch `reportConcurrentChanges`. The impactBuild build type, identifies the the below build list: 
 
 ```
 MortgageApplication/cobol/epsmlist.cbl
@@ -87,12 +87,12 @@ MortgageApplication/cobol/epscsmrt.cbl
 MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk 
 ```
-While the above build list intersects with the changes on the upstream branch main and the setting `reportUpstreamChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
+While the above build list intersects with the changes on the upstream branch main and the setting `reportConcurrentChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
 ```
 ** Build start at 20211221.110944.009
 ** Repository client created for https://10.3.20.96:10443/dbb
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.110944.009
-** Build result created for BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
+** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
 ** --impactBuild option selected. Building impacted programs for application MortgageApplication
 ** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/upstreamChanges.txt
 *!! MortgageApplication/cobol/epscsmrt.cbl is changed on the mainBuildBranch (main) and intersects with the current build list.
@@ -107,7 +107,7 @@ While the above build list intersects with the changes on the upstream branch ma
 *** Building file MortgageApplication/link/epsmlist.lnk
 ** Writing build report data to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/BuildReport.json
 ** Writing build report to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/BuildReport.html
-** Updating build result BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
+** Updating build result BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
 ** Build ended at Tue Dec 21 23:09:56 GMT+01:00 2021
 ** Build State : ERROR
 ** Total files processed : 4
@@ -127,7 +127,7 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 ** Build start at 20211221.111003.010
 ** Repository client created for https://10.3.20.96:10443/dbb
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.111003.010
-** Build result created for BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
+** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
 ** --mergeBuild option selected. Building changed programs for application MortgageApplication flowing back to main
 ** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/upstreamChanges.txt
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/buildList.txt
@@ -136,7 +136,7 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 *** Building file MortgageApplication/cobol/epsmlist.cbl
 ** Writing build report data to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/BuildReport.json
 ** Writing build report to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/BuildReport.html
-** Updating build result BuildGroup:MortgageApplication-reportUpstreamChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
+** Updating build result BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
 ** Build ended at Tue Dec 21 23:10:09 GMT+01:00 2021
 ** Build State : CLEAN
 ** Total files processed : 1

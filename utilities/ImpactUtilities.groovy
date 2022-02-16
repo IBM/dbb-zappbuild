@@ -142,7 +142,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 
 	// Document and validate concurrent changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		if (props.verbose) println "*** Calculate and document concurrent changes."
 		calculateConcurrentChanges(repositoryClient, buildSet)
 	}
@@ -182,7 +182,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	}
 
 	// Document and validate concurrent changes
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		if (props.verbose) println "*** Calculate and document concurrent changes."
 		calculateConcurrentChanges(repositoryClient, buildSet)
 	}
@@ -207,7 +207,7 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 	
 	//a loop
 
-	String gitReference = props.reportUpstreamChangesUpstreamBranch
+	String gitReference = props.reportConcurrentChangesUpstreamBranch
 
 	Set<String> concurrentChangedFiles = new HashSet<String>()
 	Set<String> concurrentRenamedFiles = new HashSet<String>()
@@ -586,13 +586,13 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
  */
 def verifyBuildListAgainstConcurrentChanges(Set<String> buildList, Set<String> concurrentChanges, RepositoryClient repositoryClient, String gitReference) {
 	// Validate potential mismatches and report mismatches
-	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() ){
 		Set<String> intersection = new HashSet<String>(buildList)
 		intersection.retainAll(concurrentChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
 			String msg = "*!! $it is changed on branch ($gitReference) and intersects with the current build list."
 			println(msg)
-			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
+			if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
 			} else {
