@@ -204,29 +204,41 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 }
 
 def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-	
-	//a loop
 
-	String gitReference = props.reportConcurrentChangesUpstreamBranch
+	// initialize patterns
+	List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
 
-	Set<String> concurrentChangedFiles = new HashSet<String>()
-	Set<String> concurrentRenamedFiles = new HashSet<String>()
-	Set<String> concurrentDeletedFiles = new HashSet<String>()
-	Set<String> concurrentBuildProperties = new HashSet<String>()
+	// obtain all current remote branches
+	// TODO: Handle branches from other repositories
+	Set<String> remoteBranches = getRemoteGitBranches(props.applicationSrcDirs)
 
-	if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+	// Run analysis for each remoteBranch, which matches the configured criteria
+	remoteBranches.each { gitReference ->
 
-	(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+		if (matchesPattern(gitReference,gitRefMatcherPatterns){
 
-	// generate reports
-	generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
-	// verify that build set does not intersect with any conrurrent changes
-	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
-	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
-	verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
+			Set<String> concurrentChangedFiles = new HashSet<String>()
+			Set<String> concurrentRenamedFiles = new HashSet<String>()
+			Set<String> concurrentDeletedFiles = new HashSet<String>()
+			Set<String> concurrentBuildProperties = new HashSet<String>()
 
-	//loop end
+			if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+
+			(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+
+			// generate reports
+			generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+			// verify that build set does not intersect with any conrurrent changes
+			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
+			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
+			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
+
+			//loop end
+		}
+
 	}
+
+}
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurrentChanges, String gitReference) {
 	String msg = ""

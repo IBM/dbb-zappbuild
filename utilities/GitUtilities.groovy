@@ -78,6 +78,34 @@ def getCurrentGitDetachedBranch(String gitDir) {
 }
 
 /*
+ * Returns the current Git branch
+ *
+ * @param  String applicationSrcDirs  		list of applicationSrcDirs
+ * @return List 							list of remote branches
+ */
+def getRemoteGitBranches(String applicationSrcDirs) {
+
+	Set<String> remoteBranches = new HashSet<String>()
+	applicationSrcDirs.split(',').each{dir ->
+		String cmd = "git -C $gitDir branch -r"
+
+		StringBuffer gitOut = new StringBuffer()
+		StringBuffer gitError = new StringBuffer()
+
+		Process process = cmd.execute()
+		process.waitForProcessOutput(gitOut, gitError)
+		if (gitError) {
+			println("*! Error executing Git command: $cmd error: $gitError")
+		} else {
+			for (line in gitOut.toString().split("\n")) {
+				remoteBranches.add(line)
+			}
+		}
+	}
+	return remoteBranches
+}
+
+/*
  * Returns true if this is a detached HEAD
  *
  * @param  String gitDir  		Local Git repository directory
@@ -203,7 +231,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
  *
  */
 def getConcurrentChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...$baselineReference"
 	return getChangedFiles(gitCmd)
 }
 
