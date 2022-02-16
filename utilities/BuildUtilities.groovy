@@ -9,6 +9,7 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import groovy.ant.FileNameFinder
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
