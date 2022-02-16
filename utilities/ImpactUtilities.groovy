@@ -33,7 +33,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -172,11 +172,8 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	Set<String> upstreamChangedFiles = new HashSet<String>()
-	Set<String> upstreamRenamedFiles = new HashSet<String>()
-	Set<String> upstreamDeletedFiles = new HashSet<String>()
 	
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles) = calculateChangedFiles(null)
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
 	
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
@@ -196,13 +193,22 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	
 	// Document and validate upstream changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		if (props.verbose) println "*** Document upstream changes."
+		if (props.verbose) println "*** Caluclate and document upstream changes."
+		//a loop
+		Set<String> upstreamChangedFiles = new HashSet<String>()
+		Set<String> upstreamRenamedFiles = new HashSet<String>()
+		Set<String> upstreamDeletedFiles = new HashSet<String>()
+		
+		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateChangedFiles(null, props.reportUpstreamChangesUpstreamBranch)
+		
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
 		// verify that build set does not intersect with upstream changes
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient)
+		
+		//loop end
 	}
 	
 	return [ buildSet, deletedFiles	]
@@ -218,6 +224,15 @@ def createMergeBuildList(RepositoryClient repositoryClient){
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
+	return calculateChangedFiles(lastBuildResult, false, null)
+}
+
+def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
+	String msg
+    if (reportUpstreamChanges) {
+		msg = "upstream changes in config" 
+	}
+	
 	// local variables
 	Map<String,String> currentHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
@@ -225,9 +240,6 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	Set<String> upstreamChangedFiles = new HashSet<String>()
-	Set<String> upstreamDeletedFiles = new HashSet<String>()
-	Set<String> upstreamRenamedFiles = new HashSet<String>()
 	
 		
 	// create a list of source directories to search
@@ -299,16 +311,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		def changed = []
 		def deleted = []
 		def renamed = []
-		def upstreamChanged = []
-		def upstreamDeleted = []
-		def upstreamRenamed = []
 		String baseline
 		String current
 		
 		if (gitUtils.isGitDir(dir)){
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
-			if (lastBuildResult != null && props.impactBuild){
+			if (lastBuildResult != null && props.impactBuild && !calculateUpstreamChanges){
 				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
 				current = currentHashes.get(buildUtils.relativizePath(dir))
 				if (!baseline || !current) {
@@ -319,16 +328,18 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 					(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current)
 				}
 			}
-			// when no build result is provided but the outgoingChangesBuild,
-			//   calculate the outgoing changes
-			else if(props.mergeBuild) {
-				
+			// when no build result is provided but the outgoingChangesBuild, calculate the outgoing changes
+			else if(props.mergeBuild && !calculateUpstreamChanges) {
 				// set git references
 				baseline = props.mainBuildBranch
 				current = "HEAD"
 				
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
+			}
+			// caluclateUpstreamChanges
+			else if ( calculateUpstreamChanges) {
+				(changed, deleted, renamed) = gitUtils.getUpstreamChanges(dir, upstreamReference)
 			}
 		}	
 		else {
@@ -420,10 +431,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
-		changedBuildProperties,
-		upstreamChangedFiles,
-		upstreamDeletedFiles,
-		upstreamRenamedFiles
+		changedBuildProperties
 	]
 }
 
