@@ -141,27 +141,28 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
-	// Document and validate upstream changes
+	// Document and validate concurrent changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		if (props.verbose) println "*** Calculate and document upstream changes."
+		println "*** Calculate and document concurrent changes."
 		//a loop
 		
-		String upstreamReference = props.reportUpstreamChangesUpstreamBranch
+		String gitReference = props.reportUpstreamChangesUpstreamBranch
 		
-		Set<String> upstreamChangedFiles = new HashSet<String>()
-		Set<String> upstreamRenamedFiles = new HashSet<String>()
-		Set<String> upstreamDeletedFiles = new HashSet<String>()
+		Set<String> concurrentChangedFiles = new HashSet<String>()
+		Set<String> concurrentRenamedFiles = new HashSet<String>()
+		Set<String> concurrentDeletedFiles = new HashSet<String>()
+		Set<String> concurrentBuildProperties = new HashSet<String>()
 		
-		if (props.verbose) println "***  Analysing and validating changes for BRANCH ${props.reportUpstreamChangesUpstreamBranch} ."
+		if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
 		
-		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(upstreamReference)
+		(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateConcurrentChanges(gitReference)
 		
 		// generate reports
-		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, upstreamReference)
-		// verify that build set does not intersect with upstream changes
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient, upstreamReference)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient, upstreamReference)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient, upstreamReference)
+		generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+		// verify that build set does not intersect with any conrurrent changes
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
 		
 		//loop end
 	}
@@ -200,27 +201,28 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		}
 	}
 	
-	// Document and validate upstream changes
+	// Document and validate concurrent changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		if (props.verbose) println "*** Calculate and document upstream changes."
+		println "*** Calculate and document concurrent changes."
 		//a loop
 		
-		String upstreamReference = props.reportUpstreamChangesUpstreamBranch
+		String gitReference = props.reportUpstreamChangesUpstreamBranch
 		
-		Set<String> upstreamChangedFiles = new HashSet<String>()
-		Set<String> upstreamRenamedFiles = new HashSet<String>()
-		Set<String> upstreamDeletedFiles = new HashSet<String>()
+		Set<String> concurrentChangedFiles = new HashSet<String>()
+		Set<String> concurrentRenamedFiles = new HashSet<String>()
+		Set<String> concurrentDeletedFiles = new HashSet<String>()
+		Set<String> concurrentBuildProperties = new HashSet<String>()
 		
-		if (props.verbose) println "***  Analysing and validating changes for BRANCH ${props.reportUpstreamChangesUpstreamBranch} ."
+		if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
 		
-		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(upstreamReference)
+		(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateConcurrentChanges(gitReference)
 		
 		// generate reports
-		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, upstreamReference)
-		// verify that build set does not intersect with upstream changes
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient, upstreamReference)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient, upstreamReference)
-		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient, upstreamReference)
+		generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+		// verify that build set does not intersect with any conrurrent changes
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
+		verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
 		
 		//loop end
 	}
@@ -241,14 +243,14 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-def calculateUpstreamChanges(String upstreamReference) {
-	return calculateChangedFiles(null, true, upstreamReference)
+def calculateConcurrentChanges(String gitReference) {
+	return calculateChangedFiles(null, true, gitReference)
 }
 
-def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
+def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurrentChanges, String gitReference) {
 	String msg = ""
-    if (calculateUpstreamChanges.toBoolean()) {
-		msg = "in configuration $upstreamReference" 
+    if (calculateConcurrentChanges.toBoolean()) {
+		msg = "in configuration $gitReference" 
 	}
 	
 	// local variables
@@ -335,7 +337,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 		if (gitUtils.isGitDir(dir)){
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
-			if (lastBuildResult != null && props.impactBuild && !calculateUpstreamChanges){
+			if (lastBuildResult != null && props.impactBuild && !calculateConcurrentChanges){
 				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
 				current = currentHashes.get(buildUtils.relativizePath(dir))
 				if (!baseline || !current) {
@@ -347,7 +349,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 				}
 			}
 			// when no build result is provided but the outgoingChangesBuild, calculate the outgoing changes
-			else if(props.mergeBuild && !calculateUpstreamChanges) {
+			else if(props.mergeBuild && !calculateConcurrentChanges) {
 				// set git references
 				baseline = props.mainBuildBranch
 				current = "HEAD"
@@ -355,9 +357,9 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
-			// caluclateUpstreamChanges
-			else if ( calculateUpstreamChanges) {
-				(changed, deleted, renamed) = gitUtils.getUpstreamChanges(dir, upstreamReference)
+			// calculate concurrent changes
+			else if (calculateConcurrentChanges) {
+				(changed, deleted, renamed) = gitUtils.getConcurrentChanges(dir, gitReference)
 			}
 		}	
 		else {
@@ -560,36 +562,36 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 }
 
 /*
- * Method to generate the Upstream Changes reports 
+ * Method to generate the Concurrent Changes reports 
  */
 
-def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles, String upstreamReference){
-	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges_$upstreamReference.${props.buildListFileExt}"
-	println("** Writing report of upstream changes to $upstreamChangesReportLoc for configuration $upstreamReference")
+def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
+	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges_$gitReference.txt"
+	println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
-	File upstreamChangesReportFile = new File(upstreamChangesReportLoc)
+	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
-	upstreamChangesReportFile.withWriter(enc) { writer ->
+	concurrentChangesReportFile.withWriter(enc) { writer ->
 
-		writer.write("** Upstream Changed Files \n")
-		if (upstreamChangedFiles.size() != 0) {
-			upstreamChangedFiles.each { file ->
+		writer.write("** Concurrent Changed Files \n")
+		if (concurrentChangedFiles.size() != 0) {
+			concurrentChangedFiles.each { file ->
 				if (props.verbose) println "Changed: ${file}"
 				writer.write("$file\n")
 			}
 		}
 
-		if (upstreamRenamedFiles.size() != 0) {
-			writer.write("** Upstream Renamed Files \n")
-			upstreamRenamedFiles.each { file ->
+		if (concurrentRenamedFiles.size() != 0) {
+			writer.write("** Concurrent Renamed Files \n")
+			concurrentRenamedFiles.each { file ->
 				if (props.verbose) println "Renamed: ${file}"
 				writer.write("$file\n")
 			}
 		}
 
-		if (upstreamDeletedFiles.size() != 0) {
-			writer.write("** Upstream Deleted Files \n")
-			upstreamDeletedFiles.each { file ->
+		if (concurrentDeletedFiles.size() != 0) {
+			writer.write("** Concurrent Deleted Files \n")
+			concurrentDeletedFiles.each { file ->
 				if (props.verbose) println "Deleted: ${file}"
 				writer.write("$file\n")
 			}
@@ -598,15 +600,15 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 }
 
 /**
- * Method to verify if the list of upstream changes intersects with the build list
+ * Method to verify if the list of concurrent changes intersects with the build list
  */
-def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges, RepositoryClient repositoryClient, String upstreamReference) {
+def verifyBuildListAgainstConcurrentChanges(Set<String> buildList, Set<String> concurrentChanges, RepositoryClient repositoryClient, String gitReference) {
 	// Validate potential mismatches and report mismatches
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
 		Set<String> intersection = new HashSet<String>(buildList)
-		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
+		intersection.retainAll(concurrentChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
-			String msg = "*!! $it is changed on branch ($upstreamReference) and intersects with the current build list."
+			String msg = "*!! $it is changed on branch ($gitReference) and intersects with the current build list."
 			println(msg)
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
 				props.error = "true"

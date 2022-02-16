@@ -202,7 +202,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
  *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
  *
  */
-def getUpstreamChanges(String gitDir, String baselineReference) {
+def getConcurrentChanges(String gitDir, String baselineReference) {
 	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
 	return getChangedFiles(gitCmd)
 }
