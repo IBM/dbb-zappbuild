@@ -215,7 +215,7 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 	// Run analysis for each remoteBranch, which matches the configured criteria
 	remoteBranches.each { gitReference ->
 
-		if (matchesPattern(gitReference,gitRefMatcherPatterns){
+		if (matchesPattern(gitReference,gitRefMatcherPatterns)){
 
 			Set<String> concurrentChangedFiles = new HashSet<String>()
 			Set<String> concurrentRenamedFiles = new HashSet<String>()
@@ -233,7 +233,9 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
 
-			//loop end
+		}
+		else {
+			println "gitReference ... $gitReference excluded"
 		}
 
 	}
