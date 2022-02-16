@@ -199,7 +199,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		Set<String> upstreamRenamedFiles = new HashSet<String>()
 		Set<String> upstreamDeletedFiles = new HashSet<String>()
 		
-		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateChangedFiles(null, props.reportUpstreamChangesUpstreamBranch)
+		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(props.reportUpstreamChangesUpstreamBranch)
 		
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
@@ -225,6 +225,10 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
+}
+
+def calculateUpstreamChanges(String upstreamReference) {
+	return calculateChangedFiles(null, true, upstreamReference)
 }
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
