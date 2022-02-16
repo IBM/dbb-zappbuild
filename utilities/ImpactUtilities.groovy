@@ -229,8 +229,9 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
 	String msg
-    if (reportUpstreamChanges) {
+    if (calculateUpstreamChanges) {
 		msg = "upstream changes in config" 
+		println "###" + msg
 	}
 	
 	// local variables
