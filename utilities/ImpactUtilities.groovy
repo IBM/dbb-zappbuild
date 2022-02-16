@@ -144,7 +144,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	// Document and validate concurrent changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
 		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges()
+		calculateConcurrentChanges(repositoryClient, buildSet)
 	}
 
 	return [buildSet, deletedFiles]
@@ -184,7 +184,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	// Document and validate concurrent changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean()){
 		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges()
+		calculateConcurrentChanges(repositoryClient, buildSet)
 	}
 
 	return [buildSet, deletedFiles]
@@ -203,7 +203,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-def calculateConcurrentChanges() {
+def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
 	
 	//a loop
 
