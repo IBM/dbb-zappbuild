@@ -22,11 +22,6 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	Set<String> upstreamChangedFiles = new HashSet<String>()
-	Set<String> upstreamRenamedFiles = new HashSet<String>()
-	Set<String> upstreamDeletedFiles = new HashSet<String>()
-	
-	
 	
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
@@ -148,13 +143,24 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	// Document and validate upstream changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		if (props.verbose) println "*** Document upstream changes."
+		if (props.verbose) println "*** Calculate and document upstream changes."
+		//a loop
+		Set<String> upstreamChangedFiles = new HashSet<String>()
+		Set<String> upstreamRenamedFiles = new HashSet<String>()
+		Set<String> upstreamDeletedFiles = new HashSet<String>()
+		
+		if (props.verbose) println "***  Analysing and validating changes for BRANCH ${props.reportUpstreamChangesUpstreamBranch} ."
+		
+		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(props.reportUpstreamChangesUpstreamBranch)
+		
 		// generate reports
 		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
 		// verify that build set does not intersect with upstream changes
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamDeletedFiles, repositoryClient)
+		
+		//loop end
 	}
 
 	return [buildSet, deletedFiles]
