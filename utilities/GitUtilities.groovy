@@ -87,7 +87,7 @@ def getRemoteGitBranches(String applicationSrcDirs) {
 
 	Set<String> remoteBranches = new HashSet<String>()
 	applicationSrcDirs.split(',').each{dir ->
-		String cmd = "git -C $gitDir branch -r"
+		String cmd = "git -C $dir branch -r"
 
 		StringBuffer gitOut = new StringBuffer()
 		StringBuffer gitError = new StringBuffer()
