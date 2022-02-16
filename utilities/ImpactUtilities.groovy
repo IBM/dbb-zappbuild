@@ -240,10 +240,9 @@ def calculateUpstreamChanges(String upstreamReference) {
 }
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
-	String msg
+	String msg = ""
     if (calculateUpstreamChanges.toBoolean()) {
-		msg = "upstream changes in config" 
-		println "###" + msg
+		msg = "in configuration $upstreamReference" 
 	}
 	
 	// local variables
@@ -365,7 +364,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 		// make sure file is not an excluded file
 		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-		if (props.verbose) println "*** Changed files for directory $dir:"
+		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
@@ -383,7 +382,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 			}
 		}
 
-		if (props.verbose) println "*** Deleted files for directory $dir:"
+		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
 		deleted.each { file ->
 			if ( !matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -392,7 +391,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 			}
 		}
 
-		if (props.verbose) println "*** Renamed files for directory $dir:"
+		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
 		renamed.each { file ->
 			if ( !matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -558,9 +557,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  * Method to generate the Upstream Changes reports 
  */
 
-def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles){
-	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges_${props.reportUpstreamChangesUpstreamBranch}.${props.buildListFileExt}"
-	println("** Writing report of upstream changes to $upstreamChangesReportLoc")
+def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String> upstreamRenamedFiles, Set<String> upstreamDeletedFiles, String upstreamReference){
+	String upstreamChangesReportLoc = "${props.buildOutDir}/upstreamChanges_$upstreamReference.${props.buildListFileExt}"
+	println("** Writing report of upstream changes to $upstreamChangesReportLoc for configuration $upstreamReference")
 
 	File upstreamChangesReportFile = new File(upstreamChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
