@@ -199,7 +199,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		Set<String> upstreamRenamedFiles = new HashSet<String>()
 		Set<String> upstreamDeletedFiles = new HashSet<String>()
 		
-		if (props.verbose) println "***  Analysing and validating changes for ${props.reportUpstreamChangesUpstreamBranch} ."
+		if (props.verbose) println "***  Analysing and validating changes for BRANCH ${props.reportUpstreamChangesUpstreamBranch} ."
 		
 		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(props.reportUpstreamChangesUpstreamBranch)
 		
@@ -394,44 +394,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstream
 				if (props.verbose) println "**** $file"
 			}
 		}
-		
-		// calculate upstream changed files
-		if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && gitUtils.isGitDir(dir)) {
-			if (props.verbose) println "** Calculating upstream changes for directory $dir"
-			if (props.verbose) println "** Triple-dot diffing configuration baseline current HEAD -> remotes/origin/${props.reportUpstreamChangesUpstreamBranch} to capture upstream changes"
-			(upstreamChanged, upstreamDeleted, upstreamRenamed) = gitUtils.getUpstreamChanges(dir, props.reportUpstreamChangesUpstreamBranch)
-
-
-			if (props.verbose) println "*** Changed upstream files for directory $dir:"
-			upstreamChanged.each { file ->
-				(file, mode) = fixGitDiffPath(file, dir, true, null)
-				if ( file != null ) {
-					if ( !matches(file, excludeMatchers)) {
-						upstreamChangedFiles << file
-						if (props.verbose) println "**** $file"
-					}
-				}
-			}
-
-			if (props.verbose) println "*** Deleted upstream files for directory $dir:"
-			upstreamDeleted.each { file ->
-				if ( !matches(file, excludeMatchers)) {
-					(file, mode) = fixGitDiffPath(file, dir, false, mode)
-					upstreamDeletedFiles << file
-					if (props.verbose) println "**** $file"
-				}
-			}
-
-			if (props.verbose) println "*** Renamed upstream files for directory $dir:"
-			upstreamRenamed.each { file ->
-				if ( !matches(file, excludeMatchers)) {
-					(file, mode) = fixGitDiffPath(file, dir, false, mode)
-					upstreamRenamedFiles << file
-					if (props.verbose) println "**** $file"
-				}
-			}
-		}
-		
+	
 	}
 
 	return [
