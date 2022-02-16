@@ -193,11 +193,13 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	
 	// Document and validate upstream changes
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() && props.topicBranchBuild){
-		if (props.verbose) println "*** Caluclate and document upstream changes."
+		if (props.verbose) println "*** Calculate and document upstream changes."
 		//a loop
 		Set<String> upstreamChangedFiles = new HashSet<String>()
 		Set<String> upstreamRenamedFiles = new HashSet<String>()
 		Set<String> upstreamDeletedFiles = new HashSet<String>()
+		
+		if (props.verbose) println "***  Analysing and validating changes for ${props.reportUpstreamChangesUpstreamBranch} ."
 		
 		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(props.reportUpstreamChangesUpstreamBranch)
 		
@@ -233,7 +235,7 @@ def calculateUpstreamChanges(String upstreamReference) {
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateUpstreamChanges, String upstreamReference) {
 	String msg
-    if (calculateUpstreamChanges) {
+    if (calculateUpstreamChanges.toBoolean()) {
 		msg = "upstream changes in config" 
 		println "###" + msg
 	}
