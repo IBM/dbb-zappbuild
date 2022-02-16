@@ -157,7 +157,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(upstreamReference)
 		
 		// generate reports
-		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
+		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, upstreamReference)
 		// verify that build set does not intersect with upstream changes
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient, upstreamReference)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient, upstreamReference)
@@ -216,7 +216,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, changedBuildProperties) = calculateUpstreamChanges(upstreamReference)
 		
 		// generate reports
-		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles)
+		generateUpstreamChangesReports(upstreamChangedFiles, upstreamRenamedFiles, upstreamDeletedFiles, upstreamReference)
 		// verify that build set does not intersect with upstream changes
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamChangedFiles, repositoryClient, upstreamReference)
 		verifyBuildListAgainstUpstreamChanges(buildSet, upstreamRenamedFiles, repositoryClient, upstreamReference)
@@ -600,13 +600,13 @@ def generateUpstreamChangesReports(Set<String> upstreamChangedFiles, Set<String>
 /**
  * Method to verify if the list of upstream changes intersects with the build list
  */
-def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges, RepositoryClient repositoryClient) {
+def verifyBuildListAgainstUpstreamChanges(Set<String> buildList, Set<String> upstreamChanges, RepositoryClient repositoryClient, String upstreamReference) {
 	// Validate potential mismatches and report mismatches
 	if (props.reportUpstreamChanges && props.reportUpstreamChanges.toBoolean() ){
 		Set<String> intersection = new HashSet<String>(buildList)
 		intersection.retainAll(upstreamChanges) // intersection contains all elements on both sets
 		intersection.each { it ->
-			String msg = "*!! $it is changed on the upstream branch (${props.reportUpstreamChangesUpstreamBranch}) and intersects with the current build list."
+			String msg = "*!! $it is changed on branch ($upstreamReference) and intersects with the current build list."
 			println(msg)
 			if (props.reportUpstreamChangesIntersectionFailsBuild && props.reportUpstreamChangesIntersectionFailsBuild.toBoolean()) {
 				props.error = "true"
