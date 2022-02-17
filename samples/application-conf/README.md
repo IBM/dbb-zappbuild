@@ -46,8 +46,9 @@ reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and 
 reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)
 reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files
 reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented
-reportConcurrentChanges | Flag to indicate if a topic branch build creates reports of upstream changes to understand recent changes on the mainBuildBranch which don't exist on your configuration
-reportConcurrentChangesIntersectionFailsBuild | Flag to indicated if the build is marked as error, when the verification identifies, that the list of changes on the mainBuildBranch overlap with the current build list
+reportConcurrentChanges | Flag to indicate if the build generates reports of concurrent changes to understand recent changes in concurrent configurations (branches)
+reportConcurrentChangesGitBranchReferencePatterns | Comma-seperated list of regex patterns defining the branches for which concurrent changes should be calculated
+reportConcurrentChangesIntersectionFailsBuild | Flag to indicated if the build is marked as error, when build list intersects with changes on concurrent configurations
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
