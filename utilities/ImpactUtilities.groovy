@@ -232,16 +232,12 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 
 			// generate reports
 			generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+
 			// verify that build set does not intersect with any conrurrent changes
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
-
 		}
-		else {
-			println "gitReference ... $gitReference excluded"
-		}
-
 	}
 
 }

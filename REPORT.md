@@ -62,24 +62,32 @@ The _Report potential conflicts_ feature can be activated to generate reports to
 
 ### Functionality
 
-This feature compares two different configurations via a `git diff`. It runs a git diff between the configured upstream target branch (`reportConcurrentChangesUpstreamBranch`) and the current configuration to capture changes of the upstream configuration, which are not yet applied to the topic branch. These changes are reported within the build console output (when running in verbose mode) as well produce a log file within the build output directory. 
+This feature compares the current configuration to several other configurations via a `git diff`. It runs a git diff between current and the configured concurrent branches (`reportConcurrentChangesGitBranchReferencePatterns`) to capture ongoing activities in concurrent configurations, which are not applied to the current configuration which is built. A report file within the build output directory is produced to document changes and changes are reported within the build console output (when running in verbose mode).
 
-Additionally to the reporting, it verifies if the list of the current build files intersect with the identified changes of the upstream branch. If the lists intersect, another notification is reported in the build log which can make the build be marked as failed and force the development team to integrate changes and rebase the code before they move on.  
+Additionally to the reporting, it verifies if the list of the current build files intersect with the identified changes of the concurrent branches. If the lists intersect, an additional notification is reported in the build log which can make the build be marked as failed and force the development team to integrate changes and rebase the code before they move on.  
 
 ### Pre-requisites
 
-The feature relies on git functionality. Therefore it is only available in pipeline builds for the build types `--impactBuild` and `--mergeBuild` and not for user build scenarios.
+The feature relies on git functionality. Therefore it is only available in incremental pipeline builds for the build types `--impactBuild` and `--mergeBuild` and not for user build scenarios.
 
-It requires that the cloned repository in the build workspace contains the git references (git-refs) to function. Please verify this in a test environment first, while not all pipeline orchestrators fetch the git references by default. 
+It requires that the cloned repository in the build workspace contains the git references (git-refs) to function. Please verify this in a test environment first, while not all pipeline orchestrators fetch the git references by default and might require additional configuration of the fetch process. 
 
 ### Configuration
 
-Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of upstream changes. This feature is not available for builds of the git branch which is configured as the upstream branch.
+Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of concurrent changes. 
+
+You can specify a list of regex patterns for those git references (branches) which should be considered in the analysis of potential conflicts. It also takes fully qualified names. Please note, that the implementation performs a `git branch -r` to dynamically obtain other branches based on the applicationSrcDirs . It does not support the analysis across git repositories.
+
+In the below sample configuration for reportConcurrentChangesGitBranchReferencePatterns, the analysis will run for the mainBuildBranch, all branches containing the word `main`, the branches `main` and `deployTypes`, and all branches starting with `feature`
+
+```
+reportConcurrentChangesGitBranchReferencePatterns=${mainBuildBranch},.*main.*,main,deployTypes,feature.*
+```
 ### Sample invocation
 
-To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked. 
+To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked to simulate concurrent development activities. 
 
-In the first sample, the communication copybook `MortgageApplication/copybook/epsmtcom.cpy` was changed on the branch `reportConcurrentChanges`. The impactBuild build type, identifies the the below build list: 
+In the first sample, the communication copybook `MortgageApplication/copybook/epsmtcom.cpy` was changed on the branch `reportConcurrentChanges`. During the impactBuild the the below build list is itendified: 
 
 ```
 MortgageApplication/cobol/epsmlist.cbl
@@ -87,16 +95,15 @@ MortgageApplication/cobol/epscsmrt.cbl
 MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk 
 ```
-While the above build list intersects with the changes on the upstream branch main and the setting `reportConcurrentChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
+While the above build list intersects with the changes on the branch main and the setting `reportConcurrentChangesIntersectionFailsBuild=true` is activated, a warning is written to the build console output and the build state is flagged as Error:
 ```
 ** Build start at 20211221.110944.009
 ** Repository client created for https://10.3.20.96:10443/dbb
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.110944.009
 ** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
 ** --impactBuild option selected. Building impacted programs for application MortgageApplication
-** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/upstreamChanges.txt
-*!! MortgageApplication/cobol/epscsmrt.cbl is changed on the mainBuildBranch (main) and intersects with the current build list.
-*!! (ReportUpstreamChanges) The build list intersects with identified upstream changes.
+** Writing report of concurent changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/report_concurrentChanges_main.txt
+*!! MortgageApplication/cobol/epscsmrt.cbl is changed on branch (main) and intersects with the current build list.
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
@@ -115,13 +122,13 @@ While the above build list intersects with the changes on the upstream branch ma
 
 ** Build finished
 ````
-Contents of the upstreamChanges.txt file look like:
+Contents of the report_concurrentChanges_main.txt file look like:
 ```
-** Upstream Changed Files 
+** Changed Files 
 MortgageApplication/cobol/epscsmrt.cbl                            
 ````
 
-In a mergeBuild scenario, where the build list does not intersect with the changes on the upstream branch, the build passes as expected.
+In a mergeBuild scenario, where the build list does not intersect with the changes on the concurrent branch, the build passes as expected. The report for concurrent development activities is written to the build output directory.
 
 ```
 ** Build start at 20211221.111003.010
@@ -129,7 +136,7 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.111003.010
 ** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
 ** --mergeBuild option selected. Building changed programs for application MortgageApplication flowing back to main
-** Writing report of upstream changes to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/upstreamChanges.txt
+** Writing report of concurent changes to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/report_concurrentChanges_main.txt
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
@@ -144,8 +151,8 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 
 ** Build finished
 ```
-Contents of the reported upstreamChanges.txt file look like:
+Contents of the reported report_concurrentChanges_main.txt file look like:
 ```
-** Upstream Changed Files 
+** Changed Files 
 MortgageApplication/cobol/epscsmrt.cbl                            
 ````
