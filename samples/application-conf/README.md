@@ -64,6 +64,7 @@ assembler_impactPropertyList | List of build properties causing programs to rebu
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+assembler_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 assembler_deployType | default deployType for build output | true
 assembler_deployTypeCICS | deployType for build output for build files where isCICS=true | true
 assembler_deployTypeDLI | deployType for build output for build files with isDLI=true | true
@@ -82,6 +83,7 @@ bms_copyGenParms | Default parameters for the copybook generation step. | true
 bms_compileParms | Default parameters for the compilation step. | true
 bms_linkEditParms | Default parameters for the link edit step. | true
 bms_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+bms_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 bms_deployType | deployType for build output | true
 bms_copy_deployType | deployType for generated copybooks | true
 
