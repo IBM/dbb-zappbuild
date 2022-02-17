@@ -128,8 +128,9 @@ def isGitDetachedHEAD(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  * @return String gitHash       The current Git hash
  */
-def getCurrentGitHash(String gitDir) {
+def getCurrentGitHash(String gitDir, boolean abbrev) {
 	String cmd = "git -C $gitDir rev-parse HEAD"
+	if (abbrev) cmd = "git -C $gitDir rev-parse --short=8 HEAD"
 	StringBuffer gitHash = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 

@@ -3,9 +3,12 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import groovy.json.JsonParserType
+import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
+import com.ibm.jzos.FileAttribute
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -35,6 +38,10 @@ def assertBuildProperties(String requiredProps) {
  */
 def createFullBuildList() {
 	Set<String> buildSet = new HashSet<String>()
+	
+	// PropertyMappings
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
 	// create the list of build directories
 	List<String> srcDirs = []
 	if (props.applicationSrcDirs)
@@ -42,7 +49,15 @@ def createFullBuildList() {
 
 	srcDirs.each{ dir ->
 		dir = getAbsolutePath(dir)
-		buildSet.addAll(getFileSet(dir, true, '**/*.*', props.excludeFileList))
+		Set<String> fileSet =getFileSet(dir, true, '**/*.*', props.excludeFileList)
+		buildSet.addAll(fileSet)
+		
+		// capture abbreviated gitHash for all buildable files
+		String abbrevHash = gitUtils.getCurrentGitHash(dir, true)
+		buildSet.forEach { buildableFile ->
+			githashBuildableFilesMap.addFilePattern(abbrevHash, buildableFile)
+		}
+		
 	}
 
 	return buildSet
@@ -90,13 +105,12 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	if (dependencyDatasetMapping && props.userBuildDependencyFile && props.userBuild) {
 		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
-		// skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly to dependencyPDS
-
+		// Skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly dataset
+		// Load property mapping containing the map of targetPDS and dependencyfile
+		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
+		
 		// parse JSON and validate fields of userBuildDependencyFile
 		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
-		
-		// Load property mapping containing the map of targetPDS and dependencyfile
-		PropertyMappings dsMapping = new PropertyMappings(dependencyDatasetMapping)
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
@@ -113,6 +127,9 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		dependencyPaths.each { dependencyPath ->
 			// if dependency is relative, convert to absolute path
 			String dependencyLoc = getAbsolutePath(dependencyPath)
+
+			// Assume library is SYSLIB for all dependencies
+			String dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(dependencyPath))
 
 			// only copy the dependency file once per script invocation
 			if (!copiedFileCache.contains(dependencyLoc)) {
@@ -145,16 +162,27 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
 		if (props.verbose) {
 			println "*** Resolution rules for $buildFile:"
-			dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			
+			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+				printResolutionRules(dependencyResolver.getResolutionRules())
+			} else {
+				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+			}
 		}
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
 		
+		if (physicalDependencies.size() != 0) {
+			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+				printPhysicalDependencies(physicalDependencies)
+				}
+		}
+		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose) println physicalDependency
-
+			if (props.verbose && !props.formatConsoleOutput && !props.formatConsoleOutput.toBoolean()) 	println physicalDependency
+			
 			if (physicalDependency.isResolved()) {
 
 				// obtain target dataset based on Mappings
@@ -575,25 +603,37 @@ def generateDb2InfoRecord(String buildFile){
 }
 
 /*
- * parse and validates the user build dependency file 
+ * Parses and validates the user build dependency file 
  * returns a parsed json object 
  */
 def validateDependencyFile(String buildFile, String depFilePath) {
-	// if depFilePath is relatvie, convert to absolute path
-	depFilePath = getAbsolutePath(depFilePath)
-	File depFile = new File(depFilePath)
-	assert depFile.exists() : "*! Dependency file not found: ${depFilePath}"
-	JsonSlurper slurper = new groovy.json.JsonSlurper()
-	if (props.verbose) println "Dependency File (${depFilePath}): \n" + groovy.json.JsonOutput.prettyPrint(depFile.getText())
-	// parse dependency File
-	def depFileData = slurper.parse(depFile)
-
-	/* Begin Validation */ 
+	String[] allowedEncodings = ["UTF-8", "IBM-1047"]
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
+	
+	// Load dependency file and verify existance
+	File depFile = new File(getAbsolutePath(depFilePath))
+	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
+	
+	// Parse the JSON file
+	String encoding = retrieveHFSFileEncoding(depFile) // Determine the encoding from filetag
+	JsonSlurper slurper = new JsonSlurper().setType(JsonParserType.INDEX_OVERLAY) // Use INDEX_OVERLAY, fastest parser
+	def depFileData
+	if (encoding) {
+		if (props.verbose) println "Parsing dependency file as ${encoding}: "
+		assert allowedEncodings.contains(encoding) : "*! Dependency file must be encoded and tagged as either UTF-8 or IBM-1047 but was ${encoding}"
+		depFileData = slurper.parse(depFile, encoding) // Parse dependency file with encoding
+	}
+	else {
+		if (props.verbose) println "[WARNING] Dependency file is untagged. \nParsing dependency file with default system encoding: "
+		depFileData = slurper.parse(depFile) // Assume default encoding for system
+	}
+	if (props.verbose) println new JsonBuilder(depFileData).toPrettyString() // Pretty print if verbose
+	
+	// Validate JSON structure
 	reqDepFileProps.each { depFileProp ->
 		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
 	}
-	// validate that depFileData.fileName == buildFile
+	// Validate depFileData.fileName == buildFile
 	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
 	return depFileData // return the parsed JSON object
 }
@@ -623,4 +663,84 @@ def assertDbbBuildToolkitVersion(String currentVersion){
 		println e.getMessage()
 		System.exit(1)
 	}
+}
+
+/*
+ * Returns a string representation of a file's encoding calculated from its tag.
+ * 
+ */
+def retrieveHFSFileEncoding(File file) {
+	FileAttribute.Stat stat = FileAttribute.getStat(file.getAbsolutePath())
+    FileAttribute.Tag tag = stat.getTag()
+	int i = 0
+	if (tag != null)
+	{
+  		char x = tag.getCodeCharacterSetID()
+  		i = (int) x
+	}
+
+	switch(i) {
+		case 0: return null // Return null if file is untagged
+		case 1208: return "UTF-8"
+		default: return "IBM-${i}"
+	}
+	
+}
+
+/*
+ * Logs the resolution rules of the DependencyResolver in a table format
+ * 
+ */
+def printResolutionRules(List<ResolutionRule> rules) {
+
+	println("*** Configured resulution rules:")
+	
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
+
+	// iterate over rules configured for the dependencyResolver
+	rules.each{ rule ->
+		searchPaths = rule.getSearchPath()
+		searchPaths.each { DependencyPath searchPath ->
+			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
+			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
+			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
+			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
+			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
+			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
+			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
+
+		}
+	}
+}
+
+/*
+ * Logs information about the physical dependencies in a table format
+ */
+def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
+	// Print header of table
+	println("    " + "Library".padRight(10) + "Category".padRight(16) + "Name".padRight(10) + "Status".padRight(14) + "SourceDir/File".padRight(36))
+	println("    " + " ".padLeft(10,"-") + " ".padLeft(16,"-") + " ".padLeft(10,"-") + " ".padLeft(14,"-") + " ".padLeft(36,"-"))
+
+	// iterate over list and display info about the physical dependency
+	physicalDependencies.each { physicalDependency ->
+		def resolvedStatus = (physicalDependency.isResolved()) ? 'RESOLVED' : 'NOT RESOLVED'
+		def resolvedFlag = (physicalDependency.isResolved()) ? ' ' : '*'
+		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
+		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
+	}
+}
+
+/*
+ * Obtain the abbreviated git hash from the PropertyMappings table
+ *  returns null if no hash was found
+ */
+def getShortGitHash(String buildFile) {
+	def abbrevGitHash
+	PropertyMappings githashChangedFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	abbrevGitHash = githashChangedFilesMap.getValue(buildFile)
+	if (abbrevGitHash != null ) return abbrevGitHash
+	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
+	return null
 }
