@@ -9,7 +9,7 @@ import groovy.util.*
 import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
-import groovy.cli.commons.CliBuilder
+import groovy.cli.commons.*
 
 
 // define script properties
