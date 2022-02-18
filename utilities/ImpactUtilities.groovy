@@ -606,7 +606,7 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
-	concurrentChangesReportFile.withWriter(enc) { writer ->
+	concurrentChangesReportFile.withWriterAppend(enc) { writer ->
 
 		writer.write("\n** Report for configuration: $gitReference \n")
 		writer.write("=============================================== \n")
