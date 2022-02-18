@@ -257,7 +257,7 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 			(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
 
 			// generate reports
-			generateConcurrentChangesReports(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+			generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
 
 			// verify that build set does not intersect with any conrurrent changes
 			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
@@ -600,7 +600,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  * Method to generate the Concurrent Changes reports 
  */
 
-def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
+def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
 	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
 	if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
@@ -615,7 +615,10 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
 		if (concurrentChangedFiles.size() != 0) {
 			concurrentChangedFiles.each { file ->
 				if (props.verbose) println " Changed: ${file}"
-				writer.write("$file\n")
+				if (buildList.contains($file))
+					writer.write()"* $file is changed on branch ($gitReference) and intersects with the current build list.")
+				else 
+					writer.write("  $file\n")
 			}
 		}
 
@@ -623,7 +626,10 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
 			writer.write("** Renamed Files \n")
 			concurrentRenamedFiles.each { file ->
 				if (props.verbose) println " Renamed: ${file}"
-				writer.write("$file\n")
+				if (buildList.contains($file))
+					writer.write()"* $file got renamed on branch ($gitReference) and intersects with the current build list.")
+				else 
+					writer.write("  $file\n")
 			}
 		}
 
@@ -631,7 +637,10 @@ def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<Str
 			writer.write("** Deleted Files \n")
 			concurrentDeletedFiles.each { file ->
 				if (props.verbose) println " Deleted: ${file}"
-				writer.write("$file\n")
+				if (buildList.contains($file))
+					writer.write()"* $file is deleted on branch ($gitReference) and intersects with the current build list.")
+				else 
+					writer.write("  $file\n")
 			}
 		}
 	}
