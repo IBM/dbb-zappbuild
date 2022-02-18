@@ -256,13 +256,9 @@ def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> bu
 
 			(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
 
-			// generate reports
-			generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
+			// generate reports and verify for intersects
+			generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
 
-			// verify that build set does not intersect with any conrurrent changes
-			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentChangedFiles, repositoryClient, gitReference)
-			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentRenamedFiles, repositoryClient, gitReference)
-			verifyBuildListAgainstConcurrentChanges(buildSet, concurrentDeletedFiles, repositoryClient, gitReference)
 		}
 	}
 
@@ -597,72 +593,63 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 }
 
 /*
- * Method to generate the Concurrent Changes reports 
+ * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
  */
 
-def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
+def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference, RepositoryClient repositoryClient){
 	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
-	if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
 	concurrentChangesReportFile.withWriterAppend(enc) { writer ->
-		
-		writer.write("\n=============================================== \n")
-		writer.write("** Report for configuration: $gitReference \n")
-		writer.write("========\n")
-		
-		if (concurrentChangedFiles.size() != 0) {
-			writer.write("** Changed Files \n")
-			concurrentChangedFiles.each { file ->
-				if (props.verbose) println " Changed: ${file}"
-				if (buildList.contains(file))
-					writer.write("* $file is changed on branch ($gitReference) and intersects with the current build list.\n")
-				else 
-					writer.write("  $file\n")
-			}
-		}
 
-		if (concurrentRenamedFiles.size() != 0) {
-			writer.write("** Renamed Files \n")
-			concurrentRenamedFiles.each { file ->
-				if (props.verbose) println " Renamed: ${file}"
-				if (buildList.contains(file))
-					writer.write("* $file got renamed on branch ($gitReference) and intersects with the current build list.\n")
-				else 
-					writer.write("  $file\n")
-			}
-		}
+		if (concurrentChangedFiles.size() != 0 ||  concurrentRenamedFiles.size() != 0 || concurrentDeletedFiles.size() != 0) {
 
-		if (concurrentDeletedFiles.size() != 0) {
-			writer.write("** Deleted Files \n")
-			concurrentDeletedFiles.each { file ->
-				if (props.verbose) println " Deleted: ${file}"
-				if (buildList.contains(file))
-					writer.write("* $file is deleted on branch ($gitReference) and intersects with the current build list.\n")
-				else 
-					writer.write("  $file\n")
-			}
-		}
-	}
-}
+			if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
-/**
- * Method to verify if the list of concurrent changes intersects with the build list
- */
-def verifyBuildListAgainstConcurrentChanges(Set<String> buildList, Set<String> concurrentChanges, RepositoryClient repositoryClient, String gitReference) {
-	// Validate potential mismatches and report mismatches
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() ){
-		Set<String> intersection = new HashSet<String>(buildList)
-		intersection.retainAll(concurrentChanges) // intersection contains all elements on both sets
-		intersection.each { it ->
-			String msg = "*!! $it is changed on branch ($gitReference) and intersects with the current build list."
-			println(msg)
-			if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
-				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
-			} else {
-				buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
+			writer.write("\n=============================================== \n")
+			writer.write("** Report for configuration: $gitReference \n")
+			writer.write("========\n")
+
+			if (concurrentChangedFiles.size() != 0) {
+				writer.write("** Changed Files \n")
+				concurrentChangedFiles.each { file ->
+					if (props.verbose) println " Changed: ${file}"
+					if (buildList.contains(file)) {
+						writer.write("* $file is changed and intersects with the current build list.\n")
+
+						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
+							props.error = "true"
+							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
+						} else {
+							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
+						}
+					}
+					else
+						writer.write("  $file\n")
+				}
+			}
+
+			if (concurrentRenamedFiles.size() != 0) {
+				writer.write("** Renamed Files \n")
+				concurrentRenamedFiles.each { file ->
+					if (props.verbose) println " Renamed: ${file}"
+					if (buildList.contains(file))
+						writer.write("* $file got renamed and intersects with the current build list.\n")
+					else
+						writer.write("  $file\n")
+				}
+			}
+
+			if (concurrentDeletedFiles.size() != 0) {
+				writer.write("** Deleted Files \n")
+				concurrentDeletedFiles.each { file ->
+					if (props.verbose) println " Deleted: ${file}"
+					if (buildList.contains(file))
+						writer.write("* $file is deleted and intersects with the current build list.\n")
+					else
+						writer.write("  $file\n")
+				}
 			}
 		}
 	}
