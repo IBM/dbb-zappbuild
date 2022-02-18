@@ -603,7 +603,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 	String enc = props.logEncoding ?: 'IBM-1047'
 	concurrentChangesReportFile.withWriterAppend(enc) { writer ->
 
-		if (concurrentChangedFiles.size() != 0 ||  concurrentRenamedFiles.size() != 0 || concurrentDeletedFiles.size() != 0) {
+		if (!(concurrentChangedFiles.size() == 0 &&  concurrentRenamedFiles.size() == 0 && concurrentDeletedFiles.size() == 0)) {
 
 			if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
