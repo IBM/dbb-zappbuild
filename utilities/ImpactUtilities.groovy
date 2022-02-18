@@ -617,7 +617,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (props.verbose) println " Changed: ${file}"
 					if (buildList.contains(file)) {
 						writer.write("* $file is changed and intersects with the current build list.\n")
-						String msg = "* $file is changed on branch $gitBranch and intersects with the current build list."
+						String msg = "* $file is changed on branch $gitReference and intersects with the current build list."
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
@@ -636,7 +636,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (props.verbose) println " Renamed: ${file}"
 					if (buildList.contains(file)) {
 						writer.write("* $file got renamed and intersects with the current build list.\n")
-						String msg = "* $file is renamed on branch $gitBranch and intersects with the current build list."
+						String msg = "* $file is renamed on branch $gitReference and intersects with the current build list."
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
@@ -655,7 +655,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (props.verbose) println " Deleted: ${file}"
 					if (buildList.contains(file)) {
 						writer.write("* $file is deleted and intersects with the current build list.\n")
-						String msg = "* $file is deleted on branch $gitBranch and intersects with the current build list."
+						String msg = "* $file is deleted on branch $gitReference and intersects with the current build list."
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
