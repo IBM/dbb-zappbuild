@@ -601,13 +601,16 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  */
 
 def generateConcurrentChangesReports(Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
-	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges_${gitReference}.txt"
-	println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
+	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
+	if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
 	String enc = props.logEncoding ?: 'IBM-1047'
 	concurrentChangesReportFile.withWriter(enc) { writer ->
 
+		writer.write("\n** Report for configuration: $gitReference \n")
+		writer.write("=============================================== \n")
+		
 		writer.write("** Changed Files \n")
 		if (concurrentChangedFiles.size() != 0) {
 			concurrentChangedFiles.each { file ->
