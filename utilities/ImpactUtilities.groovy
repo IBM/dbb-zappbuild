@@ -615,7 +615,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 		if (concurrentChangedFiles.size() != 0) {
 			concurrentChangedFiles.each { file ->
 				if (props.verbose) println " Changed: ${file}"
-				if (buildList.contains($file))
+				if (buildList.contains(file))
 					writer.write("* $file is changed on branch ($gitReference) and intersects with the current build list.")
 				else 
 					writer.write("  $file\n")
@@ -626,7 +626,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 			writer.write("** Renamed Files \n")
 			concurrentRenamedFiles.each { file ->
 				if (props.verbose) println " Renamed: ${file}"
-				if (buildList.contains($file))
+				if (buildList.contains(file))
 					writer.write("* $file got renamed on branch ($gitReference) and intersects with the current build list.")
 				else 
 					writer.write("  $file\n")
@@ -637,7 +637,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 			writer.write("** Deleted Files \n")
 			concurrentDeletedFiles.each { file ->
 				if (props.verbose) println " Deleted: ${file}"
-				if (buildList.contains($file))
+				if (buildList.contains(file))
 					writer.write("* $file is deleted on branch ($gitReference) and intersects with the current build list.")
 				else 
 					writer.write("  $file\n")
