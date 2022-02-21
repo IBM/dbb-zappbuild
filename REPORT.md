@@ -83,6 +83,9 @@ In the below sample configuration for reportConcurrentChangesGitBranchReferenceP
 ```
 reportConcurrentChangesGitBranchReferencePatterns=${mainBuildBranch},.*main.*,main,deployTypes,feature.*
 ```
+
+The results are written to a file called `report_concurrentChanges.txt' within the build workspace within the build out directory.   
+
 ### Sample invocation
 
 To document the functionality of the feature, the source code `MortgageApplication/cobol/epscsmrt.cbl` was changed on the main branch after the feature branch was forked to simulate concurrent development activities. 
@@ -102,7 +105,6 @@ While the above build list intersects with the changes on the branch main and th
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.110944.009
 ** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
 ** --impactBuild option selected. Building impacted programs for application MortgageApplication
-** Writing report of concurent changes to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/report_concurrentChanges_main.txt
 *!! MortgageApplication/cobol/epscsmrt.cbl is changed on branch (main) and intersects with the current build list.
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
@@ -122,10 +124,13 @@ While the above build list intersects with the changes on the branch main and th
 
 ** Build finished
 ````
-Contents of the report_concurrentChanges_main.txt file look like:
+Contents of the report_concurrentChanges.txt file look like:
 ```
-** Changed Files 
-MortgageApplication/cobol/epscsmrt.cbl                            
+===============================================
+** Report for configuration: main
+========
+** Changed Files
+* MortgageApplication/cobol/epscmort.cbl is changed and intersects with the current build list.                       
 ````
 
 In a mergeBuild scenario, where the build list does not intersect with the changes on the concurrent branch, the build passes as expected. The report for concurrent development activities is written to the build output directory.
@@ -136,7 +141,6 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.111003.010
 ** Build result created for BuildGroup:MortgageApplication-reportConcurrentChanges BuildLabel:build.20211221.111003.010 at https://10.3.20.96:10443/dbb/rest/buildResult/62013
 ** --mergeBuild option selected. Building changed programs for application MortgageApplication flowing back to main
-** Writing report of concurent changes to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/report_concurrentChanges_main.txt
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.111003.010/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
@@ -153,6 +157,10 @@ In a mergeBuild scenario, where the build list does not intersect with the chang
 ```
 Contents of the reported report_concurrentChanges_main.txt file look like:
 ```
-** Changed Files 
-MortgageApplication/cobol/epscsmrt.cbl                            
+===============================================
+** Report for configuration: main
+========
+** Changed Files
+  MortgageApplication/cobol/epscmort.cbl
+
 ````
