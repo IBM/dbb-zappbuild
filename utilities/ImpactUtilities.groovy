@@ -618,6 +618,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (buildList.contains(file)) {
 						writer.write("* $file is changed and intersects with the current build list.\n")
 						String msg = "* $file is changed on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
@@ -637,6 +640,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (buildList.contains(file)) {
 						writer.write("* $file got renamed and intersects with the current build list.\n")
 						String msg = "* $file is renamed on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
@@ -656,6 +662,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 					if (buildList.contains(file)) {
 						writer.write("* $file is deleted and intersects with the current build list.\n")
 						String msg = "* $file is deleted on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
 							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
