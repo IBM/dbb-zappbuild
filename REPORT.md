@@ -105,7 +105,7 @@ While the above build list intersects with the change on the branch main and the
 ** Build output located at /u/ibmuser/outDir/mortgageout/build.20211221.110944.009
 ** Build result created for BuildGroup:MortgageApplication-feature-1122 BuildLabel:build.20211221.110944.009 at https://10.3.20.96:10443/dbb/rest/buildResult/62001
 ** --impactBuild option selected. Building impacted programs for application MortgageApplication
-* MortgageApplication/cobol/epscmort.cbl is changed on branch main and intersects with the current build list.
+*!! MortgageApplication/cobol/epscmort.cbl is changed on branch main and intersects with the current build list.
 ** Writing build list file to /u/ibmuser/outDir/mortgageout/build.20211221.110944.009/buildList.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
