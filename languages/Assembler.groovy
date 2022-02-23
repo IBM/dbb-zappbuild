@@ -320,7 +320,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// obtain githash for buildfile
 	String assembler_storeSSI = props.getFileProperty('assembler_storeSSI', buildFile)
-	if (assembler_storeSSI && assembler_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild)) {
+	if (assembler_storeSSI && assembler_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
 		String ssi = buildUtils.getShortGitHash(buildFile)
 		if (ssi != null) parameters = parameters + ",SSI=$ssi"
 	}

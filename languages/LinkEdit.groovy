@@ -80,7 +80,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// obtain githash for buildfile
 	String linkedit_storeSSI = props.getFileProperty('linkedit_storeSSI', buildFile) 
-	if (linkedit_storeSSI && linkedit_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild)) {
+	if (linkedit_storeSSI && linkedit_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
 		String ssi = buildUtils.getShortGitHash(buildFile)
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
