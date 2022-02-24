@@ -743,6 +743,7 @@ def verifyCollections(RepositoryClient repositoryClient) {
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
  *  3 - $dir is not the root directory of the file
+ *  4 - Combination 2 (reponame as application root dir, no common root) and scoped applicationSrcDirs
  *
  */
 
@@ -780,13 +781,22 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 		return [fixedFileName, 3];
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
+	// Scenario 4:
+	//    Repository name is used as application root directory and 
+	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
+	//        applicationSrcDirs=nazare-demo-genapp/src
+	fixedFileName = "${props.application}/$file"
+	if ( new File("${props.workspace}/${fixedFileName}").exists())
+		return [fixedFileName, 4];
+	if (mode==4 && !mustExist) return [fixedFileName, 4]
+	
 	// returns null or assumed fullPath to file
 	if (mustExist){
-		if (props.verbose) println "!! (fixGitDiffPath) File not found."
+		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
+	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
 	return [defaultValue, null]
 }
 
