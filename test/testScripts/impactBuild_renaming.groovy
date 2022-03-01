@@ -92,8 +92,6 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 	println "** Validating impact build results"
 	def expectedFilesBuiltList = filesBuiltMappings.getValue(renameFile).split(',')
 
-	println("*** Outputstream: $outputStream")
-	
 	try{
 		// Validate clean build
 		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $renameFile\nOUTPUT STREAM:\n$outputStream\n"

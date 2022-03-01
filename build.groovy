@@ -9,6 +9,7 @@ import groovy.util.*
 import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
+import groovy.cli.commons.*
 
 
 // define script properties
@@ -97,6 +98,14 @@ def initializeBuildProcess(String[] args) {
 
 	// build properties initial set
 	populateBuildProperties(args)
+	
+	// print dbb toolkit version in use
+	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
+	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
+	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+	
+	// verify required dbb toolkit
+	buildUtils.assertDbbBuildToolkitVersion(dbbToolkitVersion)
 
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
@@ -176,6 +185,8 @@ options:
 	cli.l(longOpt:'logEncoding', args:1, 'Encoding of output logs. Default is EBCDIC')
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
+	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
+	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
@@ -201,6 +212,7 @@ options:
 
 	// debug option
 	cli.d(longOpt:'debug', 'Flag to indicate a build for debugging')
+	cli.dz(longOpt:'debugzUnitTestcase', 'Flag to indicate if zUnit Tests should launch a debug session')
 
 	// code coverage options
 	cli.cc(longOpt:'ccczUnit', 'Flag to indicate to collect code coverage reports during zUnit step')
@@ -211,6 +223,9 @@ options:
 	// build framework options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
+	// IDE user build dependency file options
+	cli.df(longOpt:'dependencyFile', args:1, 'Absolute or relative (from workspace) path to user build JSON file containing dependency information.')
+
 	// utility options
 	cli.help(longOpt:'help', 'Prints this message')
 
@@ -318,7 +333,9 @@ def populateBuildProperties(String[] args) {
 	if (opts.i) props.impactBuild = 'true'
 	if (opts.r) props.reset = 'true'
 	if (opts.v) props.verbose = 'true'
-
+	if (opts.b) props.baselineRef = opts.b
+	if (opts.m) props.mergeBuild = 'true'
+	
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
 	if (opts.ss) props.scanOnly = 'true'
@@ -336,6 +353,8 @@ def populateBuildProperties(String[] args) {
 	// set debug flag
 	if (opts.d) props.debug = 'true'
 
+	if (opts.dz) props.debugzUnitTestcase = 'true'
+	
 	// set code coverage flag
 	if (opts.cc) {
 		props.codeZunitCoverage = 'true'
@@ -361,6 +380,8 @@ def populateBuildProperties(String[] args) {
 	if (opts.e) props.errPrefix = opts.e
 	if (opts.u) props.userBuild = 'true'
 	if (opts.t) props.team = opts.t
+	// support IDE passing dependency file parameter
+	if (opts.df) props.userBuildDependencyFile = opts.df
 
 	// set build file from first non-option argument
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
@@ -386,9 +407,13 @@ def populateBuildProperties(String[] args) {
 		props.buildOutDir = ((props.createBuildOutputSubfolder && props.createBuildOutputSubfolder.toBoolean()) ? "${props.outDir}/${props.applicationBuildLabel}" : "${props.outDir}") as String
 	}
 	
+	// Validate User Build Dependency file is used only with user build
+	if (props.userBuildDependencyFile) assert (props.userBuild) : "*! User Build Dependency File requires User Build option."
+
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
-		
+	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
+	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
 		println("java.version="+System.getProperty("java.runtime.version"))
@@ -427,6 +452,15 @@ def createBuildList() {
 			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
+		}
+	}
+	else if (props.mergeBuild){
+		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
+		if (repositoryClient) {
+			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
+				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
+		else {
+			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
 	}
 
@@ -493,7 +527,7 @@ def createBuildList() {
 	// scan and update source collection with build list files for non-impact builds
 	// since impact build list creation already scanned the incoming changed files
 	// we do not need to scan them again
-	if (!props.impactBuild && !props.userBuild) {
+	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
@@ -523,7 +557,7 @@ def finalizeBuildProcess(Map args) {
 			if (gitUtils.isGitDir(dir)) {
 				// store current hash
 				String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-				String currenthash = gitUtils.getCurrentGitHash(dir)
+				String currenthash = gitUtils.getCurrentGitHash(dir, false)
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl

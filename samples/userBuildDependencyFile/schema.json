@@ -1,0 +1,61 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "definitions": {
+        "UserBuildDependencyFile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "fileName": { 
+                    "description": "Represents the absolute or relative path (from the sandbox) of the source file to build. This field should include the file extension (if applicable) and is case sensitive. ",
+                    "type": "string"
+                },
+                "isCICS": {
+                    "type": "boolean",
+                    "description": "Represents the existence of EXEC CICS statements in the program or its listed dependencies.",
+                    "default": "false"
+                },
+                "isSQL": {
+                    "type": "boolean",
+                    "description": "Represents the existence of EXEC CICS statements in the program or its listed dependencies.",
+                    "default": "false"
+                },
+                "isDLI": {
+                    "type": "boolean",
+                    "description": "Represents the existence of EXEC CICS statements in the program or its listed dependencies.",
+                    "default": "false"
+                },
+                "isMQ": {
+                    "type": "boolean",
+                    "description": "Represents the existence of EXEC CICS statements in the program or its listed dependencies.",
+                    "default": "false"
+                },
+                "dependencies": {
+                    "description": "An array of strings representing the list of program dependencies as paths. ",
+                    "type": "array",
+                    "minItems": 0,
+                    "uniqueItems": true,
+                    "items": {
+                        "description": "The absolute or relative path (from the sandbox) to a program dependency. Each entry should include the file extension (if applicable) and is case sensitive. ",
+                        "type": "string"
+                    }
+                },
+                "schemaVersion": {
+                    "description": "Represents the schema version of this JSON structure. ",
+                    "type": "string",
+                    "default": "1.0"
+                }
+            },
+            "required": [
+                "fileName",
+                "isCICS",
+                "isSQL",
+                "isDLI",
+                "isMQ",
+                "dependencies",
+                "schemaVersion"
+                
+            ],
+            "title": ".userbuilddependencyfile"
+        }
+    }
+}

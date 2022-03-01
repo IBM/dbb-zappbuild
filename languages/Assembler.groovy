@@ -3,6 +3,8 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import com.ibm.dbb.build.report.*
+import com.ibm.dbb.build.report.records.*
 
 
 // define script properties
@@ -31,7 +33,7 @@ sortedList.each { buildFile ->
 	String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, props.assembler_macroPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
 
 	// create mvs commands
 	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
@@ -60,6 +62,13 @@ sortedList.each { buildFile ->
 			println(errorMsg)
 			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		} else {
+			// Store db2 bind information as a generic property record in the BuildReport
+			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
+			if (generateDb2BindInfoRecord.toBoolean()){
+				PropertiesRecord db2BindInfoRecord = buildUtils.generateDb2InfoRecord(buildFile)
+				BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
+			}
 		}
 	}
 
@@ -261,7 +270,16 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
-	// add custom concatenation
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMappings dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults assembler_macroPDS
+		if (targetDataset != 'assembler_macroPDS')
+			assembler.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+	}
+	
+	// add custom external concatenations
 	def assemblySyslibConcatenation = props.getFileProperty('assembler_assemblySyslibConcatenation', buildFile) ?: ""
 	if (assemblySyslibConcatenation) {
 		def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
@@ -300,6 +318,13 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parameters = props.getFileProperty('assembler_linkEditParms', buildFile)
 
+	// obtain githash for buildfile
+	String assembler_storeSSI = props.getFileProperty('assembler_storeSSI', buildFile)
+	if (assembler_storeSSI && assembler_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	}
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
 

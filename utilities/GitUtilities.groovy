@@ -102,8 +102,9 @@ def isGitDetachedHEAD(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  * @return String gitHash       The current Git hash
  */
-def getCurrentGitHash(String gitDir) {
+def getCurrentGitHash(String gitDir, boolean abbrev) {
 	String cmd = "git -C $gitDir rev-parse HEAD"
+	if (abbrev) cmd = "git -C $gitDir rev-parse --short=8 HEAD"
 	StringBuffer gitHash = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 
@@ -177,8 +178,30 @@ def getPreviousGitHash(String gitDir) {
 	}
 }
 
+/*
+ * getChangedFiles - assembles a git diff command to support the impactBuild for a given directory
+ *  returns the changed, deleted and renamed files.
+ * 
+ */
 def getChangedFiles(String gitDir, String baseHash, String currentHash) {
-	String cmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash"
+	return getChangedFiles(gitCmd)
+}
+
+/*
+ * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios 
+ *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
+ *  
+ */
+def getMergeChanges(String gitDir, String baselineReference) {
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD"
+	return getChangedFiles(gitCmd)
+}
+
+/*
+ * getChangedFiles - internal method to submit the a gitDiff command and calucate and classify the idenfified changes 
+ */
+def getChangedFiles(String cmd) {
 	def git_diff = new StringBuffer()
 	def git_error = new StringBuffer()
 	def changedFiles = []

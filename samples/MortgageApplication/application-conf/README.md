@@ -64,6 +64,7 @@ cobol_impactPropertyList | List of build properties causing programs to rebuild 
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
+cobol_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 cobol_isMQ | Flag indicating that the program contains MQ calls | true
 cobol_deployType | default deployType for build output | true
 cobol_deployTypeCICS | deployType for build output for build files where isCICS=true | true
@@ -81,6 +82,7 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 linkedit_deployType | default deployType for build output | true
 linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
 linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
