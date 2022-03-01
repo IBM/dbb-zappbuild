@@ -4,7 +4,6 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.report.records.*
-import com.ibm.dbb.extensions.*
 import com.ibm.jzos.ZFile
 
 // define script properties
@@ -27,15 +26,17 @@ def processDeletedFilesList(List deletedList){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", deletedFile)
 				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy" || isLinkEdited == null){
 
-					DeleteRecord deleteRecord = new DeleteRecord()
-					deleteRecord.setFile(deletedFile)
+					AnyTypeRecord deleteRecord = new AnyTypeRecord("DELETE_RECORD")
+					deleteRecord.setAttribute("file", deletedFile)
 
+					Set<String> deletedOutputsList = new HashSet<String>() 
+					
 					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
-						// outputRecord
+						// record for deleted dataset(member)
 						String outputRecord = "$outputDS"+"($member)"
+						deletedOutputsList.add(outputRecord)
 
-						deleteRecord.addOutput(outputRecord)
-
+						// delete outputRecord from build datasets
 						if (ZFile.dsExists("//'$outputRecord'")) {
 							if (props.verbose) println "** Deleting ${outputRecord}"
 							ZFile.remove("//'$outputRecord'")
@@ -43,7 +44,8 @@ def processDeletedFilesList(List deletedList){
 
 					}
 
-					if(deleteRecord.getOutputs().size() > 0 ) BuildReportFactory.getBuildReport().addRecord(deleteRecord)
+					if(deletedOutputsList.size() > 0 ) 
+						BuildReportFactory.getBuildReport().addRecord(deleteRecord)
 
 				}
 				else {
