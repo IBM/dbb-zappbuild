@@ -44,7 +44,8 @@ formatConsoleOutput | Flag to log output in table views instead of printing raw
 impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds on changes of build properties within the application repository
 impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
 continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
-createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true. 
+createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
+documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false. Requires DBB Toolkit 1.1.3 and higher.
 generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property. 
 dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries

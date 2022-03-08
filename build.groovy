@@ -71,9 +71,11 @@ else {
 }
 
 // document deletions in build report
-if (deletedFiles.size() != 0) {
+if (deletedFiles.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
 	println("** Document deleted files in Build Report.")
-	buildReportUtils.processDeletedFilesList(deletedFiles)
+	if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
+		buildReportUtils.processDeletedFilesList(deletedFiles)
+	}
 }
 
 // finalize build process
@@ -99,13 +101,14 @@ def initializeBuildProcess(String[] args) {
 	// build properties initial set
 	populateBuildProperties(args)
 	
-	// print dbb toolkit version in use
+	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
+	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
 	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
 	
 	// verify required dbb toolkit
-	buildUtils.assertDbbBuildToolkitVersion(dbbToolkitVersion)
+	buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, props.requiredDBBToolkitVersion)
 
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)

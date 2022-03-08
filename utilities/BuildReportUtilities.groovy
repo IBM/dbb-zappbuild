@@ -11,7 +11,20 @@ import com.ibm.jzos.ZFile
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 
 /*
- * Method to iterate over deleted files list to generate Delete Records in BuildReport.
+ * Method to iterate over deleted files list to generate Delete Records in BuildReport
+ * using the AnyTypeRecord which got introduced in DBB 1.1.3 .
+ * 
+ *  zAppBuild is capable to document deletions based on the calculated deletedFileList.
+ *  
+ *  While the logicalFile no longer exists, it has to validate if a potential output exists.
+ *  This is based on the languagePrefix, which is used to obtain the property
+ *  <langprefix>_outputDatasets, which contains a comma-separated list of libraries
+ *  containing build outputs.
+ *  
+ *  A decision was taken not to validate if the file exists on the dataset before 
+ *  capturing the record, while on featureBranches build libraries, the outputs most likely
+ *  don't exist.  
+ * 
  */
 def processDeletedFilesList(List deletedList){
 
@@ -26,6 +39,7 @@ def processDeletedFilesList(List deletedList){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", deletedFile)
 				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy" || isLinkEdited == null){
 
+					if (props.verbose) println "** Create deletion record for file ${deletedFile}"
 					AnyTypeRecord deleteRecord = new AnyTypeRecord("DELETE_RECORD")
 					deleteRecord.setAttribute("file", deletedFile)
 
@@ -34,6 +48,7 @@ def processDeletedFilesList(List deletedList){
 					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
 						// record for deleted dataset(member)
 						String outputRecord = "$outputDS"+"($member)"
+						if (props.verbose) println "** Document deletion ${outputRecord} for file ${deletedFile}"
 						deletedOutputsList.add(outputRecord)
 
 						// delete outputRecord from build datasets
