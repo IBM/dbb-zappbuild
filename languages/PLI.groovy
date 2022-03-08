@@ -303,7 +303,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add custom concatenation
 	def linkEditSyslibConcatenation = props.getFileProperty('pli_linkEditSyslibConcatenation', buildFile) ?: ""
 	if (linkEditSyslibConcatenation) {
-		def String[] syslibDatasets = syslibConcatenation.split(',');
+		def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
 		for (String syslibDataset : syslibDatasets )
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
