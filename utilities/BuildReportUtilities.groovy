@@ -43,8 +43,8 @@ def processDeletedFilesList(List deletedList){
 					AnyTypeRecord deleteRecord = new AnyTypeRecord("DELETE_RECORD")
 					deleteRecord.setAttribute("file", deletedFile)
 
-					Set<String> deletedOutputsList = new HashSet<String>() 
-					
+					Set<String> deletedOutputsList = new HashSet<String>()
+
 					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
 						// record for deleted dataset(member)
 						String outputRecord = "$outputDS"+"($member)"
@@ -59,8 +59,10 @@ def processDeletedFilesList(List deletedList){
 
 					}
 
-					if(deletedOutputsList.size() > 0 ) 
+					if(deletedOutputsList.size() > 0 ) { 
+						deleteRecord.setAttribute("deletedBuildOutputs",deletedOutputsList)
 						BuildReportFactory.getBuildReport().addRecord(deleteRecord)
+					}
 
 				}
 				else {
