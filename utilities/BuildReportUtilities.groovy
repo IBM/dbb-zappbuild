@@ -19,7 +19,7 @@ import com.ibm.jzos.ZFile
  *  While the logicalFile no longer exists, it has to validate if a potential output exists.
  *  This is based on the languagePrefix, which is used to obtain the property
  *  <langprefix>_outputDatasets, which contains a comma-separated list of libraries
- *  containing build outputs.
+ *  containing build outputs. Supports file overwrites
  *  
  *  A decision was taken not to validate if the file exists on the dataset before 
  *  capturing the record, while on featureBranches build libraries, the outputs most likely
@@ -45,7 +45,8 @@ def processDeletedFilesList(List deletedList){
 
 					List<String> deletedOutputsList = new ArrayList<String>() 
 
-					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
+					String outputLibs = props.getFileProperty("${langPrefix}_outputDatasets", deletedFile)
+					outputLibs.split(',').each{ outputDS ->
 						// record for deleted dataset(member)
 						String outputRecord = "$outputDS"+"($member)"
 						if (props.verbose) println "** Document deletion ${outputRecord} for file ${deletedFile}"
