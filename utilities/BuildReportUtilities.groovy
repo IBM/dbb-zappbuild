@@ -43,7 +43,7 @@ def processDeletedFilesList(List deletedList){
 					AnyTypeRecord deleteRecord = new AnyTypeRecord("DELETE_RECORD")
 					deleteRecord.setAttribute("file", deletedFile)
 
-					Set<String> deletedOutputsList = new HashSet<String>()
+					List<String> deletedOutputsList = new ArrayList<String>() 
 
 					props."${langPrefix}_outputDatasets".split(',').each{ outputDS ->
 						// record for deleted dataset(member)
