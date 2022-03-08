@@ -182,7 +182,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		}
 		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose && !props.formatConsoleOutput && !props.formatConsoleOutput.toBoolean()) 	println physicalDependency
+			// Write Physical Dependency details to log on verbose, not on formatConsoleOutput
+			if (props.verbose && !(props.formatConsoleOutput && props.formatConsoleOutput.toBoolean())) 	println physicalDependency
 			
 			if (physicalDependency.isResolved()) {
 
