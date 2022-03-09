@@ -38,15 +38,18 @@ isMQ | File property overwrite to indicate that a file requires to include MQ pa
 isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
-### dependencyReport.properties
-Properties used by the impact utilities to generate a report of external impacted files. Sample properties file to all application-conf to overwrite central build-conf configuration.
+### reports.properties
+Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
 
+Property | Description 
 --- | ---
 reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections
 reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)
 reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files
 reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented
-
+reportConcurrentChanges | Flag to indicate if the build generates reports of concurrent changes to understand recent changes in concurrent configurations (branches)
+reportConcurrentChangesGitBranchReferencePatterns | Comma-seperated list of regex patterns defining the branches for which concurrent changes should be calculated
+reportConcurrentChangesIntersectionFailsBuild | Flag to indicated if the build is marked as error, when build list intersects with changes on concurrent configurations
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
