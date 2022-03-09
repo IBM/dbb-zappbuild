@@ -78,10 +78,10 @@ Please review the build properties defined in [application-conf/reports.properti
 
 You can specify a list of regex patterns for those git references (branches) which should be considered in the analysis of potential conflicts. It also takes fully qualified names. Please note, that the implementation performs a `git branch -r` to dynamically obtain other branches based on the applicationSrcDirs . Limitation: It does not support the analysis across multiple git repositories configured in the build scope!
 
-In the below sample configuration for `reportConcurrentChangesGitBranchReferencePatterns`, the analysis will run for the mainBuildBranch, all branches containing the word `main`, the branches `main` and `release`, and all branches starting with `feature`.
+In the below sample configuration for `reportConcurrentChangesGitBranchReferencePatterns`, the analysis will run for the configured mainBuildBranch, all branches containing the word `main`, the branches `develop` and `release`, and all branches starting with `feature`.
 
 ```
-reportConcurrentChangesGitBranchReferencePatterns=${mainBuildBranch},.*main.*,main,release,feature.*
+reportConcurrentChangesGitBranchReferencePatterns=${mainBuildBranch},.*main.*,develop,release,feature.*
 ```
 
 The results of the analysis are written to a file called `report_concurrentChanges.txt' within the build workspace within the build out directory.   

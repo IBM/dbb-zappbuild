@@ -220,49 +220,51 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 /*
  * calculateChangedFiles - method to caluclate the the changed files
  * 
- *  If a BuildResult is provided, this method will diff between the different states in the repository
- *   if no BuildResult is provided, the method will diff the changes from the topic branch to the main build branch
- * 
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-
-	// initialize patterns
-	List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
-
-	// obtain all current remote branches
-	// TODO: Handle / Exclude branches from other repositories
-	Set<String> remoteBranches = new HashSet<String>()
-	props.applicationSrcDirs.split(",").each { dir ->
-		dir = buildUtils.getAbsolutePath(dir)
-		remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-	}
-	
-	// Run analysis for each remoteBranch, which matches the configured criteria
-	remoteBranches.each { gitReference ->
-
-		if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
-
-			Set<String> concurrentChangedFiles = new HashSet<String>()
-			Set<String> concurrentRenamedFiles = new HashSet<String>()
-			Set<String> concurrentDeletedFiles = new HashSet<String>()
-			Set<String> concurrentBuildProperties = new HashSet<String>()
-
-			if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-
-			(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
-
-			// generate reports and verify for intersects
-			generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
-
-		}
-	}
-
-}
+/* 
+ * calculateChangedFiles - 
+ *   this method is used for zAppBuild built modes to 
+ * 	  calculate changed files and 
+ *    return a list of identified changed, renamed, deleted and modified build properties
+ *  
+ *  High-Level flow for 
+ *   - impactBuild 
+ *  	parms: requires to pass the lastBuildResult
+ *      flow:  obtains current hash for directories
+ *      	   obtains the baseline hash/es for the different referenced directories
+ *             performs a git diff between current and baseline
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - impactBuild with baselineReference
+ *      parms: requires to pass the lastBuildResult
+ *      flow:  obtains current hash for directories
+ *             obtains the baseline hash for the directories
+ *             performs a git diff between current and baselineReference
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - mergeBuild
+ *      parms: no build result is passed to the method
+ *      flow:  obtains current hash for directories
+ *             no calculation of baseline hash for the different directories
+ *             performs a git diff between current and mainBuildBranch
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - concurrentChangesAnalysis
+ *      parms: no build result is passed to the method, calculateConcurrentChanges=true, gitReference containing the git configuration
+ *      flow:  no calculation of baseline hash for the directories
+ *             performs a git diff between HEAD and the passed gitReference
+ *             calculates the correct offset from the git diff
+ *    
+ *   @return the set for changed, renamed, deleted and modified build properties to caller
+ */
 
 def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurrentChanges, String gitReference) {
 	String msg = ""
@@ -407,7 +409,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			if ( file != null ) {
 				if ( !matches(file, excludeMatchers)) {
 					changedFiles << file
-					githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
+					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
 				}
 				//retrieving changed build properties
@@ -448,6 +450,50 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	]
 }
 
+/**
+ * Method to calculate and report the changes between the current configuration and concurrent configurations;
+ * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
+ * 
+ * Invokes method generateConcurrentChangesReports to produce the reports
+ * 
+ * @param repositoryClient
+ * @param buildSet
+ * 
+ */
+def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
+	
+		// initialize patterns
+		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
+	
+		// obtain all current remote branches
+		// TODO: Handle / Exclude branches from other repositories
+		Set<String> remoteBranches = new HashSet<String>()
+		props.applicationSrcDirs.split(",").each { dir ->
+			dir = buildUtils.getAbsolutePath(dir)
+			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
+		}
+		
+		// Run analysis for each remoteBranch, which matches the configured criteria
+		remoteBranches.each { gitReference ->
+	
+			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
+	
+				Set<String> concurrentChangedFiles = new HashSet<String>()
+				Set<String> concurrentRenamedFiles = new HashSet<String>()
+				Set<String> concurrentDeletedFiles = new HashSet<String>()
+				Set<String> concurrentBuildProperties = new HashSet<String>()
+	
+				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+	
+				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+	
+				// generate reports and verify for intersects
+				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
+	
+			}
+		}
+	
+	}
 
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
