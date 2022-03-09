@@ -645,12 +645,12 @@ def validateDependencyFile(String buildFile, String depFilePath) {
  * exits the process, if it does not meet the minimum required version of zAppBuild.
  * 
  */
-def assertDbbBuildToolkitVersion(String currentVersion){
+def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 
 	try {
 		// Tokenize current version
 		List currentVersionList = currentVersion.tokenize(".")
-		List requiredVersionList = props.requiredDBBToolkitVersion.tokenize(".")
+		List requiredVersionList = requiredVersion.tokenize(".")
 
 		// validate the version formats, current version is allowed have more labels.
 		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
