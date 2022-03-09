@@ -127,7 +127,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	dsMapping.getValues().each { targetDataset ->
 		// exclude the defaults rexx_srcPDS
 		if (targetDataset != 'rexx_srcPDS')
-			rexx.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
 			
 	// add custom concatenation
