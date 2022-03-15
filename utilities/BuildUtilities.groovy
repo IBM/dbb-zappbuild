@@ -9,6 +9,7 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import groovy.ant.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -181,7 +182,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		}
 		
 		physicalDependencies.each { physicalDependency ->
-			if (props.verbose && !props.formatConsoleOutput && !props.formatConsoleOutput.toBoolean()) 	println physicalDependency
+			// Write Physical Dependency details to log on verbose, not on formatConsoleOutput
+			if (props.verbose && !(props.formatConsoleOutput && props.formatConsoleOutput.toBoolean())) 	println physicalDependency
 			
 			if (physicalDependency.isResolved()) {
 
@@ -643,12 +645,12 @@ def validateDependencyFile(String buildFile, String depFilePath) {
  * exits the process, if it does not meet the minimum required version of zAppBuild.
  * 
  */
-def assertDbbBuildToolkitVersion(String currentVersion){
+def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 
 	try {
 		// Tokenize current version
 		List currentVersionList = currentVersion.tokenize(".")
-		List requiredVersionList = props.requiredDBBToolkitVersion.tokenize(".")
+		List requiredVersionList = requiredVersion.tokenize(".")
 
 		// validate the version formats, current version is allowed have more labels.
 		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."

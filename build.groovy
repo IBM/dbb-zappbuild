@@ -9,6 +9,7 @@ import groovy.util.*
 import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
+import groovy.cli.commons.*
 
 
 // define script properties
@@ -29,8 +30,11 @@ println("\n** Build start at $props.startTime")
 // initialize build
 initializeBuildProcess(args)
 
-// create build list
-List<String> buildList = createBuildList()
+// create build list and list of deletedFiles
+List<String> buildList = new ArrayList() 
+List<String> deletedFiles = new ArrayList()
+
+(buildList, deletedFiles) = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
@@ -65,6 +69,15 @@ else {
 	}
 }
 
+// document deletions in build report
+if (deletedFiles.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
+	println("** Document deleted files in Build Report.")
+	if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
+		buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
+		buildReportUtils.processDeletedFilesList(deletedFiles)
+	}
+}
+
 // finalize build process
 if (processCounter == 0)
 	processCounter = buildList.size()
@@ -88,13 +101,14 @@ def initializeBuildProcess(String[] args) {
 	// build properties initial set
 	populateBuildProperties(args)
 	
-	// print dbb toolkit version in use
+	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
+	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
 	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
 	
 	// verify required dbb toolkit
-	buildUtils.assertDbbBuildToolkitVersion(dbbToolkitVersion)
+	buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, props.requiredDBBToolkitVersion)
 
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
@@ -484,6 +498,10 @@ def createBuildList() {
 	buildList.addAll(buildSet)
 	buildSet = null
 
+	// 
+	List<String> deleteList = new ArrayList<String>()
+	deleteList.addAll(deletedFiles)
+	
 	// write out build list to file (for documentation, not actually used by build scripts)
 	String buildListFileLoc = "${props.buildOutDir}/buildList.${props.buildListFileExt}"
 	println "** Writing build list file to $buildListFileLoc"
@@ -517,7 +535,7 @@ def createBuildList() {
 		impactUtils.updateCollection(buildList, null, null, repositoryClient)
 	}
 
-	return buildList
+	return [buildList, deleteList]
 }
 
 

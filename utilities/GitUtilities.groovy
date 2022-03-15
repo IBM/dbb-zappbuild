@@ -78,6 +78,32 @@ def getCurrentGitDetachedBranch(String gitDir) {
 }
 
 /*
+ * Returns the current Git branch
+ *
+ * @param  String gitGit            		git directory
+ * @return List 							list of remote branches
+ */
+def getRemoteGitBranches(String gitDir) {
+
+	Set<String> remoteBranches = new HashSet<String>()
+	String cmd = "git -C $gitDir branch -r"
+
+	StringBuffer gitOut = new StringBuffer()
+	StringBuffer gitError = new StringBuffer()
+
+	Process process = cmd.execute()
+	process.waitForProcessOutput(gitOut, gitError)
+	if (gitError) {
+		println("*! Error executing Git command: $cmd error: $gitError")
+	} else {
+		for (line in gitOut.toString().split("\n")) {
+			remoteBranches.add(line.replaceAll(".*?/", ""))
+		}
+	}
+	return remoteBranches
+}
+
+/*
  * Returns true if this is a detached HEAD
  *
  * @param  String gitDir  		Local Git repository directory
@@ -195,6 +221,16 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
  */
 def getMergeChanges(String gitDir, String baselineReference) {
 	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD"
+	return getChangedFiles(gitCmd)
+}
+
+/*
+ * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios
+ *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
+ *
+ */
+def getConcurrentChanges(String gitDir, String baselineReference) {
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
 	return getChangedFiles(gitCmd)
 }
 

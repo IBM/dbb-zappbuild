@@ -44,7 +44,8 @@ formatConsoleOutput | Flag to log output in table views instead of printing raw
 impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds on changes of build properties within the application repository
 impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
 continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
-createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true. 
+createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
+documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false. Requires DBB Toolkit 1.1.3 and higher.
 generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property. 
 dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
@@ -79,6 +80,7 @@ assembler_loadDatasets | Comma separated list of 'load module' type data sets
 assembler_loadOptions | BPXWDYN creation options for 'load module' type data sets
 assembler_tempOptions | BPXWDYN creation options for temporary data sets
 assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
+assembler_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 assembler_pgm | MVS program name of the high level assembler
 assembler_linkEditor | MVS program name of the link editor
 dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
@@ -98,6 +100,7 @@ bms_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 bms_loadDatasets | Comma separated list of 'load module' type data sets
 bms_loadOptions | BPXWDYN creation options for 'load module' type data sets
 bms_tempOptions | BPXWDYN creation options for temporary data sets
+bms_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 bms_assembler | MVS program name of the high level assembler
 bms_linkEditor | MVS program name of the link editor
 
@@ -124,6 +127,7 @@ cobol_test_srcOptions | BPXWDYN creation options for creating 'source' type data
 cobol_test_loadDatasets | Comma separated list of test 'load module' type data sets
 cobol_test_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
 cobol_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
+cobol_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 cobol_compiler | MVS program name of the COBOL compiler
 cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
@@ -146,6 +150,7 @@ linkedit_srcOptions | BPXWDYN creation options for creating 'source' type data s
 linkedit_loadDatasets | Comma separated list of 'load module' type data sets
 linkedit_loadOptions | BPXWDYN creation options for 'load module' type data sets
 linkedit_tempOptions | BPXWDYN creation options for temporary data sets
+linkedit_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 
 ### PLI.properties
 Build properties used by zAppBuild/language/PLI.groovy
@@ -172,6 +177,7 @@ pli_test_srcOptions | BPXWDYN creation options for creating 'source' type data s
 pli_test_loadDatasets | Comma separated list of test 'load module' type data sets
 pli_test_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
 pli_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
+pli_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 pli_listOptions | BPXWDYN creation options for LIST data sets
 pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 pli_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
@@ -209,6 +215,7 @@ dbdgen_loadDatasets | Comma separated list of 'load module' type data sets
 dbdgen_loadOptions | BPXWDYN creation options for 'load module' type data sets
 dbdgen_tempOptions | BPXWDYN creation options for temporary data sets
 dbdgen_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
+dbdgen_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 dbdgen_pgm | MVS program name of the high level assembler
 dbdgen_linkEditor | MVS program name of the link editor
 dbdgen_deployType | Deploy Type of build outputs
@@ -229,6 +236,7 @@ psbgen_loadDatasets | Comma separated list of 'load module' type data sets
 psbgen_loadOptions | BPXWDYN creation options for 'load module' type data sets
 psbgen_tempOptions | BPXWDYN creation options for temporary data sets
 psbgen_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
+psbgen_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 psbgen_pgm | MVS program name of the high level assembler
 psbgen_linkEditor | MVS program name of the link editor
 psbgen_deployType | Deploy Type of build outputs
@@ -246,6 +254,7 @@ acbgen_loadPDS | Dataset to create acbgen modules
 acbgen_loadDatasets | Comma separated list of 'load module' type data sets
 acbgen_loadOptions | BPXWDYN creation options for 'load module' type data sets
 acbgen_tempOptions | BPXWDYN creation options for temporary data sets
+acbgen_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 acbgen_pgm | MVS program name of the acbgen pgm
 acbgen_deployType | Deploy Type of build outputs
 
@@ -275,3 +284,4 @@ transfer_srcPDS | Dataset of any type of source
 transfer_jclPDS | Sample dataset for JCL members
 transfer_xmlPDS | Sample dataset for xml members
 transfer_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets 
