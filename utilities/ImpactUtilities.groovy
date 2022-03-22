@@ -89,7 +89,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				}
 				
 				// Find all files impacted by the changed file
-				List<ImpactFile> findImpacts = finder.findImpactedFiles(changedFile, props.workspace)
+				impacts = finder.findImpactedFiles(changedFile, props.workspace)
 			}
 			else {
 				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
