@@ -93,7 +93,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, DependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, Object dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -117,10 +117,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		// save logical file to dependency resolver
-		if (dependencyResolver)
-			dependencyResolver.setLogicalFile(lfile)
-
+		
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
 
@@ -160,25 +157,36 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	}
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
-		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
-		if (props.verbose) {
-			println "*** Resolution rules for $buildFile:"
-			
-			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-				printResolutionRules(dependencyResolver.getResolutionRules())
-			} else {
-				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+		List<PhysicalDependency> physicalDependencies
+
+		if (dependencyResolver instanceof DependencyResolver) { // deprecated DependencyResolver
+			physicalDependencies = dependencyResolver.resolve()
+			if (props.verbose) {
+				println "*** Resolution rules for $buildFile:"
+
+				if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					printResolutionRules(dependencyResolver.getResolutionRules())
+				} else {
+					dependencyResolver.getResolutionRules().each{ rule -> println rule }
+				}
 			}
+		} else if (dependencyResolver instanceof SearchPathDependencyResolver) { // new SearchPathDependencyResolver
+			if (props.verbose) {
+				println "*** Resolution rules for $buildFile:"
+				println dependencyResolver.getSearchPath()
+			}
+			physicalDependencies = dependencyResolver.resolveDependencies(buildFile, props.workspace)
 		}
+
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
-		
+
 		if (physicalDependencies.size() != 0) {
 			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				printPhysicalDependencies(physicalDependencies)
-				}
+			}
 		}
 		
 		physicalDependencies.each { physicalDependency ->

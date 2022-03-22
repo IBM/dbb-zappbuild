@@ -39,16 +39,33 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 
+	// logicalFile 	
+	LogicalFile logicalFile
+		
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	
+	def dependencyResolver 
+
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver 
+		String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
+		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean())
+			logicalFile =	dependencyResolver.resolveSubsystems(buildFile,props.workspace)
+		else
+			logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+			
+	} else { // use deprecated DependencyResolver 
+		String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.cobol.log")
 	if (logFile.exists())

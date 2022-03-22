@@ -63,26 +63,51 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 
-			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
-
-			// get excludeListe
+			// get exclude list
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			
+			// list of impacts
+			def impacts
 
-			// Print impactResolverConfiguration
-			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-				// print collection information
-				println("    " + "Collection".padRight(20) )
-				println("    " + " ".padLeft(20,"-"))
-				impactResolver.getCollections().each{ collectionName ->
-					println("    " + collectionName)
+			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch) { // use new SearchPathDependencyResolver
+				
+				String impactSearch = props.getFileProperty('impactSearch', changedFile)
+				// TODO: Externalize collections
+				// String[] collections = props.getFileProperty('impactSearchCollections', changedFile)
+				
+				def collections = [props.applicationCollectionName,props.applicationOutputsCollectionName]
+				
+				def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
+				
+				if (props.verbose) {
+					println ("    " + "SearchPathImpactFinder Configuration")
+					println ("    " + "  collections : " + collections)
+					println ("    " + "  impactSearch: " + impactSearch)
 				}
-				// print impact resolution rule in table format
-				buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+				
+				// Find all files impacted by the changed file
+				List<ImpactFile> findImpacts = finder.findImpactedFiles(changedFile, props.workspace)
+			}
+			else {
+				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+				ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+
+				// Print impactResolverConfiguration
+				if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					// print collection information
+					println("    " + "Collection".padRight(20) )
+					println("    " + " ".padLeft(20,"-"))
+					impactResolver.getCollections().each{ collectionName ->
+						println("    " + collectionName)
+					}
+					// print impact resolution rule in table format
+					buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+				}
+
+				// resolving impacts
+				impacts = impactResolver.resolve()
 			}
 			
-			// resolving impacts
-			def impacts = impactResolver.resolve()
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
 				if (props.verbose) println "** Found impacted file $impactFile"
