@@ -82,11 +82,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				
 				def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
 				
-				if (props.verbose) {
-					println ("    " + "SearchPathImpactFinder Configuration")
-					println ("    " + "  collections : " + collections)
-					println ("    " + "  impactSearch: " + impactSearch)
-				}
+				if (props.verbose)
+					println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
 				
 				// Find all files impacted by the changed file
 				impacts = finder.findImpactedFiles(changedFile, props.workspace)
