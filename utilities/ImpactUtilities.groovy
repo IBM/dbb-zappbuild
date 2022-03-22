@@ -75,7 +75,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				// TODO: Externalize collections
 				// String[] collections = props.getFileProperty('impactSearchCollections', changedFile)
 				
-				def collections = [props.applicationCollectionName,props.applicationOutputsCollectionName]
+				List<String> collections = [${props.applicationCollectionName},${props.applicationOutputsCollectionName}]
 				
 				def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
 				
