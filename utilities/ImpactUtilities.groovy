@@ -14,13 +14,15 @@ import java.util.regex.*
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
-
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	@Field def resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+@Field def resolverUtils
 
 
 def createImpactBuildList(RepositoryClient repositoryClient) {
+	
+	// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+		resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()

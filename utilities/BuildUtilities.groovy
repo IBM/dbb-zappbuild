@@ -16,11 +16,6 @@ import groovy.ant.*
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
 
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	@Field def resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
-
-
 /*
  * assertBuildProperties - verify that required build properties for a script exist
  */
@@ -173,7 +168,8 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					dependencyResolver.getResolutionRules().each{ rule -> println rule }
 				}
 			}
-		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { 
+		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+			resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
 			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
 		}
 
