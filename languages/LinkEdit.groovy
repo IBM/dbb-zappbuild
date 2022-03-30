@@ -32,7 +32,7 @@ sortedList.each { buildFile ->
 	// create mvs commands
 	LogicalFile logicalFile
 	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean()) { // use new SearchPathDependencyResolver
-		SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+		logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
 	}
 	else { // use deprecated DependencyResolver API
 		DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, null)
