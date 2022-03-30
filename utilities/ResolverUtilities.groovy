@@ -43,12 +43,12 @@ def createSearchPathDependencyResolver(String dependencySearch) {
 
 def findImpactedFiles(String impactSearch, RepositoryClient repositoryClient) {
 	
-	if (props.verbose)
-		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
-	
 	List<String> collections = new ArrayList<String>()
 	collections.add(props.applicationCollectionName)
 	collections.add(props.applicationOutputsCollectionName)
+	
+	if (props.verbose)
+		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
 	
 	def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
 	
