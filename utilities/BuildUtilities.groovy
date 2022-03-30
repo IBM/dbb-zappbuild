@@ -168,7 +168,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					dependencyResolver.getResolutionRules().each{ rule -> println rule }
 				}
 			}
-		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
 			resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
 			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
 		}
