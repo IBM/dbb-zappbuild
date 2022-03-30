@@ -78,7 +78,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 				
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				impacts = resolverUtils.findImpactedFiles(impactSearch, repositoryClient)
+				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
 			}
 			else {
 				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)

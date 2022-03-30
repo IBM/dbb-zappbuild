@@ -41,7 +41,7 @@ def createSearchPathDependencyResolver(String dependencySearch) {
 	return new SearchPathDependencyResolver(dependencySearch)
 }
 
-def findImpactedFiles(String impactSearch, RepositoryClient repositoryClient) {
+def findImpactedFiles(String impactSearch, String changedFile, RepositoryClient repositoryClient) {
 	
 	List<String> collections = new ArrayList<String>()
 	collections.add(props.applicationCollectionName)
