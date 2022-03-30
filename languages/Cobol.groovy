@@ -39,27 +39,24 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 
-	// logicalFile 	
+	// configure dependency resolution and create logical file 	
+	def dependencyResolver
 	LogicalFile logicalFile
-		
-	// copy build file and dependency files to data sets
 	
-	def dependencyResolver 
-
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver 
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
 		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
-		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean())
-			logicalFile =	dependencyResolver.resolveSubsystems(buildFile,props.workspace)
+		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) // include resolved dependencies to define file flags of logicalFile
+			logicalFile = dependencyResolver.resolveSubsystems(buildFile,props.workspace)
 		else
 			logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
-			
-	} else { // use deprecated DependencyResolver 
+	} else { // use deprecated DependencyResolver
 		String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
 		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 		logicalFile = dependencyResolver.getLogicalFile()
 	}
 	
+	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{

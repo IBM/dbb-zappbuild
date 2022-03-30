@@ -25,12 +25,28 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'rexx_fileB
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
+	
+	// configure dependency resolution and create logical file
+	def dependencyResolver
+	LogicalFile logicalFile
+	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
+		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) // include resolved dependencies to define file flags of logicalFile
+			logicalFile = dependencyResolver.resolveSubsystems(buildFile,props.workspace)
+		else
+			logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, dependencyResolver)
+
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.REXX.log")
 	if (logFile.exists())

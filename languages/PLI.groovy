@@ -37,11 +37,24 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
 
-	// copy build file to input data set
-	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	// configure dependency resolution and create logical file 	
+	def dependencyResolver
+	LogicalFile logicalFile
 	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
+		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) // include resolved dependencies to define file flags of logicalFile
+			logicalFile = dependencyResolver.resolveSubsystems(buildFile,props.workspace)
+		else
+			logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('pli_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
+	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
 	}else{
@@ -49,7 +62,6 @@ sortedList.each { buildFile ->
 	}
 
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
 	if (logFile.exists())

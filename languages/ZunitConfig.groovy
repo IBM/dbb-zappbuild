@@ -31,19 +31,25 @@ buildUtils.createLanguageDatasets(langQualifier)
 	File logFile = new File("${props.buildOutDir}/${member}.zunit.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.zunit.report.log")
 
+	// configure dependency resolution
+	def dependencyResolver
+	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
+		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
-
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
 	// Parse the playback from the bzucfg file
 	Boolean hasPlayback = false
 	String playback
 	(hasPlayback, playback) = getPlaybackFile(buildFile);
-
-	// Upload BZUCFG file to a BZUCFG Dataset
-	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
-
+	
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
