@@ -15,6 +15,10 @@ import java.util.regex.*
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2"))
+	@Field def resolverUtils = loadScript(new File("utilities/ResolverUtilities.groovy"))
+
 
 def createImpactBuildList(RepositoryClient repositoryClient) {
 	// local variables
@@ -69,24 +73,10 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// list of impacts
 			def impacts
 
-			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch) { // use new SearchPathDependencyResolver
+			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 				
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-
-				// TODO: Externalize collections
-				// String[] collections = props.getFileProperty('impactSearchCollections', changedFile)
-
-				List<String> collections = new ArrayList<String>()
-				collections.add(props.applicationCollectionName)
-				collections.add(props.applicationOutputsCollectionName)
-				
-				def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
-				
-				if (props.verbose)
-					println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
-				
-				// Find all files impacted by the changed file
-				impacts = finder.findImpactedFiles(changedFile, props.workspace)
+				impacts = resolverUtils.findImpactedFiles(impactSearch, repositoryClient)
 			}
 			else {
 				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)

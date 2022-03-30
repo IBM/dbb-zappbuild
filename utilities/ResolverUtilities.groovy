@@ -32,3 +32,19 @@ def createLogicalFile(SearchPathDependencyResolver spDependencyResolver, String 
 def createSearchPathDependencyResolver(String dependencySearch) {
 	return new SearchPathDependencyResolver(dependencySearch)
 }
+
+def findImpactedFiles(String impactSearch, RepositoryClient repositoryClient) {
+	
+	if (props.verbose)
+		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
+	
+	List<String> collections = new ArrayList<String>()
+	collections.add(props.applicationCollectionName)
+	collections.add(props.applicationOutputsCollectionName)
+	
+	def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
+	
+	// Find all files impacted by the changed file
+	impacts = finder.findImpactedFiles(changedFile, props.workspace)
+	return impacts
+}
