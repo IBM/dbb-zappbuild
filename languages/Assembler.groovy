@@ -46,7 +46,7 @@ sortedList.each { buildFile ->
 	}
 	
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
