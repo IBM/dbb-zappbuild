@@ -1,6 +1,8 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.dependency.*
 
+// Externalized Method to preserve backward compatibility 
+
 /**
  * Method to create the logical file using SearchPathDependencyResolver
  * 
@@ -47,4 +49,12 @@ def findImpactedFiles(String impactSearch, RepositoryClient repositoryClient) {
 	// Find all files impacted by the changed file
 	impacts = finder.findImpactedFiles(changedFile, props.workspace)
 	return impacts
+}
+
+def resolveDependencies(SearchPathDependencyResolver dependencyResolver, String buildFile) {
+	if (props.verbose) {
+		println "*** Resolution rules for $buildFile:"
+		println dependencyResolver.getSearchPath()
+	}
+	return dependencyResolver.resolveDependencies(buildFile, props.workspace)
 }
