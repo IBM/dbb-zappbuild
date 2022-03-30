@@ -34,7 +34,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// configure dependency resolution
 	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
 		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	} else { // use deprecated DependencyResolver

@@ -30,7 +30,7 @@ sortedList.each { buildFile ->
 	def dependencyResolver
 	LogicalFile logicalFile
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch) { // use new SearchPathDependencyResolver
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.rexx_dependencySearch) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
 		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) // include resolved dependencies to define file flags of logicalFile
