@@ -9,6 +9,11 @@ import com.ibm.dbb.repository.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2"))
+	@Field def resolverUtils = loadScript(new File("utilities/ResolverUtilities.groovy"))
+
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -30,13 +35,10 @@ sortedList.each { buildFile ->
 	def dependencyResolver
 	LogicalFile logicalFile
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.rexx_dependencySearch) { // use new SearchPathDependencyResolver
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.rexx_dependencySearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
-		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
-		if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) // include resolved dependencies to define file flags of logicalFile
-			logicalFile = dependencyResolver.resolveSubsystems(buildFile,props.workspace)
-		else
-			logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 	} else { // use deprecated DependencyResolver
 		String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
 		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)

@@ -12,6 +12,10 @@ import groovy.transform.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2"))
+	@Field def resolverUtils = loadScript(new File("utilities/ResolverUtilities.groovy"))
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -34,9 +38,9 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// configure dependency resolution
 	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch) { // use new SearchPathDependencyResolver
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
-		dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	} else { // use deprecated DependencyResolver
 		String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
 		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
