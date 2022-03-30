@@ -2,7 +2,10 @@
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.repository.*
 
-// Externalized Method to preserve backward compatibility 
+@Field BuildProperties props = BuildProperties.getInstance()
+
+// Externalized Method to preserve backward compatibility with older DBB toolkit versions.
+// TODO: Refactoring as soon as the deprecated API is dropped.
 
 /**
  * Method to create the logical file using SearchPathDependencyResolver
