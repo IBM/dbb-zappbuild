@@ -1,5 +1,6 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.dependency.*
+import com.ibm.dbb.repository.*
 
 // Externalized Method to preserve backward compatibility 
 
