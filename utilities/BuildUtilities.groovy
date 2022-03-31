@@ -659,8 +659,12 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
 
 		// validate each label
+		Boolean foundValidVersion = false
 		currentVersionList.eachWithIndex{ it, i ->
-			if(requiredVersionList.size() >= i +1 )  assert (it as int) >= ((requiredVersionList[i]) as int)
+			if(requiredVersionList.size() >= i +1 !(foundValidVersion.toBoolean() == true)) {
+				assert (it as int) >= ((requiredVersionList[i]) as int)
+				if (it as int > requiredVersionList[i]) foundValidVersion = true
+			}
 		}
 
 	} catch(AssertionError e) {
