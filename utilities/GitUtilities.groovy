@@ -4,6 +4,9 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 
+@Field BuildProperties props = BuildProperties.getInstance()
+@Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+
 /*
  * Tests if directory is in a local git repository
  *
@@ -20,7 +23,9 @@ def isGitDir(String dir) {
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitResponse, gitError)
 	if (gitError) {
-		println("*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError")
+		String warningMsg = "*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError"
+		println(warningMsg)
+		buildUtils.updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
@@ -137,7 +142,10 @@ def getCurrentGitHash(String gitDir, boolean abbrev) {
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitHash, gitError)
 	if (gitError) {
-		print("*! Error executing Git command: $cmd error: $gitError")
+		String errorMsg = "*! Error executing Git command: $cmd error: $gitError"
+		println(errorMsg)
+		props.error = "true"
+		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 	return gitHash.toString().trim()
 }
@@ -249,8 +257,10 @@ def getChangedFiles(String cmd) {
 
 	// handle command error
 	if (git_error.size() > 0) {
-		println("*! Error executing Git command: $cmd error: $git_error")
-		println ("*! Attempting to parse unstable git command for changed files...")
+		String errorMsg = "*! Error executing Git command: $cmd error: $git_error \n *! Attempting to parse unstable git command for changed files..."
+		println(errorMsg)
+		props.error = "true"
+		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 
 	for (line in git_diff.toString().split("\n")) {
@@ -369,4 +379,10 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 	}
 
 	return changedProperties.propertyNames()
+}
+
+def getRepositoryClient() {
+	if (!repositoryClient && props."dbb.RepositoryClient.url")
+		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
+	return repositoryClient
 }
