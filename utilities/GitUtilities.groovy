@@ -5,6 +5,7 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field RepositoryClient repositoryClient
 
 /*
  * Tests if directory is in a local git repository
