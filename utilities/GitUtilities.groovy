@@ -5,7 +5,6 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
-@Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 
 /*
  * Tests if directory is in a local git repository
@@ -25,7 +24,7 @@ def isGitDir(String dir) {
 	if (gitError) {
 		String warningMsg = "*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError"
 		println(warningMsg)
-		buildUtils.updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
+		updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
@@ -381,8 +380,38 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 	return changedProperties.propertyNames()
 }
 
+/** helper methods **/
+
 def getRepositoryClient() {
 	if (!repositoryClient && props."dbb.RepositoryClient.url")
 		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 	return repositoryClient
+}
+
+/*
+ * updateBuildResult - for git cmd related issues
+ */
+def updateBuildResult(Map args) {
+	// args : errorMsg / warningMsg, client:repoClient
+
+	// update build results only in non-userbuild scenarios
+	if (args.client && !props.userBuild) {
+		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+		if (!buildResult) {
+			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
+			return
+		}
+		// add error message
+		if (args.errorMsg) {
+			buildResult.setStatus(buildResult.ERROR)
+			buildResult.addProperty("error", args.errorMsg)
+		}
+		// add warning message, but keep result status
+		if (args.warningMsg) {
+			// buildResult.setStatus(buildResult.WARNING)
+			buildResult.addProperty("warning", args.warningMsg)
+		}
+		// save result
+		buildResult.save()
+	}
 }
