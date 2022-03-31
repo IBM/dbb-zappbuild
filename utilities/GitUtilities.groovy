@@ -144,7 +144,7 @@ def getCurrentGitHash(String gitDir, boolean abbrev) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $gitError"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 	return gitHash.toString().trim()
 }
@@ -259,7 +259,7 @@ def getChangedFiles(String cmd) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $git_error \n *! Attempting to parse unstable git command for changed files..."
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
 	}
 
 	for (line in git_diff.toString().split("\n")) {
