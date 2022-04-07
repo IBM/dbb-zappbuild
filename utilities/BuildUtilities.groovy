@@ -660,12 +660,13 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 
 		// validate each label
 		Boolean foundValidVersion = false
-		currentVersionList.eachWithIndex{ it, i ->
-			if((requiredVersionList.size() >= i + 1) && !(foundValidVersion.toBoolean() == true)) {  
-				assert (it as int) >= ((requiredVersionList[i]) as int)
-				if (it as int > requiredVersionList[i]) foundValidVersion = true
+		currentVersionList.eachWithIndex{ label, i ->
+			if((requiredVersionList.size() >= i +1 ) && !(foundValidVersion.toBoolean() == true)) {
+				assert (label as int) >= ((requiredVersionList[i]) as int) : "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
+				if (label > requiredVersionList[i]) foundValidVersion = true
 			}
-		}
+		
+	}
 
 	} catch(AssertionError e) {
 		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
