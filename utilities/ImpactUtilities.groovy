@@ -14,9 +14,15 @@ import java.util.regex.*
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
+@Field def resolverUtils
 
 
 def createImpactBuildList(RepositoryClient repositoryClient) {
+	
+	// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+		resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
@@ -63,26 +69,37 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 
-			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
-
-			// get excludeListe
+			// get exclude list
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			
+			// list of impacts
+			def impacts
 
-			// Print impactResolverConfiguration
-			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-				// print collection information
-				println("    " + "Collection".padRight(20) )
-				println("    " + " ".padLeft(20,"-"))
-				impactResolver.getCollections().each{ collectionName ->
-					println("    " + collectionName)
+			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+				
+				String impactSearch = props.getFileProperty('impactSearch', changedFile)
+				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
+			}
+			else {
+				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+				ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+
+				// Print impactResolverConfiguration
+				if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					// print collection information
+					println("    " + "Collection".padRight(20) )
+					println("    " + " ".padLeft(20,"-"))
+					impactResolver.getCollections().each{ collectionName ->
+						println("    " + collectionName)
+					}
+					// print impact resolution rule in table format
+					buildUtils.printResolutionRules(impactResolver.getResolutionRules())
 				}
-				// print impact resolution rule in table format
-				buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+
+				// resolving impacts
+				impacts = impactResolver.resolve()
 			}
 			
-			// resolving impacts
-			def impacts = impactResolver.resolve()
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
 				if (props.verbose) println "** Found impacted file $impactFile"

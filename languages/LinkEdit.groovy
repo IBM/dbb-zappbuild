@@ -30,10 +30,17 @@ sortedList.each { buildFile ->
 	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null, null)
 
 	// create mvs commands
-	String rules = props.getFileProperty('linkedit_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
+	LogicalFile logicalFile
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean()) { // use new SearchPathDependencyResolver
+		logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+	}
+	else { // use deprecated DependencyResolver API
+		DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, null)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	String member = CopyToPDS.createMemberName(buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.linkedit.log")
 	if (logFile.exists())
 		logFile.delete()
