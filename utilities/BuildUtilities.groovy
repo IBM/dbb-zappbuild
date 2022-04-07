@@ -661,7 +661,7 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 		// validate each label
 		Boolean foundValidVersion = false
 		currentVersionList.eachWithIndex{ it, i ->
-			if(requiredVersionList.size() >= i +1 !(foundValidVersion.toBoolean() == true)) {
+			if((requiredVersionList.size() >= i + 1) && !(foundValidVersion.toBoolean() == true)) {  
 				assert (it as int) >= ((requiredVersionList[i]) as int)
 				if (it as int > requiredVersionList[i]) foundValidVersion = true
 			}
