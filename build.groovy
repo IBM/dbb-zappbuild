@@ -184,7 +184,8 @@ options:
 	cli.h(longOpt:'hlq', args:1, required:true, 'High level qualifier for partition data sets')
 
 	// build options
-	cli.p(longOpt:'propFiles', args:1, 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace.')
+	cli.p(longOpt:'propFiles', args:1, 'Comma-separated list of additional property files to load. Absolute paths or relative to workspace.')
+	cli.po(longOpt:'propOverwrites', args:1, 'Comma-separated list of additional build properties.')
 	cli.l(longOpt:'logEncoding', args:1, 'Encoding of output logs. Default is EBCDIC')
 	cli.f(longOpt:'fullBuild', 'Flag indicating to build all programs for application')
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
@@ -326,6 +327,18 @@ def populateBuildProperties(String[] args) {
 			props.load(new File(propFile))
 		}
 	}
+	
+	// populate property overwrites from argument list
+	if (opts.p) props.propOverwrites = opts.p
+	if (props.propOverwrites) {
+		String[] propOverwrites = props.propOverwrites.split(',')
+		propOverwrites.each { buildPropertyOverwrite ->
+			key,value = buildPropertyOverwrite.split('=')
+			if (opts.v) println "** Overwriting build property ${$key} from cli argument --propOverwrite"
+			props.put(key, value)
+		}
+	}
+	
 
 	// set flag indicating to run unit tests
 	if (opts.zTest) props.runzTests = 'true'
