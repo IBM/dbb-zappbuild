@@ -329,7 +329,7 @@ def populateBuildProperties(String[] args) {
 	}
 	
 	// populate property overwrites from argument list
-	if (opts.p) props.propOverwrites = opts.p
+	if (opts.po) props.propOverwrites = opts.po
 	if (props.propOverwrites) {
 		String[] propOverwrites = props.propOverwrites.split(',')
 		propOverwrites.each { buildPropertyOverwrite ->
