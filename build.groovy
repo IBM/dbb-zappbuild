@@ -333,7 +333,7 @@ def populateBuildProperties(String[] args) {
 	if (props.propOverwrites) {
 		String[] propOverwrites = props.propOverwrites.split(',')
 		propOverwrites.each { buildPropertyOverwrite ->
-			key, value = buildPropertyOverwrite.tokenize('=')
+			(key, value) = buildPropertyOverwrite.tokenize('=')
 			if (opts.v) println "** Overwriting build property ${$key} from cli argument --propOverwrite"
 			props.put(key, value)
 		}
