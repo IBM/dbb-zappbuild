@@ -100,8 +100,7 @@ required options:
  -h,--hlq <arg>               High level qualifier for partition data sets
 
 build options:
- -p,--propFiles               Comma separated list of additional property files 
-                              to load. Absolute paths or relative to workspace
+
  -f,--fullBuild               Flag indicating to build all programs for
                               the application
  -i,--impactBuild             Flag indicating to build only programs impacted
@@ -124,7 +123,11 @@ build options:
  -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC 
                               directory for user build
  -zTest,--runzTests           Specify if zUnit Tests should be run
- 
+
+ -p,--propFiles               Comma separated list of additional property files 
+                              to load. Absolute paths or relative to workspace
+ -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties                             
+
  -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
  -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
  -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
