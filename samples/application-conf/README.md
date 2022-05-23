@@ -1,5 +1,5 @@
 # Application Configuration
-This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed. 
+This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed.
 
 At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded into the [DBB BuildProperties class](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.4/scriptorg.html#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
 
@@ -17,18 +17,22 @@ runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to 
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/. | false
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}. | false
 buildOrder | Comma separated list of the build script processing order. | false
+formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data | false
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application. | false
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 jobCard | JOBCARD for JCL execs | false
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. | true, recommended in file.properties
+useSearchConfiguration | Flag to define which DBB API is used for dependency and impact analysis. `false` uses DependencyResolver and ImpactResolver APIs, while `true` leverages the DBB SearchPathDependencyResolver and SearchParthImpactFinder APIs introduced with DBB 1.1.2 | false
+resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
+impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
+impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
 
 ### file.properties
-Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides. 
+Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides.
 
-Property | Description 
---- | --- 
+Property | Description
+--- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
 dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
 isSQL | File property overwrite to indicate that a file requires to include SQL parameters
@@ -37,15 +41,18 @@ isMQ | File property overwrite to indicate that a file requires to include MQ pa
 isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
-### dependencyReport.properties
-Properties used by the impact utilities to generate a report of external impacted files. Sample properties file to all application-conf to overwrite central build-conf configuration.
+### reports.properties
+Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
 
+Property | Description 
 --- | ---
-reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections 
-reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep) 
-reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files 
-reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented 
-
+reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections
+reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)
+reportExternalImpactsAnalysisFileFilter | Comma-separated list of pathMatcher filters to limit the analysis of external impacts to a subset of the changed files
+reportExternalImpactsCollectionPatterns | Comma-separated list of regex patterns of DBB collection names for which external impacts should be documented
+reportConcurrentChanges | Flag to indicate if the build generates reports of concurrent changes to understand recent changes in concurrent configurations (branches)
+reportConcurrentChangesGitBranchReferencePatterns | Comma-seperated list of regex patterns defining the branches for which concurrent changes should be calculated
+reportConcurrentChangesIntersectionFailsBuild | Flag to indicated if the build is marked as error, when build list intersects with changes on concurrent configurations
 
 ### Assembler.properties
 Application properties used by zAppBuild/language/Assembler.groovy
@@ -62,7 +69,9 @@ assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
 assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
-assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
+assembler_dependencySearch | Assembler dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
+assembler_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 assembler_deployType | default deployType for build output | true
 assembler_deployTypeCICS | deployType for build output for build files where isCICS=true | true
 assembler_deployTypeDLI | deployType for build output for build files with isDLI=true | true
@@ -81,6 +90,7 @@ bms_copyGenParms | Default parameters for the copybook generation step. | true
 bms_compileParms | Default parameters for the compilation step. | true
 bms_linkEditParms | Default parameters for the link edit step. | true
 bms_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+bms_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 bms_deployType | deployType for build output | true
 bms_copy_deployType | deployType for generated copybooks | true
 
@@ -91,7 +101,8 @@ Application properties used by zAppBuild/language/Cobol.groovy
 Property | Description | Overridable
 --- | --- | ---
 cobol_fileBuildRank | Default Cobol program build rank. Used to sort Cobol build file sub-list. Leave empty. | true
-cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
+cobol_dependencySearch | Cobol dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 cobol_compilerVersion | Default Cobol compiler version. | true
 cobol_compileMaxRC | Default compile maximum RC allowed. | true
 cobol_linkEditMaxRC | Default link edit maximum RC allowed. | true
@@ -100,6 +111,8 @@ cobol_compileCICSParms | Default CICS compile parameters. Appended to base param
 cobol_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 cobol_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 cobol_linkEditParms | Default link edit parameters. | true
+cobol_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
+cobol_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 cobol_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
@@ -121,6 +134,7 @@ linkedit_fileBuildRank | Default link card build rank. Used to sort link card bu
 linkedit_maxRC | Default link edit maximum RC allowed. | true
 linkedit_parms | Default link edit parameters. | true
 linkedit_impactPropertyList | List of build properties causing programs to rebuild when changed | false
+linkedit_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 linkedit_deployType | default deployType for build output | true
 linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
 linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
@@ -133,18 +147,21 @@ Application properties used by zAppBuild/language/LinkEdit.groovy
 Property | Description | Overridable
 --- | --- | ---
 pli_fileBuildRank | Default PLI program build rank. Used to sort PLI program sub-list. Leave empty. | true
-pli_resolutionRules | PLI dependency resolution rules used to create a PLI dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+pli_resolutionRules | PLI dependency resolution rules used to create a PLI dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
+pli_dependencySearch | PLI dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 pli_compilerVersion | Default PLI compiler version. | true
 pli_compileMaxRC | Default compile maximum RC allowed. | true
 pli_linkEditMaxRC | Default link edit maximum RC allowed. | true
 pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
+pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
@@ -229,7 +246,10 @@ Property | Description | Overridable
 zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_resolutionRules | Default resolution rules for zUnit. | true
+zunit_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
+zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
+zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
 zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
@@ -241,7 +261,8 @@ Property | Description | Overridable
 --- | --- | ---
 rexx_compileMaxRC | Default compile maximum RC allowed. | true
 rexx_linkEditMaxRC | Default link edit maximum RC allowed. | true
-rexx_resolutionRules | Default resolution rules for zUnit. | true
+rexx_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
+rexx_dependencySearch | Default REXX dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 rexx_compileParms | Default base compile parameters. | true
 rexx_compiler | Default REXX compiler | true
 rexx_linkEdit | Flag indicating to execute the link edit step to produce a compiled rexx for the source file. | true
@@ -266,3 +287,10 @@ easytrieve_linkEditParms | Default link edit parameters. | true
 easytrieve_deployType | default deployType | true
 easytrieve_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 easytrieve_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### Transfer.properties
+Application properties used by zAppBuild/language/Transfer.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+transfer_deployType | deployType | true

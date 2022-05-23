@@ -27,7 +27,7 @@ sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 	
 	// copy build file to input data set
-	buildUtils.copySourceFiles(buildFile, props.bms_srcPDS, null, null)
+	buildUtils.copySourceFiles(buildFile, props.bms_srcPDS, null, null, null)
 	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -120,6 +120,13 @@ def createCompileCommand(String buildFile, String member, File logFile) {
  */
 def createLinkEditCommand(String buildFile, String member, File logFile) {
 	String parameters = props.getFileProperty('bms_linkEditParms', buildFile)
+	
+	// obtain githash for buildfile
+	String bms_storeSSI = props.getFileProperty('bms_storeSSI', buildFile)
+	if (bms_storeSSI && bms_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	}
 	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.bms_linkEditor).parm(parameters)

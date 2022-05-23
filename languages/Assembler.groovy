@@ -13,6 +13,11 @@ import com.ibm.dbb.build.report.records.*
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -28,15 +33,24 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'assembler_
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
-	// copy build file to input data set
+	// configure dependency resolution and create logical file 	
+	def dependencyResolver
+	LogicalFile logicalFile
+	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.assembler_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
-	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	buildUtils.copySourceFiles(buildFile, assembler_srcPDS, props.assembler_macroPDS, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
 
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.asm.log")
 	if (logFile.exists())
@@ -270,7 +284,16 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
-	// add custom concatenation
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMappings dsMapping = new PropertyMappings('assembler_dependenciesDatasetMapping')
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults assembler_macroPDS
+		if (targetDataset != 'assembler_macroPDS')
+			assembler.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+	}
+	
+	// add custom external concatenations
 	def assemblySyslibConcatenation = props.getFileProperty('assembler_assemblySyslibConcatenation', buildFile) ?: ""
 	if (assemblySyslibConcatenation) {
 		def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
@@ -309,6 +332,13 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parameters = props.getFileProperty('assembler_linkEditParms', buildFile)
 
+	// obtain githash for buildfile
+	String assembler_storeSSI = props.getFileProperty('assembler_storeSSI', buildFile)
+	if (assembler_storeSSI && assembler_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parameters = parameters + ",SSI=$ssi"
+	}
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
 

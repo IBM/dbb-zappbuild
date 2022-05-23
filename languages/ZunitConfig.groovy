@@ -12,6 +12,11 @@ import groovy.transform.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -31,19 +36,25 @@ buildUtils.createLanguageDatasets(langQualifier)
 	File logFile = new File("${props.buildOutDir}/${member}.zunit.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.zunit.report.log")
 
+	// configure dependency resolution
+	def dependencyResolver
+	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
-
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
 	// Parse the playback from the bzucfg file
 	Boolean hasPlayback = false
 	String playback
 	(hasPlayback, playback) = getPlaybackFile(buildFile);
-
-	// Upload BZUCFG file to a BZUCFG Dataset
-	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, props.zunit_bzuplayPDS, dependencyResolver)
-
+	
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
@@ -59,7 +70,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 // BZUCFG=${props.zunit_bzucfgPDS}(${member}),
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
-//  PARM=('STOP=E,REPORT=XML')
+"""
+// Add parms for bzupplay proc / zUnit Runner	
+zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
+jcl += """\
+//  PARM=('$zunitParms')
 """
 	if (hasPlayback) { // bzucfg contains reference to a playback file
 		jcl +=
@@ -74,6 +89,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 //REPLAY.BZURPT DD DISP=SHR,
 // DSN=${props.zunit_bzureportPDS}(${member})
 """
+
+// Add parms for bzupplay proc / zUnit Runner
+zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFile)
+
+// if code coverage collection is activated
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
 	        // codeCoverageHost
 		if (props.codeCoverageHeadlessHost != null)
@@ -93,7 +113,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	
 		jcl +=
 		"//CEEOPTS DD *                        \n"   +
-		( ( codeCoverageHost != null && codeCoveragePort != null ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "TEST(,,,DBMDT:*)  \n" ) +
+		( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "${zunitDebugParm}  \n" ) +
 		"ENVAR(\n"
 		if (codeCoverageOptions != null) {
 			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
@@ -104,6 +124,11 @@ buildUtils.createLanguageDatasets(langQualifier)
 			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
 		}
    		jcl += "/* \n"
+	} else if (props.debugzUnitTestcase && props.userBuild) {
+		// initiate debug session of test case 
+		jcl +=
+		"//CEEOPTS DD *                        \n"   +
+		  "${zunitDebugParm}  \n"
 	}
 	jcl += """\
 //*

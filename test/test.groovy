@@ -1,6 +1,7 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import groovy.transform.*
 import com.ibm.dbb.build.*
+import groovy.cli.commons.*
 
 println "** Executing zAppBuild test framework test/test.groovy"
 

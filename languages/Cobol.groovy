@@ -15,6 +15,11 @@ import com.ibm.dbb.build.report.records.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+	
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -39,16 +44,28 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 
+	// configure dependency resolution and create logical file
+	def dependencyResolver
+	LogicalFile logicalFile
+
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 	if(isZUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null)
+		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, props.cobol_cpyPDS, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.cobol.log")
 	if (logFile.exists())
@@ -210,7 +227,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.bms_cpyPDS).options("shr"))
 	if(props.team)
 		compile.dd(new DDStatement().dsn(props.cobol_BMS_PDS).options("shr"))
-		
+	
+	// add additional datasets with dependencies based on the dependenciesDatasetMapping
+	PropertyMappings dsMapping = new PropertyMappings('cobol_dependenciesDatasetMapping')
+	dsMapping.getValues().each { targetDataset ->
+		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		if (targetDataset != 'cobol_cpyPDS')
+			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
+	}
+
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('cobol_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
@@ -228,6 +253,15 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (isZUnitTestCase)
 	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
 
+	// adding alternate library definitions
+	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = evaluate(props.cobol_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
+			datasetDSN = props.getProperty(datasetDSN)
+			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+		}
+	}
+	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('cobol_compilerVersion', buildFile)
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."SIGYCOMP_$compilerVer").options("shr"))
@@ -266,6 +300,13 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 
+	// obtain githash for buildfile
+	String cobol_storeSSI = props.getFileProperty('cobol_storeSSI', buildFile)
+	if (cobol_storeSSI && cobol_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parms = parms + ",SSI=$ssi"
+	}
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 

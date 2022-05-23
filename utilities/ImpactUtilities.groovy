@@ -14,9 +14,15 @@ import java.util.regex.*
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
+@Field def resolverUtils
 
 
 def createImpactBuildList(RepositoryClient repositoryClient) {
+	
+	// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+		resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
@@ -46,6 +52,10 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 
 	Set<String> buildSet = new HashSet<String>()
 	Set<String> changedBuildPropertyFiles = new HashSet<String>()
+	
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
+	
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -59,13 +69,37 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 			// perform impact analysis on changed file
 			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 
-			String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-			ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
-
-			// get excludeListe
+			// get exclude list
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+			
+			// list of impacts
+			def impacts
 
-			def impacts = impactResolver.resolve()
+			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+				
+				String impactSearch = props.getFileProperty('impactSearch', changedFile)
+				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
+			}
+			else {
+				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+				ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+
+				// Print impactResolverConfiguration
+				if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					// print collection information
+					println("    " + "Collection".padRight(20) )
+					println("    " + " ".padLeft(20,"-"))
+					impactResolver.getCollections().each{ collectionName ->
+						println("    " + collectionName)
+					}
+					// print impact resolution rule in table format
+					buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+				}
+
+				// resolving impacts
+				impacts = impactResolver.resolve()
+			}
+			
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
 				if (props.verbose) println "** Found impacted file $impactFile"
@@ -73,6 +107,15 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				if (ScriptMappings.getScriptName(impactFile)) {
 					// only add impacted files, that are in scope of the build.
 					if (!matches(impactFile, excludeMatchers)){
+						
+						// calculate abbreviated gitHash for impactFile
+						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+						}
+						
+						// add file to buildset
 						buildSet.add(impactFile)
 						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 					}
@@ -141,6 +184,11 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
+	// Document and validate concurrent changes
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+		if (props.verbose) println "*** Calculate and document concurrent changes."
+		calculateConcurrentChanges(repositoryClient, buildSet)
+	}
 
 	return [buildSet, deletedFiles]
 }
@@ -157,17 +205,17 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-	
+
 	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
-	
+
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
-	
+
 	// iterate over changed file and add them to the buildSet
-	
+
 	Set<String> buildSet = new HashSet<String>()
-	
-	
+
+
 	changedFiles.each { changedFile ->
 		// if the changed file has a build script then add to build list
 		if (ScriptMappings.getScriptName(changedFile)) {
@@ -175,48 +223,107 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 		}
 	}
-	
-	return [ buildSet, deletedFiles	]
+
+	// Document and validate concurrent changes
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+		if (props.verbose) println "*** Calculate and document concurrent changes."
+		calculateConcurrentChanges(repositoryClient, buildSet)
+	}
+
+	return [buildSet, deletedFiles]
 }
 
 
 /*
  * calculateChangedFiles - method to caluclate the the changed files
  * 
- *  If a BuildResult is provided, this method will diff between the different states in the repository
- *   if no BuildResult is provided, the method will diff the changes from the topic branch to the main build branch
- * 
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
+	return calculateChangedFiles(lastBuildResult, false, null)
+}
+
+/* 
+ * calculateChangedFiles - 
+ *   this method is used for zAppBuild built modes to 
+ * 	  calculate changed files and 
+ *    return a list of identified changed, renamed, deleted and modified build properties
+ *  
+ *  High-Level flow for 
+ *   - impactBuild 
+ *  	parms: requires to pass the lastBuildResult
+ *      flow:  obtains current hash for directories
+ *      	   obtains the baseline hash/es for the different referenced directories
+ *             performs a git diff between current and baseline
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - impactBuild with baselineReference
+ *      parms: requires to pass the lastBuildResult
+ *      flow:  obtains current hash for directories
+ *             obtains the baseline hash for the directories
+ *             performs a git diff between current and baselineReference
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - mergeBuild
+ *      parms: no build result is passed to the method
+ *      flow:  obtains current hash for directories
+ *             no calculation of baseline hash for the different directories
+ *             performs a git diff between current and mainBuildBranch
+ *             calculates the correct offset from the git diff
+ *             stores the abbreviated hash for changed files in PropertyMapping
+ *             
+ *   - concurrentChangesAnalysis
+ *      parms: no build result is passed to the method, calculateConcurrentChanges=true, gitReference containing the git configuration
+ *      flow:  no calculation of baseline hash for the directories
+ *             performs a git diff between HEAD and the passed gitReference
+ *             calculates the correct offset from the git diff
+ *    
+ *   @return the set for changed, renamed, deleted and modified build properties to caller
+ */
+
+def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurrentChanges, String gitReference) {
+	String msg = ""
+	if (calculateConcurrentChanges.toBoolean()) {
+		msg = "in configuration $gitReference"
+	}
+
 	// local variables
 	Map<String,String> currentHashes = new HashMap<String,String>()
+	Map<String,String> currentAbbrevHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
+	// DBB property map to store changed files with their abbreviated git hash
+	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
+	
 	// create a list of source directories to search
 	List<String> directories = []
 	if (props.applicationSrcDirs)
 		directories.addAll(props.applicationSrcDirs.split(','))
 
+	// get the current Git hash for all build directories
+	directories.each { dir ->
+		dir = buildUtils.getAbsolutePath(dir)
+		if (props.verbose) println "** Getting current hash for directory $dir"
+		String hash = null
+		String abbrevHash = null
+		if (gitUtils.isGitDir(dir)) {
+			hash = gitUtils.getCurrentGitHash(dir, false)
+			abbrevHash = gitUtils.getCurrentGitHash(dir, true)
+		}
+		String relDir = buildUtils.relativizePath(dir)
+		if (props.verbose) println "** Storing $relDir : $hash"
+		currentHashes.put(relDir,hash)
+		currentAbbrevHashes.put(relDir, abbrevHash)
+	}
+
 	// when a build result is provided, calculate the baseline hash for each directory
 	if (lastBuildResult != null){
-		// get the current Git hash for all build directories
-		directories.each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			if (props.verbose) println "** Getting current hash for directory $dir"
-			String hash = null
-			if (gitUtils.isGitDir(dir)) {
-				hash = gitUtils.getCurrentGitHash(dir)
-			}
-			String relDir = buildUtils.relativizePath(dir)
-			if (props.verbose) println "** Storing $relDir : $hash"
-			currentHashes.put(relDir,hash)
-		}
-
 		// get the baseline hash for all build directories
 		directories.each { dir ->
 			dir = buildUtils.getAbsolutePath(dir)
@@ -268,11 +375,17 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		def renamed = []
 		String baseline
 		String current
+		String abbrevCurrent
 		
 		if (gitUtils.isGitDir(dir)){
+			// obtain git hashes for directory
+			baseline = baselineHashes.get(buildUtils.relativizePath(dir))
+			current = currentHashes.get(buildUtils.relativizePath(dir))
+			abbrevCurrent = currentAbbrevHashes.get(buildUtils.relativizePath(dir))
+			
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
-			if (lastBuildResult != null && props.impactBuild){
+			if (lastBuildResult != null && props.impactBuild && !calculateConcurrentChanges){
 				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
 				current = currentHashes.get(buildUtils.relativizePath(dir))
 				if (!baseline || !current) {
@@ -283,18 +396,20 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 					(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current)
 				}
 			}
-			// when no build result is provided but the outgoingChangesBuild,
-			//   calculate the outgoing changes
-			else if(props.mergeBuild) {
-				
+			// when no build result is provided but the outgoingChangesBuild, calculate the outgoing changes
+			else if(props.mergeBuild && !calculateConcurrentChanges) {
 				// set git references
 				baseline = props.mainBuildBranch
 				current = "HEAD"
-				
+
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
 				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
-		}	
+			// calculate concurrent changes
+			else if (calculateConcurrentChanges) {
+				(changed, deleted, renamed) = gitUtils.getConcurrentChanges(dir, gitReference)
+			}
+		}
 		else {
 			if (props.verbose) println "*! Directory $dir not a local Git repository. Skipping."
 		}
@@ -305,12 +420,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		// make sure file is not an excluded file
 		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-		if (props.verbose) println "*** Changed files for directory $dir:"
+		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
 				if ( !matches(file, excludeMatchers)) {
 					changedFiles << file
+					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
 				}
 				//retrieving changed build properties
@@ -323,7 +439,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			}
 		}
 
-		if (props.verbose) println "*** Deleted files for directory $dir:"
+		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
 		deleted.each { file ->
 			if ( !matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -332,7 +448,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 			}
 		}
 
-		if (props.verbose) println "*** Renamed files for directory $dir:"
+		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
 		renamed.each { file ->
 			if ( !matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -340,6 +456,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 				if (props.verbose) println "**** $file"
 			}
 		}
+
 	}
 
 	return [
@@ -349,6 +466,51 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
 		changedBuildProperties
 	]
 }
+
+/**
+ * Method to calculate and report the changes between the current configuration and concurrent configurations;
+ * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
+ * 
+ * Invokes method generateConcurrentChangesReports to produce the reports
+ * 
+ * @param repositoryClient
+ * @param buildSet
+ * 
+ */
+def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
+	
+		// initialize patterns
+		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
+	
+		// obtain all current remote branches
+		// TODO: Handle / Exclude branches from other repositories
+		Set<String> remoteBranches = new HashSet<String>()
+		props.applicationSrcDirs.split(",").each { dir ->
+			dir = buildUtils.getAbsolutePath(dir)
+			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
+		}
+		
+		// Run analysis for each remoteBranch, which matches the configured criteria
+		remoteBranches.each { gitReference ->
+	
+			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
+	
+				Set<String> concurrentChangedFiles = new HashSet<String>()
+				Set<String> concurrentRenamedFiles = new HashSet<String>()
+				Set<String> concurrentDeletedFiles = new HashSet<String>()
+				Set<String> concurrentBuildProperties = new HashSet<String>()
+	
+				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+	
+				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+	
+				// generate reports and verify for intersects
+				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
+	
+			}
+		}
+	
+	}
 
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
@@ -491,6 +653,94 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 		}
 	}
 
+}
+
+/*
+ * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
+ */
+
+def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference, RepositoryClient repositoryClient){
+	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
+
+	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
+	String enc = props.logEncoding ?: 'IBM-1047'
+	concurrentChangesReportFile.withWriterAppend(enc) { writer ->
+
+		if (!(concurrentChangedFiles.size() == 0 &&  concurrentRenamedFiles.size() == 0 && concurrentDeletedFiles.size() == 0)) {
+
+			if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
+
+			writer.write("\n=============================================== \n")
+			writer.write("** Report for configuration: $gitReference \n")
+			writer.write("========\n")
+
+			if (concurrentChangedFiles.size() != 0) {
+				writer.write("** Changed Files \n")
+				concurrentChangedFiles.each { file ->
+					if (props.verbose) println " Changed: ${file}"
+					if (buildList.contains(file)) {
+						writer.write("* $file is changed and intersects with the current build list.\n")
+						String msg = "*!! $file is changed on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
+						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
+							props.error = "true"
+							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
+						} else {
+							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
+						}
+					}
+					else
+						writer.write("  $file\n")
+				}
+			}
+
+			if (concurrentRenamedFiles.size() != 0) {
+				writer.write("** Renamed Files \n")
+				concurrentRenamedFiles.each { file ->
+					if (props.verbose) println " Renamed: ${file}"
+					if (buildList.contains(file)) {
+						writer.write("* $file got renamed and intersects with the current build list.\n")
+						String msg = "*!! $file is renamed on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
+						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
+							props.error = "true"
+							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
+						} else {
+							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
+						}
+					}
+					else
+						writer.write("  $file\n")
+				}
+			}
+
+			if (concurrentDeletedFiles.size() != 0) {
+				writer.write("** Deleted Files \n")
+				concurrentDeletedFiles.each { file ->
+					if (props.verbose) println " Deleted: ${file}"
+					if (buildList.contains(file)) {
+						writer.write("* $file is deleted and intersects with the current build list.\n")
+						String msg = "*!! $file is deleted on branch $gitReference and intersects with the current build list."
+						println msg
+						
+						// update build result
+						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
+							props.error = "true"
+							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
+						} else {
+							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
+						}
+					}
+					else
+						writer.write("  $file\n")
+				}
+			}
+		}
+	}
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -704,6 +954,7 @@ def verifyCollections(RepositoryClient repositoryClient) {
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
  *  3 - $dir is not the root directory of the file
+ *  4 - Combination 2 (reponame as application root dir, no common root) and scoped applicationSrcDirs
  *
  */
 
@@ -741,13 +992,22 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 		return [fixedFileName, 3];
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
+	// Scenario 4:
+	//    Repository name is used as application root directory and 
+	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
+	//        applicationSrcDirs=nazare-demo-genapp/src
+	fixedFileName = "${props.application}/$file"
+	if ( new File("${props.workspace}/${fixedFileName}").exists())
+		return [fixedFileName, 4];
+	if (mode==4 && !mustExist) return [fixedFileName, 4]
+	
 	// returns null or assumed fullPath to file
 	if (mustExist){
-		if (props.verbose) println "!! (fixGitDiffPath) File not found."
+		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "!! (fixGitDiffPath) Mode could not be determined. Returning default."
+	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
 	return [defaultValue, null]
 }
 
