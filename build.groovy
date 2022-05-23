@@ -339,7 +339,7 @@ def populateBuildProperties(String[] args) {
 				props.put(key, value)
 			}
 			else {
-				println "*! Overwriting build property from cli argument --propOverwrite failed to null value ( key: $key , value :$value )"
+				println "*! Overwriting build property from cli argument --propOverwrite failed due a null value ( key: $key , value :$value )"
 			}
 		}
 	}
