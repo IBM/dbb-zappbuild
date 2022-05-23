@@ -38,14 +38,26 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'easytrieve
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 	
-	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('easytrieve_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, props.easytrieve_cpyPDS, dependencyResolver)
+	// configure dependency resolution and create logical file
+	def dependencyResolver
+	LogicalFile logicalFile
+
+
+	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, props.easytrieve_cpyPDS, dependencyResolver)
+
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('easytrieve_dependencySearch', buildFile)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('easytrieve_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+
+	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, 'easytrieve_dependenciesDatasetMapping', null, dependencyResolver)
 
 	
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File("${props.buildOutDir}/${member}.log")
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
