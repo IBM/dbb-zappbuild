@@ -42,9 +42,6 @@ sortedList.each { buildFile ->
 	def dependencyResolver
 	LogicalFile logicalFile
 
-
-	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, props.easytrieve_cpyPDS, dependencyResolver)
-
 	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 		String dependencySearch = props.getFileProperty('easytrieve_dependencySearch', buildFile)
 		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
