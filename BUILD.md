@@ -1421,15 +1421,15 @@ HTTP/1.1 200 OK
 
 Dependending on where are in your development process, you might want to dynamically overwrite a build property. One scenario is for example to set the `mainBuildBranch` option which is used also to clone collections and initialize the DBB collections. See [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
 
-To dynamically overwrite any build property, you can make use of the `--propOverwrite` cli argument. To overwrite a build property, pass it in as a key-value pair via the CLI. Several key-value pairs can be passed by comma-separating them. Please make sure that you don't run into any limitations with regards of the length of the overall build command. For mass overwrites, use the `--propFiles` option to pass in one or several property files.
+To dynamically overwrite any build property, you can make use of the `--propOverwrite` cli argument. To overwrite a build property, pass it in as a key-value pair via the CLI. Several key-value pairs can be passed by comma-separating them :`--propOverwrite mainBuildBranch=develop,cobol_compilerVersion=V6`. Please note, that values which contain a comma (`,`) cannot be passed into the list. Please also make sure that you don't run into any limitations with regards of the length of the overall build command. For mass overwrites, use the `--propFiles` option to pass in one or several property files.
 
 
 ```
 groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
-
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 ** Build start at 20210622.082942.029
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
