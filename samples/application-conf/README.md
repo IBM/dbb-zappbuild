@@ -23,6 +23,11 @@ gitRepositoryURL | git repository URL of the application repository to establis
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 jobCard | JOBCARD for JCL execs | false
+**Build Property management** | | 
+loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual property files for a build file | true
+propertyFilePath | relative path to folder containing individual property files | true
+propertyFileExtension | file extension for individual property files | true
+**Dependency and Impact resolution configuration** ||
 useSearchConfiguration | Flag to define which DBB API is used for dependency and impact analysis. `false` uses DependencyResolver and ImpactResolver APIs, while `true` leverages the DBB SearchPathDependencyResolver and SearchParthImpactFinder APIs introduced with DBB 1.1.2 | false
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties

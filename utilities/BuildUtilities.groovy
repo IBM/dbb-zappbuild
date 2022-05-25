@@ -762,24 +762,28 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 
 	buildList.each { String buildFile ->
 
-		String member = new File(buildFile).getName()
-		String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
-		String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
-		String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
-		File fileLevelPropFile = new File(propertyFile)
+		// check for file level overwrite
+		if (props.getFileProperty('loadFileLevelProperties', buildFile).toBoolean()) {
 
-		if (fileLevelPropFile.exists()) {
-			if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
-			InputStream propertyFileIS = new FileInputStream(propertyFile)
-			Properties fileLevelProps = new Properties()
-			fileLevelProps.load(propertyFileIS)
-			
-			fileLevelProps.entrySet().each { entry ->
-				if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
-				props.addFilePattern(entry.key, entry.value, buildFile)
+			String member = new File(buildFile).getName()
+			String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
+			String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
+			File fileLevelPropFile = new File(propertyFile)
+
+			if (fileLevelPropFile.exists()) {
+				if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
+				InputStream propertyFileIS = new FileInputStream(propertyFile)
+				Properties fileLevelProps = new Properties()
+				fileLevelProps.load(propertyFileIS)
+
+				fileLevelProps.entrySet().each { entry ->
+					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
+					props.addFilePattern(entry.key, entry.value, buildFile)
+				}
+			} else {
+				if (props.verbose) println "* Property file $propertyFile not found for $buildFile"
 			}
-		} else {
-			if (props.verbose) println "* Property file $propertyFile not found for $buildFile"
 		}
 	}
 }
