@@ -9,6 +9,12 @@ import com.ibm.dbb.repository.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -25,12 +31,25 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'rexx_fileB
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
+	
+	// configure dependency resolution and create logical file
+	def dependencyResolver
+	LogicalFile logicalFile
+	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.rexx_dependencySearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, dependencyResolver)
+
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.REXX.log")
 	if (logFile.exists())

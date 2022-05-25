@@ -16,8 +16,6 @@ import groovy.ant.*
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
 
-
-
 /*
  * assertBuildProperties - verify that required build properties for a script exist
  */
@@ -93,7 +91,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, DependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, Object dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -117,10 +115,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		// save logical file to dependency resolver
-		if (dependencyResolver)
-			dependencyResolver.setLogicalFile(lfile)
-
+		
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
 
@@ -160,25 +155,33 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	}
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
-		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
-		if (props.verbose) {
-			println "*** Resolution rules for $buildFile:"
-			
-			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-				printResolutionRules(dependencyResolver.getResolutionRules())
-			} else {
-				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+		List<PhysicalDependency> physicalDependencies
+
+		if (dependencyResolver instanceof DependencyResolver) { // deprecated DependencyResolver
+			physicalDependencies = dependencyResolver.resolve()
+			if (props.verbose) {
+				println "*** Resolution rules for $buildFile:"
+
+				if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					printResolutionRules(dependencyResolver.getResolutionRules())
+				} else {
+					dependencyResolver.getResolutionRules().each{ rule -> println rule }
+				}
 			}
+		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+			resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
+			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
 		}
+
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
-		
+
 		if (physicalDependencies.size() != 0) {
 			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				printPhysicalDependencies(physicalDependencies)
-				}
+			}
 		}
 		
 		physicalDependencies.each { physicalDependency ->
@@ -656,9 +659,14 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
 
 		// validate each label
-		currentVersionList.eachWithIndex{ it, i ->
-			if(requiredVersionList.size() >= i +1 )  assert (it as int) >= ((requiredVersionList[i]) as int)
-		}
+		Boolean foundValidVersion = false
+		currentVersionList.eachWithIndex{ label, i ->
+			if((requiredVersionList.size() >= i +1 ) && !(foundValidVersion.toBoolean() == true)) {
+				assert (label as int) >= ((requiredVersionList[i]) as int) : "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
+				if (label > requiredVersionList[i]) foundValidVersion = true
+			}
+		
+	}
 
 	} catch(AssertionError e) {
 		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
@@ -755,9 +763,9 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	buildList.each { String buildFile ->
 
 		String member = new File(buildFile).getName()
-		String propertyPath = props.getFileProperty('propertyFilePath', buildFile)
+		String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
 		String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
-		String propertyFile = getAbsolutePath(props.application) + "/${propertyPath}/${member}.${propertyExtention}"
+		String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
 		File fileLevelPropFile = new File(propertyFile)
 
 		if (fileLevelPropFile.exists()) {
@@ -771,7 +779,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 				props.addFilePattern(entry.key, entry.value, buildFile)
 			}
 		} else {
-			if (props.verbose) println "* Property file $propertyFile not  found for $buildFile"
+			if (props.verbose) println "* Property file $propertyFile not found for $buildFile"
 		}
 	}
 }

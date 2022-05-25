@@ -249,6 +249,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+  
 ```
 ** Build start at 20210622.081915.019
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
@@ -331,6 +332,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 ** Total files processed : 2
 ** Total build time  : 36.978 seconds
 ```
+
 </details>
 
 ### Perform Full Build to build all files 
@@ -577,6 +579,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 ** Build start at 20210622.082942.029
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
