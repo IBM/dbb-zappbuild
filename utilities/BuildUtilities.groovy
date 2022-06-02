@@ -196,7 +196,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
 				String dependencyPDS 
 				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
-					dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+					dependencyPDS = props.getProperty(parseStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
 				if (dependencyPDS == null && dependenciesDatasetMapping){
 					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
@@ -740,6 +740,39 @@ def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
 		def depFile = (physicalDependency.getFile()) ? physicalDependency.getFile() : "N/A"
 		println(resolvedFlag.padLeft(4) + physicalDependency.getLibrary().padRight(10) + physicalDependency.getCategory().padRight(16) + physicalDependency.getLname().padRight(10) + resolvedStatus.padRight(14) + depFile.padRight(36))
 	}
+}
+
+/*
+ *  This is a helper method which parses a String representing a map of key value pairs to a proper map
+ *  cobol_dependenciesAlternativeLibraryNameMapping = [MYFILE: 'cobol_myfilePDS', DCLGEN : 'cobol_dclgenPDS']
+ */
+
+def parseStringToMap(String buildProperty) {
+	
+	Map map = [:]
+
+	tempMappingString = buildProperty
+	try {
+		// remove trailing brackets
+		if (props.cobol_dependenciesAlternativeLibraryNameMapping.take(1) == "[")  tempMappingString = tempMappingString.substring(1)
+		if (props.cobol_dependenciesAlternativeLibraryNameMapping.takeRight(1) == "]")  tempMappingString = tempMappingString.substring(0, tempMappingString.length() - 1)
+		// remove whitespaces
+		tempMappingString = tempMappingString.replaceAll(" ","")
+
+		// split by comma
+		tempMappingString.split(",").each{ keyValuePair ->
+			// split by :
+			def (key, value) = keyValuePair.split(":")
+			map.put(key, value)
+		}
+	} catch (Exception e) {
+		String errorMsg = "*! BuildUtils.parseStringToMap - Failed to parse build property $buildProperty from String into a map object. Marking build as in error."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
+	}
+	
+	return map
 }
 
 /*

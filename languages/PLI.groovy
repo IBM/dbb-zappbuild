@@ -239,7 +239,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
-		alternateLibraryNameAllocations = evaluate(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations = buildUtils.parseStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
 		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
 			datasetDSN = props.getProperty(datasetDSN)
 			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
