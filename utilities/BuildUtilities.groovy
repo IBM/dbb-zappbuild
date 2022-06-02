@@ -756,9 +756,11 @@ def parseStringToMap(String buildProperty) {
 		// remove trailing brackets
 		if (props.cobol_dependenciesAlternativeLibraryNameMapping.take(1) == "[")  tempMappingString = tempMappingString.substring(1)
 		if (props.cobol_dependenciesAlternativeLibraryNameMapping.takeRight(1) == "]")  tempMappingString = tempMappingString.substring(0, tempMappingString.length() - 1)
-		// remove whitespaces
+		// remove whitespaces, single and double quotes
 		tempMappingString = tempMappingString.replaceAll(" ","")
-
+		tempMappingString = tempMappingString.replaceAll("\'","")
+		tempMappingString = tempMappingString.replaceAll("\"","")
+		
 		// split by comma
 		tempMappingString.split(",").each{ keyValuePair ->
 			// split by :

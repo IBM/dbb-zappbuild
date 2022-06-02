@@ -240,9 +240,17 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
 		alternateLibraryNameAllocations = buildUtils.parseStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
-		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
-			datasetDSN = props.getProperty(datasetDSN)
-			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
+			datasetName = props.getProperty(datasetDefinition)
+			if (datasetName) {
+				compile.dd(new DDStatement().name(libraryName).dsn(datasetName).options("shr"))
+			}
+			else {
+				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+			}
 		}
 	}
 		
