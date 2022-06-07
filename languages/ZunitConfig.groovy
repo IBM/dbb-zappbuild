@@ -3,6 +3,7 @@ import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import groovy.xml.*
 
 
 // define script properties
