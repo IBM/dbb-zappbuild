@@ -782,7 +782,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 					props.addFilePattern(entry.key, entry.value, buildFile)
 				}
 			} else {
-				if (props.verbose) println "* Property file $propertyFile not found for $buildFile"
+				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
 			}
 		}
 	}
