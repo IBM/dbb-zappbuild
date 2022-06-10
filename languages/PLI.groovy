@@ -239,7 +239,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
-		alternateLibraryNameAllocations = buildUtils.parseStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
 		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
 			datasetName = props.getProperty(datasetDefinition)
 			if (datasetName) {
