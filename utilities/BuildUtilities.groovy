@@ -196,7 +196,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
 				String dependencyPDS 
 				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
-					dependencyPDS = props.getProperty(parseStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+					dependencyPDS = props.getProperty(parseJSONStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
 				if (dependencyPDS == null && dependenciesDatasetMapping){
 					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
@@ -743,37 +743,21 @@ def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
 }
 
 /*
- *  This is a helper method which parses a String representing a map of key value pairs to a proper map
- *  cobol_dependenciesAlternativeLibraryNameMapping = [MYFILE: 'cobol_myfilePDS', DCLGEN : 'cobol_dclgenPDS']
+ *  This is a helper method which parses a JSON String representing a map of key value pairs to a proper map
+ *  e.q. cobol_dependenciesAlternativeLibraryNameMapping = {"MYFILE": "cobol_myfilePDS", "DCLGEN" : "cobol_dclgenPDS"}
  */
 
-def parseStringToMap(String buildProperty) {
-	
+def parseJSONStringToMap(String buildProperty) {
 	Map map = [:]
-
-	tempMappingString = buildProperty
 	try {
-		// remove trailing brackets
-		if (tempMappingString.take(1) == "[")  tempMappingString = tempMappingString.substring(1)
-		if (tempMappingString.takeRight(1) == "]")  tempMappingString = tempMappingString.substring(0, tempMappingString.length() - 1)
-		// remove whitespaces, single and double quotes
-		tempMappingString = tempMappingString.replaceAll(" ","")
-		tempMappingString = tempMappingString.replaceAll("\'","")
-		tempMappingString = tempMappingString.replaceAll("\"","")
-		
-		// split by comma
-		tempMappingString.split(",").each{ keyValuePair ->
-			// split by :
-			def (key, value) = keyValuePair.split(":")
-			map.put(key, value)
-		}
+		JsonSlurper slurper = new groovy.json.JsonSlurper()
+		map = slurper.parseText(buildProperty)
 	} catch (Exception e) {
-		String errorMsg = "*! BuildUtils.parseStringToMap - Failed to parse build property $buildProperty from String into a map object. Marking build as in error."
+		String errorMsg = "*! BuildUtils.parseJSONStringToMap - Failed to parse build property $buildProperty from JSON String into a map object. Marking build as in error."
 		println(errorMsg)
 		props.error = "true"
 		updateBuildResult(errorMsg:errorMsg)
 	}
-	
 	return map
 }
 
