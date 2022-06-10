@@ -34,7 +34,7 @@ impactResolutionRules | Comma separated list of resolution rule properties used 
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
 
 ### file.properties
-Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides.
+Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Additional file-level properties can be defined through individual property files in a separate directory of the repository. For more details, see the section _Build Property Management_ in `application.properties`
 
 Property | Description
 --- | ---
