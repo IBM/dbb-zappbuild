@@ -203,7 +203,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
 	PropertyMappings dsMapping = new PropertyMappings('pli_dependenciesDatasetMapping')
 	dsMapping.getValues().each { targetDataset ->
-		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		// exclude the defaults pli_cpyPDS and any overwrite in the alternativeLibraryNameMap
 		if (targetDataset != 'pli_incPDS')
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
@@ -238,7 +238,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.pli_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
 	// adding alternate library definitions
-	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
+	if (props.pli_dependenciesAlternativeLibraryNameMapping) {
 		alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
 		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
 			datasetName = props.getProperty(datasetDefinition)
@@ -258,7 +258,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (props.errPrefix) {
 		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
-		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.cobol_compileErrorFeedbackXmlOptions))
+		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.pli_compileErrorFeedbackXmlOptions))
 	}
 
 	// add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
