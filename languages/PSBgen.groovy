@@ -221,7 +221,7 @@ def createACBgenCommand(String buildFile, String member, File logFile) {
 
 	// retrieve target pds and deploytype
 	String acbgen_loadPDS = props.getFileProperty('acbgen_loadPDS', buildFile)
-	String deployType = buildUtils.getDeployType("acbgen", buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("acbgen", buildFile, null)
 	acbgen.dd(new DDStatement().name("IMSACB").dsn("${acbgen_loadPDS}").options('shr').output(true).deployType(deployType))
 
 	// addional allocations
