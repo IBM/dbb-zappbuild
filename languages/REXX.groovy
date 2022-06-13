@@ -163,13 +163,6 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (props.SFELLOAD)
 		compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))
 
-	// add IDz User Build Error Feedback DDs
-	if (props.errPrefix) {
-		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
-		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
-		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.cobol_compileErrorFeedbackXmlOptions))
-	}
-
 	// add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
 	compile.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding))
 
