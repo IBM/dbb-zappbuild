@@ -554,8 +554,10 @@ def createBuildList() {
 	}
 	
 	// Loading file/member level properties from member specific properties files
-	println "** Populate file level properties from individual property files."
-	buildUtils.loadFileLevelPropertiesFromFile(buildList)
+	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") || props.loadFileLevelProperties) {
+		println "** Populating file level properties from individual property files."
+		buildUtils.loadFileLevelPropertiesFromFile(buildList)
+	}
 
 	return [buildList, deleteList]
 }
