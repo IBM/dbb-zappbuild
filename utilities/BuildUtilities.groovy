@@ -773,3 +773,37 @@ def getShortGitHash(String buildFile) {
 	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
 	return null
 }
+
+/*
+ * Loading file level properties for all files on the buildList or list which is passed to this method.
+ */
+def loadFileLevelPropertiesFromFile(List<String> buildList) {
+
+	buildList.each { String buildFile ->
+
+		// check for file level overwrite
+		if (props.getFileProperty('loadFileLevelProperties', buildFile).toBoolean()) {
+
+			String member = new File(buildFile).getName()
+			String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
+			String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
+			File fileLevelPropFile = new File(propertyFile)
+
+			if (fileLevelPropFile.exists()) {
+				if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
+				InputStream propertyFileIS = new FileInputStream(propertyFile)
+				Properties fileLevelProps = new Properties()
+				fileLevelProps.load(propertyFileIS)
+
+				fileLevelProps.entrySet().each { entry ->
+					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
+					props.addFilePattern(entry.key, entry.value, buildFile)
+				}
+			} else {
+				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
+			}
+		}
+	}
+}
+
