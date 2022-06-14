@@ -15,6 +15,11 @@ import com.ibm.dbb.build.report.records.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+	
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -39,16 +44,28 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
 
+	// configure dependency resolution and create logical file
+	def dependencyResolver
+	LogicalFile logicalFile
+
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('cobol_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.cobol.log")
 	if (logFile.exists())
@@ -238,10 +255,18 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
-		alternateLibraryNameAllocations = evaluate(props.cobol_dependenciesAlternativeLibraryNameMapping)
-		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
-			datasetDSN = props.getProperty(datasetDSN)
-			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+		alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.cobol_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
+			datasetName = props.getProperty(datasetDefinition)
+			if (datasetName) {
+				compile.dd(new DDStatement().name(libraryName).dsn(datasetName).options("shr"))
+			}
+			else {
+				String errorMsg = "*! Cobol.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+			}
 		}
 	}
 	

@@ -20,7 +20,12 @@ gitRepositoryURL | git repository URL of the application repository to establis
 excludeFileList | Files to exclude when scanning or running full build.
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
 jobCard | JOBCARD for JCL execs
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below.
+useSearchConfiguration | Flag to define which DBB API is used for dependency and impact analysis. `false` uses DependencyResolver and ImpactResolver APIs, while `true` leverages the DBB SearchPathDependencyResolver and SearchParthImpactFinder APIs introduced with DBB 1.1.2
+resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile
+impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. 
+impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions.
+
+
 
 ### file.properties
 Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides. 
@@ -51,7 +56,8 @@ Application properties used by zAppBuild/language/Cobol.groovy
 Property | Description | Overridable
 --- | --- | ---
 cobol_fileBuildRank | Default Cobol program build rank. Used to sort Cobol build file sub-list. Leave empty. | true
-cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. | true
+cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
+cobol_dependencySearch | Cobol dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 cobol_compilerVersion | Default Cobol compiler version. | true
 cobol_compileMaxRC | Default compile maximum RC allowed. | true
 cobol_linkEditMaxRC | Default link edit maximum RC allowed. | true
