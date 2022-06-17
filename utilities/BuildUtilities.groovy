@@ -16,8 +16,6 @@ import groovy.ant.*
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
 
-
-
 /*
  * assertBuildProperties - verify that required build properties for a script exist
  */
@@ -93,7 +91,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, DependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, Object dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -117,10 +115,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		// save logical file to dependency resolver
-		if (dependencyResolver)
-			dependencyResolver.setLogicalFile(lfile)
-
+		
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
 
@@ -160,25 +155,33 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	}
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
-		List<PhysicalDependency> physicalDependencies = dependencyResolver.resolve()
-		if (props.verbose) {
-			println "*** Resolution rules for $buildFile:"
-			
-			if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-				printResolutionRules(dependencyResolver.getResolutionRules())
-			} else {
-				dependencyResolver.getResolutionRules().each{ rule -> println rule }
+		List<PhysicalDependency> physicalDependencies
+
+		if (dependencyResolver instanceof DependencyResolver) { // deprecated DependencyResolver
+			physicalDependencies = dependencyResolver.resolve()
+			if (props.verbose) {
+				println "*** Resolution rules for $buildFile:"
+
+				if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+					printResolutionRules(dependencyResolver.getResolutionRules())
+				} else {
+					dependencyResolver.getResolutionRules().each{ rule -> println rule }
+				}
 			}
+		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+			resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
+			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
 		}
+
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
-		
+
 		if (physicalDependencies.size() != 0) {
 			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				printPhysicalDependencies(physicalDependencies)
-				}
+			}
 		}
 		
 		physicalDependencies.each { physicalDependency ->
@@ -193,7 +196,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
 				String dependencyPDS 
 				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
-					dependencyPDS = props.getProperty(evaluate(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
+					dependencyPDS = props.getProperty(parseJSONStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
 				if (dependencyPDS == null && dependenciesDatasetMapping){
 					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
@@ -656,9 +659,14 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 		assert currentVersionList.size() >= requiredVersionList.size() : "Version syntax does not match."
 
 		// validate each label
-		currentVersionList.eachWithIndex{ it, i ->
-			if(requiredVersionList.size() >= i +1 )  assert (it as int) >= ((requiredVersionList[i]) as int)
-		}
+		Boolean foundValidVersion = false
+		currentVersionList.eachWithIndex{ label, i ->
+			if((requiredVersionList.size() >= i +1 ) && !(foundValidVersion.toBoolean() == true)) {
+				assert (label as int) >= ((requiredVersionList[i]) as int) : "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
+				if (label > requiredVersionList[i]) foundValidVersion = true
+			}
+		
+	}
 
 	} catch(AssertionError e) {
 		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
@@ -735,6 +743,25 @@ def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
 }
 
 /*
+ *  This is a helper method which parses a JSON String representing a map of key value pairs to a proper map
+ *  e.q. cobol_dependenciesAlternativeLibraryNameMapping = {"MYFILE": "cobol_myfilePDS", "DCLGEN" : "cobol_dclgenPDS"}
+ */
+
+def parseJSONStringToMap(String buildProperty) {
+	Map map = [:]
+	try {
+		JsonSlurper slurper = new groovy.json.JsonSlurper()
+		map = slurper.parseText(buildProperty)
+	} catch (Exception e) {
+		String errorMsg = "*! BuildUtils.parseJSONStringToMap - Failed to parse build property $buildProperty from JSON String into a map object. Marking build as in error."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
+	}
+	return map
+}
+
+/*
  * Obtain the abbreviated git hash from the PropertyMappings table
  *  returns null if no hash was found
  */
@@ -746,3 +773,38 @@ def getShortGitHash(String buildFile) {
 	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
 	return null
 }
+
+/*
+ * Loading file level properties for all files on the buildList or list which is passed to this method.
+ */
+def loadFileLevelPropertiesFromFile(List<String> buildList) {
+
+	buildList.each { String buildFile ->
+
+		// check for file level overwrite
+		loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
+		if (loadFileLevelProperties && loadFileLevelProperties.toBoolean()) {
+
+			String member = new File(buildFile).getName()
+			String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
+			String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
+			File fileLevelPropFile = new File(propertyFile)
+
+			if (fileLevelPropFile.exists()) {
+				if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
+				InputStream propertyFileIS = new FileInputStream(propertyFile)
+				Properties fileLevelProps = new Properties()
+				fileLevelProps.load(propertyFileIS)
+
+				fileLevelProps.entrySet().each { entry ->
+					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
+					props.addFilePattern(entry.key, entry.value, buildFile)
+				}
+			} else {
+				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
+			}
+		}
+	}
+}
+

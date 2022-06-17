@@ -100,8 +100,7 @@ required options:
  -h,--hlq <arg>               High level qualifier for partition data sets
 
 build options:
- -p,--propFiles               Comma separated list of additional property files 
-                              to load. Absolute paths or relative to workspace
+
  -f,--fullBuild               Flag indicating to build all programs for
                               the application
  -i,--impactBuild             Flag indicating to build only programs impacted
@@ -124,7 +123,11 @@ build options:
  -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC 
                               directory for user build
  -zTest,--runzTests           Specify if zUnit Tests should be run
- 
+
+ -p,--propFiles               Comma separated list of additional property files 
+                              to load. Absolute paths or relative to workspace
+ -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties                             
+
  -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
  -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
  -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
@@ -163,6 +166,7 @@ utility options
 - [Perform a Merge build](#perform-a-merge-build)
 - [Perform a Scan Source build](#perform-a-scan-source-build)
 - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
 
 <!-- /TOC -->
 ### Build a Single Program 
@@ -249,6 +253,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+  
 ```
 ** Build start at 20210622.081915.019
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
@@ -331,6 +336,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 ** Total files processed : 2
 ** Total build time  : 36.978 seconds
 ```
+
 </details>
 
 ### Perform Full Build to build all files 
@@ -577,6 +583,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ```
 <details>
   <summary>Build log</summary>
+
 ```
 ** Build start at 20210622.082942.029
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
@@ -1409,6 +1416,158 @@ HTTP/1.1 200 OK
 ** Build State : CLEAN
 ** Total files processed : 15
 ** Total build time  : 23.718 seconds
+```
+
+</details>
+
+### Dynamically Overwrite build properties
+
+Dependending on where are in your development process, you might want to dynamically overwrite a build property. One scenario is for example to set the `mainBuildBranch` option which is used also to clone collections and initialize the DBB collections. See [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+
+To dynamically overwrite any build property, you can make use of the `--propOverwrite` cli argument. To overwrite a build property, pass it in as a key-value pair via the CLI. Several key-value pairs can be passed by comma-separating them :`--propOverwrite mainBuildBranch=develop,cobol_compilerVersion=V6`. Please note, that values which contain a comma (`,`) cannot be passed into the list. Please also make sure that you don't run into any limitations with regards of the length of the overall build command. For mass overwrites, use the `--propFiles` option to pass in one or several property files.
+
+
+```
+groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+```
+<details>
+  <summary>Build log</summary>
+
+```
+** Build start at 20210622.082942.029
+** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Assembler.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/BMS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/MFS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PSBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/DBDgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ACBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/LinkEdit.properties
+** Overwriting build property mainBuildBranch from cli argument --propOverwrite with value develop
+..... // lists of all build properties
+** Repository client created for https://dbb-webapp:8080/dbb
+** Build output located at /var/dbb/out/MortgageApplication/build.20210622.082942.029
+** Build result created for BuildGroup:MortgageApplication-master BuildLabel:build.20210622.082942.029 at https://dbb-webapp:8080/dbb/rest/buildResult/47012
+** --impactBuild option selected. Building impacted programs for application MortgageApplication
+** Getting current hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Storing MortgageApplication : 857266a44a6e859c4f949adb7e32cfbc4a8bd736
+** Getting baseline hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Storing MortgageApplication : 75e13783f2197e12772cec64a16937707ea623a5
+** Calculating changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Diffing baseline 75e13783f2197e12772cec64a16937707ea623a5 -> current 857266a44a6e859c4f949adb7e32cfbc4a8bd736
+*** Changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication:
+**** MortgageApplication/copybook/epsmtcom.cpy
+*** Deleted files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication:
+*** Renamed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication:
+** Updating collections MortgageApplication-master and MortgageApplication-master-outputs
+*** Scanning file MortgageApplication/copybook/epsmtcom.cpy (/var/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtcom.cpy)
+*** Scanning file with the default scanner
+*** Logical file for MortgageApplication/copybook/epsmtcom.cpy =
+{"dli":false,"lname":"EPSMTCOM","file":"MortgageApplication\/copybook\/epsmtcom.cpy","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMTINP","library":"SYSLIB","category":"COPY"},{"lname":"EPSMTOUT","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
+** Storing 1 logical files in repository collection 'MortgageApplication-master'
+HTTP/1.1 200 OK
+** Performing impact analysis on changed file MortgageApplication/copybook/epsmtcom.cpy
+*** Creating impact resolver for MortgageApplication/copybook/epsmtcom.cpy with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/copybook"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/cobol"}, {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/link"} ]             }] rules
+** Found impacted file MortgageApplication/cobol/epscsmrt.cbl
+** MortgageApplication/cobol/epscsmrt.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/link/epsmlist.lnk
+** MortgageApplication/link/epsmlist.lnk is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscmort.cbl
+** MortgageApplication/cobol/epscmort.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epsmlist.cbl
+** MortgageApplication/cobol/epsmlist.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscsmrt.cbl
+** MortgageApplication/cobol/epscsmrt.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscmort.cbl
+** MortgageApplication/cobol/epscmort.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Writing build list file to /var/dbb/out/MortgageApplication/build.20210622.082942.029/buildList.txt
+MortgageApplication/cobol/epsmlist.cbl
+MortgageApplication/cobol/epscsmrt.cbl
+MortgageApplication/cobol/epscmort.cbl
+MortgageApplication/link/epsmlist.lnk
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
+** Building files mapped to Cobol.groovy script
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.DBRM
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
+*** Building file MortgageApplication/cobol/epsmlist.cbl
+*** Creating dependency resolver for MortgageApplication/cobol/epsmlist.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/copybook"} ]                }] rules
+*** Scanning file with the default scanner
+*** Resolution rules for MortgageApplication/cobol/epsmlist.cbl:
+{"library":"SYSLIB","searchPath":[{"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","directory":"MortgageApplication\/copybook"}]}
+*** Physical dependencies for MortgageApplication/cobol/epsmlist.cbl:
+{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"lname":"EPSMLIS","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMORTF","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmortf.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSNBRPM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsnbrpm.cpy","category":"COPY","resolved":true}
+Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
+*** Building file MortgageApplication/cobol/epscsmrt.cbl
+*** Creating dependency resolver for MortgageApplication/cobol/epscsmrt.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/copybook"} ]                }] rules
+*** Scanning file with the default scanner
+*** Resolution rules for MortgageApplication/cobol/epscsmrt.cbl:
+{"library":"SYSLIB","searchPath":[{"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","directory":"MortgageApplication\/copybook"}]}
+*** Physical dependencies for MortgageApplication/cobol/epscsmrt.cbl:
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSPDATA","library":"SYSLIB","file":"MortgageApplication\/copybook\/epspdata.cpy","category":"COPY","resolved":true}
+Cobol compiler parms for MortgageApplication/cobol/epscsmrt.cbl = LIB,CICS
+*** Scanning load module for MortgageApplication/cobol/epscsmrt.cbl
+*** Logical file =
+{"dli":false,"lname":"EPSCSMRT","file":"MortgageApplication\/cobol\/epscsmrt.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
+*** Building file MortgageApplication/cobol/epscmort.cbl
+*** Creating dependency resolver for MortgageApplication/cobol/epscmort.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/var/dbb/dbb-zappbuild/samples", "directory": "MortgageApplication/copybook"} ]                }] rules
+*** Scanning file with the default scanner
+*** Resolution rules for MortgageApplication/cobol/epscmort.cbl:
+{"library":"SYSLIB","searchPath":[{"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","directory":"MortgageApplication\/copybook"}]}
+*** Physical dependencies for MortgageApplication/cobol/epscmort.cbl:
+{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"lname":"EPSMORT","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/var\/dbb\/dbb-zappbuild\/samples","lname":"EPSNBRPM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsnbrpm.cpy","category":"COPY","resolved":true}
+{"excluded":false,"lname":"SQLCA","library":"SYSLIB","category":"SQL INCLUDE","resolved":false}
+Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
+*** Scanning load module for MortgageApplication/cobol/epscmort.cbl
+*** Logical file =
+{"dli":false,"lname":"EPSCMORT","file":"MortgageApplication\/cobol\/epscmort.cbl","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSNBRVL","library":"DBB.ZAPP.CLEAN.MASTER.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
+** Building files mapped to LinkEdit.groovy script
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LINK
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
+** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
+*** Building file MortgageApplication/link/epsmlist.lnk
+*** Creating dependency resolver for MortgageApplication/link/epsmlist.lnk with null rules
+*** Scanning file with the default scanner
+*** Scanning load module for MortgageApplication/link/epsmlist.lnk
+*** Logical file =
+{"dli":false,"lname":"EPSMLIST","file":"MortgageApplication\/link\/epsmlist.lnk","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMPMT","library":"DBB.ZAPP.CLEAN.MASTER.LOAD","category":"LINK"},{"lname":"EPSMLIST","library":"DBB.ZAPP.CLEAN.MASTER.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
+*** Obtaining hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Setting property :githash:MortgageApplication : 857266a44a6e859c4f949adb7e32cfbc4a8bd736
+** Setting property :giturl:MortgageApplication : git@github.ibm.com:zDevOps-Acceleration/dbb-zappbuild.git
+** Writing build report data to /var/dbb/out/MortgageApplication/build.20210622.082942.029/BuildReport.json
+** Writing build report to /var/dbb/out/MortgageApplication/build.20210622.082942.029/BuildReport.html
+** Updating build result BuildGroup:MortgageApplication-master BuildLabel:build.20210622.082942.029 at https://dbb-webapp:8080/dbb/rest/buildResult/47012
+** Build ended at Tue Jun 22 08:29:59 GMT+01:00 2021
+** Build State : CLEAN
+** Total files processed : 4
+** Total build time  : 17.239 seconds
 ```
 
 </details>

@@ -14,6 +14,11 @@ import com.ibm.dbb.build.report.records.*
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
+@Field def resolverUtils
+// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
+if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -37,11 +42,21 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
 
-	// copy build file to input data set
-	// copy build file and dependency files to data sets
-	String rules = props.getFileProperty('pli_resolutionRules', buildFile)
-	DependencyResolver dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+	// configure dependency resolution and create logical file 	
+	def dependencyResolver
+	LogicalFile logicalFile
 	
+	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.pli_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
+		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	} else { // use deprecated DependencyResolver
+		String rules = props.getFileProperty('pli_resolutionRules', buildFile)
+		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
+	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
 	}else{
@@ -49,7 +64,6 @@ sortedList.each { buildFile ->
 	}
 
 	// create mvs commands
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
 	if (logFile.exists())
@@ -189,7 +203,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
 	PropertyMappings dsMapping = new PropertyMappings('pli_dependenciesDatasetMapping')
 	dsMapping.getValues().each { targetDataset ->
-		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		// exclude the defaults pli_cpyPDS and any overwrite in the alternativeLibraryNameMap
 		if (targetDataset != 'pli_incPDS')
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
@@ -224,11 +238,19 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.pli_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
 	// adding alternate library definitions
-	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
-		alternateLibraryNameAllocations = evaluate(props.pli_dependenciesAlternativeLibraryNameMapping)
-		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
-			datasetDSN = props.getProperty(datasetDSN)
-			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+	if (props.pli_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
+			datasetName = props.getProperty(datasetDefinition)
+			if (datasetName) {
+				compile.dd(new DDStatement().name(libraryName).dsn(datasetName).options("shr"))
+			}
+			else {
+				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+			}
 		}
 	}
 		
@@ -236,7 +258,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (props.errPrefix) {
 		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
-		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.cobol_compileErrorFeedbackXmlOptions))
+		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.pli_compileErrorFeedbackXmlOptions))
 	}
 
 	// add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
