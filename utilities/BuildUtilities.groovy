@@ -115,7 +115,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		
+		// set logical file in the dependency resolver if using deprecated API
+		if (dependencyResolver && (dependencyResolver instanceof DependencyResolver)) 
+			dependencyResolver.setLogicalFile(lfile) 
+
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
 
@@ -168,7 +171,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					dependencyResolver.getResolutionRules().each{ rule -> println rule }
 				}
 			}
-		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+		} else if (useSearchPathAPI()) {
 			resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
 			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
 		}
@@ -806,5 +809,13 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 			}
 		}
 	}
+}
+
+/*
+ * Determine whether DBB supports and zAppBuild is configured to use the new Search Path APIs.
+ * The minimum required DBB version for Search Path APIs is DBB v1.1.2. 
+ */
+def useSearchPathAPI() {
+	return props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")
 }
 

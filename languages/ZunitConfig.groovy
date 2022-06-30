@@ -15,7 +15,7 @@ import groovy.xml.*
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+if (buildUtils.useSearchPathAPI()) {
 	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
@@ -40,7 +40,8 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// configure dependency resolution
 	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+	if (buildUtils.useSearchPathAPI()) { // use new SearchPathDependencyResolver
+		buildUtils.assertBuildProperties("zunit_dependencySearch")
 		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
 		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	} else { // use deprecated DependencyResolver
@@ -51,6 +52,15 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
+	// get logical file
+	LogicalFile logicalFile
+	if (buildUtils.useSearchPathAPI()) {
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	}
+	else {
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+	
 	// Parse the playback from the bzucfg file
 	Boolean hasPlayback = false
 	String playback

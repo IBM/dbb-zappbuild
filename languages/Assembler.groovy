@@ -15,7 +15,7 @@ import com.ibm.dbb.build.report.records.*
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+if (buildUtils.useSearchPathAPI()) {
 	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
@@ -33,22 +33,33 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'assembler_
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
-	// configure dependency resolution and create logical file 	
+	// configure appropriate dependency resolver
 	def dependencyResolver
-	LogicalFile logicalFile
-	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.assembler_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+		
+	if (buildUtils.useSearchPathAPI()) { // use new SearchPathDependencyResolver
+		buildUtils.assertBuildProperties("assembler_dependencySearch")
 		String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
 		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 	} else { // use deprecated DependencyResolver
 		String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
 		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
+		
 	}
 	
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildFile, props.assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
+
+	// get logical file from resolver
+	def logicalFile
+
+	if (buildUtils.useSearchPathAPI()) {
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	}
+	else {
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
+
+
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -308,8 +319,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.MODGEN).options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		assembler.dd(new DDStatement().dsn(props.SDFHMAC).options("shr"))
-	if (buildUtils.isSQL(logicalFile))
-		assembler.dd(new DDStatement().dsn("DBC0CFG.DB2.V12.SDSNSAMP").options("shr"))
+	//if (buildUtils.isSQL(logicalFile))
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
