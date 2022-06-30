@@ -28,6 +28,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
+	Set<String> buildSet = new HashSet<String>()
+	
+	boolean calculatedChanges = true 
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
@@ -38,156 +41,160 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 	else {
 		// else create a fullBuild list
-		println "*! No prior build result located.  Building all programs"
+		println "*! No prior build result located.  Creating a full build list."
 		changedFiles = buildUtils.createFullBuildList()
+		buildSet = changedFiles
+		
+		// skip impact calculation and return the generated build list
+		calculatedChanges = false
 	}
 
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
+	if (calculatedChanges) {
+
+		// create build list using impact analysis
+		if (props.verbose) println "*** Perform impacted analysis for changed files."
+
+		Set<String> changedBuildPropertyFiles = new HashSet<String>()
+		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
 
-	// create build list using impact analysis
-	if (props.verbose) println "*** Perform impacted analysis for changed files."
-
-	Set<String> buildSet = new HashSet<String>()
-	Set<String> changedBuildPropertyFiles = new HashSet<String>()
-	
-	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-	
-	
-	changedFiles.each { changedFile ->
-		// if the changed file has a build script then add to build list
-		if (ScriptMappings.getScriptName(changedFile)) {
-			buildSet.add(changedFile)
-			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
-		}
-
-		// check if impact calculation should be performed, default true
-		if (shouldCalculateImpacts(changedFile)){
-
-			// perform impact analysis on changed file
-			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
-
-			// get exclude list
-			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
-			
-			// list of impacts
-			def impacts
-
-			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-				
-				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
-			}
-			else {
-				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-				ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
-
-				// Print impactResolverConfiguration
-				if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-					// print collection information
-					println("    " + "Collection".padRight(20) )
-					println("    " + " ".padLeft(20,"-"))
-					impactResolver.getCollections().each{ collectionName ->
-						println("    " + collectionName)
-					}
-					// print impact resolution rule in table format
-					buildUtils.printResolutionRules(impactResolver.getResolutionRules())
-				}
-
-				// resolving impacts
-				impacts = impactResolver.resolve()
-			}
-			
-			impacts.each { impact ->
-				def impactFile = impact.getFile()
-				if (props.verbose) println "** Found impacted file $impactFile"
-				// only add impacted files that have a build script mapped to it
-				if (ScriptMappings.getScriptName(impactFile)) {
-					// only add impacted files, that are in scope of the build.
-					if (!matches(impactFile, excludeMatchers)){
-						
-						// calculate abbreviated gitHash for impactFile
-						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
-						}
-						
-						// add file to buildset
-						buildSet.add(impactFile)
-						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
-					}
-					else {
-						// impactedFile found, but on Exclude List
-						//   Possible reasons: Exclude of file was defined after building the collection.
-						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-						if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
-					}
-				}
+		changedFiles.each { changedFile ->
+			// if the changed file has a build script then add to build list
+			if (ScriptMappings.getScriptName(changedFile)) {
+				buildSet.add(changedFile)
+				if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 			}
 
-		}else {
-			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
-		}
-	}
+			// check if impact calculation should be performed, default true
+			if (shouldCalculateImpacts(changedFile)){
 
-	// Perform impact analysis for property changes
-	if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-		if (props.verbose) println "*** Perform impacted analysis for property changes."
+				// perform impact analysis on changed file
+				if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 
-		changedBuildProperties.each { changedProp ->
-
-			if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
-
-				// perform impact analysis on changed property
-				if (props.verbose) println "** Performing impact analysis on property $changedProp"
-
-				// create logical dependency and query collections for logical files with this dependency
-				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-				logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
-
-
-				// get excludeListe
+				// get exclude list
 				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-				logicalFileList.each { logicalFile ->
-					def impactFile = logicalFile.getFile()
+				// list of impacts
+				def impacts
+
+				if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+
+					String impactSearch = props.getFileProperty('impactSearch', changedFile)
+					impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
+				}
+				else {
+					String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
+					ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+
+					// Print impactResolverConfiguration
+					if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
+						// print collection information
+						println("    " + "Collection".padRight(20) )
+						println("    " + " ".padLeft(20,"-"))
+						impactResolver.getCollections().each{ collectionName ->
+							println("    " + collectionName)
+						}
+						// print impact resolution rule in table format
+						buildUtils.printResolutionRules(impactResolver.getResolutionRules())
+					}
+
+					// resolving impacts
+					impacts = impactResolver.resolve()
+				}
+
+				impacts.each { impact ->
+					def impactFile = impact.getFile()
 					if (props.verbose) println "** Found impacted file $impactFile"
 					// only add impacted files that have a build script mapped to it
 					if (ScriptMappings.getScriptName(impactFile)) {
 						// only add impacted files, that are in scope of the build.
 						if (!matches(impactFile, excludeMatchers)){
+
+							// calculate abbreviated gitHash for impactFile
+							filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+							if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+								abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+								githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+							}
+
+							// add file to buildset
 							buildSet.add(impactFile)
-							if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+							if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 						}
 						else {
 							// impactedFile found, but on Exclude List
 							//   Possible reasons: Exclude of file was defined after building the collection.
 							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+							if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
 						}
 					}
 				}
+
 			}else {
-				if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
+				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-	}else {
-		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
-	}
 
-	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "*** Analyze and report external impacted files."
-		reportExternalImpacts(repositoryClient, changedFiles)
-	}
+		// Perform impact analysis for property changes
+		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+			if (props.verbose) println "*** Perform impacted analysis for property changes."
 
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
+			changedBuildProperties.each { changedProp ->
+
+				if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
+
+					// perform impact analysis on changed property
+					if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+					// create logical dependency and query collections for logical files with this dependency
+					LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
+					logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+
+
+					// get excludeListe
+					List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+
+					logicalFileList.each { logicalFile ->
+						def impactFile = logicalFile.getFile()
+						if (props.verbose) println "** Found impacted file $impactFile"
+						// only add impacted files that have a build script mapped to it
+						if (ScriptMappings.getScriptName(impactFile)) {
+							// only add impacted files, that are in scope of the build.
+							if (!matches(impactFile, excludeMatchers)){
+								buildSet.add(impactFile)
+								if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+							}
+							else {
+								// impactedFile found, but on Exclude List
+								//   Possible reasons: Exclude of file was defined after building the collection.
+								//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+								if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+							}
+						}
+					}
+				}else {
+					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
+				}
+			}
+		}else {
+			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
+		}
+
+		// Perform analysis and build report of external impacts
+		if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+			if (props.verbose) println "*** Analyze and report external impacted files."
+			reportExternalImpacts(repositoryClient, changedFiles)
+		}
+
+		// Document and validate concurrent changes
+		if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+			if (props.verbose) println "*** Calculate and document concurrent changes."
+			calculateConcurrentChanges(repositoryClient, buildSet)
+		}
+
 	}
 
 	return [buildSet, deletedFiles]
