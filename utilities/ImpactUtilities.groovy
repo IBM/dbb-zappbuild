@@ -42,7 +42,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	else {
 		// else create a fullBuild list
 		println "*! No prior build result located.  Creating a full build list."
-		buildSet = buildUtils.createFullBuildList()
+		changedFiles = buildUtils.createFullBuildList()
+		buildSet = changedFiles
 		
 		// skip impact calculation and return the generated build list
 		calculatedChanges = false
