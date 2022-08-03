@@ -28,6 +28,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
+	Set<String> buildSet = new HashSet<String>()
+	
 	boolean calculatedChanges = true 
 
 	// get the last build result to get the baseline hashes
@@ -40,7 +42,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	else {
 		// else create a fullBuild list
 		println "*! No prior build result located.  Creating a full build list."
-		changedFiles = buildUtils.createFullBuildList()
+		buildSet = buildUtils.createFullBuildList()
 		
 		// skip impact calculation and return the generated build list
 		calculatedChanges = false
@@ -54,9 +56,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		// create build list using impact analysis
 		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
-		Set<String> buildSet = new HashSet<String>()
 		Set<String> changedBuildPropertyFiles = new HashSet<String>()
-
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
 
