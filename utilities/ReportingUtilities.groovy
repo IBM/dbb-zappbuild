@@ -33,7 +33,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 			// get directly impacted candidates first
 			if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
-				def logicalImpactedFiles = queryImpactedFiles(changedFile, repositoryClient)
+				def logicalImpactedFiles = queryImpactedFiles(changedFile, repositoryClient, collectionMatcherPatterns)
 				logicalImpactedFiles.each{ logicalFile ->
 					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
 					if (props.verbose) println("*** impactRecord: $impactRecord")
@@ -42,7 +42,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 					// get impacted files of idenfied impacted files
 					if(props.reportExternalImpactsAnalysisDepths == "deep") {
 						// pass identified direct impact into analysis
-						def logicalImpactedFilesSecndLvl= queryImpactedFiles(logicalFile.getFile(), repositoryClient)
+						def logicalImpactedFilesSecndLvl= queryImpactedFiles(logicalFile.getFile(), repositoryClient, collectionMatcherPatterns)
 						logicalImpactedFilesSecndLvl.each{ logicalFileSecndLvl ->
 							def impactRecordSecndLvl = "${logicalFileSecndLvl.getLname()} \t ${logicalFileSecndLvl.getFile()} \t ${cName}"
 							if (props.verbose) println("*** impactRecordSecndLvl:  $impactRecordSecndLvl")
@@ -81,7 +81,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 }
 
-def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient) {
+def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient, List<Pattern> collectionMatcherPatterns) {
 	String memberName = CopyToPDS.createMemberName(changedFile)
 	def logicalFiles // initialize
 	
