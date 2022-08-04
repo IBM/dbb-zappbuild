@@ -46,6 +46,11 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
+	// Perform analysis and build report of external impacts
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (props.verbose) println "*** Perform analysis and report external impacted files for changed files."
+		reportingUtils.reportExternalImpacts(repositoryClient, changedFiles)
+	}
 
 
 	// create build list using impact analysis
@@ -177,12 +182,6 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}
 	}else {
 		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
-	}
-
-	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "*** Analyze and report external impacted files."
-		reportingUtils.reportExternalImpacts(repositoryClient, changedFiles)
 	}
 
 	// Document and validate concurrent changes
