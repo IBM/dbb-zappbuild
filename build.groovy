@@ -484,6 +484,12 @@ def createBuildList() {
 			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
 	}
+	
+	// Document and validate concurrent changes
+	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+		if (props.verbose) println "*** Calculate and document concurrent changes."
+		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
+	}
 
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {

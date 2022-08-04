@@ -184,12 +184,6 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 	}
 
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
-	}
-
 	return [buildSet, deletedFiles]
 }
 
@@ -230,12 +224,6 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		reportingUtils.reportExternalImpacts(repositoryClient, changedFiles)
 	}
 	
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
-	}
-
 	return [buildSet, deletedFiles]
 }
 

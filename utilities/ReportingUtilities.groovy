@@ -116,27 +116,6 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 	]
 }
 
-def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient, List<Pattern> collectionMatcherPatterns) {
-	String memberName = CopyToPDS.createMemberName(changedFile)
-	def logicalFiles // initialize
-
-	def ldepFile = new LogicalDependency(memberName, null, null);
-	repositoryClient.getAllCollections().each{ collection ->
-		String cName = collection.getName()
-		if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-			if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-				logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
-			}
-		}
-		else{
-			//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-		}
-	}
-	return logicalFiles
-
-}
-
 def matches(String file, List<PathMatcher> pathMatchers) {
 	def result = pathMatchers.any { matcher ->
 		Path path = FileSystems.getDefault().getPath(file);
