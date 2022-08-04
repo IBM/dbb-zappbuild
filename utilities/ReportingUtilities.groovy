@@ -33,9 +33,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
 
 			// check that file is on reportExternalImpactsAnalysisFileFilter
-
 			if(matches(changedFile, fileMatchers)){
 
+				// get directly impacted candidates first
 				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, collectionImpactsSetMap, repositoryClient)
 
 				// get impacted files of idenfied impacted files
@@ -82,31 +82,29 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 	// will be returned
 	Set<String> impactedFiles = new HashSet<String>()
 
-
-	// get directly impacted candidates first
-
 	String memberName = CopyToPDS.createMemberName(changedFile)
 
 	def ldepFile = new LogicalDependency(memberName, null, null);
 	repositoryClient.getAllCollections().each{ collection ->
 		String cName = collection.getName()
 		if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-			if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-				def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+			def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+			def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 
-				logicalImpactedFiles.each{ logicalFile ->
-					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-					if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} \t  ${logicalFile.getFile()} \t in collection ${cName} ")
+			logicalImpactedFiles.each{ logicalFile ->
+				if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+				def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+
+				if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){ // we can exclude internal impacted files
 					externalImpactList.add(impactRecord)
-					impactedFiles.add(logicalFile.getFile())
 				}
-				// adding updated record
-				collectionImpactsSetMap.put(cName, externalImpactList)
+				impactedFiles.add(logicalFile.getFile())
 			}
-			else{
-				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-			}
+			// adding updated record
+			collectionImpactsSetMap.put(cName, externalImpactList)
+		}
+		else{
+			//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 		}
 	}
 
