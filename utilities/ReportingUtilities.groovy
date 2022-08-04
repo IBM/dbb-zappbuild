@@ -33,24 +33,33 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 			// get directly impacted candidates first
 			if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
-				def logicalImpactedFiles = queryImpactedFiles(changedFile, repositoryClient, collectionMatcherPatterns)
-				logicalImpactedFiles.each{ logicalFile ->
-					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-					if (props.verbose) println("*** impactRecord: $impactRecord")
-					externalImpactList.add(impactRecord)
 
-					// get impacted files of idenfied impacted files
-					if(props.reportExternalImpactsAnalysisDepths == "deep") {
-						// pass identified direct impact into analysis
-						def logicalImpactedFilesSecndLvl= queryImpactedFiles(logicalFile.getFile(), repositoryClient, collectionMatcherPatterns)
-						logicalImpactedFilesSecndLvl.each{ logicalFileSecndLvl ->
-							def impactRecordSecndLvl = "${logicalFileSecndLvl.getLname()} \t ${logicalFileSecndLvl.getFile()} \t ${cName}"
-							if (props.verbose) println("*** impactRecordSecndLvl:  $impactRecordSecndLvl")
-							externalImpactList.add(impactRecordSecndLvl)
+				String memberName = CopyToPDS.createMemberName(changedFile)
+
+				def ldepFile = new LogicalDependency(memberName, null, null);
+				repositoryClient.getAllCollections().each{ collection ->
+					String cName = collection.getName()
+					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
+							def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+							def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+
+							logicalImpactedFiles.each{ logicalFile ->
+								def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+								if (props.verbose) println("*** impactRecord: $impactRecord")
+								externalImpactList.add(impactRecord)
+
+							}
+							// adding updated record
+							collectionImpactsSetMap.put(cName, externalImpactList)
+						}
+						else{
+							//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 						}
 					}
+
 				}
-				collectionImpactsSetMap.put(cName, externalImpactList)
+
 			}
 			else {
 				println("*! build property reportExternalImpactsAnalysisDepths has in invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
@@ -81,10 +90,21 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 }
 
+//// get impacted files of idenfied impacted files
+//if(props.reportExternalImpactsAnalysisDepths == "deep") {
+//	// pass identified direct impact into analysis
+//	def logicalImpactedFilesSecndLvl= queryImpactedFiles(logicalFile.getFile(), repositoryClient, collectionMatcherPatterns)
+//	logicalImpactedFilesSecndLvl.each{ logicalFileSecndLvl ->
+//		def impactRecordSecndLvl = "${logicalFileSecndLvl.getLname()} \t ${logicalFileSecndLvl.getFile()} \t ${cName}"
+//		if (props.verbose) println("*** impactRecordSecndLvl:  $impactRecordSecndLvl")
+//		externalImpactList.add(impactRecordSecndLvl)
+//	}
+//}
+
 def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient, List<Pattern> collectionMatcherPatterns) {
 	String memberName = CopyToPDS.createMemberName(changedFile)
 	def logicalFiles // initialize
-	
+
 	def ldepFile = new LogicalDependency(memberName, null, null);
 	repositoryClient.getAllCollections().each{ collection ->
 		String cName = collection.getName()
@@ -99,7 +119,7 @@ def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient, Li
 		}
 	}
 	return logicalFiles
-	
+
 }
 
 /**
@@ -113,39 +133,39 @@ def queryImpactedFiles(String changedFile, RepositoryClient repositoryClient, Li
  *
  */
 def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-	
-		// initialize patterns
-		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
-	
-		// obtain all current remote branches
-		// TODO: Handle / Exclude branches from other repositories
-		Set<String> remoteBranches = new HashSet<String>()
-		props.applicationSrcDirs.split(",").each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-		}
-		
-		// Run analysis for each remoteBranch, which matches the configured criteria
-		remoteBranches.each { gitReference ->
-	
-			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
-	
-				Set<String> concurrentChangedFiles = new HashSet<String>()
-				Set<String> concurrentRenamedFiles = new HashSet<String>()
-				Set<String> concurrentDeletedFiles = new HashSet<String>()
-				Set<String> concurrentBuildProperties = new HashSet<String>()
-	
-				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-	
-				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
-	
-				// generate reports and verify for intersects
-				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
-	
-			}
-		}
-	
+
+	// initialize patterns
+	List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
+
+	// obtain all current remote branches
+	// TODO: Handle / Exclude branches from other repositories
+	Set<String> remoteBranches = new HashSet<String>()
+	props.applicationSrcDirs.split(",").each { dir ->
+		dir = buildUtils.getAbsolutePath(dir)
+		remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
 	}
+
+	// Run analysis for each remoteBranch, which matches the configured criteria
+	remoteBranches.each { gitReference ->
+
+		if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
+
+			Set<String> concurrentChangedFiles = new HashSet<String>()
+			Set<String> concurrentRenamedFiles = new HashSet<String>()
+			Set<String> concurrentDeletedFiles = new HashSet<String>()
+			Set<String> concurrentBuildProperties = new HashSet<String>()
+
+			if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+
+			(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+
+			// generate reports and verify for intersects
+			generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
+
+		}
+	}
+
+}
 
 /*
  * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
@@ -174,7 +194,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						writer.write("* $file is changed and intersects with the current build list.\n")
 						String msg = "*!! $file is changed on branch $gitReference and intersects with the current build list."
 						println msg
-						
+
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
@@ -196,7 +216,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						writer.write("* $file got renamed and intersects with the current build list.\n")
 						String msg = "*!! $file is renamed on branch $gitReference and intersects with the current build list."
 						println msg
-						
+
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
@@ -218,7 +238,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						writer.write("* $file is deleted and intersects with the current build list.\n")
 						String msg = "*!! $file is deleted on branch $gitReference and intersects with the current build list."
 						println msg
-						
+
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
