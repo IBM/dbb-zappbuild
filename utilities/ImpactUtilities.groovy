@@ -930,15 +930,3 @@ def sortFileList(list) {
 	}
 }
 
-/**
- * match a String against a list of patterns
- */
-def matchesPattern(String name, List<Pattern> patterns) {
-	def result = patterns.any { pattern ->
-		if (pattern.matcher(name).matches())
-		{
-			return true
-		}
-	}
-	return result
-}
