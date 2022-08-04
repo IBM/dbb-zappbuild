@@ -474,50 +474,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	]
 }
 
-/**
- * Method to calculate and report the changes between the current configuration and concurrent configurations;
- * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
- * 
- * Invokes method generateConcurrentChangesReports to produce the reports
- * 
- * @param repositoryClient
- * @param buildSet
- * 
- */
-def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-	
-		// initialize patterns
-		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
-	
-		// obtain all current remote branches
-		// TODO: Handle / Exclude branches from other repositories
-		Set<String> remoteBranches = new HashSet<String>()
-		props.applicationSrcDirs.split(",").each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-		}
-		
-		// Run analysis for each remoteBranch, which matches the configured criteria
-		remoteBranches.each { gitReference ->
-	
-			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
-	
-				Set<String> concurrentChangedFiles = new HashSet<String>()
-				Set<String> concurrentRenamedFiles = new HashSet<String>()
-				Set<String> concurrentDeletedFiles = new HashSet<String>()
-				Set<String> concurrentBuildProperties = new HashSet<String>()
-	
-				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-	
-				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
-	
-				// generate reports and verify for intersects
-				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
-	
-			}
-		}
-	
-	}
+
 
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
