@@ -717,10 +717,7 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 			logicalImpactedFiles.each{ logicalFile ->
 				if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
 				def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-
-				if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){ // we can exclude internal impacted files
-					externalImpactList.add(impactRecord)
-				}
+				externalImpactList.add(impactRecord)
 				impactedFiles.add(logicalFile.getFile())
 			}
 			// adding updated record
