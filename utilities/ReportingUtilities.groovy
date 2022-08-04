@@ -97,7 +97,7 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 
 				logicalImpactedFiles.each{ logicalFile ->
 					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-					if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} \t  ${logicalFile.getFile()} \t in collection ${cName} )
+					if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} \t  ${logicalFile.getFile()} \t in collection ${cName} ")
 					externalImpactList.add(impactRecord)
 					impactedFiles.add(logicalFile.getFile())
 				}
