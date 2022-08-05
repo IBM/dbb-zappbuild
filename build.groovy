@@ -561,20 +561,20 @@ def createBuildList() {
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && repositoryClient){
 		if (buildSet && changedFiles) {
-			println "*** Perform analysis and reporting of external impacted files for the build list including changed files."
+			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
 		}
 		else if(buildSet) {
-			println "*** Perform analysis and reporting of external impacted files for the build list."
+			println "** Perform analysis and reporting of external impacted files for the build list."
 			impactUtils.reportExternalImpacts(repositoryClient, buildSet)
 		}
 	}
 
 	// Document and validate concurrent changes
-	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		println "*** Calculate and document concurrent changes."
+	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
+		println "** Calculate and document concurrent changes."
 		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
 	}
 
