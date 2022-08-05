@@ -647,14 +647,14 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 				// get directly impacted candidates first
 				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
-				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "***")
+				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
 
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
 						if (props.verbose) println("**** Running external impact analysis for impacted file $impactedFile as a dependent file of $changedFile ")
 						def impactsBin
-						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "****")
+						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
 					}
 				}
 
@@ -693,7 +693,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 @Field Set<String> inspectedExternalImpactedFilesCache = new HashSet<String>()
 
-def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg) {
+def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg, String analysisMode) {
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
@@ -708,7 +708,8 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 		String cName = collection.getName()
 		if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
 
-			if (!inspectedExternalImpactedFilesCache.contains("$cName-$file")) {
+			if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
+//			if (!inspectedExternalImpactedFilesCache.contains(file)) {
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				// query dbb web app for files with a logical dependency to the processed file
@@ -723,13 +724,13 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 				// adding updated record
 				collectionImpactsSetMap.put(cName, externalImpactList)
 				
-				if(!changedFiles.contains(file)) {
-					// caching record to avoid repeatative analysis on collection-file combincation
-					inspectedExternalImpactedFilesCache.add("$cName-$file")
-				}
+//				if(!changedFiles.contains(file)) {
+//					// caching record to avoid repeatative analysis on collection-file combincation
+//					inspectedExternalImpactedFilesCache.add(file)
+//				}
 			}else {
 				// debug-output 
-				println("*!* Skipped redundant analysis. $cName-$file is in cache")
+				println("*!* Skipped redundant analysis. $file is or will be procceed.")
 			}
 		}
 		else{
