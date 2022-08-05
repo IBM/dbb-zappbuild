@@ -643,10 +643,13 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			if(matches(changedFile, fileMatchers)){
 
 				// get directly impacted candidates first
+				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
+					
 				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, collectionImpactsSetMap, repositoryClient)
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
+						if (props.verbose) println("**** Running external impact analysis for impacted file $impactedFile as a dependent file of $changedFile ")
 						def impactsBin
 						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
 					}
@@ -719,7 +722,7 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 				collectionImpactsSetMap.put(cName, externalImpactList)
 				inspectedExternalImpactedFilesCache.add("$cName-$changedFile")
 			}else {
-				println("skipped redundant analysis. $cName-$changedFile is in cache")
+				println("*!* Skipped redundant analysis. $cName-$changedFile is in cache")
 			}
 		}
 		else{
