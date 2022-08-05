@@ -704,12 +704,14 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 	String memberName = CopyToPDS.createMemberName(file)
 
 	def ldepFile = new LogicalDependency(memberName, null, null);
-	repositoryClient.getAllCollections().each{ collection ->
-		String cName = collection.getName()
-		if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+	if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
 
-			if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
-//			if (!inspectedExternalImpactedFilesCache.contains(file)) {
+		// iterate over collections
+		repositoryClient.getAllCollections().each{ collection ->
+			String cName = collection.getName()
+			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+
+				//			if (!inspectedExternalImpactedFilesCache.contains(file)) {
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				// query dbb web app for files with a logical dependency to the processed file
@@ -723,19 +725,19 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 				}
 				// adding updated record
 				collectionImpactsSetMap.put(cName, externalImpactList)
-				
-//				if(!changedFiles.contains(file)) {
-//					// caching record to avoid repeatative analysis on collection-file combincation
-//					inspectedExternalImpactedFilesCache.add(file)
-//				}
-			}else {
-				// debug-output 
-				println("*!* Skipped redundant analysis. $file is or will be procceed.")
+
+				//				if(!changedFiles.contains(file)) {
+				//					// caching record to avoid repeatative analysis on collection-file combincation
+				//					inspectedExternalImpactedFilesCache.add(file)
+				//				}
+			}
+			else{
+				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
-		else{
-			//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-		}
+	}else {
+		// debug-output
+		println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
 	}
 
 	return [
