@@ -687,7 +687,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  */
 
-@Field Set<String> inspectedExternalImpactedFilesCache = new HashMap<String>()
+@Field Set<String> inspectedExternalImpactedFilesCache = new HashSet<String>()
 
 def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient) {
 
