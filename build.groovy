@@ -457,8 +457,10 @@ def createBuildList() {
 
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
-
+	Set<String> renamedFiles = new HashSet<String>() // not yet used for any post-processing
+	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
 	// check if full build
@@ -470,7 +472,7 @@ def createBuildList() {
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		if (repositoryClient) {
-			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
+			(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
@@ -479,7 +481,7 @@ def createBuildList() {
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
 		if (repositoryClient) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
+				(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(repositoryClient)		}
 		else {
 			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
@@ -541,7 +543,7 @@ def createBuildList() {
 	// write out list of deleted files (for documentation, not actually used by build scripts)
 	if (deletedFiles.size() > 0){
 		String deletedFilesListLoc = "${props.buildOutDir}/deletedFilesList.${props.buildListFileExt}"
-		println "** Writing lists of deleted files to $deletedFilesListLoc"
+		println "** Writing list of deleted files to $deletedFilesListLoc"
 		File deletedFilesListFile = new File(deletedFilesListLoc)
 		deletedFilesListFile.withWriter(enc) { writer ->
 			deletedFiles.each { file ->
@@ -564,6 +566,13 @@ def createBuildList() {
 		println "** Populating file level properties from individual property files."
 		buildUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
+	
+	// Perform analysis and build report of external impacts
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (props.verbose) println "*** Perform analysis and reporting of external impacted files for the build list including changed files."
+		impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
+	}
+	
 
 	return [buildList, deleteList]
 }

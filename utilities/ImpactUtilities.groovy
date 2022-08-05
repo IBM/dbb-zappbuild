@@ -175,14 +175,8 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}else {
 		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 	}
-
-	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "*** Perform analysis and report external impacted files for the build list including changed files."
-		reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
-	}
 	
-	return [buildSet, deletedFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
 
@@ -216,13 +210,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		}
 	}
 
-	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "*** Analyze and report external impacted files."
-		reportExternalImpacts(repositoryClient, changedFiles)
-	}
-	
-	return [buildSet, deletedFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
 
