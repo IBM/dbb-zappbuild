@@ -645,13 +645,13 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				// get directly impacted candidates first
 				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
 					
-				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, collectionImpactsSetMap, repositoryClient)
+				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, collectionImpactsSetMap, repositoryClient, "***")
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
 						if (props.verbose) println("**** Running external impact analysis for impacted file $impactedFile as a dependent file of $changedFile ")
 						def impactsBin
-						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
+						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient, "****")
 					}
 				}
 				
@@ -692,7 +692,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 @Field Set<String> inspectedExternalImpactedFilesCache = new HashSet<String>()
 
-def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient) {
+def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg) {
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
@@ -713,7 +713,7 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 				def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 
 				logicalImpactedFiles.each{ logicalFile ->
-					if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+					if (props.verbose) println("$indentationMsg File $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
 					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
 					externalImpactList.add(impactRecord)
 					impactedFiles.add(logicalFile.getFile())
