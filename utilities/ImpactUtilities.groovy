@@ -644,13 +644,14 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 				// get directly impacted candidates first
 				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, collectionImpactsSetMap, repositoryClient)
-
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
-						(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
+						(collectionImpactsSetMap, null) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
 					}
 				}
+				
+				
 
 			} else {
 				if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
@@ -682,8 +683,10 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 }
 
 /*
- * Used to  
+ * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  */
+
+@Field Set<String> inspectedExternalImpactedFilesCache = new HashMap<String>()
 
 def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient) {
 
@@ -699,17 +702,24 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 	repositoryClient.getAllCollections().each{ collection ->
 		String cName = collection.getName()
 		if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-			def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-			def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 
-			logicalImpactedFiles.each{ logicalFile ->
-				if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
-				def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-				externalImpactList.add(impactRecord)
-				impactedFiles.add(logicalFile.getFile())
+			if (!inspectedExternalImpactedFilesCache.contains("$cName-$changedFile")) {
+
+				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+				def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+
+				logicalImpactedFiles.each{ logicalFile ->
+					if (props.verbose) println("*** Changed file $changedFile has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+					externalImpactList.add(impactRecord)
+					impactedFiles.add(logicalFile.getFile())
+				}
+				// adding updated record
+				collectionImpactsSetMap.put(cName, externalImpactList)
+				inspectedExternalImpactedFilesCache.add("$cName-$changedFile")
+			}else {
+				println("skipped redundant analysis. $cName-$changedFile is in cache")
 			}
-			// adding updated record
-			collectionImpactsSetMap.put(cName, externalImpactList)
 		}
 		else{
 			//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
