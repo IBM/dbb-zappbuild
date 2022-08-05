@@ -18,9 +18,22 @@ The _Reporting External Impacts_ feature enables the build framework to generate
 
 The reports is meant to be used to start the collaboration process with the other application teams about their adoption process of the shared resource, typically a copybook. A future idea is to use the reports to add files to the build list so that the consuming application can built their impacted files.
 
-### Pre-requisites
+### Functional Overview
 
-Technically, this feature analyzes the list of changed files for the current application and then queries the collections of other applications within the DBB WebApp. Therefore, to fully analyze cross application impacts, the other applications must also be part of and processed through the CI/CD pipeline with DBB. It requires a DBB WebApp repository connection.
+Technically, this feature analyzes the files of the calculated and provided build list including the identified changed files of the current pipeline execution. Based on this list, the feature queries the collections of other applications within the DBB WebApp. To fully analyze cross application impacts, other applications must also be part of and be processed through the CI/CD pipeline with DBB.
+
+It is available on all build types leveraging a DBB repository client connection, such as `--impactBuild`, `--mergeBuild` or `--fullBuild`.
+It is allowing operating in two modes:
+
+**Simple** mode will allow the identification and report of direct impacted files, supported scenario are:
+
+Sample Scenario 1 - A changed copybook COPYA in Application App-A is referenced by programs in Application App-B, App-C. The reporting of external impacts will document the programs of the external impacted applications.
+
+Sample Scenario 2 - A changed sub submodule SUBPGMA in Application App-A is included as an object deck in multiple other applications through processing a linkcard (static linkage). The sub module SUBPGMA can even be an impacted file of a copybook change in App-A. 
+
+**Deep** mode will perform the simple analysis first, and then pass its results back into the analysis process to allow to find further impacted futher files which are impacted by the already idenfitied impacted files. 
+
+Sample Scenario 1 - A changed copybook COPYA in Applicatoin App-A is referenced by a submodule in Application App-B and App-C. The reporting will identify the submodules in App-B and App-C first and will then identify in its extended analyis the linkcards used to create the binaries.
 
 ### Configuration
 
@@ -33,24 +46,54 @@ In the below sample, the MortgageApplication was split into two applications App
 
 App-EPSM provides a shared copybook `epsmtcom.cpy`, which is included in programs of App-EPSC. While the overall build strategy does not intend to force an automated rebuild in App-EPSC for the changed shared artifact, however would like the capability to provide a report to the application team, which owns this shared element.
 
-The build console output for App-EPSM will contain the below section (with `--verbose`):
+The build console output for App-EPSM will contain the below section (with `--verbose` option):
 
 ```
-** Analyse and report external impacted files.
-*** Identified external impacted files for changed file App-EPSM/copybooks-public/epsmtcom.cpy
-*** Writing report of external impacts to file /var/jenkins/workspace/App-EPSM-S4/outputs/build.20210722.032455.024/externalImpacts_App-EPSC-master.txt
+...
+** Writing build list file to /var/jenkins/workspace/EPSM/build.20220805.040948.009/buildList.txt
+App-EPSM/cobol/epsmlist.cbl
+** Perform analysis and reporting of external impacted files for the build list including changed files.
+*** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode simple
+*** Running external impact analysis for file App-EPSM/copybooks-public/epsmtcom.cpy
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
+...
 ```
 
-For each collection in scope of the analysis with impacted files a report is generated and written (in this case `externalImpacts_App-EPSC-master.txt`) to the `workdir`. A report will contain three columns (logicalFile, filePath and collectionName) with the external impacted files: 
+For each collection in scope of the analysis with impacted files a report is generated and written (in this case `externalImpacts_App-EPSC-main.txt`) to the `workdir`. A report will contain three columns (logicalFile, filePath and collectionName) with the external impacted files: 
 
 ```
-EPSCMORT 	 App-EPSC/cobol/epscmort.cbl 	 App-EPSC-master
+EPSCMORT   App-EPSC/cobol/epscmort.cbl   App-EPSC-main
+EPSCSMRT   App-EPSC/cobol/epscsmrt.cbl   App-EPSC-main
+EPSMLIST   App-EPSC/cobol/epsmlist.cbl   App-EPSC-main
 ```
 
+With the extended analysis turned on, the same scenario looks as below and supports a static linkage dependency chain in App-EPSC.
+
+
+```
+...
+** Writing build list file to /var/jenkins/workspace/EPSM/build.20220805.041349.013/buildList.txt
+App-EPSM/cobol/epsmlist.cbl
+** Perform analysis and reporting of external impacted files for the build list including changed files.
+*** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode deep
+*** Running external impact analysis for file App-EPSM/copybooks-public/epsmtcom.cpy 
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main 
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main 
+*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main 
+**** Running external impact analysis for impacted file App-EPSC/cobol/epsmlist.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
+**** File App-EPSC/cobol/epsmlist.cbl has a potential external impact on logical file EPSMLIST (App-EPSC/link/epsmlist.lnk) in collection App-EPSC-main-outputs 
+**** Running external impact analysis for impacted file App-EPSC/cobol/epscsmrt.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
+**** Running external impact analysis for impacted file App-EPSC/cobol/epscmort.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
+...
+```
 
 **Important considerations**
-- Use the pattern configuration to limit the query to those collections which are relevant and avoid unnecessary processing.
-- In most cases it is sufficient to run with the **simple** mode, which performs much faster, because it does not resolve impacts recursively. **deep** mode in fact requires searchPaths with the rules been correctly configured for the ImpactResolver API.
+- In most cases it is sufficient to run with the **simple** mode.
+- Use the pattern configuration to limit the query to those collections which are relevant and avoid unnecessary processing. Long-living branches such as _main_ and _development_ are sufficient to ran against the reporting. 
+- Use the file filter, if you can group files to be shared between applications.
 
 ## Report concurrent changes
 
