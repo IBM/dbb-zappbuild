@@ -516,9 +516,8 @@ def createBuildList() {
 	// now that we are done adding to the build list convert the set to a list
 	List<String> buildList = new ArrayList<String>()
 	buildList.addAll(buildSet)
-	buildSet = null
 
-	// 
+	// convert set of deleted files to a list 
 	List<String> deleteList = new ArrayList<String>()
 	deleteList.addAll(deletedFiles)
 	
