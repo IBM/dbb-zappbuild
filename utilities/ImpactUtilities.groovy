@@ -647,7 +647,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
-						(collectionImpactsSetMap, null) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
+						(collectionImpactsSetMap, def impactsBin) = calculateLogicalImpactedFiles(impactedFile, collectionImpactsSetMap, repositoryClient)
 					}
 				}
 				
