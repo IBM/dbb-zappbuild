@@ -645,6 +645,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			// check that file is on reportExternalImpactsAnalysisFileFilter
 			if(matches(changedFile, fileMatchers)){
 
+				println ("debug: $collectionImpactsSetMap")
+				println ("debug: $impactedFiles")
+				
 				// get directly impacted candidates first
 				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
 					
