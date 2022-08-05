@@ -631,6 +631,9 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
 	Set<String> impactedFiles = new HashSet<String>()
+	
+	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} ")
+		
 
 	if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
 
@@ -710,6 +713,7 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 			if (!inspectedExternalImpactedFilesCache.contains("$cName-$changedFile")) {
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+				// query dbb web app for files with a logical dependency to the processed file
 				def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
 
 				logicalImpactedFiles.each{ logicalFile ->
@@ -720,8 +724,12 @@ def calculateLogicalImpactedFiles(String changedFile, Map<String,HashSet> collec
 				}
 				// adding updated record
 				collectionImpactsSetMap.put(cName, externalImpactList)
+				
+				// caching record to avoid repeatative analysis on collection-file combincation.   
 				inspectedExternalImpactedFilesCache.add("$cName-$changedFile")
+				
 			}else {
+				// debug-output 
 				println("*!* Skipped redundant analysis. $cName-$changedFile is in cache")
 			}
 		}
