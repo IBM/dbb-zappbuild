@@ -622,7 +622,7 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 }
 
 /**
- * Method to query the DBB collections with a list of changed files
+ * Method to query the DBB collections with a list of files
  * Configured through reportExternalImpacts* build properties
  */
 
@@ -652,28 +652,29 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 					}
 				}
 
-				// generate reports by collection / application
-				collectionImpactsSetMap.each{ entry ->
-					externalImpactList = entry.value
-					if (externalImpactList.size()!=0){
-						// write impactedFiles per application to build workspace
-						String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
-						if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-						File impactListFile = new File(impactListFileLoc)
-						String enc = props.logEncoding ?: 'IBM-1047'
-						impactListFile.withWriter(enc) { writer ->
-							externalImpactList.each { file ->
-								// if (props.verbose) println file
-								writer.write("$file\n")
-							}
-						}
-					}
-				}
-
 			} else {
 				if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
 			}
 		}
+
+		// generate reports by collection / application
+		collectionImpactsSetMap.each{ entry ->
+			externalImpactList = entry.value
+			if (externalImpactList.size()!=0){
+				// write impactedFiles per application to build workspace
+				String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+				if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+				File impactListFile = new File(impactListFileLoc)
+				String enc = props.logEncoding ?: 'IBM-1047'
+				impactListFile.withWriter(enc) { writer ->
+					externalImpactList.each { file ->
+						// if (props.verbose) println file
+						writer.write("$file\n")
+					}
+				}
+			}
+		}
+
 	}
 	else {
 		println("*! build property reportExternalImpactsAnalysisDepths has an invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
