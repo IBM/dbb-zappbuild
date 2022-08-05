@@ -632,7 +632,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
 	Set<String> impactedFiles = new HashSet<String>()
 	
-	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} ")
+	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
 		
 
 	if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
@@ -691,8 +691,6 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  */
 
-@Field Set<String> inspectedExternalImpactedFilesCache = new HashSet<String>()
-
 def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg, String analysisMode) {
 
 	// local matchers to inspect files and collections
@@ -704,14 +702,14 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 	String memberName = CopyToPDS.createMemberName(file)
 
 	def ldepFile = new LogicalDependency(memberName, null, null);
+	
+	// go after all the files passed in; assess the identified impacted files to skip analysis for files from an impactSet which are on the changed files
 	if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
 
 		// iterate over collections
 		repositoryClient.getAllCollections().each{ collection ->
 			String cName = collection.getName()
 			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-
-				//			if (!inspectedExternalImpactedFilesCache.contains(file)) {
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
 				// query dbb web app for files with a logical dependency to the processed file
@@ -726,18 +724,15 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 				// adding updated record
 				collectionImpactsSetMap.put(cName, externalImpactList)
 
-				//				if(!changedFiles.contains(file)) {
-				//					// caching record to avoid repeatative analysis on collection-file combincation
-				//					inspectedExternalImpactedFilesCache.add(file)
-				//				}
 			}
 			else{
+				// debug-output
 				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
 	}else {
 		// debug-output
-		println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
+		// println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
 	}
 
 	return [
