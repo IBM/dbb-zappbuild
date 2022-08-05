@@ -645,13 +645,10 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			// check that file is on reportExternalImpactsAnalysisFileFilter
 			if(matches(changedFile, fileMatchers)){
 
-				println ("debug: $collectionImpactsSetMap")
-				println ("debug: $impactedFiles")
-				
 				// get directly impacted candidates first
 				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
-					
 				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "***")
+
 				// get impacted files of idenfied impacted files
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
 					impactedFiles.each{ impactedFile ->
