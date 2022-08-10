@@ -673,7 +673,7 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 				}
 				def impactsBin
 
-				(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFiles, changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
+				(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
 			}
 
 		}
