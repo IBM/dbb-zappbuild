@@ -562,16 +562,21 @@ def createBuildList() {
 	
 	// Perform analysis and build report of external impacts
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && repositoryClient){
-		if (buildSet && changedFiles) {
-			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-			impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
-		}
-		else if(buildSet) {
-			println "** Perform analysis and reporting of external impacted files for the build list."
-			impactUtils.reportExternalImpacts(repositoryClient, buildSet)
+
+		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
+			if (buildSet && changedFiles) {
+				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
+				impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
+			}
+			else if(buildSet) {
+				println "** Perform analysis and reporting of external impacted files for the build list."
+				impactUtils.reportExternalImpacts(repositoryClient, buildSet)
+			}
+		} else{
+			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
 		}
 	}
-
+	
 	// Document and validate concurrent changes
 	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
 		println "** Calculate and document concurrent changes."
