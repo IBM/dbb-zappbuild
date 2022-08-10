@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -11,7 +11,7 @@ import groovy.xml.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
@@ -206,12 +206,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 			// print warning and report
 			println warningMsg
 			printReport(reportLogFile)
-			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 		} else { // rc > props.zunit_maxWarnRC.toInteger()
 			props.error = "true"
 			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 		}
 	}
 	else {
@@ -219,7 +219,7 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 		props.error = "true"
 		String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
 		println(errorMsg)
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 	}
 
 }
@@ -228,11 +228,11 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
  * Methods
  */
 
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
+def getMetadataStore() {
+	if (!metadataStore && props."dbb.metadatastore.db2.url")
+		metadataStore = new MetadataStore().forceSSLTrusted(true)
 
-	return repositoryClient
+	return metadataStore
 }
 
 /*

@@ -1,6 +1,6 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.html.*
@@ -20,7 +20,7 @@ import groovy.cli.commons.*
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 // start time message
 def startTime = new Date()
@@ -65,7 +65,7 @@ else {
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
-		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
+		impactUtils.scanOnlyStaticDependencies(buildList, metadataStore)
 	}
 }
 
@@ -114,30 +114,24 @@ def initializeBuildProcess(String[] args) {
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
 
 	// create a repository client for this script
-	if (props."dbb.RepositoryClient.url" && !props.userBuild) {
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-		println "** Repository client created for ${props.getProperty('dbb.RepositoryClient.url')}"
+	if (!props.userBuild) {
+		metadataStore = MetadataStoreFactory.createMetadataStore();
+		println "** Metadatastore created"
 	}
 
 	// handle -r,--reset option
 	if (props.reset && props.reset.toBoolean())  {
 		println("** Reset option selected")
-		if (props."dbb.RepositoryClient.url") {
-			repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
-			println("* Deleting collection ${props.applicationCollectionName}")
-			repositoryClient.deleteCollection(props.applicationCollectionName)
+		println("* Deleting collection ${props.applicationCollectionName}")
+		metadataStore.deleteCollection(props.applicationCollectionName)
 
-			println("* Deleting collection ${props.applicationOutputsCollectionName}")
-			repositoryClient.deleteCollection(props.applicationOutputsCollectionName)
+		println("* Deleting collection ${props.applicationOutputsCollectionName}")
+		metadataStore.deleteCollection(props.applicationOutputsCollectionName)
 
-			println("* Deleting build result group ${props.applicationBuildGroup}")
-			repositoryClient.deleteBuildResults(props.applicationBuildGroup)
-		}
-		else {
-			println("*! No repository client URL provided. Unable to reset!")
-		}
-
+		println("* Deleting build result group ${props.applicationBuildGroup}")
+		metadataStore.deleteBuildResults(props.applicationBuildGroup)
+	
 		System.exit(0)
 	}
 
@@ -149,21 +143,21 @@ def initializeBuildProcess(String[] args) {
 	BuildReportFactory.createDefaultReport()
 
 	// initialize build result (requires repository connection)
-	if (repositoryClient) {
-		def buildResult = repositoryClient.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore) {
+		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		buildResult.setState(buildResult.PROCESSING)
 		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
 		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
 		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
 		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
 		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
-		buildResult.save()
-		props.buildResultUrl = buildResult.getUrl()
-		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}")
+		//buildResult.save()
+
+		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
 	}
 
 	// verify/create/clone the collections for this build
-	impactUtils.verifyCollections(repositoryClient)
+	impactUtils.verifyCollections(metadataStore)
 }
 
 /*
@@ -392,10 +386,10 @@ def populateBuildProperties(String[] args) {
 	if (opts.re) props.reportExternalImpacts = 'true'
 
 	// set DBB configuration properties
-	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
-	if (opts.id) props.'dbb.RepositoryClient.userId' = opts.id
-	if (opts.pw) props.'dbb.RepositoryClient.password' = opts.pw
-	if (opts.pf) props.'dbb.RepositoryClient.passwordFile' = opts.pf
+	if (opts.url) props.'dbb.metadatastore.db2.url' = opts.url
+	if (opts.id) props.'dbb.metadatastore.db2.userId' = opts.id
+	if (opts.pw) props.'dbb.metadatastore.db2.password' = opts.pw
+	if (opts.pf) props.'dbb.metadatastore.db2.passwordFile' = opts.pf
 
 	// set IDz/ZOD user build options
 	if (opts.e) props.errPrefix = opts.e
@@ -469,17 +463,17 @@ def createBuildList() {
 	// check if impact build
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
-		if (repositoryClient) {
-			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
+		if (metadataStore) {
+			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(metadataStore)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
 	}
 	else if (props.mergeBuild){
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
-		if (repositoryClient) {
+		if (metadataStore) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
+				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(metadataStore)		}
 		else {
 			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
@@ -550,7 +544,7 @@ def createBuildList() {
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
-		impactUtils.updateCollection(buildList, null, null, repositoryClient)
+		impactUtils.updateCollection(buildList, null, null, metadataStore)
 	}
 	
 	// Loading file/member level properties from member specific properties files
@@ -570,8 +564,8 @@ def finalizeBuildProcess(Map args) {
 	def buildResult = null
 
 	// update repository artifacts
-	if (repositoryClient) {
-		buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore) {
+		buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 
 		// add git hashes for each build directory
 		List<String> srcDirs = []
@@ -595,7 +589,7 @@ def finalizeBuildProcess(Map args) {
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
-					def lastBuildResult= buildUtils.retrieveLastBuildResult(repositoryClient)
+					def lastBuildResult= buildUtils.retrieveLastBuildResult(metadataStore)
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
 						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
@@ -619,9 +613,13 @@ def finalizeBuildProcess(Map args) {
 
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
-		def buildResultProps = buildResult.getPropertyNames()
-		buildResultProps.each { buildResultPropName ->
-			buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
+		// def buildResultProps = buildResult.getPropertyNames()
+		// buildResultProps.each { buildResultPropName ->
+		// 	buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
+		// }
+		def buildResultProps = buildResult.getProperties()
+		buildResultProps.each { name, value ->
+			buildReportRecord.addProperty(name, value)
 		}
 		buildReport.addRecord(buildReportRecord)
 	}
@@ -645,12 +643,17 @@ def finalizeBuildProcess(Map args) {
 
 
 	// attach build report & result
-	if (repositoryClient) {
+	if (metadataStore) {
 		buildReport.save(jsonOutputFile, buildReportEncoding)
-		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
-		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
+		// Create attachments
+		Attachment htmlAttachment = new com.ibm.dbb.metadata.common.Attachment("", "html", 0, 0)
+		htmlAttachment.setContent(new FileInputStream(htmlOutputFile))
+		Attachment jsonAttachment = new com.ibm.dbb.metadata.common.Attachment("", "json", 0, 0)
+		jsonAttachment.setContent(new FileInputStream(jsonOutputFile))
+		buildResult.setBuildReport(htmlAttachment)
+		buildResult.setBuildReportData(jsonAttachment)
 		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
-		buildResult.save()
+		//buildResult.save()
 	}
 
 	// print end build message

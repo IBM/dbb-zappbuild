@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -11,7 +11,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
@@ -75,7 +75,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
 			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
@@ -93,7 +93,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
 		}
 	}
 
@@ -106,7 +106,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
 		}
 		else {
 			// if this program needs to be link edited . . .
@@ -119,15 +119,15 @@ sortedList.each { buildFile ->
 					String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
 				}
 				else {
 					// only scan the load module if load module scanning turned on for file
 					if(!props.userBuild){
 						String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-						if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient()) {
+						if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore()) {
 							String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile, repositoryClient)
+							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile, metadataStore)
 						}
 					}
 				}
@@ -371,9 +371,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	return linkedit
 }
 
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-	return repositoryClient
+def getMetadataStore() {
+	if (!metadataStore && props."dbb.metadatastore.db2.url")
+		metadataStore = new MetadataStore().forceSSLTrusted(true)
+	return metadataStore
 }
 
