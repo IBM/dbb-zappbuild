@@ -216,28 +216,28 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 
 /*
  * calculateChangedFiles - method to caluclate the the changed files
- * 
+ *
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-/* 
- * calculateChangedFiles - 
- *   this method is used for zAppBuild built modes to 
- * 	  calculate changed files and 
+/*
+ * calculateChangedFiles -
+ *   this method is used for zAppBuild built modes to
+ * 	  calculate changed files and
  *    return a list of identified changed, renamed, deleted and modified build properties
- *  
- *  High-Level flow for 
- *   - impactBuild 
+ *
+ *  High-Level flow for
+ *   - impactBuild
  *  	parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
  *      	   obtains the baseline hash/es for the different referenced directories
  *             performs a git diff between current and baseline
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - impactBuild with baselineReference
  *      parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
@@ -245,7 +245,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and baselineReference
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - mergeBuild
  *      parms: no build result is passed to the method
  *      flow:  obtains current hash for directories
@@ -253,13 +253,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and mainBuildBranch
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - concurrentChangesAnalysis
  *      parms: no build result is passed to the method, calculateConcurrentChanges=true, gitReference containing the git configuration
  *      flow:  no calculation of baseline hash for the directories
  *             performs a git diff between HEAD and the passed gitReference
  *             calculates the correct offset from the git diff
- *    
+ *
  *   @return the set for changed, renamed, deleted and modified build properties to caller
  */
 
@@ -631,11 +631,16 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
 	Set<String> impactedFiles = new HashSet<String>()
-	
+
+	List<String> externalImpactReportingList = new ArrayList()
+
 	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
-		
+
 
 	if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
+
+		// get directly impacted candidates first
+		if (props.verbose) println("*** Running external impact analysis for files ")
 
 		// calculate and collect external impacts
 		changedFiles.each{ changedFile ->
@@ -646,21 +651,31 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 			if(matches(changedFile, fileMatchers)){
 
 				// get directly impacted candidates first
-				if (props.verbose) println("*** Running external impact analysis for file $changedFile ")
-				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(changedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
+				if (props.verbose) println("     $changedFile ")
 
-				// get impacted files of idenfied impacted files
-				if (props.reportExternalImpactsAnalysisDepths == "deep") {
-					impactedFiles.each{ impactedFile ->
-						if (props.verbose) println("**** Running external impact analysis for impacted file $impactedFile as a dependent file of $changedFile ")
-						def impactsBin
-						(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFile, changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
-					}
-				}
-
-			} else {
+				externalImpactReportingList.add(changedFile)
+			}
+			else {
 				if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
 			}
+		}
+
+		if (externalImpactReportingList.size() != 0) {
+			(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
+
+
+			// get impacted files of idenfied impacted files
+			if (props.reportExternalImpactsAnalysisDepths == "deep") {
+				if (props.verbose) println("**** Running external impact analysis for identified external impacted files as dependent files of the initial set. ")
+				impactedFiles.each{ impactedFile ->
+					if (props.verbose) println("     $impactedFile ")
+
+				}
+				def impactsBin
+
+				(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(impactedFiles, changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
+			}
+
 		}
 
 		// generate reports by collection / application
@@ -691,20 +706,31 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  */
 
-def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg, String analysisMode) {
+def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg, String analysisMode) {
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
 
+	// local
+	List<LogicalDependency> logicalDependencies = new ArrayList()
+	
 	// will be returned
 	Set<String> impactedFiles = new HashSet<String>()
 
-	String memberName = CopyToPDS.createMemberName(file)
+	// creating a list logical dependencies
+	fileList.each{ file ->
+		// go after all the files passed in; assess the identified impacted files to skip analysis for files from an impactSet which are on the changed files
+		if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
+			String memberName = CopyToPDS.createMemberName(file)
+			def ldepFile = new LogicalDependency(memberName, null, null);
+			logicalDependencies.add(ldepFile)
+		}else {
+			// debug-output
+			// println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
+		}
+	}
 
-	def ldepFile = new LogicalDependency(memberName, null, null);
-	
-	// go after all the files passed in; assess the identified impacted files to skip analysis for files from an impactSet which are on the changed files
-	if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
+	if(logicalDependencies.size != 0) {
 
 		// iterate over collections
 		repositoryClient.getAllCollections().each{ collection ->
@@ -712,11 +738,11 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-				// query dbb web app for files with a logical dependency to the processed file
-				def logicalImpactedFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
+				// query dbb web app for files with all logicalDependencies
+				def logicalImpactedFiles = repositoryClient.getAllImpactedFiles([cName], logicalDependencies);
 
 				logicalImpactedFiles.each{ logicalFile ->
-					if (props.verbose) println("$indentationMsg File $file has a potential external impact on logical file ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+					if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
 					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
 					externalImpactList.add(impactRecord)
 					impactedFiles.add(logicalFile.getFile())
@@ -730,10 +756,12 @@ def calculateLogicalImpactedFiles(String file, Set<String> changedFiles, Map<Str
 				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
 			}
 		}
-	}else {
-		// debug-output
-		// println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
 	}
+	else {
+		// debug-output
+		//if (props.verbose) println("Empty fileList")
+	}
+
 
 	return [
 		collectionImpactsSetMap,
@@ -942,12 +970,12 @@ def verifyCollections(RepositoryClient repositoryClient) {
 
 }
 
-/* 
+/*
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
- *  
+ *
  *  returns null if file not found + mustExist
- *  
+ *
  *  scenarios / mode
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
@@ -991,7 +1019,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
 	// Scenario 4:
-	//    Repository name is used as application root directory and 
+	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
@@ -1022,7 +1050,7 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 
 /**
  *  shouldCalculateImpacts
- *  
+ *
  *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
  *   returns a boolean - default true
  */
