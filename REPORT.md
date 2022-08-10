@@ -22,18 +22,17 @@ The reports is meant to be used to start the collaboration process with the othe
 
 Technically, this feature analyzes the files of the calculated and provided build list including the identified changed files of the current pipeline execution. Based on this list, the feature queries the collections of other applications within the DBB WebApp. To fully analyze cross application impacts, other applications must also be part of and be processed through the CI/CD pipeline with DBB.
 
-It is available on all build types leveraging a DBB repository client connection, such as `--impactBuild`, `--mergeBuild` or `--fullBuild`.
-It is allowing operating in two modes:
+This feature is available on all build types leveraging a DBB repository client connection, such as `--impactBuild`, `--mergeBuild` or `--fullBuild`.
+It can operate in two modes: Simple and Deep.
 
-**Simple** mode will allow the identification and report of direct impacted files, supported scenario are:
+**Simple** mode allows the identification and report of directly-impacted files. Supported scenarios include the following:
 
-Sample Scenario 1 - A changed copybook COPYA in Application App-A is referenced by programs in Application App-B, App-C. The reporting of external impacts will document the programs of the external impacted applications.
+* Sample Scenario 1 - Copybook COPYA in application App-A is referenced by programs in applications App-B and App-C. If copybook COPYA is changed, the reporting of external impacts will document the impacted programs of App-B and App-C.
+* Sample Scenario 2 - A submodule SUBPGMA in application App-A is included as an object deck in multiple other applications through processing a linkcard (static linkage). If SUBPGMA is changed, then the reporting of external impacts will document the programs of the other impacted applications. In this case, the submodule SUBPGMA can even be an impacted file of a copybook change in App-A.
 
-Sample Scenario 2 - A changed sub submodule SUBPGMA in Application App-A is included as an object deck in multiple other applications through processing a linkcard (static linkage). The sub module SUBPGMA can even be an impacted file of a copybook change in App-A. 
+**Deep** mode performs the simple analysis first, and then passes its results back into the analysis process to further find files that are impacted by the already-identified impacted files.
 
-**Deep** mode will perform the simple analysis first, and then pass its results back into the analysis process to allow to find further impacted futher files which are impacted by the already idenfitied impacted files. 
-
-Sample Scenario 1 - A changed copybook COPYA in Applicatoin App-A is referenced by a submodule in Application App-B and App-C. The reporting will identify the submodules in App-B and App-C first and will then identify in its extended analyis the linkcards used to create the binaries.
+* Sample Scenario 1 - A changed copybook COPYA in application App-A is referenced by submodules in applications App-B and App-C. The deep reporting will first identify the impacted submodules in App-B and App-C, and then use those results in its extended analysis to identify the impacted linkcards used to create the binaries in App-B and App-C.
 
 ### Configuration
 
