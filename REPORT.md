@@ -22,7 +22,8 @@ The reports is meant to be used to start the collaboration process with the othe
 
 Technically, this feature analyzes the files of the calculated and provided build list including the identified changed files of the current pipeline execution. Based on this list, the feature queries the collections of other applications within the DBB WebApp. To fully analyze cross application impacts, other applications must also be part of and be processed through the CI/CD pipeline with DBB.
 
-This feature is available on all build types leveraging a DBB repository client connection, such as `--impactBuild`, `--mergeBuild` or `--fullBuild`.
+This feature is available on all build types leveraging a DBB repository client connection, such as `--impactBuild`, `--mergeBuild` or `--fullBuild`. With the latest updates, it requires both DBB toolkit version and DBB Webapp versions to be on at least on 1.1.3.
+
 It can operate in two modes: Simple and Deep.
 
 **Simple** mode allows the identification and report of directly-impacted files. Supported scenarios include the following:
@@ -49,14 +50,17 @@ The build console output for App-EPSM will contain the below section (with `--ve
 
 ```
 ...
-** Writing build list file to /var/jenkins/workspace/EPSM/build.20220805.040948.009/buildList.txt
-App-EPSM/cobol/epsmlist.cbl
+** Writing build list file to /u/jenkins/workspace/App-EPSM/build.20220810.122244.022/buildList.txt
+App-EPSM/cobol/epsplist.cbl
 ** Perform analysis and reporting of external impacted files for the build list including changed files.
 *** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode simple
-*** Running external impact analysis for file App-EPSM/copybooks-public/epsmtcom.cpy
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main
+*** Running external impact analysis for files 
+     App-EPSM/copybooks-public/epsmtcom.cpy 
+     App-EPSM/cobol/epsplist.cbl 
+*** Potential external impact found EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main 
+*** Potential external impact found EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main 
+*** Potential external impact found EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main 
+*** Writing report of external impacts to file /u/jenkins/workspace/App-EPSM/build.20220810.122244.022/externalImpacts_App-EPSC-main.txt
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ...
 ```
@@ -69,27 +73,35 @@ EPSCSMRT   App-EPSC/cobol/epscsmrt.cbl   App-EPSC-main
 EPSMLIST   App-EPSC/cobol/epsmlist.cbl   App-EPSC-main
 ```
 
-With the extended analysis turned on, the same scenario looks as below and supports a static linkage dependency chain in App-EPSC.
+With the extended analysis turned on, the same scenario looks as below and supports a static linkage dependency chain in application App-EPSC.
 
 
 ```
 ...
-** Writing build list file to /var/jenkins/workspace/EPSM/build.20220805.041349.013/buildList.txt
-App-EPSM/cobol/epsmlist.cbl
+** Writing build list file to /u/jenkins/workspace/App-EPSM/build.20220810.122845.028/buildList.txt
+App-EPSM/cobol/epsplist.cbl
 ** Perform analysis and reporting of external impacted files for the build list including changed files.
 *** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode deep
-*** Running external impact analysis for file App-EPSM/copybooks-public/epsmtcom.cpy 
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main 
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main 
-*** File App-EPSM/copybooks-public/epsmtcom.cpy has a potential external impact on logical file EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main 
-**** Running external impact analysis for impacted file App-EPSC/cobol/epsmlist.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
-**** File App-EPSC/cobol/epsmlist.cbl has a potential external impact on logical file EPSMLIST (App-EPSC/link/epsmlist.lnk) in collection App-EPSC-main-outputs 
-**** Running external impact analysis for impacted file App-EPSC/cobol/epscsmrt.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
-**** Running external impact analysis for impacted file App-EPSC/cobol/epscmort.cbl as a dependent file of App-EPSM/copybooks-public/epsmtcom.cpy 
+*** Running external impact analysis for files 
+     App-EPSM/copybooks-public/epsmtcom.cpy 
+     App-EPSM/cobol/epsplist.cbl 
+*** Potential external impact found EPSCSMRT (App-EPSC/cobol/epscsmrt.cbl) in collection App-EPSC-main 
+*** Potential external impact found EPSMLIST (App-EPSC/cobol/epsmlist.cbl) in collection App-EPSC-main 
+*** Potential external impact found EPSCMORT (App-EPSC/cobol/epscmort.cbl) in collection App-EPSC-main 
+**** Running external impact analysis for identified external impacted files as dependent files of the initial set. 
+     App-EPSC/cobol/epsmlist.cbl 
+     App-EPSC/cobol/epscsmrt.cbl 
+     App-EPSC/cobol/epscmort.cbl 
+**** Potential external impact found EPSMLIST (App-EPSC/link/epsmlist.lnk) in collection App-EPSC-main-outputs 
+*** Writing report of external impacts to file /u/jenkins/workspace/App-EPSM/build.20220810.122845.028/externalImpacts_App-EPSC-main-outputs.txt
+*** Writing report of external impacts to file /u/jenkins/workspace/App-EPSM/build.20220810.122845.028/externalImpacts_App-EPSC-main.txt
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ...
 ```
 
-**Important considerations**
+**Important considerations / notes**
+- This functionality works on the assumption, that files names are unique. If the assumption is met, the results will be accurate; if not, false positives being identified. 
+- It does not perform any type of dependency resolution against search path configurations.
 - In most cases it is sufficient to run with the **simple** mode.
 - Use the pattern configuration to limit the query to those collections which are relevant and avoid unnecessary processing. Long-living branches such as _main_ and _development_ are sufficient to ran against the reporting. 
 - Use the file filter, if you can group files to be shared between applications.
