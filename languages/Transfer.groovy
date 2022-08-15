@@ -99,8 +99,8 @@ buildList.each { buildFile ->
 
 // internal methods
 def getMetadataStore() {
-	if (!metadataStore && props."dbb.metadatastore.db2.url")
-		metadataStore = new MetadataStore().forceSSLTrusted(true)
-
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
 	return metadataStore
 }
+

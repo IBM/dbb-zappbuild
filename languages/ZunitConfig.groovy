@@ -229,11 +229,11 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
  */
 
 def getMetadataStore() {
-	if (!metadataStore && props."dbb.metadatastore.db2.url")
-		metadataStore = new MetadataStore().forceSSLTrusted(true)
-
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
 	return metadataStore
 }
+
 
 /*
  * returns containsPlayback, 
