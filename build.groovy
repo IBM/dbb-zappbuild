@@ -30,11 +30,10 @@ println("\n** Build start at $props.startTime")
 // initialize build
 initializeBuildProcess(args)
 
-// create build list and list of deletedFiles
+// create build list
 List<String> buildList = new ArrayList() 
-List<String> deletedFiles = new ArrayList()
 
-(buildList, deletedFiles) = createBuildList()
+buildList = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
@@ -66,15 +65,6 @@ else {
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
 		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
-	}
-}
-
-// document deletions in build report
-if (deletedFiles.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
-	println("** Document deleted files in Build Report.")
-	if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
-		buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
-		buildReportUtils.processDeletedFilesList(deletedFiles)
 	}
 }
 
@@ -582,8 +572,17 @@ def createBuildList() {
 		println "** Calculate and document concurrent changes."
 		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
 	}
+	
+	// document deletions in build report
+	if (deleteList.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
+		println("** Document deleted files in Build Report.")
+		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
+			buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
+			buildReportUtils.processDeletedFilesList(deleteList)
+		}
+	}
 
-	return [buildList, deleteList]
+	return buildList
 }
 
 
