@@ -25,7 +25,7 @@ fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_properties_buildPropSetting},${props.propFiles}" : "")
+fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_properties_buildPropSetting}" : "")
 fullBuildCommand << "--fullBuild"
 
 // create impact build command
