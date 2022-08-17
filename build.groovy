@@ -115,8 +115,8 @@ def initializeBuildProcess(String[] args) {
 
 	// create a repository client for this script
 	if (!props.userBuild) {
-		metadataStore = MetadataStoreFactory.createMetadataStore();
-		println "** Metadatastore created"
+		metadataStore = MetadataStoreFactory.getMetadataStore();
+		println "** MetadataStore initiated"
 	}
 
 	// handle -r,--reset option
@@ -652,7 +652,7 @@ def finalizeBuildProcess(Map args) {
 		jsonAttachment.setContent(new FileInputStream(jsonOutputFile))
 		buildResult.setBuildReport(htmlAttachment)
 		buildResult.setBuildReportData(jsonAttachment)
-		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
+		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
 		//buildResult.save()
 	}
 
