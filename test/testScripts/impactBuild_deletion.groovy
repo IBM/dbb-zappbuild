@@ -108,7 +108,7 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 			assert outputStream.contains("** Document deletion ${props.hlq}.${deletedOutput} for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
 
 			// Validate deletion of output
-			assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}" : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
+			assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
 
 		}
 		println "**"
