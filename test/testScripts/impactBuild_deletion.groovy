@@ -61,9 +61,9 @@ finally {
 	cleanUpDatasets()
 	if (assertionList.size()>0) {
 		println "\n***"
-		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
+		println "**START OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**\n"
 		println "*FAILED IMPACT BUILD TEST RESULTS*\n" + assertionList
-		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
+		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**"
 		println "***"
 	}
 }
@@ -98,17 +98,17 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $deleteFile\nOUTPUT STREAM:\n$outputStream\n"
 
 		// Validate message that deleted file was deleted from collections
-		assert outputStream.contains("*** Deleting renamed logical file for ${props.app}/${deleteFile}") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
+		assert outputStream.contains("*** Deleting logical file for ${props.app}/${deleteFile}") : "*! IMPACT BUILD FOR DELETION OF $deleteFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
 		
 		// Validate creation of the Delete Record 
 		assert outputStream.contains("** Create deletion record for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
 		
 		expectedDeletedFilesList.each { deletedOutput ->
 
-			assert outputStream.contains("** Document deletion ${props.hlq}.${deletedOutput} for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
+			assert outputStream.contains("** Document deletion ${props.hlq}.${deletedOutput} for file") : "*! IMPACT BUILD FOR DELETION OF $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
 
 			// Validate deletion of output
-			assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
+			assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}") : "*! IMPACT BUILD FOR DELETION OF $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
 
 		}
 		println "**"
