@@ -609,18 +609,18 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setState(buildResult.COMPLETE)
 
 		// save updates
-		buildResult.save()
+		//buildResult.save()
 
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
-		// def buildResultProps = buildResult.getPropertyNames()
-		// buildResultProps.each { buildResultPropName ->
-		// 	buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
-		// }
-		def buildResultProps = buildResult.getProperties()
-		buildResultProps.each { name, value ->
-			buildReportRecord.addProperty(name, value)
+		def buildResultProps = buildResult.getPropertyNames()
+		buildResultProps.each { buildResultPropName ->
+			buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
 		}
+		// def buildResultProps = buildResult.getProperties()
+		// buildResultProps.each { name, value ->
+		// 	buildReportRecord.addProperty(name, value)
+		// }
 		buildReport.addRecord(buildReportRecord)
 	}
 
