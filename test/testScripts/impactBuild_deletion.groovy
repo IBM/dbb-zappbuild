@@ -88,7 +88,7 @@ def deleteAndCommit(String deleteFile) {
 def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappings, StringBuffer outputStream) {
 
 	println "** Validating impact build results"
-	def expectedDeletedFilesList = filesBuiltMappings.getValue(deleteFile).split(',')
+	def expectedDeletedFilesList = outputsDeletedMappings.getValue(deleteFile).split(',')
 	
 	try{
 		def memberName = CopyToPDS.createMemberName(deleteFile)
