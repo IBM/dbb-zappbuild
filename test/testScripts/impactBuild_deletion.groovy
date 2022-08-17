@@ -85,7 +85,7 @@ def deleteAndCommit(String deleteFile) {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappings. StringBuffer outputStream) {
+def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappings, StringBuffer outputStream) {
 
 	println "** Validating impact build results"
 	def expectedDeletedFilesList = filesBuiltMappings.getValue(deleteFile).split(',')
@@ -104,12 +104,12 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 		assert outputStream.contains("** Create deletion record for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
 		
 		expectedDeletedFilesList.each { deletedOutput ->
-		
-		assert outputStream.contains("** Document deletion ${props.hlq}.${deletedOutput} for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
-		
-		// Validate deletion of output
-		assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}" : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
-		
+
+			assert outputStream.contains("** Document deletion ${props.hlq}.${deletedOutput} for file") : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND CREATION OF DELETE RECORD\nOUTPUT STREAM:\n$outputStream\n"
+
+			// Validate deletion of output
+			assert outputStream.contains("** Deleting ${props.hlq}.${deletedOutput}" : "*! IMPACT BUILD FOR $deleteFile DO NOT FIND DELETION OF LOAD MODULE\nOUTPUT STREAM:\n$outputStream\n"
+
 		}
 		println "**"
 		println "** IMPACT BUILD TEST - FILE DELETE : PASSED FOR DELETING $deleteFile **"
