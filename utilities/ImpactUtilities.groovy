@@ -636,69 +636,74 @@ def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changed
 
 	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
 
+	try {
 
-	if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
+		if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
 
-		// get directly impacted candidates first
-		if (props.verbose) println("*** Running external impact analysis for files ")
+			// get directly impacted candidates first
+			if (props.verbose) println("*** Running external impact analysis for files ")
 
-		// calculate and collect external impacts
-		changedFiles.each{ changedFile ->
+			// calculate and collect external impacts
+			changedFiles.each{ changedFile ->
 
-			List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
+				List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
 
-			// check that file is on reportExternalImpactsAnalysisFileFilter
-			if(matches(changedFile, fileMatchers)){
+				// check that file is on reportExternalImpactsAnalysisFileFilter
+				if(matches(changedFile, fileMatchers)){
 
-				// get directly impacted candidates first
-				if (props.verbose) println("     $changedFile ")
+					// get directly impacted candidates first
+					if (props.verbose) println("     $changedFile ")
 
-				externalImpactReportingList.add(changedFile)
-			}
-			else {
-				if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
-			}
-		}
-
-		if (externalImpactReportingList.size() != 0) {
-			(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
-
-
-			// get impacted files of idenfied impacted files
-			if (props.reportExternalImpactsAnalysisDepths == "deep") {
-				if (props.verbose) println("**** Running external impact analysis for identified external impacted files as dependent files of the initial set. ")
-				impactedFiles.each{ impactedFile ->
-					if (props.verbose) println("     $impactedFile ")
-
+					externalImpactReportingList.add(changedFile)
 				}
-				def impactsBin
-
-				(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
+				else {
+					if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
+				}
 			}
 
-		}
+			if (externalImpactReportingList.size() != 0) {
+				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
 
-		// generate reports by collection / application
-		collectionImpactsSetMap.each{ entry ->
-			externalImpactList = entry.value
-			if (externalImpactList.size()!=0){
-				// write impactedFiles per application to build workspace
-				String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
-				if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-				File impactListFile = new File(impactListFileLoc)
-				String enc = props.logEncoding ?: 'IBM-1047'
-				impactListFile.withWriter(enc) { writer ->
-					externalImpactList.each { file ->
-						// if (props.verbose) println file
-						writer.write("$file\n")
+
+				// get impacted files of idenfied impacted files
+				if (props.reportExternalImpactsAnalysisDepths == "deep") {
+					if (props.verbose) println("**** Running external impact analysis for identified external impacted files as dependent files of the initial set. ")
+					impactedFiles.each{ impactedFile ->
+						if (props.verbose) println("     $impactedFile ")
+
+					}
+					def impactsBin
+					(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
+				}
+
+			}
+
+			// generate reports by collection / application
+			collectionImpactsSetMap.each{ entry ->
+				externalImpactList = entry.value
+				if (externalImpactList.size()!=0){
+					// write impactedFiles per application to build workspace
+					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+					if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+					File impactListFile = new File(impactListFileLoc)
+					String enc = props.logEncoding ?: 'IBM-1047'
+					impactListFile.withWriter(enc) { writer ->
+						externalImpactList.each { file ->
+							// if (props.verbose) println file
+							writer.write("$file\n")
+						}
 					}
 				}
 			}
+
+		}
+		else {
+			println("*! build property reportExternalImpactsAnalysisDepths has an invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
 		}
 
-	}
-	else {
-		println("*! build property reportExternalImpactsAnalysisDepths has an invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
+	} catch (Exception e) {
+		println("*! (ImpactUtilities.reportExternalImpacts) Exception caught during reporting of external impacts. Build continues.")
+		println(e.getMessage())
 	}
 }
 
@@ -741,6 +746,12 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 				// query dbb web app for files with all logicalDependencies
 				def logicalImpactedFiles = repositoryClient.getAllImpactedFiles([cName], logicalDependencies);
 
+				// API request unable to be processed
+				if (repositoryClient.getLastStatusCode() == 400 ) {
+					def exceptionMsg = "*!* (ImpactUtilities.calculateLogicalImpactedFiles) API to getAllImpactedFiles returned an error code (${repositoryClient.getLastStatusCode()}). Skipping calculation of external impacts. Please make sure the DBB Server is on 1.1.3 or later to be able to process the request."
+					throw new Exception(exceptionMsg)
+				}
+				
 				logicalImpactedFiles.each{ logicalFile ->
 					if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
 					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
