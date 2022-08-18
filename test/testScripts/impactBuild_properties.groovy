@@ -126,6 +126,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	catch(AssertionError e) {
 		def result = e.getMessage()
 		assertionList << result;
+		props.testsSucceeded = false
  }
 }
 def cleanUpDatasets() {
