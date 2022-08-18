@@ -74,8 +74,8 @@ try {
 				
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
-		def outputStream = new StringBuffer()
-		def process = [
+		outputStream = new StringBuffer()
+		process = [
 			'bash',
 			'-c',
 			impactBuildCommand.join(" ")
