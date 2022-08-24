@@ -1,1480 +1,0 @@
-improve-reporting
-/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-
-$ rm -Rf test-zapp
-+ rm -Rf test-zapp
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ rm -Rf test-zapp-app
-+ rm -Rf test-zapp-app
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ rm -Rf test-zapp-app-out
-+ rm -Rf test-zapp-app-out
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ mkdir test-zapp
-+ mkdir test-zapp
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C test-zapp clone -b improve-reporting https://github.com/dennis-behm/< improve-reporting https://github.com/dennis-behm/d                         bb-zappbuild.git
-+ git -C test-zapp clone -b improve-reporting https://github.com/dennis-behm/dbb-zappbuild.git
-Cloning into 'dbb-zappbuild'...
-remote: Enumerating objects: 4087, done.[K
-remote: Counting objects:   0% (1/2818)[Kremote: Counting objects:   1% (29/2818)[Kremote: Counting objects:   2% (57/2818)[Kremote: Counting objects:   3% (85/2818)[Kremote: Counting objects:   4% (113/2818)[Kremote: Counting objects:   5% (141/2818)[Kremote: Counting objects:   6% (170/2818)[Kremote: Counting objects:   7% (198/2818)[Kremote: Counting objects:   8% (226/2818)[Kremote: Counting objects:   9% (254/2818)[Kremote: Counting objects:  10% (282/2818)[Kremote: Counting objects:  11% (310/2818)[Kremote: Counting objects:  12% (339/2818)[Kremote: Counting objects:  13% (367/2818)[Kremote: Counting objects:  14% (395/2818)[Kremote: Counting objects:  15% (423/2818)[Kremote: Counting objects:  16% (451/2818)[Kremote: Counting objects:  17% (480/2818)[Kremote: Counting objects:  18% (508/2818)[Kremote: Counting objects:  19% (536/2818)[Kremote: Counting objects:  20% (564/2818)[Kremote: Counting objects:  21% (592/2818)[Kremote: Counting objects:  22% (620/2818)[Kremote: Counting objects:  23% (649/2818)[Kremote: Counting objects:  24% (677/2818)[Kremote: Counting objects:  25% (705/2818)[Kremote: Counting objects:  26% (733/2818)[Kremote: Counting objects:  27% (761/2818)[Kremote: Counting objects:  28% (790/2818)[Kremote: Counting objects:  29% (818/2818)[Kremote: Counting objects:  30% (846/2818)[Kremote: Counting objects:  31% (874/2818)[Kremote: Counting objects:  32% (902/2818)[Kremote: Counting objects:  33% (930/2818)[Kremote: Counting objects:  34% (959/2818)[Kremote: Counting objects:  35% (987/2818)[Kremote: Counting objects:  36% (1015/2818)[Kremote: Counting objects:  37% (1043/2818)[Kremote: Counting objects:  38% (1071/2818)[Kremote: Counting objects:  39% (1100/2818)[Kremote: Counting objects:  40% (1128/2818)[Kremote: Counting objects:  41% (1156/2818)[Kremote: Counting objects:  42% (1184/2818)[Kremote: Counting objects:  43% (1212/2818)[Kremote: Counting objects:  44% (1240/2818)[Kremote: Counting objects:  45% (1269/2818)[Kremote: Counting objects:  46% (1297/2818)[Kremote: Counting objects:  47% (1325/2818)[Kremote: Counting objects:  48% (1353/2818)[Kremote: Counting objects:  49% (1381/2818)[Kremote: Counting objects:  50% (1409/2818)[Kremote: Counting objects:  51% (1438/2818)[Kremote: Counting objects:  52% (1466/2818)[Kremote: Counting objects:  53% (1494/2818)[Kremote: Counting objects:  54% (1522/2818)[Kremote: Counting objects:  55% (1550/2818)[Kremote: Counting objects:  56% (1579/2818)[Kremote: Counting objects:  57% (1607/2818)[Kremote: Counting objects:  58% (1635/2818)[Kremote: Counting objects:  59% (1663/2818)[Kremote: Counting objects:  60% (1691/2818)[Kremote: Counting objects:  61% (1719/2818)[Kremote: Counting objects:  62% (1748/2818)[Kremote: Counting objects:  63% (1776/2818)[Kremote: Counting objects:  64% (1804/2818)[Kremote: Counting objects:  65% (1832/2818)[Kremote: Counting objects:  66% (1860/2818)[Kremote: Counting objects:  67% (1889/2818)[Kremote: Counting objects:  68% (1917/2818)[Kremote: Counting objects:  69% (1945/2818)[Kremote: Counting objects:  70% (1973/2818)[Kremote: Counting objects:  71% (2001/2818)[Kremote: Counting objects:  72% (2029/2818)[Kremote: Counting objects:  73% (2058/2818)[Kremote: Counting objects:  74% (2086/2818)[Kremote: Counting objects:  75% (2114/2818)[Kremote: Counting objects:  76% (2142/2818)[Kremote: Counting objects:  77% (2170/2818)[Kremote: Counting objects:  78% (2199/2818)[Kremote: Counting objects:  79% (2227/2818)[Kremote: Counting objects:  80% (2255/2818)[Kremote: Counting objects:  81% (2283/2818)[Kremote: Counting objects:  82% (2311/2818)[Kremote: Counting objects:  83% (2339/2818)[Kremote: Counting objects:  84% (2368/2818)[Kremote: Counting objects:  85% (2396/2818)[Kremote: Counting objects:  86% (2424/2818)[Kremote: Counting objects:  87% (2452/2818)[Kremote: Counting objects:  88% (2480/2818)[Kremote: Counting objects:  89% (2509/2818)[Kremote: Counting objects:  90% (2537/2818)[Kremote: Counting objects:  91% (2565/2818)[Kremote: Counting objects:  92% (2593/2818)[Kremote: Counting objects:  93% (2621/2818)[Kremote: Counting objects:  94% (2649/2818)[Kremote: Counting objects:  95% (2678/2818)[Kremote: Counting objects:  96% (2706/2818)[Kremote: Counting objects:  97% (2734/2818)[Kremote: Counting objects:  98% (2762/2818)[Kremote: Counting objects:  99% (2790/2818)[Kremote: Counting objects: 100% (2818/2818)[Kremote: Counting objects: 100% (2818/2818), done.[K
-remote: Compressing objects:   0% (1/869)[Kremote: Compressing objects:   1% (9/869)[Kremote: Compressing objects:   2% (18/869)[Kremote: Compressing objects:   3% (27/869)[Kremote: Compressing objects:   4% (35/869)[Kremote: Compressing objects:   5% (44/869)[Kremote: Compressing objects:   6% (53/869)[Kremote: Compressing objects:   7% (61/869)[Kremote: Compressing objects:   8% (70/869)[Kremote: Compressing objects:   9% (79/869)[Kremote: Compressing objects:  10% (87/869)[Kremote: Compressing objects:  11% (96/869)[Kremote: Compressing objects:  12% (105/869)[Kremote: Compressing objects:  13% (113/869)[Kremote: Compressing objects:  14% (122/869)[Kremote: Compressing objects:  15% (131/869)[Kremote: Compressing objects:  16% (140/869)[Kremote: Compressing objects:  17% (148/869)[Kremote: Compressing objects:  18% (157/869)[Kremote: Compressing objects:  19% (166/869)[Kremote: Compressing objects:  20% (174/869)[Kremote: Compressing objects:  21% (183/869)[Kremote: Compressing objects:  22% (192/869)[Kremote: Compressing objects:  23% (200/869)[Kremote: Compressing objects:  24% (209/869)[Kremote: Compressing objects:  25% (218/869)[Kremote: Compressing objects:  26% (226/869)[Kremote: Compressing objects:  27% (235/869)[Kremote: Compressing objects:  28% (244/869)[Kremote: Compressing objects:  29% (253/869)[Kremote: Compressing objects:  30% (261/869)[Kremote: Compressing objects:  31% (270/869)[Kremote: Compressing objects:  32% (279/869)[Kremote: Compressing objects:  33% (287/869)[Kremote: Compressing objects:  34% (296/869)[Kremote: Compressing objects:  35% (305/869)[Kremote: Compressing objects:  36% (313/869)[Kremote: Compressing objects:  37% (322/869)[Kremote: Compressing objects:  38% (331/869)[Kremote: Compressing objects:  39% (339/869)[Kremote: Compressing objects:  40% (348/869)[Kremote: Compressing objects:  41% (357/869)[Kremote: Compressing objects:  42% (365/869)[Kremote: Compressing objects:  43% (374/869)[Kremote: Compressing objects:  44% (383/869)[Kremote: Compressing objects:  45% (392/869)[Kremote: Compressing objects:  46% (400/869)[Kremote: Compressing objects:  47% (409/869)[Kremote: Compressing objects:  48% (418/869)[Kremote: Compressing objects:  49% (426/869)[Kremote: Compressing objects:  50% (435/869)[Kremote: Compressing objects:  51% (444/869)[Kremote: Compressing objects:  52% (452/869)[Kremote: Compressing objects:  53% (461/869)[Kremote: Compressing objects:  54% (470/869)[Kremote: Compressing objects:  55% (478/869)[Kremote: Compressing objects:  56% (487/869)[Kremote: Compressing objects:  57% (496/869)[Kremote: Compressing objects:  58% (505/869)[Kremote: Compressing objects:  59% (513/869)[Kremote: Compressing objects:  60% (522/869)[Kremote: Compressing objects:  61% (531/869)[Kremote: Compressing objects:  62% (539/869)[Kremote: Compressing objects:  63% (548/869)[Kremote: Compressing objects:  64% (557/869)[Kremote: Compressing objects:  65% (565/869)[Kremote: Compressing objects:  66% (574/869)[Kremote: Compressing objects:  67% (583/869)[Kremote: Compressing objects:  68% (591/869)[Kremote: Compressing objects:  69% (600/869)[Kremote: Compressing objects:  70% (609/869)[Kremote: Compressing objects:  71% (617/869)[Kremote: Compressing objects:  72% (626/869)[Kremote: Compressing objects:  73% (635/869)[Kremote: Compressing objects:  74% (644/869)[Kremote: Compressing objects:  75% (652/869)[Kremote: Compressing objects:  76% (661/869)[Kremote: Compressing objects:  77% (670/869)[Kremote: Compressing objects:  78% (678/869)[Kremote: Compressing objects:  79% (687/869)[Kremote: Compressing objects:  80% (696/869)[Kremote: Compressing objects:  81% (704/869)[Kremote: Compressing objects:  82% (713/869)[Kremote: Compressing objects:  83% (722/869)[Kremote: Compressing objects:  84% (730/869)[Kremote: Compressing objects:  85% (739/869)[Kremote: Compressing objects:  86% (748/869)[Kremote: Compressing objects:  87% (757/869)[Kremote: Compressing objects:  88% (765/869)[Kremote: Compressing objects:  89% (774/869)[Kremote: Compressing objects:  90% (783/869)[Kremote: Compressing objects:  91% (791/869)[Kremote: Compressing objects:  92% (800/869)[Kremote: Compressing objects:  93% (809/869)[Kremote: Compressing objects:  94% (817/869)[Kremote: Compressing objects:  95% (826/869)[Kremote: Compressing objects:  96% (835/869)[Kremote: Compressing objects:  97% (843/869)[Kremote: Compressing objects:  98% (852/869)[Kremote: Compressing objects:  99% (861/869)[Kremote: Compressing objects: 100% (869/869)[Kremote: Compressing objects: 100% (869/869), done.[K
-Receiving objects:   0% (1/4087)Receiving objects:   1% (41/4087)Receiving objects:   2% (82/4087)Receiving objects:   3% (123/4087)Receiving objects:   4% (164/4087)Receiving objects:   5% (205/4087)Receiving objects:   6% (246/4087)Receiving objects:   7% (287/4087)Receiving objects:   8% (327/4087)Receiving objects:   9% (368/4087)Receiving objects:  10% (409/4087)Receiving objects:  11% (450/4087)Receiving objects:  12% (491/4087)Receiving objects:  13% (532/4087)Receiving objects:  14% (573/4087)Receiving objects:  15% (614/4087)Receiving objects:  16% (654/4087)Receiving objects:  17% (695/4087)Receiving objects:  18% (736/4087)Receiving objects:  19% (777/4087)Receiving objects:  20% (818/4087)Receiving objects:  21% (859/4087)Receiving objects:  22% (900/4087)Receiving objects:  23% (941/4087)Receiving objects:  24% (981/4087)Receiving objects:  25% (1022/4087)Receiving objects:  26% (1063/4087)Receiving objects:  27% (1104/4087)Receiving objects:  28% (1145/4087)Receiving objects:  29% (1186/4087)Receiving objects:  30% (1227/4087)Receiving objects:  31% (1267/4087)Receiving objects:  32% (1308/4087)Receiving objects:  33% (1349/4087)Receiving objects:  34% (1390/4087)Receiving objects:  35% (1431/4087)Receiving objects:  36% (1472/4087)Receiving objects:  37% (1513/4087)Receiving objects:  38% (1554/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  39% (1594/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  40% (1635/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  41% (1676/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  42% (1717/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  43% (1758/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  44% (1799/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  45% (1840/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  46% (1881/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  47% (1921/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  48% (1962/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  49% (2003/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  50% (2044/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  51% (2085/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  52% (2126/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  53% (2167/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  54% (2207/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  55% (2248/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  56% (2289/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  57% (2330/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  58% (2371/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  59% (2412/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  60% (2453/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  61% (2494/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  62% (2534/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  63% (2575/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  64% (2616/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  65% (2657/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  66% (2698/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  67% (2739/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  68% (2780/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  69% (2821/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  70% (2861/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  71% (2902/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  72% (2943/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  73% (2984/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  74% (3025/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  75% (3066/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  76% (3107/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  77% (3147/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  78% (3188/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  79% (3229/4087), 348.00 KiB | 678.00 KiB/sReceiving objects:  79% (3268/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  80% (3270/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  81% (3311/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  82% (3352/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  83% (3393/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  84% (3434/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  85% (3474/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  86% (3515/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  87% (3556/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  88% (3597/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  89% (3638/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  90% (3679/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  91% (3720/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  92% (3761/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  93% (3801/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  94% (3842/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  95% (3883/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  96% (3924/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  97% (3965/4087), 684.00 KiB | 657.00 KiB/sremote: Total 4087 (delta 2198), reused 2462 (delta 1938), pack-reused 1269[K
-Receiving objects:  98% (4006/4087), 684.00 KiB | 657.00 KiB/sReceiving objects:  99% (4047/4087), 684.00 KiB | 657.00 KiB/sReceiving objects: 100% (4087/4087), 684.00 KiB | 657.00 KiB/sReceiving objects: 100% (4087/4087), 891.26 KiB | 684.00 KiB/s, done.
-Resolving deltas:   0% (1/2843)Resolving deltas:   1% (44/2843)Resolving deltas:   2% (59/2843)Resolving deltas:   3% (87/2843)Resolving deltas:   4% (116/2843)Resolving deltas:   5% (144/2843)Resolving deltas:   6% (172/2843)Resolving deltas:   7% (213/2843)Resolving deltas:   8% (228/2843)Resolving deltas:   9% (266/2843)Resolving deltas:  10% (303/2843)Resolving deltas:  11% (316/2843)Resolving deltas:  12% (351/2843)Resolving deltas:  13% (372/2843)Resolving deltas:  14% (404/2843)Resolving deltas:  15% (427/2843)Resolving deltas:  17% (492/2843)Resolving deltas:  19% (553/2843)Resolving deltas:  20% (573/2843)Resolving deltas:  21% (600/2843)Resolving deltas:  22% (628/2843)Resolving deltas:  31% (896/2843)Resolving deltas:  32% (913/2843)Resolving deltas:  34% (970/2843)Resolving deltas:  35% (1019/2843)Resolving deltas:  36% (1026/2843)Resolving deltas:  37% (1055/2843)Resolving deltas:  38% (1102/2843)Resolving deltas:  39% (1110/2843)Resolving deltas:  40% (1162/2843)Resolving deltas:  46% (1310/2843)Resolving deltas:  50% (1431/2843)Resolving deltas:  51% (1464/2843)Resolving deltas:  52% (1481/2843)Resolving deltas:  53% (1526/2843)Resolving deltas:  54% (1536/2843)Resolving deltas:  55% (1566/2843)Resolving deltas:  57% (1639/2843)Resolving deltas:  58% (1661/2843)Resolving deltas:  60% (1709/2843)Resolving deltas:  61% (1745/2843)Resolving deltas:  63% (1796/2843)Resolving deltas:  64% (1828/2843)Resolving deltas:  65% (1856/2843)Resolving deltas:  66% (1902/2843)Resolving deltas:  70% (2003/2843)Resolving deltas:  71% (2033/2843)Resolving deltas:  72% (2052/2843)Resolving deltas:  73% (2077/2843)Resolving deltas:  74% (2118/2843)Resolving deltas:  75% (2140/2843)Resolving deltas:  77% (2198/2843)Resolving deltas:  78% (2229/2843)Resolving deltas:  82% (2352/2843)Resolving deltas:  83% (2387/2843)Resolving deltas:  84% (2391/2843)Resolving deltas:  85% (2427/2843)Resolving deltas:  87% (2475/2843)Resolving deltas:  88% (2521/2843)Resolving deltas:  89% (2536/2843)Resolving deltas:  90% (2575/2843)Resolving deltas:  91% (2609/2843)Resolving deltas:  92% (2618/2843)Resolving deltas:  93% (2647/2843)Resolving deltas:  94% (2673/2843)Resolving deltas:  95% (2710/2843)Resolving deltas:  96% (2735/2843)Resolving deltas:  97% (2763/2843)Resolving deltas:  98% (2787/2843)Resolving deltas: 100% (2843/2843)Resolving deltas: 100% (2843/2843), done.
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ mkdir test-zapp-app
-+ mkdir test-zapp-app
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C test-zapp-app clone git@github.ibm.com:dennis-behm/dbbBuildSamples.g<e git@github.ibm.com:dennis-behm/dbbBuildSamples.gi                         t
-+ git -C test-zapp-app clone git@github.ibm.com:dennis-behm/dbbBuildSamples.git
-Cloning into 'dbbBuildSamples'...
-remote: Enumerating objects: 208, done.[K
-Receiving objects:   0% (1/208)Receiving objects:   1% (3/208)Receiving objects:   2% (5/208)Receiving objects:   3% (7/208)Receiving objects:   4% (9/208)Receiving objects:   5% (11/208)Receiving objects:   6% (13/208)Receiving objects:   7% (15/208)Receiving objects:   8% (17/208)Receiving objects:   9% (19/208)Receiving objects:  10% (21/208)Receiving objects:  11% (23/208)Receiving objects:  12% (25/208)Receiving objects:  13% (28/208)Receiving objects:  14% (30/208)Receiving objects:  15% (32/208)Receiving objects:  16% (34/208)Receiving objects:  17% (36/208)Receiving objects:  18% (38/208)Receiving objects:  19% (40/208)Receiving objects:  20% (42/208)Receiving objects:  21% (44/208)Receiving objects:  22% (46/208)Receiving objects:  23% (48/208)Receiving objects:  24% (50/208)Receiving objects:  25% (52/208)Receiving objects:  26% (55/208)Receiving objects:  27% (57/208)Receiving objects:  28% (59/208)Receiving objects:  29% (61/208)Receiving objects:  30% (63/208)Receiving objects:  31% (65/208)Receiving objects:  32% (67/208)Receiving objects:  33% (69/208)Receiving objects:  34% (71/208)Receiving objects:  35% (73/208)Receiving objects:  36% (75/208)Receiving objects:  37% (77/208)Receiving objects:  38% (80/208)Receiving objects:  39% (82/208)Receiving objects:  40% (84/208)Receiving objects:  41% (86/208)Receiving objects:  42% (88/208)Receiving objects:  43% (90/208)Receiving objects:  44% (92/208)Receiving objects:  45% (94/208)Receiving objects:  46% (96/208)Receiving objects:  47% (98/208)Receiving objects:  48% (100/208)Receiving objects:  49% (102/208)Receiving objects:  50% (104/208)Receiving objects:  51% (107/208)Receiving objects:  52% (109/208)Receiving objects:  53% (111/208)Receiving objects:  54% (113/208)Receiving objects:  55% (115/208)Receiving objects:  56% (117/208)Receiving objects:  57% (119/208)Receiving objects:  58% (121/208)Receiving objects:  59% (123/208)remote: Total 208 (delta 0), reused 0 (delta 0), pack-reused 208[K
-Receiving objects:  60% (125/208)Receiving objects:  61% (127/208)Receiving objects:  62% (129/208)Receiving objects:  63% (132/208)Receiving objects:  64% (134/208)Receiving objects:  65% (136/208)Receiving objects:  66% (138/208)Receiving objects:  67% (140/208)Receiving objects:  68% (142/208)Receiving objects:  69% (144/208)Receiving objects:  70% (146/208)Receiving objects:  71% (148/208)Receiving objects:  72% (150/208)Receiving objects:  73% (152/208)Receiving objects:  74% (154/208)Receiving objects:  75% (156/208)Receiving objects:  76% (159/208)Receiving objects:  77% (161/208)Receiving objects:  78% (163/208)Receiving objects:  79% (165/208)Receiving objects:  80% (167/208)Receiving objects:  81% (169/208)Receiving objects:  82% (171/208)Receiving objects:  83% (173/208)Receiving objects:  84% (175/208)Receiving objects:  85% (177/208)Receiving objects:  86% (179/208)Receiving objects:  87% (181/208)Receiving objects:  88% (184/208)Receiving objects:  89% (186/208)Receiving objects:  90% (188/208)Receiving objects:  91% (190/208)Receiving objects:  92% (192/208)Receiving objects:  93% (194/208)Receiving objects:  94% (196/208)Receiving objects:  95% (198/208)Receiving objects:  96% (200/208)Receiving objects:  97% (202/208)Receiving objects:  98% (204/208)Receiving objects:  99% (206/208)Receiving objects: 100% (208/208)Receiving objects: 100% (208/208), 293.51 KiB | 650.00 KiB/s, done.
-Resolving deltas:   0% (0/83)Resolving deltas:   1% (1/83)Resolving deltas:  25% (21/83)Resolving deltas:  26% (22/83)Resolving deltas:  38% (32/83)Resolving deltas:  48% (40/83)Resolving deltas:  49% (41/83)Resolving deltas:  56% (47/83)Resolving deltas:  57% (48/83)Resolving deltas:  62% (52/83)Resolving deltas:  63% (53/83)Resolving deltas:  65% (54/83)Resolving deltas:  66% (55/83)Resolving deltas:  75% (63/83)Resolving deltas:  79% (66/83)Resolving deltas:  81% (68/83)Resolving deltas:  84% (70/83)Resolving deltas:  86% (72/83)Resolving deltas:  90% (75/83)Resolving deltas:  91% (76/83)Resolving deltas:  93% (78/83)Resolving deltas:  96% (80/83)Resolving deltas:  97% (81/83)Resolving deltas: 100% (83/83)Resolving deltas: 100% (83/83), done.
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C test-zapp-app clone git@github.ibm.com:zDevOps-Acceleration/genapp.g<e git@github.ibm.com:zDevOps-Acceleration/genapp.gi                         t
-+ git -C test-zapp-app clone git@github.ibm.com:zDevOps-Acceleration/genapp.git
-Cloning into 'genapp'...
-remote: Enumerating objects: 680, done.[K
-Receiving objects:   0% (1/680)Receiving objects:   1% (7/680)Receiving objects:   2% (14/680)Receiving objects:   3% (21/680)Receiving objects:   4% (28/680)Receiving objects:   5% (34/680)Receiving objects:   6% (41/680)Receiving objects:   7% (48/680)Receiving objects:   8% (55/680)Receiving objects:   9% (62/680)Receiving objects:  10% (68/680)Receiving objects:  11% (75/680)Receiving objects:  12% (82/680)Receiving objects:  13% (89/680)Receiving objects:  14% (96/680)Receiving objects:  15% (102/680)Receiving objects:  16% (109/680)Receiving objects:  17% (116/680)Receiving objects:  18% (123/680)Receiving objects:  19% (130/680)Receiving objects:  20% (136/680)Receiving objects:  21% (143/680)Receiving objects:  22% (150/680)Receiving objects:  23% (157/680)Receiving objects:  24% (164/680)Receiving objects:  25% (170/680)Receiving objects:  26% (177/680)Receiving objects:  27% (184/680)Receiving objects:  28% (191/680)Receiving objects:  29% (198/680)Receiving objects:  30% (204/680)Receiving objects:  31% (211/680)Receiving objects:  32% (218/680)Receiving objects:  33% (225/680)Receiving objects:  34% (232/680)Receiving objects:  35% (238/680)Receiving objects:  36% (245/680)Receiving objects:  37% (252/680)Receiving objects:  38% (259/680)Receiving objects:  39% (266/680)Receiving objects:  40% (272/680)Receiving objects:  41% (279/680)Receiving objects:  42% (286/680)Receiving objects:  43% (293/680)Receiving objects:  44% (300/680)Receiving objects:  45% (306/680)Receiving objects:  46% (313/680)Receiving objects:  47% (320/680)Receiving objects:  48% (327/680)Receiving objects:  49% (334/680)Receiving objects:  50% (340/680)Receiving objects:  51% (347/680)Receiving objects:  52% (354/680)Receiving objects:  53% (361/680)Receiving objects:  54% (368/680)Receiving objects:  55% (374/680)Receiving objects:  56% (381/680)Receiving objects:  57% (388/680)Receiving objects:  58% (395/680)Receiving objects:  59% (402/680)Receiving objects:  60% (408/680)Receiving objects:  61% (415/680)Receiving objects:  62% (422/680)Receiving objects:  63% (429/680)Receiving objects:  64% (436/680)Receiving objects:  65% (442/680)Receiving objects:  66% (449/680)Receiving objects:  67% (456/680)Receiving objects:  68% (463/680)Receiving objects:  69% (470/680)Receiving objects:  70% (476/680)Receiving objects:  71% (483/680)Receiving objects:  72% (490/680)Receiving objects:  73% (497/680)Receiving objects:  74% (504/680)Receiving objects:  75% (510/680)Receiving objects:  76% (517/680)Receiving objects:  77% (524/680)Receiving objects:  78% (531/680)Receiving objects:  79% (538/680)Receiving objects:  80% (544/680)Receiving objects:  81% (551/680)Receiving objects:  82% (558/680)Receiving objects:  83% (565/680)Receiving objects:  84% (572/680)Receiving objects:  85% (578/680)Receiving objects:  86% (585/680)Receiving objects:  87% (592/680)Receiving objects:  88% (599/680)Receiving objects:  89% (606/680)Receiving objects:  90% (612/680)Receiving objects:  91% (619/680)Receiving objects:  92% (626/680)Receiving objects:  93% (633/680)Receiving objects:  94% (640/680)Receiving objects:  95% (646/680)Receiving objects:  96% (653/680)Receiving objects:  97% (660/680)remote: Total 680 (delta 0), reused 0 (delta 0), pack-reused 680[K
-Receiving objects:  98% (667/680)Receiving objects:  99% (674/680)Receiving objects: 100% (680/680)Receiving objects: 100% (680/680), 228.38 KiB | 635.00 KiB/s, done.
-Resolving deltas:   0% (0/406)Resolving deltas:   1% (6/406)Resolving deltas:   2% (9/406)Resolving deltas:   3% (13/406)Resolving deltas:   4% (20/406)Resolving deltas:   5% (22/406)Resolving deltas:   7% (32/406)Resolving deltas:  11% (46/406)Resolving deltas:  13% (56/406)Resolving deltas:  14% (57/406)Resolving deltas:  23% (95/406)Resolving deltas:  30% (123/406)Resolving deltas:  32% (130/406)Resolving deltas:  43% (176/406)Resolving deltas:  44% (181/406)Resolving deltas:  48% (197/406)Resolving deltas:  58% (236/406)Resolving deltas:  61% (248/406)Resolving deltas:  62% (255/406)Resolving deltas:  65% (265/406)Resolving deltas:  66% (268/406)Resolving deltas:  67% (273/406)Resolving deltas:  88% (360/406)Resolving deltas:  89% (363/406)Resolving deltas:  92% (374/406)Resolving deltas:  96% (393/406)Resolving deltas:  97% (396/406)Resolving deltas:  98% (398/406)Resolving deltas:  99% (404/406)Resolving deltas: 100% (406/406)Resolving deltas: 100% (406/406), done.
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C test-zapp-app clone -b Scenario4Test git@github.ibm.com:zDevOps-Acce<e -b Scenario4Test git@github.ibm.com:zDevOps-Accel                         eration/App-EPSM.git
-+ git -C test-zapp-app clone -b Scenario4Test git@github.ibm.com:zDevOps-Acceleration/App-EPSM.git
-Cloning into 'App-EPSM'...
-remote: Enumerating objects: 8, done.[K
-remote: Counting objects:  12% (1/8)[Kremote: Counting objects:  25% (2/8)[Kremote: Counting objects:  37% (3/8)[Kremote: Counting objects:  50% (4/8)[Kremote: Counting objects:  62% (5/8)[Kremote: Counting objects:  75% (6/8)[Kremote: Counting objects:  87% (7/8)[Kremote: Counting objects: 100% (8/8)[Kremote: Counting objects: 100% (8/8), done.[K
-remote: Compressing objects:  12% (1/8)[Kremote: Compressing objects:  25% (2/8)[Kremote: Compressing objects:  37% (3/8)[Kremote: Compressing objects:  50% (4/8)[Kremote: Compressing objects:  62% (5/8)[Kremote: Compressing objects:  75% (6/8)[Kremote: Compressing objects:  87% (7/8)[Kremote: Compressing objects: 100% (8/8)[Kremote: Compressing objects: 100% (8/8), done.[K
-Receiving objects:   0% (1/415)Receiving objects:   1% (5/415)Receiving objects:   2% (9/415)Receiving objects:   3% (13/415)Receiving objects:   4% (17/415)Receiving objects:   5% (21/415)Receiving objects:   6% (25/415)Receiving objects:   7% (30/415)Receiving objects:   8% (34/415)Receiving objects:   9% (38/415)Receiving objects:  10% (42/415)Receiving objects:  11% (46/415)Receiving objects:  12% (50/415)Receiving objects:  13% (54/415)Receiving objects:  14% (59/415)Receiving objects:  15% (63/415)Receiving objects:  16% (67/415)Receiving objects:  17% (71/415)Receiving objects:  18% (75/415)Receiving objects:  19% (79/415)Receiving objects:  20% (83/415)Receiving objects:  21% (88/415)Receiving objects:  22% (92/415)Receiving objects:  23% (96/415)Receiving objects:  24% (100/415)Receiving objects:  25% (104/415)Receiving objects:  26% (108/415)Receiving objects:  27% (113/415)Receiving objects:  28% (117/415)Receiving objects:  29% (121/415)Receiving objects:  30% (125/415)remote: Total 415 (delta 1), reused 0 (delta 0), pack-reused 407[K
-Receiving objects:  31% (129/415)Receiving objects:  32% (133/415)Receiving objects:  33% (137/415)Receiving objects:  34% (142/415)Receiving objects:  35% (146/415)Receiving objects:  36% (150/415)Receiving objects:  37% (154/415)Receiving objects:  38% (158/415)Receiving objects:  39% (162/415)Receiving objects:  40% (166/415)Receiving objects:  41% (171/415)Receiving objects:  42% (175/415)Receiving objects:  43% (179/415)Receiving objects:  44% (183/415)Receiving objects:  45% (187/415)Receiving objects:  46% (191/415)Receiving objects:  47% (196/415)Receiving objects:  48% (200/415)Receiving objects:  49% (204/415)Receiving objects:  50% (208/415)Receiving objects:  51% (212/415)Receiving objects:  52% (216/415)Receiving objects:  53% (220/415)Receiving objects:  54% (225/415)Receiving objects:  55% (229/415)Receiving objects:  56% (233/415)Receiving objects:  57% (237/415)Receiving objects:  58% (241/415)Receiving objects:  59% (245/415)Receiving objects:  60% (249/415)Receiving objects:  61% (254/415)Receiving objects:  62% (258/415)Receiving objects:  63% (262/415)Receiving objects:  64% (266/415)Receiving objects:  65% (270/415)Receiving objects:  66% (274/415)Receiving objects:  67% (279/415)Receiving objects:  68% (283/415)Receiving objects:  69% (287/415)Receiving objects:  70% (291/415)Receiving objects:  71% (295/415)Receiving objects:  72% (299/415)Receiving objects:  73% (303/415)Receiving objects:  74% (308/415)Receiving objects:  75% (312/415)Receiving objects:  76% (316/415)Receiving objects:  77% (320/415)Receiving objects:  78% (324/415)Receiving objects:  79% (328/415)Receiving objects:  80% (332/415)Receiving objects:  81% (337/415)Receiving objects:  82% (341/415)Receiving objects:  83% (345/415)Receiving objects:  84% (349/415)Receiving objects:  85% (353/415)Receiving objects:  86% (357/415)Receiving objects:  87% (362/415)Receiving objects:  88% (366/415)Receiving objects:  89% (370/415)Receiving objects:  90% (374/415)Receiving objects:  91% (378/415)Receiving objects:  92% (382/415)Receiving objects:  93% (386/415)Receiving objects:  94% (391/415)Receiving objects:  95% (395/415)Receiving objects:  96% (399/415)Receiving objects:  97% (403/415)Receiving objects:  98% (407/415)Receiving objects:  99% (411/415)Receiving objects: 100% (415/415)Receiving objects: 100% (415/415), 47.53 KiB | 501.00 KiB/s, done.
-Resolving deltas:   0% (0/221)Resolving deltas:  29% (66/221)Resolving deltas:  30% (67/221)Resolving deltas:  33% (73/221)Resolving deltas:  38% (84/221)Resolving deltas:  41% (91/221)Resolving deltas:  42% (94/221)Resolving deltas:  62% (139/221)Resolving deltas:  66% (146/221)Resolving deltas:  70% (155/221)Resolving deltas:  77% (172/221)Resolving deltas:  80% (179/221)Resolving deltas:  82% (183/221)Resolving deltas:  98% (217/221)Resolving deltas:  99% (220/221)Resolving deltas: 100% (221/221)Resolving deltas: 100% (221/221), done.
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ mkdir test-zapp-app-out
-+ mkdir test-zapp-app-out
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-s
-exit $?
-exit $?
-exit $?
-exit $?
-exit $?
-exit $?
-exit $?
-exit $?
-$ s
-+ s
--bash: s: command not found
-$ exit $?
-+ exit 127
-logout
-
-@@START OF COMMAND@@
-$ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy<ovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy                          --sourceDir /u/dbehm/test<b-zappbuild/build.groovy --sourceDir /u/dbehm/test-                         zapp-app --workDir /u/dbe<-sourceDir /u/dbehm/test-zapp-app --workDir /u/dbeh                         m/test-zapp-app-out/EPSM <app-app --workDir /u/dbehm/test-zapp-app-out/EPSM -                         url https://10.3.20.96:15</test-zapp-app-out/EPSM -url https://10.3.20.96:154                         43/dbb -id ADMIN -pw ADMI<rl https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN                          --hlq DBEHM.DBB.BUILD.EP<3/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPS                         M --application App-EPSM <--hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM -                         -verbose --fullBuild --pr< --application App-EPSM --verbose --fullBuild --pro                         pFiles /var/dbb/dbb-zappb<verbose --fullBuild --propFiles /var/dbb/dbb-zappbu                         ild-config/build.properti<Files /var/dbb/dbb-zappbuild-config/build.propertie                         s,/var/dbb/dbb-zappbuild-<ld-config/build.properties,/var/dbb/dbb-zappbuild-c                         onfig/datasets.properties<,/var/dbb/dbb-zappbuild-config/datasets.properties,                         /var/dbb/dbb-zappbuild-co<nfig/datasets.properties,/var/dbb/dbb-zappbuild-con                         fig/test-searchpath.prope<var/dbb/dbb-zappbuild-config/test-searchpath.proper                         ties,/var/dbb/dbb-zappbui<ig/test-searchpath.properties,/var/dbb/dbb-zappbuil                         d-config/test.properties
-+ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy --sourceDir /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --fullBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-
-** Build start at 20220810.122811.028
-** Input args = /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --fullBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/datasets.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/dependencyReport.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Assembler.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/MFS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PSBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/DBDgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ACBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ZunitConfig.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Transfer.properties
-** appConf = /u/dbehm/test-zapp-app/App-EPSM/application-conf
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/file.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/dependencyReport.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/build.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/datasets.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test-searchpath.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test.properties
-java.version=8.0.7.5 - pmz6480sr7fp5-20220208_01(SR7 FP5)
-java.home=/V2R4/usr/lpp/java/J8.0_64
-user.dir=/u/dbehm
-** Build properties at start up:
-IBMZPLI_V51=
-IBMZPLI_V52=PLI.V5R2.SIBMZCMP
-MACLIB=SYS1.MACLIB
-REFERAL=IMSCFG.IMSC.REFERAL
-SASMMOD1=HLASM.SASMMOD1
-SBZUSAMP=RATCFG.ZUNIT.SBZUSAMP
-SCEELKED=CEE.SCEELKED
-SCEEMAC=CEE.SCEEMAC
-SCSQCOBC=
-SCSQLOAD=
-SDFHCOB=CICSTS.V5R4.CICS.SDFHCOB
-SDFHLOAD=CICSTS.V5R4.CICS.SDFHLOAD
-SDFHMAC=CICSTS.V5R4.CICS.SDFHMAC
-SDFSMAC=IMS.V15R1.SDFSMAC
-SDFSRESL=IMS.V15R1.SDFSRESL
-SDSNLOAD=DBC0CFG.DB2.V12.SDSNLOAD
-SEQAMOD=DEBUG.V14R1.SEQAMOD
-SFANLMD=
-SFELLOAD=RDZ.V14R1.SFELLOAD
-SIGYCOMP_V4=
-SIGYCOMP_V6=COBOL.V6R3.SIGYCOMP
-acbgen_dbdPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-acbgen_deployType=ACBLIB
-acbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_loadOptions=cyl space(5,5) dir(40) dsorg(PO) recfm(U) blksize(32760) dsntype(PDS)
-acbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_pgm=DFSRRC00
-acbgen_psbPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-acbgen_requiredBuildProperties=acbgen_psbPDS,acbgen_dbdPDS,acbgen_loadPDS, acbgen_pgm,acbgen_linkEditor,acbgen_tempOptions,acbgen_maxRC,   SDFSMAC,SCEEMAC
-acbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-application=App-EPSM
-applicationBuildGroup=App-EPSM-Scenario4Test
-applicationBuildLabel=build.20220810.122811.028
-applicationCollectionName=App-EPSM-Scenario4Test
-applicationConfRootDir=
-applicationCurrentBranch=Scenario4Test
-applicationOutputsCollectionName=App-EPSM-Scenario4Test-outputs
-applicationPropFiles=file.properties,BMS.properties,Cobol.properties,LinkEdit.properties,dependencyReport.properties
-applicationSrcDirs=App-EPSM
-assember_cicsprecompiler=DFHEAP1$
-assembler_assemblySyslibConcatenation=CICSTS.V5R5.CICS.SDFHSAMP,DBC0CFG.DB2.V12.SDSNSAMP
-assembler_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-assembler_db2precompiler=DSNHPC
-assembler_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_dependenciesDatasetMapping=assembler_macroPDS::**/*
-assembler_linkEditor=IEWBLINK
-assembler_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-assembler_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_macroPDS=DBEHM.DBB.BUILD.EPSM.MACRO
-assembler_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-assembler_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_pgm=ASMA90
-assembler_requiredBuildProperties=assembler_srcPDS,assembler_macroPDS,assembler_objPDS,assembler_loadPDS, assembler_pgm,assembler_linkEditor,assembler_tempOptions,assembler_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED,SCEEMAC
-assembler_srcDatasets=DBEHM.DBB.BUILD.EPSM.ASM,DBEHM.DBB.BUILD.EPSM.MACRO,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-assembler_srcPDS=DBEHM.DBB.BUILD.EPSM.ASM
-assembler_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-bmsRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             }
-bms_assembler=ASMA90
-bms_compileParms=SYSPARM(MAP),DECK,NOOBJECT
-bms_copyGenParms=SYSPARM(DSECT),DECK,NOOBJECT
-bms_cpyPDS=DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_fileBuildRank=
-bms_linkEditParms=MAP,RENT,COMPAT(PM5)
-bms_linkEditor=IEWBLINK
-bms_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-bms_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_maxRC=0
-bms_outputDatasets=DBEHM.DBB.BUILD.EPSM.BMS.COPY,DBEHM.DBB.BUILD.EPSM.LOAD
-bms_requiredBuildProperties=bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor,bms_tempOptions,bms_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED
-bms_srcDatasets=DBEHM.DBB.BUILD.EPSM.BMS,DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-bms_srcPDS=DBEHM.DBB.BUILD.EPSM.BMS
-bms_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-buildListFileExt=txt
-buildOrder=BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-buildOutDir=/u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028
-buildPropFiles=datasets.properties,Assembler.properties,BMS.properties,MFS.properties,PSBgen.properties,DBDgen.properties,ACBgen.properties,Cobol.properties,LinkEdit.properties,PLI.properties,ZunitConfig.properties
-cobol_BMS_PDS=${team}.BMS.COPY
-cobol_compileCICSParms=CICS
-cobol_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-cobol_compileErrorPrefixParms=ADATA,EX(ADX(ELAXMGUX))
-cobol_compileMaxRC=4
-cobol_compileParms=LIB
-cobol_compileSQLParms=SQL
-cobol_compileSyslibConcatenation=MDALBIN.PROG.EPSC.COPY
-cobol_compiler=IGYCRCTL
-cobol_compilerVersion=V6
-cobol_cpyPDS=DBEHM.DBB.BUILD.EPSM.COPY
-cobol_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_dependenciesAlternativeLibraryNameMapping=
-cobol_dependenciesDatasetMapping=cobol_cpyPDS::**/*
-cobol_fileBuildRank=
-cobol_fileBuildRank=1::**/cobol/epsnbrvl.cbl
-cobol_linkDebugExit=INCLUDE OBJECT(@{member})  \n    INCLUDE SYSLIB(EQAD3CXT)
-cobol_linkEdit=false::**/cobol/epsnbrvl.cbl,**/cobol/epsmlist.cbl
-cobol_linkEdit=true
-cobol_linkEditMaxRC=0
-cobol_linkEditParms=MAP,RENT,COMPAT(PM5)
-cobol_linkEditStream=
-cobol_linkEditSyslibConcatenation=
-cobol_linkEditor=IEWBLINK
-cobol_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-cobol_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-cobol_requiredBuildProperties=cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-cobol_resolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }]
-cobol_scanLoadModule=true
-cobol_srcDatasets=DBEHM.DBB.BUILD.EPSM.COBOL,DBEHM.DBB.BUILD.EPSM.COPY,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_srcPDS=DBEHM.DBB.BUILD.EPSM.COBOL
-cobol_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-cobol_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-cobol_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-continueOnScanFailure=true
-copybookRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }
-createBuildOutputSubfolder=true
-createTestcaseDependency=true
-dbb.DependencyScanner.languageHint=ASM::**/*.asm,**/*.mac,**/*.psb
-dbb.DependencyScanner.languageHint=COB::**/*.cbl,**/*.cpy
-dbb.DependencyScanner.languageHint=PLI::**/*.pli,**/*.inc,**/*.cpy
-dbb.DependencyScanner.languageHint=rexx::**/*.rexx
-dbb.LinkEditScanner.excludeFilter=CICSTS.V5R4.CICS.SDFHLOAD.*, CEE.SCEELKED.*
-dbb.RepositoryClient.password=ADMIN
-dbb.RepositoryClient.passwordFile=/u/dbehm/test-zapp/dbb-zappbuild/utilities/ADMIN.pw
-dbb.RepositoryClient.url=https://10.3.20.96:15443/dbb
-dbb.RepositoryClient.userId=ADMIN
-dbb.file.tagging=true
-dbb.gateway.accountNumber=
-dbb.gateway.groupId=
-dbb.gateway.logLevel=2
-dbb.gateway.procedureName=
-dbb.gateway.regionSize=
-dbb.gateway.type=legacy
-dbb.scriptMapping=Assembler.groovy::**/*.asm
-dbb.scriptMapping=BMS.groovy::**/*.bms
-dbb.scriptMapping=Cobol.groovy::**/*.cbl
-dbb.scriptMapping=LinkEdit.groovy::**/*.lnk
-dbb.scriptMapping=PLI.groovy::**/*.pli
-dbdgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-dbdgen_deployType=DBDLIB
-dbdgen_linkEditor=IEWBLINK
-dbdgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-dbdgen_loadPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_pgm=ASMA90
-dbdgen_requiredBuildProperties=dbdgen_srcPDS,dbdgen_objPDS,dbdgen_loadPDS, dbdgen_pgm,dbdgen_linkEditor,dbdgen_tempOptions,dbdgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-dbdgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.DBD,DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-dbdgen_srcPDS=DBEHM.DBB.BUILD.EPSM.DBD
-dbdgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-documentDeleteRecords=false
-excludeFileList=.*,**/*.properties,**/*.xml,**/*.groovy,**/*.md,**/application-conf/*.*
-formatConsoleOutput=false
-fullBuild=true
-generateDb2BindInfoRecord=true
-generateDb2BindInfoRecordProperties=bind_collectionID,bind_packageOwner,bind_qualifier
-gitRepositoryCompareService=/compare/
-gitRepositoryURL=https://github.ibm.com/zDevOps-Acceleration/App-EPSM
-hlq=DBEHM.DBB.BUILD.EPSM
-id=ADMIN
-impactBuildOnBuildPropertyChanges=false
-impactBuildOnBuildPropertyList=[${assembler_impactPropertyList},${assembler_impactPropertyListCICS},${assembler_impactPropertyListSQL},${bms_impactPropertyList},${cobol_impactPropertyList},${cobol_impactPropertyListCICS},${cobol_impactPropertyListSQL},${dbdgen_impactPropertyList},${linkedit_impactPropertyList},${mfs_impactPropertyList},${pli_impactPropertyList},${pli_impactPropertyListCICS},${pli_impactPropertyListSQL},${psbgen_impactPropertyList}]
-impactResolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }]
-isCICS=true::**/cobol/epsmlist.cbl
-linkEdit_parms=MAP,RENT,COMPAT(PM5)
-linkRule={"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }
-linkedit_fileBuildRank=
-linkedit_linkEditor=IEWBLINK
-linkedit_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-linkedit_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_maxRC=0
-linkedit_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_requiredBuildProperties=linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
-linkedit_scanLoadModule=true
-linkedit_srcDatasets=DBEHM.DBB.BUILD.EPSM.LINK,DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-linkedit_srcPDS=DBEHM.DBB.BUILD.EPSM.LINK
-linkedit_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-mainBuildBranch=master
-mfs_deployType=MFS
-mfs_loadDatasets=DBEHM.DBB.BUILD.EPSM.TFORMAT
-mfs_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-mfs_phase1processor=DFSUPAA0
-mfs_phase2processor=DFSUNUB0
-mfs_requiredBuildProperties=mfs_srcPDS,mfs_tformatPDS, mfs_phase1processor,mfs_phase2processor,mfs_tempOptions,mfs_phase1MaxRC,mfs_phase2MaxRC,   SDFSMAC,SDFSRESL,REFERAL
-mfs_srcDatasets=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) blksize(32720) recfm(F,B) dsntype(library)
-mfs_srcPDS=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_tempOptions=cyl space(5,5) unit(vio) new
-mfs_tformatPDS=DBEHM.DBB.BUILD.EPSM.TFORMAT
-outDir=/u/dbehm/test-zapp-app-out/EPSM
-pli_BMS_PDS=${team}.BMS.COPY
-pli_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-pli_compiler=IBMZPLI
-pli_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-pli_dependenciesAlternativeLibraryNameMapping=
-pli_dependenciesDatasetMapping=pli_incPDS::**/*
-pli_incPDS=DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE
-pli_linkEditor=IEWBLINK
-pli_listOptions=cyl space(5,5) unit(vio) blksize(0) lrecl(137) recfm(v,b) new
-pli_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-pli_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_requiredBuildPropeties=pli_srcPDS,pli_incPDS,pli_objPDS,pli_loadPDS,pli_compiler,pli_linkEditor,pli_tempOptions,applicationOutputsCollectionName,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-pli_srcDatasets=DBEHM.DBB.BUILD.EPSM.PLI,DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_srcPDS=DBEHM.DBB.BUILD.EPSM.PLI
-pli_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pli_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-pli_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-propFiles=/var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-psbgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-psbgen_deployType=PSBLIB
-psbgen_linkEditor=IEWBLINK
-psbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-psbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_pgm=ASMA90
-psbgen_requiredBuildProperties=psbgen_srcPDS,psbgen_objPDS,psbgen_loadPDS, psbgen_pgm,psbgen_linkEditor,psbgen_tempOptions,psbgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-psbgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.PSB,DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-psbgen_srcPDS=DBEHM.DBB.BUILD.EPSM.PSB
-psbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pw=ADMIN
-reportConcurrentChanges=false
-reportConcurrentChangesGitBranchReferencePatterns=master
-reportConcurrentChangesIntersectionFailsBuild=false
-reportExternalImpacts=true
-reportExternalImpactsAnalysisDepths=deep
-reportExternalImpactsAnalysisFileFilter=**/*
-reportExternalImpactsCollectionPatterns=.*-main.*,.*-develop.*
-requiredBuildProperties=buildOrder,buildListFileExt
-requiredDBBToolkitVersion=1.0.3
-resolveSubsystems=true
-rexx_cexecDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_cexecOptions=cyl space(1,1) lrecl(80) recfm(F,B) blksize(27920) DSORG(PO) dsntype(pds) dir(10)
-rexx_cexecPDS=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_compiler=REXXCOMP
-rexx_dependenciesDatasetMapping=rexx_srcPDS::**/*
-rexx_linkEditor=IEWBLINK
-rexx_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-rexx_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_outputDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC,DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-rexx_requiredBuildProperties=rexx_srcPDS,rexx_objPDS,rexx_loadPDS,rexx_cexecPDS, rexx_compiler,rexx_linkEditor,rexx_tempOptions,   SFANLMD
-rexx_rexxPrintTempOptions=cyl space(5,5) unit(vio) blksize(121) lrecl(121) recfm(f,a) new
-rexx_srcDatasets=DBEHM.DBB.BUILD.EPSM.REXX,DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-rexx_srcPDS=DBEHM.DBB.BUILD.EPSM.REXX
-rexx_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-startTime=20220810.122811.028
-topicBranchBuild=true
-transfer_jclPDS=DBEHM.DBB.BUILD.EPSM.JCL
-transfer_outputDatasets=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_requiredBuildProperties=transfer_srcPDS,transfer_srcOptions,  transfer_deployType
-transfer_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-transfer_srcPDS=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_xmlPDS=DBEHM.DBB.BUILD.EPSM.XML
-url=https://10.3.20.96:15443/dbb
-useSearchConfiguration=true
-verbose=true
-workspace=/u/dbehm/test-zapp-app
-zAppBuildDir=/u/dbehm/test-zapp/dbb-zappbuild
-zunit_bzucfgPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_bzuplayPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_bzureportPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_dependenciesDatasetMapping=zunit_bzuplayPDS::**/*
-zunit_loadDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_loadOptions=cyl space(1,1) dsorg(PO) lrecl(256) recfm(F,B) blksize(32512) dsntype(library)
-zunit_reportDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_reportOptions=tracks space(200,40) dsorg(PO) blksize(32760) lrecl(16383) recfm(v,b) dsntype(library)
-zunit_requiredBuildProperties=zunit_srcDatasets,zunit_loadDatasets,zunit_reportDatasets,zunit_bzucfgPDS,zunit_bzureportPDS,zunit_bzuplayPDS,zunit_srcOptions,zunit_loadOptions,zunit_reportOptions,jobCard,zunit_maxPassRC,zunit_maxWarnRC,zunit_playbackFileExtension,zunit_resolutionRules,  zunit_bzuplayParms,zunit_userDebugSessionTestParm
-zunit_srcDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_srcOptions=cyl space(1,1) lrecl(27998) dsorg(PO) recfm(V,B) dsntype(library)
-** zAppBuild running on DBB Toolkit Version 1.1.3 28-Feb-2022 17:26:26 
-required props = buildOrder,buildListFileExt
-** Repository client created for https://10.3.20.96:15443/dbb
-** Build output located at /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028
-** Build result created for BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122811.028 at https://10.3.20.96:15443/dbb/rest/buildResult/4014
-** --fullBuild option selected. Building all programs for application App-EPSM
-** Writing build list file to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028/buildList.txt
-App-EPSM/copybooks-public/epsmtcom.cpy
-App-EPSM/copybooks-public/epsmtinp.cpy
-App-EPSM/copybooks-public/epsmtout.cpy
-App-EPSM/cobol/epsplist.cbl
-App-EPSM/bms/epsmlis.bms
-App-EPSM/link/epsmlist.lnk
-App-EPSM/cobol/epsmpmt.cbl
-App-EPSM/copybooks/epsmortf.cpy
-** Scanning source code.
-** Updating collections App-EPSM-Scenario4Test and App-EPSM-Scenario4Test-outputs
-*** Sorted list of changed files: [App-EPSM/copybooks-public/epsmtcom.cpy, App-EPSM/copybooks-public/epsmtinp.cpy, App-EPSM/copybooks-public/epsmtout.cpy, App-EPSM/cobol/epsplist.cbl, App-EPSM/bms/epsmlis.bms, App-EPSM/link/epsmlist.lnk, App-EPSM/cobol/epsmpmt.cbl, App-EPSM/copybooks/epsmortf.cpy]
-*** Scanning file App-EPSM/copybooks-public/epsmtcom.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtcom.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks-public/epsmtcom.cpy =
-{"dli":false,"lname":"EPSMTCOM","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMTINP","library":"SYSLIB","category":"COPY"},{"lname":"EPSMTOUT","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
-*** Scanning file App-EPSM/copybooks-public/epsmtinp.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtinp.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks-public/epsmtinp.cpy =
-{"dli":false,"lname":"EPSMTINP","file":"App-EPSM\/copybooks-public\/epsmtinp.cpy","mq":false,"cics":false,"language":"COB","sql":false}
-*** Scanning file App-EPSM/copybooks-public/epsmtout.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtout.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks-public/epsmtout.cpy =
-{"dli":false,"lname":"EPSMTOUT","file":"App-EPSM\/copybooks-public\/epsmtout.cpy","mq":false,"cics":false,"language":"COB","sql":false}
-*** Scanning file App-EPSM/cobol/epsplist.cbl (/u/dbehm/test-zapp-app/App-EPSM/cobol/epsplist.cbl)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/cobol/epsplist.cbl =
-{"dli":false,"lname":"EPSPLIST","file":"App-EPSM\/cobol\/epsplist.cbl","mq":false,"cics":true,"logicalDependencies":[{"lname":"DFHAID","library":"SYSLIB","category":"COPY"},{"lname":"EPSMLIS","library":"SYSLIB","category":"COPY"},{"lname":"EPSMORTF","library":"SYSLIB","category":"COPY"},{"lname":"EPSMTCOM","library":"SYSLIB","category":"COPY"},{"lname":"EPSNBRPM","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
-*** Scanning file App-EPSM/bms/epsmlis.bms (/u/dbehm/test-zapp-app/App-EPSM/bms/epsmlis.bms)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/bms/epsmlis.bms =
-{"dli":false,"lname":"EPSMLIS","file":"App-EPSM\/bms\/epsmlis.bms","mq":false,"cics":false,"language":"ASM","sql":false}
-*** Scanning file App-EPSM/link/epsmlist.lnk (/u/dbehm/test-zapp-app/App-EPSM/link/epsmlist.lnk)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/link/epsmlist.lnk =
-{"dli":false,"lname":"EPSMLIST","file":"App-EPSM\/link\/epsmlist.lnk","mq":false,"cics":false,"language":"ZBND","sql":false}
-*** Scanning file App-EPSM/cobol/epsmpmt.cbl (/u/dbehm/test-zapp-app/App-EPSM/cobol/epsmpmt.cbl)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/cobol/epsmpmt.cbl =
-{"dli":false,"lname":"EPSMPMT","file":"App-EPSM\/cobol\/epsmpmt.cbl","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSPDATA","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
-*** Scanning file App-EPSM/copybooks/epsmortf.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks/epsmortf.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks/epsmortf.cpy =
-{"dli":false,"lname":"EPSMORTF","file":"App-EPSM\/copybooks\/epsmortf.cpy","mq":false,"cics":false,"language":"COB","sql":false}
-** Storing 8 logical files in repository collection 'App-EPSM-Scenario4Test'
-HTTP/1.1 200 OK
-** Perform analysis and reporting of external impacted files for the build list.
-*** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode deep
-*** Running external impact analysis for files 
-     App-EPSM/copybooks-public/epsmtcom.cpy 
-     App-EPSM/copybooks-public/epsmtinp.cpy 
-     App-EPSM/copybooks-public/epsmtout.cpy 
-     App-EPSM/cobol/epsplist.cbl 
-     App-EPSM/bms/epsmlis.bms 
-     App-EPSM/link/epsmlist.lnk 
-     App-EPSM/cobol/epsmpmt.cbl 
-     App-EPSM/copybooks/epsmortf.cpy 
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSMTCOM (MortgageApplication/copybook/epsmtcom.cpy) in collection MortgageApplication-main 
-*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs 
-**** Running external impact analysis for identified external impacted files as dependent files of the initial set. 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-     MortgageApplication/link/epsmlist.lnk 
-     MortgageApplication/copybook/epsmtcom.cpy 
-**** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main 
-**** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main 
-**** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main 
-**** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs 
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028/externalImpacts_MortgageApplication-main-outputs.txt
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028/externalImpacts_MortgageApplication-main.txt
-** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-** Building files mapped to BMS.groovy script
-required props = bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor,bms_tempOptions,bms_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.BMS
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.BMS.COPY
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LOAD
-*** Building file App-EPSM/bms/epsmlis.bms
-** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COBOL
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COPY
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.OBJ
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.DBRM
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LOAD
-*** Building file App-EPSM/cobol/epsplist.cbl
-*** Creating dependency resolver for App-EPSM/cobol/epsplist.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }] rules
-*** Scanning file with the default scanner
-*** Resolution rules for App-EPSM/cobol/epsplist.cbl:
-{"library":"SYSLIB","searchPath":[{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks"},{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks-public"}]}
-*** Physical dependencies for App-EPSM/cobol/epsplist.cbl:
-{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"lname":"EPSMLIS","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMORTF","library":"SYSLIB","file":"App-EPSM\/copybooks\/epsmortf.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTINP","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtinp.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTOUT","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtout.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTCOM","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","category":"COPY","resolved":true}
-{"excluded":false,"lname":"EPSNBRPM","library":"SYSLIB","category":"COPY","resolved":false}
-Cobol compiler parms for App-EPSM/cobol/epsplist.cbl = LIB,CICS
-*** Scanning load module for App-EPSM/cobol/epsplist.cbl
-*** Logical file = 
-{"dli":false,"lname":"EPSPLIST","file":"App-EPSM\/cobol\/epsplist.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
-*** Building file App-EPSM/cobol/epsmpmt.cbl
-*** Creating dependency resolver for App-EPSM/cobol/epsmpmt.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }] rules
-*** Scanning file with the default scanner
-*** Resolution rules for App-EPSM/cobol/epsmpmt.cbl:
-{"library":"SYSLIB","searchPath":[{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks"},{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks-public"}]}
-*** Physical dependencies for App-EPSM/cobol/epsmpmt.cbl:
-{"excluded":false,"lname":"EPSPDATA","library":"SYSLIB","category":"COPY","resolved":false}
-Cobol compiler parms for App-EPSM/cobol/epsmpmt.cbl = LIB
-*** Scanning load module for App-EPSM/cobol/epsmpmt.cbl
-*** Logical file = 
-{"dli":false,"lname":"EPSMPMT","file":"App-EPSM\/cobol\/epsmpmt.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
-** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LINK
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.OBJ
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LOAD
-*** Building file App-EPSM/link/epsmlist.lnk
-*** Scanning load module for App-EPSM/link/epsmlist.lnk
-*** Logical file = 
-{"dli":false,"lname":"EPSMLIST","file":"App-EPSM\/link\/epsmlist.lnk","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMPMT","library":"DBEHM.DBB.BUILD.EPSM.LOAD","category":"LINK"},{"lname":"EPSMLIST","library":"DBEHM.DBB.BUILD.EPSM.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
-*** Obtaining hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Setting property :githash:App-EPSM : 286e5bbeda357d9e1a4e5da8094e5ec1589190a4
-** Setting property :giturl:App-EPSM : git@github.ibm.com:zDevOps-Acceleration/App-EPSM.git
-** Writing build report data to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028/BuildReport.json
-** Writing build report to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122811.028/BuildReport.html
-** Updating build result BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122811.028 at https://10.3.20.96:15443/dbb/rest/buildResult/4014
-** Build ended at Wed Aug 10 12:28:25 GMT+01:00 2022
-** Build State : CLEAN
-** Total files processed : 4
-** Total build time  : 13.679 seconds
-
-** Build finished
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ echo ' ' >> /u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtcom.cpy
-+ echo ' '
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C /u/dbehm/test-zapp-app/App-EPSM add copybooks-public/epsmtcom.cpy
-+ git -C /u/dbehm/test-zapp-app/App-EPSM add copybooks-public/epsmtcom.cpy
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C /u/dbehm/test-zapp-app/App-EPSM commit -m 'sample'
-+ git -C /u/dbehm/test-zapp-app/App-EPSM commit -m sample
-[Scenario4Test f62ed49] sample
- 1 file changed, 1 insertion(+)
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy<ovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy                          --sourceDir /u/dbehm/test<b-zappbuild/build.groovy --sourceDir /u/dbehm/test-                         zapp-app --workDir /u/dbe<-sourceDir /u/dbehm/test-zapp-app --workDir /u/dbeh                         m/test-zapp-app-out/EPSM <app-app --workDir /u/dbehm/test-zapp-app-out/EPSM -                         url https://10.3.20.96:15</test-zapp-app-out/EPSM -url https://10.3.20.96:154                         43/dbb -id ADMIN -pw ADMI<rl https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN                          --hlq DBEHM.DBB.BUILD.EP<3/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPS                         M --application App-EPSM <--hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM -                         -verbose --impactBuild --< --application App-EPSM --verbose --impactBuild --p                         ropFiles /var/dbb/dbb-zap<verbose --impactBuild --propFiles /var/dbb/dbb-zapp                         build-config/build.proper<opFiles /var/dbb/dbb-zappbuild-config/build.propert                         ies,/var/dbb/dbb-zappbuil<uild-config/build.properties,/var/dbb/dbb-zappbuild                         -config/datasets.properti<es,/var/dbb/dbb-zappbuild-config/datasets.propertie                         s,/var/dbb/dbb-zappbuild-<config/datasets.properties,/var/dbb/dbb-zappbuild-c                         onfig/test-searchpath.pro<,/var/dbb/dbb-zappbuild-config/test-searchpath.prop                         erties,/var/dbb/dbb-zappb<nfig/test-searchpath.properties,/var/dbb/dbb-zappbu                         ild-config/test.propertie<rties,/var/dbb/dbb-zappbuild-config/test.properties                         
-+ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy --sourceDir /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --impactBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-
-** Build start at 20220810.122845.028
-** Input args = /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --impactBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/datasets.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/dependencyReport.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Assembler.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/MFS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PSBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/DBDgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ACBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ZunitConfig.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Transfer.properties
-** appConf = /u/dbehm/test-zapp-app/App-EPSM/application-conf
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/file.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/dependencyReport.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/build.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/datasets.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test-searchpath.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test.properties
-java.version=8.0.7.5 - pmz6480sr7fp5-20220208_01(SR7 FP5)
-java.home=/V2R4/usr/lpp/java/J8.0_64
-user.dir=/u/dbehm
-** Build properties at start up:
-IBMZPLI_V51=
-IBMZPLI_V52=PLI.V5R2.SIBMZCMP
-MACLIB=SYS1.MACLIB
-REFERAL=IMSCFG.IMSC.REFERAL
-SASMMOD1=HLASM.SASMMOD1
-SBZUSAMP=RATCFG.ZUNIT.SBZUSAMP
-SCEELKED=CEE.SCEELKED
-SCEEMAC=CEE.SCEEMAC
-SCSQCOBC=
-SCSQLOAD=
-SDFHCOB=CICSTS.V5R4.CICS.SDFHCOB
-SDFHLOAD=CICSTS.V5R4.CICS.SDFHLOAD
-SDFHMAC=CICSTS.V5R4.CICS.SDFHMAC
-SDFSMAC=IMS.V15R1.SDFSMAC
-SDFSRESL=IMS.V15R1.SDFSRESL
-SDSNLOAD=DBC0CFG.DB2.V12.SDSNLOAD
-SEQAMOD=DEBUG.V14R1.SEQAMOD
-SFANLMD=
-SFELLOAD=RDZ.V14R1.SFELLOAD
-SIGYCOMP_V4=
-SIGYCOMP_V6=COBOL.V6R3.SIGYCOMP
-acbgen_dbdPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-acbgen_deployType=ACBLIB
-acbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_loadOptions=cyl space(5,5) dir(40) dsorg(PO) recfm(U) blksize(32760) dsntype(PDS)
-acbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_pgm=DFSRRC00
-acbgen_psbPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-acbgen_requiredBuildProperties=acbgen_psbPDS,acbgen_dbdPDS,acbgen_loadPDS, acbgen_pgm,acbgen_linkEditor,acbgen_tempOptions,acbgen_maxRC,   SDFSMAC,SCEEMAC
-acbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-application=App-EPSM
-applicationBuildGroup=App-EPSM-Scenario4Test
-applicationBuildLabel=build.20220810.122845.028
-applicationCollectionName=App-EPSM-Scenario4Test
-applicationConfRootDir=
-applicationCurrentBranch=Scenario4Test
-applicationOutputsCollectionName=App-EPSM-Scenario4Test-outputs
-applicationPropFiles=file.properties,BMS.properties,Cobol.properties,LinkEdit.properties,dependencyReport.properties
-applicationSrcDirs=App-EPSM
-assember_cicsprecompiler=DFHEAP1$
-assembler_assemblySyslibConcatenation=CICSTS.V5R5.CICS.SDFHSAMP,DBC0CFG.DB2.V12.SDSNSAMP
-assembler_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-assembler_db2precompiler=DSNHPC
-assembler_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_dependenciesDatasetMapping=assembler_macroPDS::**/*
-assembler_linkEditor=IEWBLINK
-assembler_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-assembler_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_macroPDS=DBEHM.DBB.BUILD.EPSM.MACRO
-assembler_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-assembler_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_pgm=ASMA90
-assembler_requiredBuildProperties=assembler_srcPDS,assembler_macroPDS,assembler_objPDS,assembler_loadPDS, assembler_pgm,assembler_linkEditor,assembler_tempOptions,assembler_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED,SCEEMAC
-assembler_srcDatasets=DBEHM.DBB.BUILD.EPSM.ASM,DBEHM.DBB.BUILD.EPSM.MACRO,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-assembler_srcPDS=DBEHM.DBB.BUILD.EPSM.ASM
-assembler_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-bmsRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             }
-bms_assembler=ASMA90
-bms_compileParms=SYSPARM(MAP),DECK,NOOBJECT
-bms_copyGenParms=SYSPARM(DSECT),DECK,NOOBJECT
-bms_cpyPDS=DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_fileBuildRank=
-bms_linkEditParms=MAP,RENT,COMPAT(PM5)
-bms_linkEditor=IEWBLINK
-bms_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-bms_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_maxRC=0
-bms_outputDatasets=DBEHM.DBB.BUILD.EPSM.BMS.COPY,DBEHM.DBB.BUILD.EPSM.LOAD
-bms_requiredBuildProperties=bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor,bms_tempOptions,bms_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED
-bms_srcDatasets=DBEHM.DBB.BUILD.EPSM.BMS,DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-bms_srcPDS=DBEHM.DBB.BUILD.EPSM.BMS
-bms_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-buildListFileExt=txt
-buildOrder=BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-buildOutDir=/u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028
-buildPropFiles=datasets.properties,Assembler.properties,BMS.properties,MFS.properties,PSBgen.properties,DBDgen.properties,ACBgen.properties,Cobol.properties,LinkEdit.properties,PLI.properties,ZunitConfig.properties
-cobol_BMS_PDS=${team}.BMS.COPY
-cobol_compileCICSParms=CICS
-cobol_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-cobol_compileErrorPrefixParms=ADATA,EX(ADX(ELAXMGUX))
-cobol_compileMaxRC=4
-cobol_compileParms=LIB
-cobol_compileSQLParms=SQL
-cobol_compileSyslibConcatenation=MDALBIN.PROG.EPSC.COPY
-cobol_compiler=IGYCRCTL
-cobol_compilerVersion=V6
-cobol_cpyPDS=DBEHM.DBB.BUILD.EPSM.COPY
-cobol_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_dependenciesAlternativeLibraryNameMapping=
-cobol_dependenciesDatasetMapping=cobol_cpyPDS::**/*
-cobol_fileBuildRank=
-cobol_fileBuildRank=1::**/cobol/epsnbrvl.cbl
-cobol_linkDebugExit=INCLUDE OBJECT(@{member})  \n    INCLUDE SYSLIB(EQAD3CXT)
-cobol_linkEdit=false::**/cobol/epsnbrvl.cbl,**/cobol/epsmlist.cbl
-cobol_linkEdit=true
-cobol_linkEditMaxRC=0
-cobol_linkEditParms=MAP,RENT,COMPAT(PM5)
-cobol_linkEditStream=
-cobol_linkEditSyslibConcatenation=
-cobol_linkEditor=IEWBLINK
-cobol_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-cobol_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-cobol_requiredBuildProperties=cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-cobol_resolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }]
-cobol_scanLoadModule=true
-cobol_srcDatasets=DBEHM.DBB.BUILD.EPSM.COBOL,DBEHM.DBB.BUILD.EPSM.COPY,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_srcPDS=DBEHM.DBB.BUILD.EPSM.COBOL
-cobol_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-cobol_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-cobol_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-continueOnScanFailure=true
-copybookRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }
-createBuildOutputSubfolder=true
-createTestcaseDependency=true
-dbb.DependencyScanner.languageHint=ASM::**/*.asm,**/*.mac,**/*.psb
-dbb.DependencyScanner.languageHint=COB::**/*.cbl,**/*.cpy
-dbb.DependencyScanner.languageHint=PLI::**/*.pli,**/*.inc,**/*.cpy
-dbb.DependencyScanner.languageHint=rexx::**/*.rexx
-dbb.LinkEditScanner.excludeFilter=CICSTS.V5R4.CICS.SDFHLOAD.*, CEE.SCEELKED.*
-dbb.RepositoryClient.password=ADMIN
-dbb.RepositoryClient.passwordFile=/u/dbehm/test-zapp/dbb-zappbuild/utilities/ADMIN.pw
-dbb.RepositoryClient.url=https://10.3.20.96:15443/dbb
-dbb.RepositoryClient.userId=ADMIN
-dbb.file.tagging=true
-dbb.gateway.accountNumber=
-dbb.gateway.groupId=
-dbb.gateway.logLevel=2
-dbb.gateway.procedureName=
-dbb.gateway.regionSize=
-dbb.gateway.type=legacy
-dbb.scriptMapping=Assembler.groovy::**/*.asm
-dbb.scriptMapping=BMS.groovy::**/*.bms
-dbb.scriptMapping=Cobol.groovy::**/*.cbl
-dbb.scriptMapping=LinkEdit.groovy::**/*.lnk
-dbb.scriptMapping=PLI.groovy::**/*.pli
-dbdgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-dbdgen_deployType=DBDLIB
-dbdgen_linkEditor=IEWBLINK
-dbdgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-dbdgen_loadPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_pgm=ASMA90
-dbdgen_requiredBuildProperties=dbdgen_srcPDS,dbdgen_objPDS,dbdgen_loadPDS, dbdgen_pgm,dbdgen_linkEditor,dbdgen_tempOptions,dbdgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-dbdgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.DBD,DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-dbdgen_srcPDS=DBEHM.DBB.BUILD.EPSM.DBD
-dbdgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-documentDeleteRecords=false
-excludeFileList=.*,**/*.properties,**/*.xml,**/*.groovy,**/*.md,**/application-conf/*.*
-formatConsoleOutput=false
-generateDb2BindInfoRecord=true
-generateDb2BindInfoRecordProperties=bind_collectionID,bind_packageOwner,bind_qualifier
-gitRepositoryCompareService=/compare/
-gitRepositoryURL=https://github.ibm.com/zDevOps-Acceleration/App-EPSM
-hlq=DBEHM.DBB.BUILD.EPSM
-id=ADMIN
-impactBuild=true
-impactBuildOnBuildPropertyChanges=false
-impactBuildOnBuildPropertyList=[${assembler_impactPropertyList},${assembler_impactPropertyListCICS},${assembler_impactPropertyListSQL},${bms_impactPropertyList},${cobol_impactPropertyList},${cobol_impactPropertyListCICS},${cobol_impactPropertyListSQL},${dbdgen_impactPropertyList},${linkedit_impactPropertyList},${mfs_impactPropertyList},${pli_impactPropertyList},${pli_impactPropertyListCICS},${pli_impactPropertyListSQL},${psbgen_impactPropertyList}]
-impactResolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }]
-isCICS=true::**/cobol/epsmlist.cbl
-linkEdit_parms=MAP,RENT,COMPAT(PM5)
-linkRule={"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }
-linkedit_fileBuildRank=
-linkedit_linkEditor=IEWBLINK
-linkedit_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-linkedit_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_maxRC=0
-linkedit_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_requiredBuildProperties=linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
-linkedit_scanLoadModule=true
-linkedit_srcDatasets=DBEHM.DBB.BUILD.EPSM.LINK,DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-linkedit_srcPDS=DBEHM.DBB.BUILD.EPSM.LINK
-linkedit_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-mainBuildBranch=master
-mfs_deployType=MFS
-mfs_loadDatasets=DBEHM.DBB.BUILD.EPSM.TFORMAT
-mfs_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-mfs_phase1processor=DFSUPAA0
-mfs_phase2processor=DFSUNUB0
-mfs_requiredBuildProperties=mfs_srcPDS,mfs_tformatPDS, mfs_phase1processor,mfs_phase2processor,mfs_tempOptions,mfs_phase1MaxRC,mfs_phase2MaxRC,   SDFSMAC,SDFSRESL,REFERAL
-mfs_srcDatasets=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) blksize(32720) recfm(F,B) dsntype(library)
-mfs_srcPDS=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_tempOptions=cyl space(5,5) unit(vio) new
-mfs_tformatPDS=DBEHM.DBB.BUILD.EPSM.TFORMAT
-outDir=/u/dbehm/test-zapp-app-out/EPSM
-pli_BMS_PDS=${team}.BMS.COPY
-pli_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-pli_compiler=IBMZPLI
-pli_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-pli_dependenciesAlternativeLibraryNameMapping=
-pli_dependenciesDatasetMapping=pli_incPDS::**/*
-pli_incPDS=DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE
-pli_linkEditor=IEWBLINK
-pli_listOptions=cyl space(5,5) unit(vio) blksize(0) lrecl(137) recfm(v,b) new
-pli_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-pli_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_requiredBuildPropeties=pli_srcPDS,pli_incPDS,pli_objPDS,pli_loadPDS,pli_compiler,pli_linkEditor,pli_tempOptions,applicationOutputsCollectionName,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-pli_srcDatasets=DBEHM.DBB.BUILD.EPSM.PLI,DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_srcPDS=DBEHM.DBB.BUILD.EPSM.PLI
-pli_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pli_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-pli_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-propFiles=/var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-psbgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-psbgen_deployType=PSBLIB
-psbgen_linkEditor=IEWBLINK
-psbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-psbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_pgm=ASMA90
-psbgen_requiredBuildProperties=psbgen_srcPDS,psbgen_objPDS,psbgen_loadPDS, psbgen_pgm,psbgen_linkEditor,psbgen_tempOptions,psbgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-psbgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.PSB,DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-psbgen_srcPDS=DBEHM.DBB.BUILD.EPSM.PSB
-psbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pw=ADMIN
-reportConcurrentChanges=false
-reportConcurrentChangesGitBranchReferencePatterns=master
-reportConcurrentChangesIntersectionFailsBuild=false
-reportExternalImpacts=true
-reportExternalImpactsAnalysisDepths=deep
-reportExternalImpactsAnalysisFileFilter=**/*
-reportExternalImpactsCollectionPatterns=.*-main.*,.*-develop.*
-requiredBuildProperties=buildOrder,buildListFileExt
-requiredDBBToolkitVersion=1.0.3
-resolveSubsystems=true
-rexx_cexecDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_cexecOptions=cyl space(1,1) lrecl(80) recfm(F,B) blksize(27920) DSORG(PO) dsntype(pds) dir(10)
-rexx_cexecPDS=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_compiler=REXXCOMP
-rexx_dependenciesDatasetMapping=rexx_srcPDS::**/*
-rexx_linkEditor=IEWBLINK
-rexx_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-rexx_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_outputDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC,DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-rexx_requiredBuildProperties=rexx_srcPDS,rexx_objPDS,rexx_loadPDS,rexx_cexecPDS, rexx_compiler,rexx_linkEditor,rexx_tempOptions,   SFANLMD
-rexx_rexxPrintTempOptions=cyl space(5,5) unit(vio) blksize(121) lrecl(121) recfm(f,a) new
-rexx_srcDatasets=DBEHM.DBB.BUILD.EPSM.REXX,DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-rexx_srcPDS=DBEHM.DBB.BUILD.EPSM.REXX
-rexx_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-startTime=20220810.122845.028
-topicBranchBuild=true
-transfer_jclPDS=DBEHM.DBB.BUILD.EPSM.JCL
-transfer_outputDatasets=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_requiredBuildProperties=transfer_srcPDS,transfer_srcOptions,  transfer_deployType
-transfer_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-transfer_srcPDS=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_xmlPDS=DBEHM.DBB.BUILD.EPSM.XML
-url=https://10.3.20.96:15443/dbb
-useSearchConfiguration=true
-verbose=true
-workspace=/u/dbehm/test-zapp-app
-zAppBuildDir=/u/dbehm/test-zapp/dbb-zappbuild
-zunit_bzucfgPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_bzuplayPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_bzureportPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_dependenciesDatasetMapping=zunit_bzuplayPDS::**/*
-zunit_loadDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_loadOptions=cyl space(1,1) dsorg(PO) lrecl(256) recfm(F,B) blksize(32512) dsntype(library)
-zunit_reportDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_reportOptions=tracks space(200,40) dsorg(PO) blksize(32760) lrecl(16383) recfm(v,b) dsntype(library)
-zunit_requiredBuildProperties=zunit_srcDatasets,zunit_loadDatasets,zunit_reportDatasets,zunit_bzucfgPDS,zunit_bzureportPDS,zunit_bzuplayPDS,zunit_srcOptions,zunit_loadOptions,zunit_reportOptions,jobCard,zunit_maxPassRC,zunit_maxWarnRC,zunit_playbackFileExtension,zunit_resolutionRules,  zunit_bzuplayParms,zunit_userDebugSessionTestParm
-zunit_srcDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_srcOptions=cyl space(1,1) lrecl(27998) dsorg(PO) recfm(V,B) dsntype(library)
-** zAppBuild running on DBB Toolkit Version 1.1.3 28-Feb-2022 17:26:26 
-required props = buildOrder,buildListFileExt
-** Repository client created for https://10.3.20.96:15443/dbb
-** Build output located at /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028
-** Build result created for BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122845.028 at https://10.3.20.96:15443/dbb/rest/buildResult/4025
-** --impactBuild option selected. Building impacted programs for application App-EPSM 
-** Getting current hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Storing App-EPSM : f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7
-** Getting baseline hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Storing App-EPSM : 286e5bbeda357d9e1a4e5da8094e5ec1589190a4
-** Calculating changed files for directory /u/dbehm/test-zapp-app/App-EPSM
-** Diffing baseline 286e5bbeda357d9e1a4e5da8094e5ec1589190a4 -> current f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7
-*** Changed files for directory /u/dbehm/test-zapp-app/App-EPSM :
-**** App-EPSM/copybooks-public/epsmtcom.cpy
-*** Deleted files for directory /u/dbehm/test-zapp-app/App-EPSM :
-*** Renamed files for directory /u/dbehm/test-zapp-app/App-EPSM :
-** Updating collections App-EPSM-Scenario4Test and App-EPSM-Scenario4Test-outputs
-*** Scanning file App-EPSM/copybooks-public/epsmtcom.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtcom.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks-public/epsmtcom.cpy =
-{"dli":false,"lname":"EPSMTCOM","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMTINP","library":"SYSLIB","category":"COPY"},{"lname":"EPSMTOUT","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
-** Storing 1 logical files in repository collection 'App-EPSM-Scenario4Test'
-HTTP/1.1 200 OK
-*** Perform impacted analysis for changed files.
-** Performing impact analysis on changed file App-EPSM/copybooks-public/epsmtcom.cpy
-*** Creating impact resolver for App-EPSM/copybooks-public/epsmtcom.cpy with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }] rules
-** Found impacted file App-EPSM/cobol/epsplist.cbl
-** App-EPSM/cobol/epsplist.cbl is impacted by changed file App-EPSM/copybooks-public/epsmtcom.cpy. Adding to build list.
-** Calculation of impacted files by changed properties has been skipped due to configuration. 
-** Writing build list file to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028/buildList.txt
-App-EPSM/cobol/epsplist.cbl
-** Perform analysis and reporting of external impacted files for the build list including changed files.
-*** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode deep
-*** Running external impact analysis for files 
-     App-EPSM/copybooks-public/epsmtcom.cpy 
-     App-EPSM/cobol/epsplist.cbl 
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main 
-**** Running external impact analysis for identified external impacted files as dependent files of the initial set. 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-**** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs 
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028/externalImpacts_MortgageApplication-main-outputs.txt
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028/externalImpacts_MortgageApplication-main.txt
-** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COBOL
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COPY
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.OBJ
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.DBRM
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LOAD
-*** Building file App-EPSM/cobol/epsplist.cbl
-*** Creating dependency resolver for App-EPSM/cobol/epsplist.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }] rules
-*** Scanning file with the default scanner
-*** Resolution rules for App-EPSM/cobol/epsplist.cbl:
-{"library":"SYSLIB","searchPath":[{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks"},{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks-public"}]}
-*** Physical dependencies for App-EPSM/cobol/epsplist.cbl:
-{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"lname":"EPSMLIS","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMORTF","library":"SYSLIB","file":"App-EPSM\/copybooks\/epsmortf.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTINP","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtinp.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTOUT","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtout.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTCOM","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","category":"COPY","resolved":true}
-{"excluded":false,"lname":"EPSNBRPM","library":"SYSLIB","category":"COPY","resolved":false}
-Cobol compiler parms for App-EPSM/cobol/epsplist.cbl = LIB,CICS
-*** Scanning load module for App-EPSM/cobol/epsplist.cbl
-*** Logical file = 
-{"dli":false,"lname":"EPSPLIST","file":"App-EPSM\/cobol\/epsplist.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
-*** Obtaining hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Setting property :githash:App-EPSM : f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7
-** Setting property :giturl:App-EPSM : git@github.ibm.com:zDevOps-Acceleration/App-EPSM.git
-** Setting property :gitchangedfiles:App-EPSM : https://github.ibm.com/zDevOps-Acceleration/App-EPSM/compare/286e5bbeda357d9e1a4e5da8094e5ec1589190a4..f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7
-** Writing build report data to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028/BuildReport.json
-** Writing build report to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122845.028/BuildReport.html
-** Updating build result BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122845.028 at https://10.3.20.96:15443/dbb/rest/buildResult/4025
-** Build ended at Wed Aug 10 12:28:55 GMT+01:00 2022
-** Build State : CLEAN
-** Total files processed : 1
-** Total build time  : 9.599 seconds
-
-** Build finished
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ echo ' ' >> /u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtcom.cpy
-+ echo ' '
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C /u/dbehm/test-zapp-app/App-EPSM add copybooks-public/epsmtcom.cpy
-+ git -C /u/dbehm/test-zapp-app/App-EPSM add copybooks-public/epsmtcom.cpy
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ git -C /u/dbehm/test-zapp-app/App-EPSM commit -m 'sample'
-+ git -C /u/dbehm/test-zapp-app/App-EPSM commit -m sample
-[Scenario4Test 578b569] sample
- 1 file changed, 1 insertion(+)
-$ exit $?
-+ exit 0
-logout
-
-@@START OF COMMAND@@
-$ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy<ovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy                          --sourceDir /u/dbehm/test<b-zappbuild/build.groovy --sourceDir /u/dbehm/test-                         zapp-app --workDir /u/dbe<-sourceDir /u/dbehm/test-zapp-app --workDir /u/dbeh                         m/test-zapp-app-out/EPSM <app-app --workDir /u/dbehm/test-zapp-app-out/EPSM -                         url https://10.3.20.96:15</test-zapp-app-out/EPSM -url https://10.3.20.96:154                         43/dbb -id ADMIN -pw ADMI<rl https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN                          --hlq DBEHM.DBB.BUILD.EP<3/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPS                         M --application App-EPSM <--hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM -                         -verbose --impactBuild --< --application App-EPSM --verbose --impactBuild --p                         ropFiles /var/dbb/dbb-zap<verbose --impactBuild --propFiles /var/dbb/dbb-zapp                         build-config/build.proper<opFiles /var/dbb/dbb-zappbuild-config/build.propert                         ies,/var/dbb/dbb-zappbuil<uild-config/build.properties,/var/dbb/dbb-zappbuild                         -config/datasets.properti<es,/var/dbb/dbb-zappbuild-config/datasets.propertie                         s,/var/dbb/dbb-zappbuild-<config/datasets.properties,/var/dbb/dbb-zappbuild-c                         onfig/test-searchpath.pro<,/var/dbb/dbb-zappbuild-config/test-searchpath.prop                         erties,/var/dbb/dbb-zappb<nfig/test-searchpath.properties,/var/dbb/dbb-zappbu                         ild-config/test.propertie<rties,/var/dbb/dbb-zappbuild-config/test.properties                         
-+ /usr/lpp/dbb/v1r0/bin/groovyz /u/dbehm/test-zapp/dbb-zappbuild/build.groovy --sourceDir /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --impactBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-
-** Build start at 20220810.122915.029
-** Input args = /u/dbehm/test-zapp-app --workDir /u/dbehm/test-zapp-app-out/EPSM -url https://10.3.20.96:15443/dbb -id ADMIN -pw ADMIN --hlq DBEHM.DBB.BUILD.EPSM --application App-EPSM --verbose --impactBuild --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/datasets.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/dependencyReport.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Assembler.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/MFS.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PSBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/DBDgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ACBgen.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/ZunitConfig.properties
-** Loading property file /u/dbehm/test-zapp/dbb-zappbuild/build-conf/Transfer.properties
-** appConf = /u/dbehm/test-zapp-app/App-EPSM/application-conf
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/file.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/BMS.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/Cobol.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/LinkEdit.properties
-** Loading property file /u/dbehm/test-zapp-app/App-EPSM/application-conf/dependencyReport.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/build.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/datasets.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test-searchpath.properties
-** Loading property file /var/dbb/dbb-zappbuild-config/test.properties
-java.version=8.0.7.5 - pmz6480sr7fp5-20220208_01(SR7 FP5)
-java.home=/V2R4/usr/lpp/java/J8.0_64
-user.dir=/u/dbehm
-** Build properties at start up:
-IBMZPLI_V51=
-IBMZPLI_V52=PLI.V5R2.SIBMZCMP
-MACLIB=SYS1.MACLIB
-REFERAL=IMSCFG.IMSC.REFERAL
-SASMMOD1=HLASM.SASMMOD1
-SBZUSAMP=RATCFG.ZUNIT.SBZUSAMP
-SCEELKED=CEE.SCEELKED
-SCEEMAC=CEE.SCEEMAC
-SCSQCOBC=
-SCSQLOAD=
-SDFHCOB=CICSTS.V5R4.CICS.SDFHCOB
-SDFHLOAD=CICSTS.V5R4.CICS.SDFHLOAD
-SDFHMAC=CICSTS.V5R4.CICS.SDFHMAC
-SDFSMAC=IMS.V15R1.SDFSMAC
-SDFSRESL=IMS.V15R1.SDFSRESL
-SDSNLOAD=DBC0CFG.DB2.V12.SDSNLOAD
-SEQAMOD=DEBUG.V14R1.SEQAMOD
-SFANLMD=
-SFELLOAD=RDZ.V14R1.SFELLOAD
-SIGYCOMP_V4=
-SIGYCOMP_V6=COBOL.V6R3.SIGYCOMP
-acbgen_dbdPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-acbgen_deployType=ACBLIB
-acbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_loadOptions=cyl space(5,5) dir(40) dsorg(PO) recfm(U) blksize(32760) dsntype(PDS)
-acbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.ACBLIB
-acbgen_pgm=DFSRRC00
-acbgen_psbPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-acbgen_requiredBuildProperties=acbgen_psbPDS,acbgen_dbdPDS,acbgen_loadPDS, acbgen_pgm,acbgen_linkEditor,acbgen_tempOptions,acbgen_maxRC,   SDFSMAC,SCEEMAC
-acbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-application=App-EPSM
-applicationBuildGroup=App-EPSM-Scenario4Test
-applicationBuildLabel=build.20220810.122915.029
-applicationCollectionName=App-EPSM-Scenario4Test
-applicationConfRootDir=
-applicationCurrentBranch=Scenario4Test
-applicationOutputsCollectionName=App-EPSM-Scenario4Test-outputs
-applicationPropFiles=file.properties,BMS.properties,Cobol.properties,LinkEdit.properties,dependencyReport.properties
-applicationSrcDirs=App-EPSM
-assember_cicsprecompiler=DFHEAP1$
-assembler_assemblySyslibConcatenation=CICSTS.V5R5.CICS.SDFHSAMP,DBC0CFG.DB2.V12.SDSNSAMP
-assembler_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-assembler_db2precompiler=DSNHPC
-assembler_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_dependenciesDatasetMapping=assembler_macroPDS::**/*
-assembler_linkEditor=IEWBLINK
-assembler_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-assembler_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-assembler_macroPDS=DBEHM.DBB.BUILD.EPSM.MACRO
-assembler_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-assembler_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_pgm=ASMA90
-assembler_requiredBuildProperties=assembler_srcPDS,assembler_macroPDS,assembler_objPDS,assembler_loadPDS, assembler_pgm,assembler_linkEditor,assembler_tempOptions,assembler_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED,SCEEMAC
-assembler_srcDatasets=DBEHM.DBB.BUILD.EPSM.ASM,DBEHM.DBB.BUILD.EPSM.MACRO,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-assembler_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-assembler_srcPDS=DBEHM.DBB.BUILD.EPSM.ASM
-assembler_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-bmsRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             }
-bms_assembler=ASMA90
-bms_compileParms=SYSPARM(MAP),DECK,NOOBJECT
-bms_copyGenParms=SYSPARM(DSECT),DECK,NOOBJECT
-bms_cpyPDS=DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_fileBuildRank=
-bms_linkEditParms=MAP,RENT,COMPAT(PM5)
-bms_linkEditor=IEWBLINK
-bms_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-bms_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-bms_maxRC=0
-bms_outputDatasets=DBEHM.DBB.BUILD.EPSM.BMS.COPY,DBEHM.DBB.BUILD.EPSM.LOAD
-bms_requiredBuildProperties=bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor,bms_tempOptions,bms_maxRC,   SASMMOD1,SDFHLOAD,SDFHMAC,MACLIB,SCEELKED
-bms_srcDatasets=DBEHM.DBB.BUILD.EPSM.BMS,DBEHM.DBB.BUILD.EPSM.BMS.COPY
-bms_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-bms_srcPDS=DBEHM.DBB.BUILD.EPSM.BMS
-bms_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-buildListFileExt=txt
-buildOrder=BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-buildOutDir=/u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029
-buildPropFiles=datasets.properties,Assembler.properties,BMS.properties,MFS.properties,PSBgen.properties,DBDgen.properties,ACBgen.properties,Cobol.properties,LinkEdit.properties,PLI.properties,ZunitConfig.properties
-cobol_BMS_PDS=${team}.BMS.COPY
-cobol_compileCICSParms=CICS
-cobol_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-cobol_compileErrorPrefixParms=ADATA,EX(ADX(ELAXMGUX))
-cobol_compileMaxRC=4
-cobol_compileParms=LIB
-cobol_compileSQLParms=SQL
-cobol_compileSyslibConcatenation=MDALBIN.PROG.EPSC.COPY
-cobol_compiler=IGYCRCTL
-cobol_compilerVersion=V6
-cobol_cpyPDS=DBEHM.DBB.BUILD.EPSM.COPY
-cobol_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_dependenciesAlternativeLibraryNameMapping=
-cobol_dependenciesDatasetMapping=cobol_cpyPDS::**/*
-cobol_fileBuildRank=
-cobol_fileBuildRank=1::**/cobol/epsnbrvl.cbl
-cobol_linkDebugExit=INCLUDE OBJECT(@{member})  \n    INCLUDE SYSLIB(EQAD3CXT)
-cobol_linkEdit=false::**/cobol/epsnbrvl.cbl,**/cobol/epsmlist.cbl
-cobol_linkEdit=true
-cobol_linkEditMaxRC=0
-cobol_linkEditParms=MAP,RENT,COMPAT(PM5)
-cobol_linkEditStream=
-cobol_linkEditSyslibConcatenation=
-cobol_linkEditor=IEWBLINK
-cobol_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-cobol_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-cobol_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-cobol_requiredBuildProperties=cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-cobol_resolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }]
-cobol_scanLoadModule=true
-cobol_srcDatasets=DBEHM.DBB.BUILD.EPSM.COBOL,DBEHM.DBB.BUILD.EPSM.COPY,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-cobol_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_srcPDS=DBEHM.DBB.BUILD.EPSM.COBOL
-cobol_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-cobol_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-cobol_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-cobol_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-cobol_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-cobol_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.COBOL
-continueOnScanFailure=true
-copybookRule={"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }
-createBuildOutputSubfolder=true
-createTestcaseDependency=true
-dbb.DependencyScanner.languageHint=ASM::**/*.asm,**/*.mac,**/*.psb
-dbb.DependencyScanner.languageHint=COB::**/*.cbl,**/*.cpy
-dbb.DependencyScanner.languageHint=PLI::**/*.pli,**/*.inc,**/*.cpy
-dbb.DependencyScanner.languageHint=rexx::**/*.rexx
-dbb.LinkEditScanner.excludeFilter=CICSTS.V5R4.CICS.SDFHLOAD.*, CEE.SCEELKED.*
-dbb.RepositoryClient.password=ADMIN
-dbb.RepositoryClient.passwordFile=/u/dbehm/test-zapp/dbb-zappbuild/utilities/ADMIN.pw
-dbb.RepositoryClient.url=https://10.3.20.96:15443/dbb
-dbb.RepositoryClient.userId=ADMIN
-dbb.file.tagging=true
-dbb.gateway.accountNumber=
-dbb.gateway.groupId=
-dbb.gateway.logLevel=2
-dbb.gateway.procedureName=
-dbb.gateway.regionSize=
-dbb.gateway.type=legacy
-dbb.scriptMapping=Assembler.groovy::**/*.asm
-dbb.scriptMapping=BMS.groovy::**/*.bms
-dbb.scriptMapping=Cobol.groovy::**/*.cbl
-dbb.scriptMapping=LinkEdit.groovy::**/*.lnk
-dbb.scriptMapping=PLI.groovy::**/*.pli
-dbdgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-dbdgen_deployType=DBDLIB
-dbdgen_linkEditor=IEWBLINK
-dbdgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-dbdgen_loadPDS=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.DBDLIB
-dbdgen_pgm=ASMA90
-dbdgen_requiredBuildProperties=dbdgen_srcPDS,dbdgen_objPDS,dbdgen_loadPDS, dbdgen_pgm,dbdgen_linkEditor,dbdgen_tempOptions,dbdgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-dbdgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.DBD,DBEHM.DBB.BUILD.EPSM.OBJ
-dbdgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-dbdgen_srcPDS=DBEHM.DBB.BUILD.EPSM.DBD
-dbdgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-documentDeleteRecords=false
-excludeFileList=.*,**/*.properties,**/*.xml,**/*.groovy,**/*.md,**/application-conf/*.*
-formatConsoleOutput=false
-generateDb2BindInfoRecord=true
-generateDb2BindInfoRecordProperties=bind_collectionID,bind_packageOwner,bind_qualifier
-gitRepositoryCompareService=/compare/
-gitRepositoryURL=https://github.ibm.com/zDevOps-Acceleration/App-EPSM
-hlq=DBEHM.DBB.BUILD.EPSM
-id=ADMIN
-impactBuild=true
-impactBuildOnBuildPropertyChanges=false
-impactBuildOnBuildPropertyList=[${assembler_impactPropertyList},${assembler_impactPropertyListCICS},${assembler_impactPropertyListSQL},${bms_impactPropertyList},${cobol_impactPropertyList},${cobol_impactPropertyListCICS},${cobol_impactPropertyListSQL},${dbdgen_impactPropertyList},${linkedit_impactPropertyList},${mfs_impactPropertyList},${pli_impactPropertyList},${pli_impactPropertyListCICS},${pli_impactPropertyListSQL},${psbgen_impactPropertyList}]
-impactResolutionRules=[{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }]
-isCICS=true::**/cobol/epsmlist.cbl
-linkEdit_parms=MAP,RENT,COMPAT(PM5)
-linkRule={"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }
-linkedit_fileBuildRank=
-linkedit_linkEditor=IEWBLINK
-linkedit_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-linkedit_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_maxRC=0
-linkedit_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-linkedit_requiredBuildProperties=linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
-linkedit_scanLoadModule=true
-linkedit_srcDatasets=DBEHM.DBB.BUILD.EPSM.LINK,DBEHM.DBB.BUILD.EPSM.OBJ
-linkedit_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-linkedit_srcPDS=DBEHM.DBB.BUILD.EPSM.LINK
-linkedit_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-mainBuildBranch=master
-mfs_deployType=MFS
-mfs_loadDatasets=DBEHM.DBB.BUILD.EPSM.TFORMAT
-mfs_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-mfs_phase1processor=DFSUPAA0
-mfs_phase2processor=DFSUNUB0
-mfs_requiredBuildProperties=mfs_srcPDS,mfs_tformatPDS, mfs_phase1processor,mfs_phase2processor,mfs_tempOptions,mfs_phase1MaxRC,mfs_phase2MaxRC,   SDFSMAC,SDFSRESL,REFERAL
-mfs_srcDatasets=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) blksize(32720) recfm(F,B) dsntype(library)
-mfs_srcPDS=DBEHM.DBB.BUILD.EPSM.MFS
-mfs_tempOptions=cyl space(5,5) unit(vio) new
-mfs_tformatPDS=DBEHM.DBB.BUILD.EPSM.TFORMAT
-outDir=/u/dbehm/test-zapp-app-out/EPSM
-pli_BMS_PDS=${team}.BMS.COPY
-pli_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-pli_compiler=IBMZPLI
-pli_dbrmPDS=DBEHM.DBB.BUILD.EPSM.DBRM
-pli_dependenciesAlternativeLibraryNameMapping=
-pli_dependenciesDatasetMapping=pli_incPDS::**/*
-pli_incPDS=DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE
-pli_linkEditor=IEWBLINK
-pli_listOptions=cyl space(5,5) unit(vio) blksize(0) lrecl(137) recfm(v,b) new
-pli_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-pli_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-pli_outputDatasets=DBEHM.DBB.BUILD.EPSM.LOAD,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_requiredBuildPropeties=pli_srcPDS,pli_incPDS,pli_objPDS,pli_loadPDS,pli_compiler,pli_linkEditor,pli_tempOptions,applicationOutputsCollectionName,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-pli_srcDatasets=DBEHM.DBB.BUILD.EPSM.PLI,DBEHM.DBB.BUILD.EPSM.PLI.INCLUDE,DBEHM.DBB.BUILD.EPSM.OBJ,DBEHM.DBB.BUILD.EPSM.DBRM
-pli_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_srcPDS=DBEHM.DBB.BUILD.EPSM.PLI
-pli_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pli_test_loadDatasets=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_test_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-pli_test_srcDatasets=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-pli_test_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-pli_testcase_loadPDS=DBEHM.DBB.BUILD.EPSM.TEST.LOAD
-pli_testcase_srcPDS=DBEHM.DBB.BUILD.EPSM.TEST.PLI
-propFiles=/var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/test-searchpath.properties,/var/dbb/dbb-zappbuild-config/test.properties
-psbgen_compileErrorFeedbackXmlOptions=tracks space(200,40) dsorg(PS) blksize(27998) lrecl(16383) recfm(v,b) new keep
-psbgen_deployType=PSBLIB
-psbgen_linkEditor=IEWBLINK
-psbgen_loadDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-psbgen_loadPDS=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_outputDatasets=DBEHM.DBB.BUILD.EPSM.PSBLIB
-psbgen_pgm=ASMA90
-psbgen_requiredBuildProperties=psbgen_srcPDS,psbgen_objPDS,psbgen_loadPDS, psbgen_pgm,psbgen_linkEditor,psbgen_tempOptions,psbgen_assemblerMaxRC,   SDFSMAC,SCEEMAC
-psbgen_srcDatasets=DBEHM.DBB.BUILD.EPSM.PSB,DBEHM.DBB.BUILD.EPSM.OBJ
-psbgen_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-psbgen_srcPDS=DBEHM.DBB.BUILD.EPSM.PSB
-psbgen_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-pw=ADMIN
-reportConcurrentChanges=false
-reportConcurrentChangesGitBranchReferencePatterns=master
-reportConcurrentChangesIntersectionFailsBuild=false
-reportExternalImpacts=true
-reportExternalImpactsAnalysisDepths=deep
-reportExternalImpactsAnalysisFileFilter=**/*
-reportExternalImpactsCollectionPatterns=.*-main.*,.*-develop.*
-requiredBuildProperties=buildOrder,buildListFileExt
-requiredDBBToolkitVersion=1.0.3
-resolveSubsystems=true
-rexx_cexecDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_cexecOptions=cyl space(1,1) lrecl(80) recfm(F,B) blksize(27920) DSORG(PO) dsntype(pds) dir(10)
-rexx_cexecPDS=DBEHM.DBB.BUILD.EPSM.CEXEC
-rexx_compiler=REXXCOMP
-rexx_dependenciesDatasetMapping=rexx_srcPDS::**/*
-rexx_linkEditor=IEWBLINK
-rexx_loadDatasets=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_loadOptions=cyl space(1,1) dsorg(PO) recfm(U) blksize(32760) dsntype(library)
-rexx_loadPDS=DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_objPDS=DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_outputDatasets=DBEHM.DBB.BUILD.EPSM.CEXEC,DBEHM.DBB.BUILD.EPSM.LOAD
-rexx_printTempOptions=cyl space(5,5) unit(vio) blksize(133) lrecl(133) recfm(f,b) new
-rexx_requiredBuildProperties=rexx_srcPDS,rexx_objPDS,rexx_loadPDS,rexx_cexecPDS, rexx_compiler,rexx_linkEditor,rexx_tempOptions,   SFANLMD
-rexx_rexxPrintTempOptions=cyl space(5,5) unit(vio) blksize(121) lrecl(121) recfm(f,a) new
-rexx_srcDatasets=DBEHM.DBB.BUILD.EPSM.REXX,DBEHM.DBB.BUILD.EPSM.OBJ
-rexx_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-rexx_srcPDS=DBEHM.DBB.BUILD.EPSM.REXX
-rexx_tempOptions=cyl space(5,5) unit(vio) blksize(80) lrecl(80) recfm(f,b) new
-startTime=20220810.122915.029
-topicBranchBuild=true
-transfer_jclPDS=DBEHM.DBB.BUILD.EPSM.JCL
-transfer_outputDatasets=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_requiredBuildProperties=transfer_srcPDS,transfer_srcOptions,  transfer_deployType
-transfer_srcOptions=cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library)
-transfer_srcPDS=DBEHM.DBB.BUILD.EPSM.SOURCE
-transfer_xmlPDS=DBEHM.DBB.BUILD.EPSM.XML
-url=https://10.3.20.96:15443/dbb
-useSearchConfiguration=true
-verbose=true
-workspace=/u/dbehm/test-zapp-app
-zAppBuildDir=/u/dbehm/test-zapp/dbb-zappbuild
-zunit_bzucfgPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_bzuplayPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_bzureportPDS=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_dependenciesDatasetMapping=zunit_bzuplayPDS::**/*
-zunit_loadDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUPLAY
-zunit_loadOptions=cyl space(1,1) dsorg(PO) lrecl(256) recfm(F,B) blksize(32512) dsntype(library)
-zunit_reportDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZURPT
-zunit_reportOptions=tracks space(200,40) dsorg(PO) blksize(32760) lrecl(16383) recfm(v,b) dsntype(library)
-zunit_requiredBuildProperties=zunit_srcDatasets,zunit_loadDatasets,zunit_reportDatasets,zunit_bzucfgPDS,zunit_bzureportPDS,zunit_bzuplayPDS,zunit_srcOptions,zunit_loadOptions,zunit_reportOptions,jobCard,zunit_maxPassRC,zunit_maxWarnRC,zunit_playbackFileExtension,zunit_resolutionRules,  zunit_bzuplayParms,zunit_userDebugSessionTestParm
-zunit_srcDatasets=DBEHM.DBB.BUILD.EPSM.BZU.BZUCFG
-zunit_srcOptions=cyl space(1,1) lrecl(27998) dsorg(PO) recfm(V,B) dsntype(library)
-** zAppBuild running on DBB Toolkit Version 1.1.3 28-Feb-2022 17:26:26 
-required props = buildOrder,buildListFileExt
-** Repository client created for https://10.3.20.96:15443/dbb
-** Build output located at /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029
-** Build result created for BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122915.029 at https://10.3.20.96:15443/dbb/rest/buildResult/4037
-** --impactBuild option selected. Building impacted programs for application App-EPSM 
-** Getting current hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Storing App-EPSM : 578b5691692a3046e3488afaf208805fa518616f
-** Getting baseline hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Storing App-EPSM : f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7
-** Calculating changed files for directory /u/dbehm/test-zapp-app/App-EPSM
-** Diffing baseline f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7 -> current 578b5691692a3046e3488afaf208805fa518616f
-*** Changed files for directory /u/dbehm/test-zapp-app/App-EPSM :
-**** App-EPSM/copybooks-public/epsmtcom.cpy
-*** Deleted files for directory /u/dbehm/test-zapp-app/App-EPSM :
-*** Renamed files for directory /u/dbehm/test-zapp-app/App-EPSM :
-** Updating collections App-EPSM-Scenario4Test and App-EPSM-Scenario4Test-outputs
-*** Scanning file App-EPSM/copybooks-public/epsmtcom.cpy (/u/dbehm/test-zapp-app/App-EPSM/copybooks-public/epsmtcom.cpy)
-*** Scanning file with the default scanner
-*** Logical file for App-EPSM/copybooks-public/epsmtcom.cpy =
-{"dli":false,"lname":"EPSMTCOM","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSMTINP","library":"SYSLIB","category":"COPY"},{"lname":"EPSMTOUT","library":"SYSLIB","category":"COPY"}],"language":"COB","sql":false}
-** Storing 1 logical files in repository collection 'App-EPSM-Scenario4Test'
-HTTP/1.1 200 OK
-*** Perform impacted analysis for changed files.
-** Performing impact analysis on changed file App-EPSM/copybooks-public/epsmtcom.cpy
-*** Creating impact resolver for App-EPSM/copybooks-public/epsmtcom.cpy with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                },{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/bms"} ]             },{"category": "LINK", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/link"} ]             }] rules
-** Found impacted file App-EPSM/cobol/epsplist.cbl
-** App-EPSM/cobol/epsplist.cbl is impacted by changed file App-EPSM/copybooks-public/epsmtcom.cpy. Adding to build list.
-** Calculation of impacted files by changed properties has been skipped due to configuration. 
-** Writing build list file to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029/buildList.txt
-App-EPSM/cobol/epsplist.cbl
-** Perform analysis and reporting of external impacted files for the build list including changed files.
-*** Running external impact analysis with file filter **/* and collection patterns .*-main.*,.*-develop.* with analysis mode deep
-*** Running external impact analysis for files 
-     App-EPSM/copybooks-public/epsmtcom.cpy 
-     App-EPSM/cobol/epsplist.cbl 
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main 
-**** Running external impact analysis for identified external impacted files as dependent files of the initial set. 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-**** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs 
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029/externalImpacts_MortgageApplication-main-outputs.txt
-*** Writing report of external impacts to file /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029/externalImpacts_MortgageApplication-main.txt
-** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy,PublicCopy.groovy
-** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COBOL
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.COPY
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.OBJ
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.DBRM
-** Creating / verifying build dataset DBEHM.DBB.BUILD.EPSM.LOAD
-*** Building file App-EPSM/cobol/epsplist.cbl
-*** Creating dependency resolver for App-EPSM/cobol/epsplist.cbl with [{"library": "SYSLIB", "searchPath": [ {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks"}, {"sourceDir": "/u/dbehm/test-zapp-app", "directory": "App-EPSM/copybooks-public"} ]                }] rules
-*** Scanning file with the default scanner
-*** Resolution rules for App-EPSM/cobol/epsplist.cbl:
-{"library":"SYSLIB","searchPath":[{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks"},{"sourceDir":"\/u\/dbehm\/test-zapp-app","directory":"App-EPSM\/copybooks-public"}]}
-*** Physical dependencies for App-EPSM/cobol/epsplist.cbl:
-{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"lname":"EPSMLIS","library":"SYSLIB","category":"COPY","resolved":false}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMORTF","library":"SYSLIB","file":"App-EPSM\/copybooks\/epsmortf.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTINP","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtinp.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTOUT","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtout.cpy","category":"COPY","resolved":true}
-{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp-app","lname":"EPSMTCOM","library":"SYSLIB","file":"App-EPSM\/copybooks-public\/epsmtcom.cpy","category":"COPY","resolved":true}
-{"excluded":false,"lname":"EPSNBRPM","library":"SYSLIB","category":"COPY","resolved":false}
-Cobol compiler parms for App-EPSM/cobol/epsplist.cbl = LIB,CICS
-*** Scanning load module for App-EPSM/cobol/epsplist.cbl
-*** Logical file = 
-{"dli":false,"lname":"EPSPLIST","file":"App-EPSM\/cobol\/epsplist.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
-*** Obtaining hash for directory /u/dbehm/test-zapp-app/App-EPSM
-** Setting property :githash:App-EPSM : 578b5691692a3046e3488afaf208805fa518616f
-** Setting property :giturl:App-EPSM : git@github.ibm.com:zDevOps-Acceleration/App-EPSM.git
-** Setting property :gitchangedfiles:App-EPSM : https://github.ibm.com/zDevOps-Acceleration/App-EPSM/compare/f62ed49ef53c0aa594bceec586bf5bd8c5ed0ee7..578b5691692a3046e3488afaf208805fa518616f
-** Writing build report data to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029/BuildReport.json
-** Writing build report to /u/dbehm/test-zapp-app-out/EPSM/build.20220810.122915.029/BuildReport.html
-** Updating build result BuildGroup:App-EPSM-Scenario4Test BuildLabel:build.20220810.122915.029 at https://10.3.20.96:15443/dbb/rest/buildResult/4037
-** Build ended at Wed Aug 10 12:29:25 GMT+01:00 2022
-** Build State : CLEAN
-** Total files processed : 1
-** Total build time  : 10.438 seconds
-
-** Build finished
-$ exit $?
-+ exit 0
-logout
