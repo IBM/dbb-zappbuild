@@ -216,9 +216,13 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	
+	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
 	
+	if (buildUtils.isMQ(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SCSQPLIC).options("shr"))
+		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
 		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
@@ -330,12 +334,16 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
+	
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
+		
 	// add dummy SYSDEFSD to avoid IEW2689W 4C40 DEFINITION SIDE FILE IS NOT DEFINED message from program binder
 	if (isZUnitTestCase)
 		linkedit.dd(new DDStatement().name("SYSDEFSD").options("DUMMY"))
