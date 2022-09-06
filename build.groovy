@@ -113,9 +113,9 @@ def initializeBuildProcess(String[] args) {
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
 
-	// create a repository client for this script
+	// create metadata store for this script
 	if (!props.userBuild) {
-		metadataStore = MetadataStoreFactory.getMetadataStore();
+		metadataStore = MetadataStoreFactory.createFileMetadataStore();
 		println "** MetadataStore initialized"
 	}
 
@@ -645,13 +645,9 @@ def finalizeBuildProcess(Map args) {
 	// attach build report & result
 	if (metadataStore) {
 		buildReport.save(jsonOutputFile, buildReportEncoding)
-		// Create attachments
-		Attachment htmlAttachment = new com.ibm.dbb.metadata.common.Attachment("", "html", 0, 0)
-		htmlAttachment.setContent(new FileInputStream(htmlOutputFile))
-		Attachment jsonAttachment = new com.ibm.dbb.metadata.common.Attachment("", "json", 0, 0)
-		jsonAttachment.setContent(new FileInputStream(jsonOutputFile))
-		buildResult.setBuildReport(htmlAttachment)
-		buildResult.setBuildReportData(jsonAttachment)
+		// Save build report & build report data
+		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
+		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
 		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
 		//buildResult.save()
 	}
