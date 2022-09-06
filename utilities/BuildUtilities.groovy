@@ -422,9 +422,9 @@ def isDLI(LogicalFile logicalFile) {
 def isMQ(LogicalFile logicalFile) {
 	boolean isMQ = logicalFile.isMQ()
 	if (!isMQ) {
-		String isMQ = props.getFileProperty('isMQ', logicalFile.getFile())
-		if (isMQ)
-			isMQ = isMQ.toBoolean()
+		String isMQFlag = props.getFileProperty('isMQ', logicalFile.getFile())
+		if (isMQFlag)
+			isMQ = isMQFlag.toBoolean()
 	}
 
 	return isMQ
