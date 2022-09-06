@@ -248,10 +248,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		for (String syslibDataset : syslibDatasets )
 		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
+	
+	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
-	String isMQ = props.getFileProperty('cobol_isMQ', buildFile)
-	if (isMQ && isMQ.toBoolean())
+
+	if (buildUtils.isMQ(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SCSQCOBC).options("shr"))
 		
 	// add additional zunit libraries
@@ -386,8 +388,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
-	String isMQ = props.getFileProperty('cobol_isMQ', buildFile)
-	if (isMQ && isMQ.toBoolean())
+	if (buildUtils.isMQ(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
 
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
