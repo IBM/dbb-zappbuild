@@ -416,6 +416,21 @@ def isDLI(LogicalFile logicalFile) {
 }
 
 /*
+ * isMQ - tests to see if the program uses MQ. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isMQ(LogicalFile logicalFile) {
+	boolean isMQ = logicalFile.isMQ()
+	if (!isMQ) {
+		String isMQ = props.getFileProperty('isMQ', logicalFile.getFile())
+		if (isMQ)
+			isMQ = isMQ.toBoolean()
+	}
+
+	return isMQ
+}
+
+/*
  * getAbsolutePath - returns the absolute path of a relative (to workspace) file or directory
  */
 def getAbsolutePath(String path) {
