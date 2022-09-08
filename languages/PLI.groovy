@@ -315,11 +315,45 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.pli_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.pli_tempOptions))
 
-	// add the link source code
-	if ( linkEditStream != null ) {
-		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
+	// Create linkEditInstream
+	String sysin_linkEditInstream = ''
+	// linkEdit stream specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	} else { // dynamically add any required statements via SYSIN
+
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		if(buildUtils.isMQ(logicalFile)) {
+			if (buildUtils.isCICS(logicalFile)) {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQCSTUB)\n"
+			} else if (buildUtils.isDLI(logicalFile)) {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQQSTUB)\n"
+			} else {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQBSTUB)\n"
+			}
+		}
 	}
 
+	// appending debug exit to link instructions
+//	if (props.debug && linkDebugExit!= null) {
+//		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+//	}
+
+	// Write SYSIN
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		 linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// -- Defining a new DD Name SYSPIN as a replacement for SYSLIN
+	// Overwriting SYSLIN with SYSPIN
+	linkedit.setDdnames("SYSPIN,,SYSLMOD,SYSLIB,,SYSPRINT,,,,,,,,,,,,,")
+
+	// Define SYSPIN and reference SYSIN
+	linkedit.dd(new DDStatement().name("SYSPIN").dsn("&&TEMPOBJ").options("SHR"))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	
 	// add RESLIB
 	if ( props.RESLIB )
 		linkedit.dd(new DDStatement().name("RESLIB").dsn(props.RESLIB).options("shr"))

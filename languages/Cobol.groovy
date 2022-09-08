@@ -217,13 +217,19 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 
-	if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
-		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
-	} else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
+	if (doLinkEdit.toBoolean()){
 		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
 	} else {
 		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
 	}
+	
+//	if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
+//		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
+//	} else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
+//		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
+//	} else {
+//		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
+//	}
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.cobol_cpyPDS).options("shr"))
@@ -325,31 +331,46 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
-	// Create a physical link card
-	if ( (linkEditStream) || (props.debug && linkDebugExit!= null)) {
-		def langQualifier = "linkedit"
-		buildUtils.createLanguageDatasets(langQualifier)
-		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
-		if (lnkFile.exists())
-			lnkFile.delete()
+	// Create linkEditInstream
+	String sysin_linkEditInstream = ''
+	// linkEdit stream specified
+	if (linkEditStream) {
+			sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	} else { // dynamically add any required statements via SYSIN
 
-		if 	(linkEditStream)
-			lnkFile << "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-		else
-			lnkFile << "  " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
-
-		if (props.verbose)
-			println("Copying ${props.buildOutDir}/linkCard.lnk to ${props.linkedit_srcPDS}($member)")
-		new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
-		// Alloc SYSLIN
-		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
-		// add the obj DD
-		linkedit.dd(new DDStatement().name("OBJECT").dsn("${props.cobol_objPDS}($member)").options('shr'))
-
-	} else { // no debug && no link card
-		// Use &&TEMP from Compile
+		if(buildUtils.isMQ(logicalFile)) {
+			// include mq stub program
+			// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+			if (buildUtils.isCICS(logicalFile)) {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQCSTUB)\n"
+			} else if (buildUtils.isDLI(logicalFile)) {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQQSTUB)\n"
+			} else {
+				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQBSTUB)\n"
+			}
+		}
 	}
 
+	// appending debug exit to link instructions
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
+
+	// Write SYSIN
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		 linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// -- Defining a new DD Name SYSPIN as a replacement for SYSLIN
+	// Overwriting SYSLIN with SYSPIN, see 
+	// dynalloc macro -- ddname list
+	// https://www.ibm.com/docs/en/zos/2.4.0?topic=facilities-invoking-binder-program-from-another-program 
+	//
+	linkedit.dd(new DDStatement().name("SYSPIN").dsn("&&TEMPOBJ").options("SHR"))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	linkedit.setDdnames("SYSPIN,,SYSLMOD,SYSLIB,,SYSPRINT,,,,,,,,,,,,,")
+			
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
 	if(isZUnitTestCase){
