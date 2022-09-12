@@ -69,6 +69,7 @@ assembler_pgmParms | Default Assembler parameters. | true
 assembler_linkEditParms | Default parameters for the link edit step. | true
 assembler_compileErrorPrefixParms | Default parameters to support remote error feedback in user build scenarios | true
 assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
+assembler_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
 assembler_maxRC | Default Assembler maximum RC allowed. | true
 assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
 assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
@@ -122,7 +123,8 @@ cobol_impactPropertyList | List of build properties causing programs to rebuild 
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-cobol_isMQ | Flag indicating that the program contains MQ calls | true
+cobol_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
+cobol_linkDebugExit | linkEditStream to append a debug exit via SYSIN dd | true
 cobol_deployType | default deployType for build output | true
 cobol_deployTypeCICS | deployType for build output for build files where isCICS=true | true
 cobol_deployTypeDLI | deployType for build output for build files with isDLI=true | true
@@ -166,6 +168,8 @@ pli_impactPropertyList | List of build properties causing programs to rebuild wh
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
+pli_linkDebugExit | linkEditStream to append a debug exit via SYSIN dd | true
 pli_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
