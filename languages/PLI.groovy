@@ -186,11 +186,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// Write SYSLIN to temporary dataset if performing link edit
 	String doLinkEdit = props.getFileProperty('pli_linkEdit', buildFile)
-	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
-	if (linkEditStream == null && doLinkEdit && doLinkEdit.toBoolean())
+
+	if (doLinkEdit.toBoolean()){
 		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.pli_tempOptions).pass(true))
-	else
+	} else {
 		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	}
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -218,7 +219,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	
 	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
-		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SDFHPL1).options("shr"))
 	
 	if (buildUtils.isMQ(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SCSQPLIC).options("shr"))
@@ -279,6 +280,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String parms = props.getFileProperty('pli_linkEditParms', buildFile)
 	String linker = props.getFileProperty('pli_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('pli_linkDebugExit', buildFile)
+	
 
 	// obtain githash for buildfile
 	String pli_storeSSI = props.getFileProperty('pli_storeSSI', buildFile)
@@ -287,21 +290,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
-	// Create the link stream if needed
-	if ( linkEditStream != null ) {
-		def langQualifier = "linkedit"
-		buildUtils.createLanguageDatasets(langQualifier)
-		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
-		if (lnkFile.exists())
-			lnkFile.delete()
-
-		lnkFile << "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-		if (props.verbose)
-			println("Copying ${props.buildOutDir}/linkCard.lnk to ${props.linkedit_srcPDS}($member)")
-		new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
-
-	}
-
+	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
@@ -322,37 +311,32 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
 	} else { // dynamically add any required statements via SYSIN
 
-		// include mq stub program
-		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		// add mq stub according to file flags
 		if(buildUtils.isMQ(logicalFile)) {
-			if (buildUtils.isCICS(logicalFile)) {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQCSTUB)\n"
-			} else if (buildUtils.isDLI(logicalFile)) {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQQSTUB)\n"
-			} else {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQBSTUB)\n"
-			}
+			// include mq stub program
+			// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+			sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
 		}
 	}
 
 	// appending debug exit to link instructions
-//	if (props.debug && linkDebugExit!= null) {
-//		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
-//	}
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
 
-	// Write SYSIN
+	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
 		 linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 
-	// -- Defining a new DD Name SYSPIN as a replacement for SYSLIN
-	// Overwriting SYSLIN with SYSPIN
-	linkedit.setDdnames("SYSPIN,,SYSLMOD,SYSLIB,,SYSPRINT,,,,,,,,,,,,,")
-
-	// Define SYSPIN and reference SYSIN
+	// Overwriting SYSLIN with SYSPIN, see 
+	// dynalloc macro -- ddname list
+	// https://www.ibm.com/docs/en/zos/2.4.0?topic=facilities-invoking-binder-program-from-another-program 
+	//
 	linkedit.dd(new DDStatement().name("SYSPIN").dsn("&&TEMPOBJ").options("SHR"))
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	linkedit.setDdnames("SYSPIN,,SYSLMOD,SYSLIB,,SYSPRINT,,,,,,,,,,,,,")
 	
 	// add RESLIB
 	if ( props.RESLIB )
