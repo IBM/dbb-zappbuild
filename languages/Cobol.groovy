@@ -214,22 +214,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// Write SYSLIN to temporary dataset if performing link edit or to physical dataset
 	String doLinkEdit = props.getFileProperty('cobol_linkEdit', buildFile)
-	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
-	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
 
 	if (doLinkEdit.toBoolean()){
 		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
 	} else {
 		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
 	}
-	
-//	if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
-//		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
-//	} else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
-//		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cobol_tempOptions).pass(true))
-//	} else {
-//		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
-//	}
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.cobol_cpyPDS).options("shr"))
@@ -331,23 +321,19 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
-	// Create linkEditInstream
+	// Assemble linkEditInstream to define SYSIN as instreamData
 	String sysin_linkEditInstream = ''
-	// linkEdit stream specified
+	
+	// use linkEdit stream if specified
 	if (linkEditStream) {
 			sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
 	} else { // dynamically add any required statements via SYSIN
 
+		// add mq stub according to file flags
 		if(buildUtils.isMQ(logicalFile)) {
 			// include mq stub program
 			// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
-			if (buildUtils.isCICS(logicalFile)) {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQCSTUB)\n"
-			} else if (buildUtils.isDLI(logicalFile)) {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQQSTUB)\n"
-			} else {
-				sysin_linkEditInstream += "   INCLUDE SYSLIB(CSQBSTUB)\n"
-			}
+			sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
 		}
 	}
 
@@ -356,13 +342,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
 	}
 
-	// Write SYSIN
+	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
 		 linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 
-	// -- Defining a new DD Name SYSPIN as a replacement for SYSLIN
 	// Overwriting SYSLIN with SYSPIN, see 
 	// dynalloc macro -- ddname list
 	// https://www.ibm.com/docs/en/zos/2.4.0?topic=facilities-invoking-binder-program-from-another-program 
