@@ -635,11 +635,6 @@ def finalizeBuildProcess(Map args) {
 	// create build report html file
 	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
 	println "** Writing build report to ${htmlOutputFile}"
-	def htmlTemplate = null  // Use default HTML template.
-	def css = null       // Use default theme.
-	def renderScript = null  // Use default rendering.
-	//def transformer = HtmlTransformer.getInstance()
-	//transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
 	buildReport.generateHTML(htmlOutputFile)
 
 
@@ -650,7 +645,6 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
 		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
 		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
-		//buildResult.save()
 	}
 
 	// print end build message
