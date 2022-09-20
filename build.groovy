@@ -638,8 +638,9 @@ def finalizeBuildProcess(Map args) {
 	def htmlTemplate = null  // Use default HTML template.
 	def css = null       // Use default theme.
 	def renderScript = null  // Use default rendering.
-	def transformer = HtmlTransformer.getInstance()
-	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
+	//def transformer = HtmlTransformer.getInstance()
+	//transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
+	buildReport.generateHTML(htmlOutputFile)
 
 
 	// attach build report & result
