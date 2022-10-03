@@ -9,79 +9,165 @@ However this will result in an error message because the build.groovy script has
 
 
 Example:
-```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1
+```sh
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1
 ```
 Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.  
 
 ## Common Pipeline Invocation Examples
 
 **Build one program**
-```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 app1/cobol/epsmpmt.cbl
+```sh
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      app1/cobol/epsmpmt.cbl
 ```
 **Build a list of programs contained in a text file**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 /u/usr1/buildList.txt
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      /u/usr1/buildList.txt
 ```
 **Build all programs in the application**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --fullBuild
 ```
 **Build only programs that have changed or are impacted by changed copybooks or include files since the last successful build**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --impactBuild
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --impactBuild
 ```
 **Build only the changes which will be merged back to the main build branch. No calculation of impacted files.**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --mergeBuild
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --mergeBuild
 ```
 **Only scan source files in the application to collect dependency data without actually creating load modules**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanOnly
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --fullBuild
+                      --scanOnly
 ```
 **Scan source files and existing load modules for the application to collect dependency data for source and outputs without actually creating load modules**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --scanAll
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --fullBuild
+                      --scanAll
 ```
 **Build programs with the 'Test' Options for debugging**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --debug --impactBuild
+$DBB_HOME/bin/groovyz build.groovy  \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --debug
+                      --impactBuild
 ```
 **Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --fullBuild --cc --cch localhost --ccp 8009 --cco "e=CCPDF"
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --fullBuild
+                      --cc
+                      --cch localhost
+                      --ccp 8009
+                      --cco "e=CCPDF"
 ```
 ## Common User Build Invocation Examples
 **Build one program**
 
 Build a single program in a user build context. Does not require a repository client connection to the DBB WebApp.
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/cobol/epsmpmt.cbl
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \ 
+                      --userBuild app1/cobol/epsmpmt.cbl
 ```
 **Build one program using a [user build dependency file](samples/userBuildDependencyFile) predefining dependency information to skip DBB scans and dependency resolution.**
 
 Build a single program in a user build context and provide the dependency information from the IDE to skip scanning the files on USS. Useful when building on IBM ZD&T or Wazi Sandbox environments. 
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --userBuild --dependencyFile userBuildDependencyFile.json app1/cobol/epsmpmt.cbl
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --userBuild
+                      --dependencyFile userBuildDependencyFile.json 
+                      app1/cobol/epsmpmt.cbl
 ```
 **Build one program with Debug Options**
 
 Build a single program in a user build context including the configured TEST compile time options.
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --debug --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/cobol/epsmpmt.cbl
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --debug \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --userBuild app1/cobol/epsmpmt.cbl
 ```
 **Build (Process) the zUnit Config file and start a debug session**
 
 Process the zUnit bzucfg file in a user build context and initialize a debug session of the application under test. Requires the program under test to be compiled with Debug Options.
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --debugzUnitTestcase --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/testcfg/epsmpmt.bzucfg
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --debugzUnitTestcase \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --userBuild app1/testcfg/epsmpmt.bzucfg
 ```
 **Build (Process) the zUnit Config file and collect code coverage data**
 
 Process the zUnit bzucfg file in a user build context and direct the code coverage report to the user. Requires the program under test to be compiled with Debug Options.
 ```
-$DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --ccczUnit --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/testcfg/epsmpmt.bzucfg
+$DBB_HOME/bin/groovyz build.groovy \
+                      --workspace /u/build/repos \
+                      --application app1 \
+                      --ccczUnit \
+                      --outDir /u/build/out \
+                      --hlq BUILD.APP1 \
+                      --userBuild app1/testcfg/epsmpmt.bzucfg
 ```
 ## Command Line Options Summary
 ```
