@@ -72,7 +72,7 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --application app1 \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
-                      --fullBuild
+                      --fullBuild \
                       --scanOnly
 ```
 **Scan source files and existing load modules for the application to collect dependency data for source and outputs without actually creating load modules**
@@ -82,7 +82,7 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --application app1 \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
-                      --fullBuild
+                      --fullBuild \
                       --scanAll
 ```
 **Build programs with the 'Test' Options for debugging**
@@ -92,8 +92,8 @@ $DBB_HOME/bin/groovyz build.groovy  \
                       --application app1 \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
-                      --debug
-                      --impactBuild
+                      --debug \
+                      --impactBuild 
 ```
 **Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
 ```
@@ -102,10 +102,10 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --application app1 \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
-                      --fullBuild
-                      --cc
-                      --cch localhost
-                      --ccp 8009
+                      --fullBuild \
+                      --cc \
+                      --cch localhost \
+                      --ccp 8009 \
                       --cco "e=CCPDF"
 ```
 ## Common User Build Invocation Examples
@@ -129,8 +129,8 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --application app1 \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
-                      --userBuild
-                      --dependencyFile userBuildDependencyFile.json 
+                      --userBuild \
+                      --dependencyFile userBuildDependencyFile.json \
                       app1/cobol/epsmpmt.cbl
 ```
 **Build one program with Debug Options**
@@ -243,16 +243,21 @@ utility options
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Build a Single Program](#build-a-single-program)
-- [Build a List of Programs](#build-a-list-of-programs)
-- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-- [Perform Impact Build](#perform-impact-build)
-- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform a Merge build](#perform-a-merge-build)
-- [Perform a Scan Source build](#perform-a-scan-source-build)
-- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
+  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
+  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
+  - [Command Line Options Summary](#command-line-options-summary)
+  - [Invocation Samples including console log](#invocation-samples-including-console-log)
+    - [Build a Single Program](#build-a-single-program)
+    - [Build a List of Programs](#build-a-list-of-programs)
+    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+    - [Perform Impact Build](#perform-impact-build)
+    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+    - [Perform a Merge build](#perform-a-merge-build)
+    - [Perform a Scan Source build](#perform-a-scan-source-build)
+    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
 
 <!-- /TOC -->
 ### Build a Single Program 
