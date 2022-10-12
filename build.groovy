@@ -592,7 +592,7 @@ def createBuildList() {
 		}
 	}
 
-	return buildList
+	return [buildList, deleteList]
 }
 
 
