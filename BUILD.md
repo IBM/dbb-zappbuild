@@ -173,7 +173,7 @@ utility options
 
 Build a single program in the application. 
 
-By leveraging `--userBuild` zAppBuild does not connect to the repositoryClient to the DBB WebApp and also does not store a build result.  
+By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.  
 
 ```
 groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq USER.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --userBuild --verbose MortgageApplication/cobol/epsnbrvl.cbl

@@ -1,6 +1,6 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.dependency.*
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 
@@ -41,7 +41,7 @@ def createSearchPathDependencyResolver(String dependencySearch) {
 	return new SearchPathDependencyResolver(dependencySearch)
 }
 
-def findImpactedFiles(String impactSearch, String changedFile, RepositoryClient repositoryClient) {
+def findImpactedFiles(String impactSearch, String changedFile) {
 	
 	List<String> collections = new ArrayList<String>()
 	collections.add(props.applicationCollectionName)
@@ -50,7 +50,7 @@ def findImpactedFiles(String impactSearch, String changedFile, RepositoryClient 
 	if (props.verbose)
 		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
 	
-	def finder = new SearchPathImpactFinder(impactSearch, collections, repositoryClient)
+	def finder = new SearchPathImpactFinder(impactSearch, collections)
 	
 	// Find all files impacted by the changed file
 	impacts = finder.findImpactedFiles(changedFile, props.workspace)

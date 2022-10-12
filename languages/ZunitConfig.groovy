@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -11,12 +11,9 @@ import groovy.xml.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -37,16 +34,9 @@ buildUtils.createLanguageDatasets(langQualifier)
 	File logFile = new File("${props.buildOutDir}/${member}.zunit.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.zunit.report.log")
 
-	// configure dependency resolution
-	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	}
+	String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
+	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
@@ -206,12 +196,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 			// print warning and report
 			println warningMsg
 			printReport(reportLogFile)
-			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 		} else { // rc > props.zunit_maxWarnRC.toInteger()
 			props.error = "true"
 			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 		}
 	}
 	else {
@@ -219,7 +209,7 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 		props.error = "true"
 		String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
 		println(errorMsg)
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
 	}
 
 }
@@ -228,12 +218,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
  * Methods
  */
 
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
+def getMetadataStore() {
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
+	return metadataStore
 }
+
 
 /*
  * returns containsPlayback, 

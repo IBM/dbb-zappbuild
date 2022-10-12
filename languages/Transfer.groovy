@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.build.report.records.*
@@ -29,7 +29,7 @@ import groovy.transform.*
 // Set to keep information about which datasets where already checked/created
 @Field HashSet<String> verifiedBuildDatasets = new HashSet<String>()
 
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -52,7 +52,7 @@ buildList.each { buildFile ->
 		errorMsg = "*! Warning. Member name (${member}) exceeds length of 8 characters. "
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,client:getMetadataStore())
 	} else {
 
 		// evaluate the datasetmapping, which maps build files to targetDataset defintions
@@ -80,27 +80,27 @@ buildList.each { buildFile ->
 					String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+					buildUtils.updateBuildResult(errorMsg:errorMsg,client:getMetadataStore())
 				}
 			} catch (BuildException e) { // Catch potential exceptions like file truncation
 				String errorMsg = "*! The CopyToPDS failed with an exception ${e.getMessage()}."
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getMetadataStore())
 			}
 		} else {
 			String errorMsg =  "*! Target dataset for $buildFile could not be obtained from file properties. "
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,client:getMetadataStore())
 		}
 	}
 }
 
 // internal methods
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
+def getMetadataStore() {
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
+	return metadataStore
 }
+
