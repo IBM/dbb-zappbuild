@@ -471,7 +471,7 @@ def createBuildList() {
 	// check if impact build
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
-		if (repositoryClient) {
+		if (metadataStore) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(metadataStore)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
@@ -479,7 +479,7 @@ def createBuildList() {
 	}
 	else if (props.mergeBuild){
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
-		if (repositoryClient) {
+		if (metadataStore) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
 				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(metadataStore)		}
 		else {

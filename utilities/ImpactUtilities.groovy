@@ -198,7 +198,7 @@ def createImpactBuildList(MetadataStore metadataStore) {
 
 					// create logical dependency and query collections for logical files with this dependency
 					LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-					logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+					logicalFileList = metadataStore.getLogicalFiles(props.applicationCollectionName, lDependency)
 
 
 					// get excludeListe
@@ -508,7 +508,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
  * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
  * Limitation: Sample for cobol
  */
-def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient){
+def scanOnlyStaticDependencies(List buildList, MetadataStore metadataStore){
 	buildList.each { buildFile ->
 		def scriptMapping = ScriptMappings.getScriptName(buildFile)
 		if(scriptMapping != null){
@@ -525,7 +525,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy"){
 					try{
 						if (props.verbose) println ("*** Scanning load module $loadPDSMember of $buildFile")
-						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
+						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, metadataStore)
 					}
 					catch (com.ibm.dbb.build.ValidationException e){
 						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
@@ -550,11 +550,11 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
  *
  * Invokes method generateConcurrentChangesReports to produce the reports
  *
- * @param repositoryClient
+ * @param metadataStore
  * @param buildSet
  *
  */
-def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
+def calculateConcurrentChanges(MetadataStore metadataStore, Set<String> buildSet) {
 	
 		// initialize patterns
 		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
