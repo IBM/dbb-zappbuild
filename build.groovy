@@ -457,15 +457,10 @@ def createBuildList() {
 
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
-<<<<<<< HEAD
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>() // not yet used for any post-processing
 	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
-=======
-	Set<String> deletedFiles = new HashSet<String>()
-
->>>>>>> zappbuild-internal/develop
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
 	// check if full build
@@ -476,37 +471,22 @@ def createBuildList() {
 	// check if impact build
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
-<<<<<<< HEAD
 		if (repositoryClient) {
-			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(repositoryClient)		}
-=======
-		if (metadataStore) {
-			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(metadataStore)		}
->>>>>>> zappbuild-internal/develop
+			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(metadataStore)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
 	}
 	else if (props.mergeBuild){
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
-<<<<<<< HEAD
 		if (repositoryClient) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(repositoryClient)		}
-=======
-		if (metadataStore) {
-			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(metadataStore)		}
->>>>>>> zappbuild-internal/develop
+				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(metadataStore)		}
 		else {
 			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
 	}
-<<<<<<< HEAD
 	
-=======
-
->>>>>>> zappbuild-internal/develop
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {
 
@@ -536,14 +516,8 @@ def createBuildList() {
 	// now that we are done adding to the build list convert the set to a list
 	List<String> buildList = new ArrayList<String>()
 	buildList.addAll(buildSet)
-<<<<<<< HEAD
 
 	// convert set of deleted files to a list 
-=======
-	buildSet = null
-
-	// 
->>>>>>> zappbuild-internal/develop
 	List<String> deleteList = new ArrayList<String>()
 	deleteList.addAll(deletedFiles)
 	
@@ -562,11 +536,7 @@ def createBuildList() {
 	// write out list of deleted files (for documentation, not actually used by build scripts)
 	if (deletedFiles.size() > 0){
 		String deletedFilesListLoc = "${props.buildOutDir}/deletedFilesList.${props.buildListFileExt}"
-<<<<<<< HEAD
 		println "** Writing list of deleted files to $deletedFilesListLoc"
-=======
-		println "** Writing lists of deleted files to $deletedFilesListLoc"
->>>>>>> zappbuild-internal/develop
 		File deletedFilesListFile = new File(deletedFilesListLoc)
 		deletedFilesListFile.withWriter(enc) { writer ->
 			deletedFiles.each { file ->
@@ -581,11 +551,7 @@ def createBuildList() {
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
-<<<<<<< HEAD
-		impactUtils.updateCollection(buildList, null, null, repositoryClient)
-=======
 		impactUtils.updateCollection(buildList, null, null, metadataStore)
->>>>>>> zappbuild-internal/develop
 	}
 	
 	// Loading file/member level properties from member specific properties files
@@ -593,19 +559,18 @@ def createBuildList() {
 		println "** Populating file level properties from individual property files."
 		buildUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
-<<<<<<< HEAD
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && repositoryClient){
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && metadataStore){
 
 		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
 			if (buildSet && changedFiles) {
 				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-				impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
+				impactUtils.reportExternalImpacts(metadataStore, buildSet.plus(changedFiles))
 			}
 			else if(buildSet) {
 				println "** Perform analysis and reporting of external impacted files for the build list."
-				impactUtils.reportExternalImpacts(repositoryClient, buildSet)
+				impactUtils.reportExternalImpacts(metadataStore, buildSet)
 			}
 		} else{
 			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
@@ -613,9 +578,9 @@ def createBuildList() {
 	}
 	
 	// Document and validate concurrent changes
-	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
+	if (metadataStore && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
+		impactUtils.calculateConcurrentChanges(metadataStore, buildSet)
 	}
 	
 	// document deletions in build report
@@ -628,10 +593,6 @@ def createBuildList() {
 	}
 
 	return buildList
-=======
-
-	return [buildList, deleteList]
->>>>>>> zappbuild-internal/develop
 }
 
 
@@ -642,13 +603,8 @@ def finalizeBuildProcess(Map args) {
 	def buildResult = null
 
 	// update repository artifacts
-<<<<<<< HEAD
-	if (repositoryClient) {
-		buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-=======
 	if (metadataStore) {
 		buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
->>>>>>> zappbuild-internal/develop
 
 		// add git hashes for each build directory
 		List<String> srcDirs = []
@@ -672,11 +628,7 @@ def finalizeBuildProcess(Map args) {
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
-<<<<<<< HEAD
-					def lastBuildResult= buildUtils.retrieveLastBuildResult(repositoryClient)
-=======
 					def lastBuildResult= buildUtils.retrieveLastBuildResult(metadataStore)
->>>>>>> zappbuild-internal/develop
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
 						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
@@ -722,22 +674,6 @@ def finalizeBuildProcess(Map args) {
 	// create build report html file
 	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
 	println "** Writing build report to ${htmlOutputFile}"
-<<<<<<< HEAD
-	def htmlTemplate = null  // Use default HTML template.
-	def css = null       // Use default theme.
-	def renderScript = null  // Use default rendering.
-	def transformer = HtmlTransformer.getInstance()
-	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
-
-
-	// attach build report & result
-	if (repositoryClient) {
-		buildReport.save(jsonOutputFile, buildReportEncoding)
-		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
-		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
-		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
-		buildResult.save()
-=======
 	buildReport.generateHTML(htmlOutputFile)
 
 
@@ -748,7 +684,6 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
 		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
 		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
->>>>>>> zappbuild-internal/develop
 	}
 
 	// print end build message
