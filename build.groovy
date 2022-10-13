@@ -433,19 +433,10 @@ def populateBuildProperties(String[] args) {
 	
 	// set buildframe options
 	if (opts.re) props.reportExternalImpacts = 'true'
-// metadataStoreType=file 
 
-// metadataStoreLocation=
-
-// # build.groovy option -url, --url
-// metadataStoreUrl=
-	// set DBB configuration properties
-	if (opts.url) props.metadataStoreUrl = opts.url
-
-	// SHOULD NOT BE SAVED AS PROPERTIES
-	// if (opts.id) props.'dbb.metadatastore.db2.userId' = opts.id
-	// if (opts.pw) props.'dbb.metadatastore.db2.password' = opts.pw
-	// if (opts.pf) props.'dbb.metadatastore.db2.passwordFile' = opts.pf
+	// set Db2 URL configuration properties
+	if (opts.url) props.metadataStoreDb2Url = opts.url
+	// db2 id, password, and passwordFile are no longer properties
 
 	// set IDz/ZOD user build options
 	if (opts.e) props.errPrefix = opts.e
