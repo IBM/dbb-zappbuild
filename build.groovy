@@ -99,7 +99,8 @@ def initializeBuildProcess(String[] args) {
 	if (props.verbose) println "** Initializing build process . . ."
 
 	// build properties initial set
-	populateBuildProperties(args)
+	def opts = parseArgs(args)
+	populateBuildProperties(opts)
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
@@ -302,10 +303,10 @@ options:
  * populateBuildProperties - loads all build property files, creates properties for command line
  * arguments and sets calculated propertied for he build process
  */
-def populateBuildProperties(String[] args) {
+def populateBuildProperties(def opts) {
 
 	// parse incoming options and arguments
-	def opts = parseArgs(args)
+	//def opts = parseArgs(args)
 	def zAppBuildDir =  getScriptDir()
 	props.zAppBuildDir = zAppBuildDir
 
