@@ -115,8 +115,34 @@ def initializeBuildProcess(String[] args) {
 
 	// create metadata store for this script
 	if (!props.userBuild) {
-		metadataStore = MetadataStoreFactory.createFileMetadataStore();
-		println "** MetadataStore initialized"
+		if (props.metadataStoreType == 'file')
+			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreLocation)
+		else if (props.metadataStoreType == 'db2') {
+			// Assert required properties exist
+			if (!args.url) {
+				println("For Db2 MetadataStore, '-url <url> must be passed on the command line." )
+				System.exit(1)
+			}
+			if (!args.id) {
+				println("For Db2 MetadataStore, '-id <user id>' must be passed on the command line. ")
+				System.exit(1)
+			}
+			if (!args.pw || !args.pf) {
+				println("For Db2 MetadataStore, '-pw <password>' or '-pf' <path to password file>' must be passed on the command line. ")
+				System.exit(1)
+			}
+			// Initialize db2 metadatastore
+			def password
+			if (args.pf) 
+				password = new File(pf)
+			metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, password)
+		}
+		else {
+			println("Invalid MetadataStore Type: ${props.metadataStoreType}.\nOnly valid options for 'metadataStoreType' are 'file' and 'db2'.")
+			System.exit(1)
+		}
+
+		if (props.verbose) println "** MetadataStore initialized"
 	}
 
 	// handle -r,--reset option
