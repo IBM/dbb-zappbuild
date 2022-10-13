@@ -149,7 +149,7 @@ def initializeBuildProcess(String[] args) {
 				
 				// Assert URL property is defined
 				if (!props.metadataStoreDb2Url) {
-					println("For Db2 MetadataStore, '-url jdbc:db2:<Db2 server location>' must be passed on the command line." )
+					println("For Db2 MetadataStore, please define the metadataStoreDb2Url build property or pass '-url jdbc:db2:<Db2 server location>' on the command line." )
 					System.exit(1)
 				}
 				
