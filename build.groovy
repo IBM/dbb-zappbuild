@@ -120,42 +120,44 @@ def initializeBuildProcess(String[] args) {
 		else if (props.metadataStoreType == 'db2') {
 
 			//Get password file or encrypted password from command line
-			def password
-			if (args.pf) 
-				password = new File(pf)
-			else
+			String password = null
+			File passwordFile = null
+			if (args.pf)  
+				passwordFile = new File(args.pf)
+			else if (args.pw)
 				password = args.pw
 
 			if (props.metadataStoreDb2ConnectionConf) { // Db2 Configuration properties file
 			
-				// Load properties 
+				// Check if the configuration properties file exists
 				File propertiesFile = new File(props.metadataStoreDb2ConnectionConf)
 				if (!propertiesFile.exists()) {
 					println("Db2 Connection Configuration property file does not exist: ${propertiesFile.getAbsolutePath()}\nPlease verify that the provided path is correct")
 					System.exit(1)
 				}
+				// Load properties file into Properties object
 				Properties db2ConnectionProps = new Properties()
 				db2ConnectionProps.load(propertiesFile)
 				
-				metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.id, password, db2ConnectionProps)
+				// Call correct Db2 MetadataStore constructor
+				if (passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.id, passwordFile, db2ConnectionProps)
+				else
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.id, password, db2ConnectionProps)
 			}
 			else { // Not using Db2 Config Properties file
 				
-				// Assert required properties exist
-				if (!args.url) {
-					println("For Db2 MetadataStore, '-url <url> must be passed on the command line." )
+				// Assert URL property is defined
+				if (!props.metadataStoreDb2Url) {
+					println("For Db2 MetadataStore, '-url jdbc:db2:<Db2 server location>' must be passed on the command line." )
 					System.exit(1)
 				}
-				if (!args.id) {
-					println("For Db2 MetadataStore, '-id <user id>' must be passed on the command line. ")
-					System.exit(1)
-				}
-				if (!args.pw || !args.pf) {
-					println("For Db2 MetadataStore, '-pw <password>' or '-pf <path to password file>' must be passed on the command line. This password should be encrypted with the DBB Password Encryption Utility.")
-					System.exit(1)
-				}
-				// Initialize Db2 metadatastore
-				metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, password)
+				
+				/// Call correct Db2 MetadataStore constructor
+				if (passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, passwordFile)
+				else 
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, password)
 			}
 			
 		}
@@ -164,7 +166,7 @@ def initializeBuildProcess(String[] args) {
 			System.exit(1)
 		}
 
-		if (props.verbose) println "** MetadataStore initialized"
+		if (props.verbose) println "** ${props.metadataStoreType} MetadataStore initialized"
 	}
 
 	// handle -r,--reset option
