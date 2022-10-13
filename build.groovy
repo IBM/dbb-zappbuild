@@ -98,9 +98,8 @@ if (props.error)
 def initializeBuildProcess(String[] args) {
 	if (props.verbose) println "** Initializing build process . . ."
 
-	// build properties initial set
-	def opts = parseArgs(args)
-	populateBuildProperties(opts)
+	def opts = parseArgs(args) // parse incoming options and arguments
+	populateBuildProperties(opts) // build properties initial set
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
@@ -123,10 +122,10 @@ def initializeBuildProcess(String[] args) {
 			//Get password file or encrypted password from command line
 			String password = null
 			File passwordFile = null
-			if (args.pf)  
-				passwordFile = new File(args.pf)
-			else if (args.pw)
-				password = args.pw
+			if (opts.pf)  
+				passwordFile = new File(opts.pf)
+			else if (opts.pw)
+				password = opts.pw
 
 			if (props.metadataStoreDb2ConnectionConf) { // Db2 Configuration properties file
 			
@@ -142,9 +141,9 @@ def initializeBuildProcess(String[] args) {
 				
 				// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.id, passwordFile, db2ConnectionProps)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.id, passwordFile, db2ConnectionProps)
 				else
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.id, password, db2ConnectionProps)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.id, password, db2ConnectionProps)
 			}
 			else { // Not using Db2 Config Properties file
 				
@@ -156,9 +155,9 @@ def initializeBuildProcess(String[] args) {
 				
 				/// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, passwordFile)
 				else 
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, password)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, password)
 			}
 			
 		}
@@ -305,8 +304,6 @@ options:
  */
 def populateBuildProperties(def opts) {
 
-	// parse incoming options and arguments
-	//def opts = parseArgs(args)
 	def zAppBuildDir =  getScriptDir()
 	props.zAppBuildDir = zAppBuildDir
 
