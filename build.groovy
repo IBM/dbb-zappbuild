@@ -729,13 +729,12 @@ def finalizeBuildProcess(Map args) {
 	// print end build message
 	def endTime = new Date()
 	def duration = TimeCategory.minus(endTime, args.start)
-	buildResult.setProperty("buildDuration", duration.toString())
-	println(buildResult)
-	//def state = (props.error) ? "ERROR" : "CLEAN"
-	// println("** Build ended at $endTime")
-	// println("** Build State : $state")
-	// println("** Total files processed : ${args.count}")
-	// println("** Total build time  : $duration\n")
+	//buildResult.setProperty("buildDuration", duration.toString())
+	def state = (props.error) ? "ERROR" : "CLEAN"
+	println("** Build ended at $endTime")
+	println("** Build State : $state")
+	println("** Total files processed : ${args.count}")
+	println("** Total build time  : $duration\n")
 }
 
 
