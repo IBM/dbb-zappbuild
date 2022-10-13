@@ -128,7 +128,7 @@ def initializeBuildProcess(String[] args) {
 				System.exit(1)
 			}
 			if (!args.pw || !args.pf) {
-				println("For Db2 MetadataStore, '-pw <password>' or '-pf' <path to password file>' must be passed on the command line. ")
+				println("For Db2 MetadataStore, '-pw <password>' or '-pf' <path to password file>' must be passed on the command line. This password should be encrypted with the DBB Password Encryption Utility.")
 				System.exit(1)
 			}
 			// Get password  file or encrypted password
@@ -136,7 +136,7 @@ def initializeBuildProcess(String[] args) {
 			if (args.pf) 
 				password = new File(pf)
 			else
-				passwrod = args.pw
+				password = args.pw as String
 			// Initialize Db2 metadatastore
 			metadataStore = MetadataStoreFactory.createDb2MetadataStore(args.url, args.id, password)
 		}
