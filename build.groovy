@@ -623,7 +623,7 @@ def createBuildList() {
 	// Document and validate concurrent changes
 	if (metadataStore && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(metadataStore, buildSet)
+		impactUtils.calculateConcurrentChanges(buildSet)
 	}
 	
 	// document deletions in build report

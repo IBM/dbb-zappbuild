@@ -529,7 +529,8 @@ def scanOnlyStaticDependencies(List buildList){
  * @param buildSet
  *
  */
-def calculateConcurrentChanges(MetadataStore metadataStore, Set<String> buildSet) {
+def calculateConcurrentChanges(Set<String> buildSet) {
+		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	
 		// initialize patterns
 		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
