@@ -268,10 +268,10 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
  * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, logs[logName:logFile], store:repoClient
+	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
 
 	// update build results only in non-userbuild scenarios
-	if (args.store && !props.userBuild) {
+	if (args.client && !props.userBuild) {
 		def buildResult = args.store.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"

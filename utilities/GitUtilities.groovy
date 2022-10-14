@@ -405,14 +405,14 @@ def updateBuildResult(Map args) {
 		// add error message
 		if (args.errorMsg) {
 			buildResult.setStatus(buildResult.ERROR)
-			buildResult.setProperty("error", args.errorMsg)
+			buildResult.addProperty("error", args.errorMsg)
 		}
 		// add warning message, but keep result status
 		if (args.warningMsg) {
 			// buildResult.setStatus(buildResult.WARNING)
-			buildResult.setProperty("warning", args.warningMsg)
+			buildResult.addProperty("warning", args.warningMsg)
 		}
 		// save result
-		buildResult.save()
+		//buildResult.save()
 	}
 }
