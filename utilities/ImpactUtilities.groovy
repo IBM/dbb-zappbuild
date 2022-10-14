@@ -829,8 +829,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		metadataStore.deleteLogicalFile(props.applicationCollectionName, logicalFile)
-		metadataStore.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
 	}
 
 	// remove renamed files from collection
@@ -838,8 +838,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		metadataStore.deleteLogicalFile(props.applicationCollectionName, logicalFile)
-		metadataStore.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
