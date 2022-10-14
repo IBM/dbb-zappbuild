@@ -73,13 +73,11 @@ def createImpactBuildList(MetadataStore metadataStore) {
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 			
 			// list of impacts
-			def impacts
-
-			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
 				
-				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
-			}
+			String impactSearch = props.getFileProperty('impactSearch', changedFile)
+			def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
+			println(" ***** Impacts: ${impacts.toString()}")
+		
 			// else {
 			// 	String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
 			// 	ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, metadataStore)
