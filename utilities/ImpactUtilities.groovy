@@ -696,7 +696,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 			}
 
 			if (externalImpactReportingList.size() != 0) {
-				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, metadataStore, "***", "buildSet")
+				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, "***", "buildSet")
 
 
 				// get impacted files of idenfied impacted files
@@ -707,7 +707,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 
 					}
 					def impactsBin
-					(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, metadataStore, "****", "impactSet")
+					(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, "****", "impactSet")
 				}
 
 			}
@@ -745,7 +745,8 @@ def reportExternalImpacts(Set<String> changedFiles){
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  */
 
-def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, MetadataStore metadataStore, String indentationMsg, String analysisMode) {
+def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, String indentationMsg, String analysisMode) {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
