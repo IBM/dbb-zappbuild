@@ -119,7 +119,7 @@ def createImpactBuildList() {
 
 				// create logical dependency and query collections for logical files with this dependency
 				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-				logicalFileList = metadataStore.getAllLogicalFiles(props.applicationCollectionName, lDependency)
+				logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
 
 
 				// get excludeListe
@@ -171,7 +171,7 @@ def createImpactBuildList() {
 
 					// create logical dependency and query collections for logical files with this dependency
 					LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-					logicalFileList = metadataStore.getLogicalFiles(props.applicationCollectionName, lDependency)
+					logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
 
 
 					// get excludeListe
@@ -216,7 +216,6 @@ def createImpactBuildList() {
  */
 
 def createMergeBuildList(){
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
@@ -483,7 +482,6 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
  * Limitation: Sample for cobol
  */
 def scanOnlyStaticDependencies(List buildList){
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	buildList.each { buildFile ->
 		def scriptMapping = ScriptMappings.getScriptName(buildFile)
 		if(scriptMapping != null){
@@ -525,12 +523,10 @@ def scanOnlyStaticDependencies(List buildList){
  *
  * Invokes method generateConcurrentChangesReports to produce the reports
  *
- * @param metadataStore
  * @param buildSet
  *
  */
 def calculateConcurrentChanges(Set<String> buildSet) {
-		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	
 		// initialize patterns
 		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
@@ -570,7 +566,6 @@ def calculateConcurrentChanges(Set<String> buildSet) {
  */
 
 def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
@@ -660,7 +655,6 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
  */
 
 def reportExternalImpacts(Set<String> changedFiles){
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// query external collections to produce externalImpactList
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
