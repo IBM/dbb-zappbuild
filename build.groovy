@@ -118,7 +118,6 @@ def initializeBuildProcess(String[] args) {
 		if (props.metadataStoreType == 'file')
 			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreLocation)
 		else if (props.metadataStoreType == 'db2') {
-
 			//Get password file or encrypted password from command line
 			String password
 			File passwordFile
@@ -155,9 +154,9 @@ def initializeBuildProcess(String[] args) {
 				
 				/// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, opts.id, passwordFile)
 				else 
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, password as String)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, opts.id, password as String)
 			}
 			
 		}
