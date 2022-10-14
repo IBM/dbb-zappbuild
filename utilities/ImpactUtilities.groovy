@@ -72,31 +72,10 @@ def createImpactBuildList(MetadataStore metadataStore) {
 			// get exclude list
 			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 			
-			// list of impacts
-				
+			// Get impacted files using the SearchPathImpactFinder
 			String impactSearch = props.getFileProperty('impactSearch', changedFile)
 			def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
 			println(" ***** Impacts for changed file ${changedFile}: ${impacts.toString()}")
-		
-			// else {
-			// 	String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-			// 	ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, metadataStore)
-
-			// 	// Print impactResolverConfiguration
-			// 	if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-			// 		// print collection information
-			// 		println("    " + "Collection".padRight(20) )
-			// 		println("    " + " ".padLeft(20,"-"))
-			// 		impactResolver.getCollections().each{ collectionName ->
-			// 			println("    " + collectionName)
-			// 		}
-			// 		// print impact resolution rule in table format
-			// 		buildUtils.printResolutionRules(impactResolver.getResolutionRules())
-			// 	}
-
-			// 	// resolving impacts
-			// 	impacts = impactResolver.resolve()
-			// }
 			
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
