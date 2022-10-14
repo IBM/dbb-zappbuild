@@ -76,7 +76,7 @@ def createImpactBuildList(MetadataStore metadataStore) {
 				
 			String impactSearch = props.getFileProperty('impactSearch', changedFile)
 			def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
-			println(" ***** Impacts: ${impacts.toString()}")
+			println(" ***** Impacts for changed file ${changedFile}: ${impacts.toString()}")
 		
 			// else {
 			// 	String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
