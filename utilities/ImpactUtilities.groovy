@@ -659,7 +659,8 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
  * Configured through reportExternalImpacts* build properties
  */
 
-def reportExternalImpacts(MetadataStore metadataStore, Set<String> changedFiles){
+def reportExternalImpacts(Set<String> changedFiles){
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// query external collections to produce externalImpactList
 
 	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>

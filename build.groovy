@@ -609,11 +609,11 @@ def createBuildList() {
 		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
 			if (buildSet && changedFiles) {
 				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-				impactUtils.reportExternalImpacts(metadataStore, buildSet.plus(changedFiles))
+				impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
 			}
 			else if(buildSet) {
 				println "** Perform analysis and reporting of external impacted files for the build list."
-				impactUtils.reportExternalImpacts(metadataStore, buildSet)
+				impactUtils.reportExternalImpacts(buildSet)
 			}
 		} else{
 			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
