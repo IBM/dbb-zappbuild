@@ -215,7 +215,8 @@ def createImpactBuildList() {
  *
  */
 
-def createMergeBuildList(MetadataStore metadataStore){
+def createMergeBuildList(){
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()

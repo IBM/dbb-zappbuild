@@ -524,7 +524,7 @@ def createBuildList() {
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
 		if (metadataStore) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(metadataStore)		}
+				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList()		}
 		else {
 			println "*! Merge build requires a Filesystem or Db2 MetadataStore"
 		}
