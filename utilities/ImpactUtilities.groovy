@@ -17,11 +17,9 @@ import java.util.regex.*
 @Field def resolverUtils
 
 
-def createImpactBuildList(MetadataStore metadataStore) {
-	
-	// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-		resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+def createImpactBuildList() {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+	resolverUtils = loadScript(new File("ResolverUtilities.groovy")) 
 	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
@@ -44,8 +42,6 @@ def createImpactBuildList(MetadataStore metadataStore) {
 
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles, metadataStore)
-
-
 
 	// create build list using impact analysis
 	if (props.verbose) println "*** Perform impacted analysis for changed files."
