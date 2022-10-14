@@ -41,7 +41,7 @@ def createImpactBuildList() {
 	}
 
 	// scan files and update source collection for impact analysis
-	updateCollection(changedFiles, deletedFiles, renamedFiles, metadataStore)
+	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
 	// create build list using impact analysis
 	if (props.verbose) println "*** Perform impacted analysis for changed files."
@@ -225,7 +225,7 @@ def createMergeBuildList(){
 	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
 
 	// scan files and update source collection
-	updateCollection(changedFiles, deletedFiles, renamedFiles, metadataStore)
+	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
 	// iterate over changed file and add them to the buildSet
 
@@ -809,11 +809,13 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 	]
 }
 
-def updateCollection(changedFiles, deletedFiles, renamedFiles, MetadataStore metadataStore) {
-	if (!metadataStore) {
+def updateCollection(changedFiles, deletedFiles, renamedFiles) {
+
+	if (!MetadataStoreFactory.metadataStoreExists()) {
 		if (props.verbose) println "** Unable to update collections. No Metadata Store."
 		return
 	}
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	if (props.verbose) println "** Updating collections ${props.applicationCollectionName} and ${props.applicationOutputsCollectionName}"
 	//def scanner = new DependencyScanner()
@@ -877,7 +879,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, MetadataStore met
 							// find in local list of logical files first (batch processing)
 							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
 							if (!testCaseFiles){ // alternate retrieve it from the collection
-								testCaseFiles = metadataStore.getAllLogicalFiles(props.applicationCollectionName, sysTestDependency.getLname()).find{
+								testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
 									it.getLanguage().equals("COB")
 								}
 							}
@@ -910,8 +912,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, MetadataStore met
 			if (logicalFiles.size() == 500) {
 				if (props.verbose)
 					println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
-				metadataStore.saveLogicalFiles(props.applicationCollectionName, logicalFiles);
-				if (props.verbose) println(metadataStore.getLastStatus())
+				metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 				logicalFiles.clear()
 			}
 		}
@@ -920,7 +921,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, MetadataStore met
 	// save logical files
 	if (props.verbose)
 		println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
-	metadataStore.getCollection( props.applicationCollectionName ).addLogicalFiles(logicalFiles);
+	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 	
 }
 

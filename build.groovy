@@ -594,7 +594,7 @@ def createBuildList() {
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
-		impactUtils.updateCollection(buildList, null, null, metadataStore)
+		impactUtils.updateCollection(buildList, null, null)
 	}
 	
 	// Loading file/member level properties from member specific properties files
