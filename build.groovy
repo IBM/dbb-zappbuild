@@ -157,7 +157,7 @@ def initializeBuildProcess(String[] args) {
 				if (passwordFile)
 					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, passwordFile)
 				else 
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, password)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(opts.url, opts.id, password as String)
 			}
 			
 		}
