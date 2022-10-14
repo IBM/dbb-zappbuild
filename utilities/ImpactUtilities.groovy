@@ -28,7 +28,7 @@ def createImpactBuildList() {
 	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// get the last build result to get the baseline hashes
-	def lastBuildResult = buildUtils.retrieveLastBuildResult(metadataStore)
+	def lastBuildResult = buildUtils.retrieveLastBuildResult()
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {

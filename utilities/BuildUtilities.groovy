@@ -520,12 +520,12 @@ def getLangPrefix(String scriptName){
 }
 
 /*
- * retrieveLastBuildResult(MetadataStore)
+ * retrieveLastBuildResult()
  * returns last successful build result
  *
  */
-def retrieveLastBuildResult(MetadataStore metadataStore){
-
+def retrieveLastBuildResult(){
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// get the last build result
 	def lastBuildResult = metadataStore.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 

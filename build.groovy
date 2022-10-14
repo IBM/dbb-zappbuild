@@ -671,7 +671,7 @@ def finalizeBuildProcess(Map args) {
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
-					def lastBuildResult= buildUtils.retrieveLastBuildResult(metadataStore)
+					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
 						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
