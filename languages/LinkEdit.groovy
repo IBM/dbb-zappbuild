@@ -58,7 +58,7 @@ sortedList.each { buildFile ->
 			// only scan the load module if load module scanning turned on for file
 			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
 			if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore())
-				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, getMetadataStore())
+				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 		}
 	}
 

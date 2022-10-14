@@ -500,7 +500,7 @@ def scanOnlyStaticDependencies(List buildList){
 				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy"){
 					try{
 						if (props.verbose) println ("*** Scanning load module $loadPDSMember of $buildFile")
-						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, metadataStore)
+						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile)
 					}
 					catch (com.ibm.dbb.build.ValidationException e){
 						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
@@ -929,7 +929,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  * saveStaticLinkDependencies - Scan the load module to determine LINK dependencies. Impact resolver can use
  * these to determine that this file gets rebuilt if a LINK dependency changes.
  */
-def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile, MetadataStore metadataStore) {
+def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	if (metadataStore) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
