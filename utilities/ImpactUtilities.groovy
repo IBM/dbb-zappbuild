@@ -558,7 +558,7 @@ def calculateConcurrentChanges(Set<String> buildSet) {
 				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
 	
 				// generate reports and verify for intersects
-				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, metadataStore)
+				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
 	
 			}
 		}
@@ -569,7 +569,8 @@ def calculateConcurrentChanges(Set<String> buildSet) {
  * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
  */
 
-def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference, MetadataStore metadataStore){
+def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference){
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
 
 	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
