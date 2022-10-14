@@ -83,7 +83,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -104,7 +104,7 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
@@ -249,7 +249,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getMetadataStore())
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
 			}
 		}
 	}

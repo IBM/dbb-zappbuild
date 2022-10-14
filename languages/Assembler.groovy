@@ -65,7 +65,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
 			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
@@ -83,7 +83,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
@@ -96,7 +96,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 		else {
 			// if this program needs to be link edited . . .
@@ -109,7 +109,7 @@ sortedList.each { buildFile ->
 					String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 				}
 				else {
 					// only scan the load module if load module scanning turned on for file

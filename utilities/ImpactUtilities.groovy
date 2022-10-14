@@ -597,9 +597,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else
@@ -619,9 +619,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else
@@ -641,9 +641,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:metadataStore)
+							buildUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else
@@ -897,7 +897,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 			} catch (Exception e) {
 
 				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
-				buildUtils.updateBuildResult(warningMsg:warningMsg,client:getMetadataStore())
+				buildUtils.updateBuildResult(warningMsg:warningMsg)
 				println(warningMsg)
 				e.printStackTrace()
 

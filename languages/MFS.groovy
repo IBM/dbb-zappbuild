@@ -50,7 +50,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The phase1 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 
@@ -61,7 +61,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The phase 2 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 	

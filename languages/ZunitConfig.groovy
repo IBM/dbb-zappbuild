@@ -196,12 +196,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 			// print warning and report
 			println warningMsg
 			printReport(reportLogFile)
-			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile])
 		} else { // rc > props.zunit_maxWarnRC.toInteger()
 			props.error = "true"
 			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
 		}
 	}
 	else {
@@ -209,7 +209,7 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 		props.error = "true"
 		String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
 		println(errorMsg)
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getMetadataStore())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
 	}
 
 }

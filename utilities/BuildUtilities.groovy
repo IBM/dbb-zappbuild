@@ -268,11 +268,11 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
  * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
-
+	// args : errorMsg / warningMsg, logs[logName:logFile]
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// update build results only in non-userbuild scenarios
-	if (args.client && !props.userBuild) {
-		def buildResult = args.store.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore && !props.userBuild) {
+		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
@@ -296,7 +296,6 @@ def updateBuildResult(Map args) {
 		if (args.logs) {
 			args.logs.each { logName, logFile ->
 				if (logFile)
-					println(logName)
 					buildResult.addAttachment(logName, new FileInputStream(logFile))
 			}
 		}

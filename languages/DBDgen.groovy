@@ -48,7 +48,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The assembly return code for DBDgen ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 
@@ -59,7 +59,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The link edit return code for DBDgen ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getMetadataStore())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 
 	}
