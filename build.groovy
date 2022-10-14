@@ -210,7 +210,7 @@ def initializeBuildProcess(String[] args) {
 	}
 
 	// verify/create/clone the collections for this build
-	impactUtils.verifyCollections(metadataStore)
+	impactUtils.verifyCollections()
 }
 
 /*

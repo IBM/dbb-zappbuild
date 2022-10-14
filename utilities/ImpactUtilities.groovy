@@ -822,7 +822,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
 	List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-	verifyCollections(metadataStore)
+	verifyCollections()
 
 	// remove deleted files from collection
 	deletedFiles.each { file ->
@@ -950,7 +950,8 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
  * create or clone the collections.
  * Uses build properties
  */
-def verifyCollections(MetadataStore metadataStore) {
+def verifyCollections() {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	if (!metadataStore) {
 		if (props.verbose) println "** Unable to verify collections. No metadata store."
 		return
