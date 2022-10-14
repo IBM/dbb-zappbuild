@@ -65,7 +65,7 @@ else {
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
-		impactUtils.scanOnlyStaticDependencies(buildList, metadataStore)
+		impactUtils.scanOnlyStaticDependencies(buildList)
 	}
 }
 
