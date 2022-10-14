@@ -120,8 +120,8 @@ def initializeBuildProcess(String[] args) {
 		else if (props.metadataStoreType == 'db2') {
 
 			//Get password file or encrypted password from command line
-			String password = null
-			File passwordFile = null
+			String password
+			File passwordFile
 			if (opts.pf)  
 				passwordFile = new File(opts.pf)
 			else if (opts.pw)
