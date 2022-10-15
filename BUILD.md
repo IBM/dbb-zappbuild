@@ -55,7 +55,7 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ## Common User Build Invocation Examples
 **Build one program**
 
-Build a single program in a user build context. Does not require a repository client connection to the DBB WebApp.
+Build a single program in a user build context. Does not require use of the MetadataStore (filesystem or Db2)
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/cobol/epsmpmt.cbl
 ```

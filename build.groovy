@@ -196,7 +196,7 @@ def initializeBuildProcess(String[] args) {
 	// initialize build report
 	BuildReportFactory.createDefaultReport()
 
-	// initialize build result (requires repository connection)
+	// initialize build result (requires MetadataStore)
 	if (metadataStore) {
 		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		buildResult.setState(buildResult.PROCESSING)
@@ -238,7 +238,7 @@ options:
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
 	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
 	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
-	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
+	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
 	// scan options
@@ -248,10 +248,10 @@ options:
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
 	// web application credentials (overrides properties in build.properties)
-	cli.url(longOpt:'url', args:1, 'DBB repository URL')
-	cli.id(longOpt:'id', args:1, 'DBB repository id')
-	cli.pw(longOpt:'pw', args:1,  'DBB repository password')
-	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing DBB password')
+	cli.url(longOpt:'url', args:1, 'Db2 URL for MetadataStore')
+	cli.id(longOpt:'id', args:1, 'Db2 id for MetadataStore')
+	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility)')
+	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing Db2 password')
 
 	// IDz/ZOD User build options
 	cli.u(longOpt:'userBuild', 'Flag indicating running a user build')
@@ -410,11 +410,6 @@ def populateBuildProperties(def opts) {
 		props.scanOnly = 'true'
 		props.scanLoadmodules = 'true'
 	}
-
-	if (opts.url) props.url = opts.url
-	if (opts.id) props.id = opts.id
-	if (opts.pw) props.pw = opts.pw
-	if (opts.pf) props.pf = opts.pf
 
 	// set debug flag
 	if (opts.d) props.debug = 'true'
