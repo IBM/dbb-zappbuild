@@ -625,7 +625,8 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	}
 	// Validate depFileData.fileName == buildFile
 	String buildFilePath = getAbsolutePath(buildFile)
-	assert depFilePath == buildFilePath : "*! Dependency file mismatch: \nfile path: ${depFilePath} \nbuild file path: ${buildFilePath}"
+	String fileNamePath = getAbsolutePath(depFileData.fileName)
+	assert fileNamePath == buildFilePath : "*! Dependency file mismatch: The dependency file 'fileName' value does not match build file"
 	return depFileData // return the parsed JSON object
 }
 
