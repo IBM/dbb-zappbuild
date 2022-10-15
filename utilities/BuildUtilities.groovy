@@ -599,9 +599,9 @@ def generateDb2InfoRecord(String buildFile){
 def validateDependencyFile(String buildFile, String depFilePath) {
 	String[] allowedEncodings = ["UTF-8", "IBM-1047"]
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
-	
+	depFilePath = getAbsolutePath(depFilePath)
 	// Load dependency file and verify existance
-	File depFile = new File(getAbsolutePath(depFilePath))
+	File depFile = new File(depFilePath)
 	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
 	
 	// Parse the JSON file
@@ -625,7 +625,6 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 	}
 	// Validate depFileData.fileName == buildFile
 	String depFilePath = getAbsolutePath(depFileData.fileName)
-	String buildFilePath = getAbsolutePath(buildFile)
 	assert depFilePath == buildFilePath : "*! Dependency file mismatch: \nfile path: ${depFilePath} \nbuild file path: ${buildFilePath}"
 	return depFileData // return the parsed JSON object
 }
