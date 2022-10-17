@@ -904,7 +904,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 			// save logical files in batches of 500 to avoid running out of heap space
 			if (logicalFiles.size() == 500) {
 				if (props.verbose)
-					println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
+					println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
 				metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 				logicalFiles.clear()
 			}
@@ -913,7 +913,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
+		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
 	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 	
 }
