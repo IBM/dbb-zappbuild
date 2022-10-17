@@ -28,7 +28,6 @@ loadFileLevelProperties | Flag to enable the zAppBuild capability to load indivi
 propertyFilePath | relative path to folder containing individual property files | true
 propertyFileExtension | file extension for individual property files | true
 **Dependency and Impact resolution configuration** ||
-useSearchConfiguration | Flag to define which DBB API is used for dependency and impact analysis. `false` uses DependencyResolver and ImpactResolver APIs, while `true` leverages the DBB SearchPathDependencyResolver and SearchParthImpactFinder APIs introduced with DBB 1.1.2 | false
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
