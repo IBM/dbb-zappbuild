@@ -296,8 +296,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.MODGEN).options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		assembler.dd(new DDStatement().dsn(props.SDFHMAC).options("shr"))
-	if (buildUtils.isSQL(logicalFile))
-		assembler.dd(new DDStatement().dsn("DBC0CFG.DB2.V12.SDSNSAMP").options("shr"))
+	//if (buildUtils.isSQL(logicalFile))
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
