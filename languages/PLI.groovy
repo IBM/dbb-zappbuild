@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -12,12 +12,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field RepositoryClient repositoryClient
-
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -42,19 +37,10 @@ sortedList.each { buildFile ->
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
 
-	// configure dependency resolution and create logical file 	
-	def dependencyResolver
-	LogicalFile logicalFile
+	// configure SearchPathDependencyResolver
+	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
+	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.pli_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('pli_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
@@ -62,6 +48,9 @@ sortedList.each { buildFile ->
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
+
+	// Get logical file
+	LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -83,7 +72,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -104,14 +93,14 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
+					if (scanLoadModule && scanLoadModule.toBoolean())
+						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -249,7 +238,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
 			}
 		}
 	}
@@ -346,13 +335,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	return linkedit
 }
 
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
 
 boolean buildListContainsTests(List<String> buildList) {
 	boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('pli_testcase', buildFile).equals('true')}

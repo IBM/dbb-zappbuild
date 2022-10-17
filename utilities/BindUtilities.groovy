@@ -1,6 +1,6 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.build.*
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import groovy.transform.*
 import groovy.cli.commons.*

@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -11,12 +11,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field RepositoryClient repositoryClient
-
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -33,22 +28,15 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'assembler_
 sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
-	// configure dependency resolution and create logical file 	
-	def dependencyResolver
-	LogicalFile logicalFile
+	// Configure dependency resolution
+	String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
+	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.assembler_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('assembler_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
-	
-	// copy build file and dependency files to data sets
+	// Copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildFile, props.assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
+
+	// Create logical file
+	LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -75,7 +63,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
 			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
@@ -93,7 +81,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
@@ -106,7 +94,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 		else {
 			// if this program needs to be link edited . . .
@@ -119,15 +107,15 @@ sortedList.each { buildFile ->
 					String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 				}
 				else {
 					// only scan the load module if load module scanning turned on for file
 					if(!props.userBuild){
 						String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-						if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient()) {
+						if (scanLoadModule && scanLoadModule.toBoolean()) {
 							String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile, repositoryClient)
+							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 						}
 					}
 				}
@@ -308,7 +296,8 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.MODGEN).options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		assembler.dd(new DDStatement().dsn(props.SDFHMAC).options("shr"))
-	//if (buildUtils.isSQL(logicalFile))
+	if (buildUtils.isSQL(logicalFile))
+		assembler.dd(new DDStatement().dsn("DBC0CFG.DB2.V12.SDSNSAMP").options("shr"))
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
@@ -368,11 +357,5 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 	return linkedit
-}
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-	return repositoryClient
 }
 
