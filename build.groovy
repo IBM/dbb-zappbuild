@@ -248,9 +248,9 @@ options:
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
 	// web application credentials (overrides properties in build.properties)
-	cli.url(longOpt:'url', args:1, 'Db2 URL for MetadataStore')
-	cli.id(longOpt:'id', args:1, 'Db2 id for MetadataStore')
-	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility)')
+	cli.url(longOpt:'url', args:1, 'Db2 URL for the MetadataStore')
+	cli.id(longOpt:'id', args:1, 'Db2 id for the MetadataStore')
+	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
 	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing Db2 password')
 
 	// IDz/ZOD User build options
