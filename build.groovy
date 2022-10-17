@@ -30,11 +30,10 @@ println("\n** Build start at $props.startTime")
 // initialize build
 initializeBuildProcess(args)
 
-// create build list and list of deletedFiles
+// create build list
 List<String> buildList = new ArrayList() 
-List<String> deletedFiles = new ArrayList()
 
-(buildList, deletedFiles) = createBuildList()
+buildList = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
@@ -66,15 +65,6 @@ else {
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
 		impactUtils.scanOnlyStaticDependencies(buildList)
-	}
-}
-
-// document deletions in build report
-if (deletedFiles.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
-	println("** Document deleted files in Build Report.")
-	if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
-		buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
-		buildReportUtils.processDeletedFilesList(deletedFiles)
 	}
 }
 
@@ -599,24 +589,19 @@ def createBuildList() {
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && metadataStore){
-
-		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
-			if (buildSet && changedFiles) {
-				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-				impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
-			}
-			else if(buildSet) {
-				println "** Perform analysis and reporting of external impacted files for the build list."
-				impactUtils.reportExternalImpacts(buildSet)
-			}
-		} else{
-			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (buildSet && changedFiles) {
+			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
+			impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
+		}
+		else if(buildSet) {
+			println "** Perform analysis and reporting of external impacted files for the build list."
+			impactUtils.reportExternalImpacts(buildSet)
 		}
 	}
 	
 	// Document and validate concurrent changes
-	if (metadataStore && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
 		impactUtils.calculateConcurrentChanges(buildSet)
 	}
@@ -630,7 +615,7 @@ def createBuildList() {
 		}
 	}
 
-	return [buildList, deleteList]
+	return buildList
 }
 
 

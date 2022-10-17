@@ -26,6 +26,9 @@ def createImpactBuildList() {
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
+	Set<String> buildSet = new HashSet<String>()
+	
+	boolean calculatedChanges = true 
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult()
@@ -36,96 +39,49 @@ def createImpactBuildList() {
 	}
 	else {
 		// else create a fullBuild list
-		println "*! No prior build result located.  Building all programs"
+		println "*! No prior build result located.  Creating a full build list."
 		changedFiles = buildUtils.createFullBuildList()
+		buildSet = changedFiles
+		
+		// skip impact calculation and return the generated build list
+		calculatedChanges = false
 	}
 
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
-	// create build list using impact analysis
-	if (props.verbose) println "*** Perform impacted analysis for changed files."
 
-	Set<String> buildSet = new HashSet<String>()
-	Set<String> changedBuildPropertyFiles = new HashSet<String>()
-	
-	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-	
-	
-	changedFiles.each { changedFile ->
-		// if the changed file has a build script then add to build list
-		if (ScriptMappings.getScriptName(changedFile)) {
-			buildSet.add(changedFile)
-			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
-		}
+	if (calculatedChanges) {
 
-		// check if impact calculation should be performed, default true
-		if (shouldCalculateImpacts(changedFile)){
+		// create build list using impact analysis
+		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
-			// perform impact analysis on changed file
-			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
+		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
-			// get exclude list
-			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
-			
-			// Get impacted files using the SearchPathImpactFinder
-			String impactSearch = props.getFileProperty('impactSearch', changedFile)
-			def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
-			
-			impacts.each { impact ->
-				def impactFile = impact.getFile()
-				if (props.verbose) println "** Found impacted file $impactFile"
-				// only add impacted files that have a build script mapped to it
-				if (ScriptMappings.getScriptName(impactFile)) {
-					// only add impacted files, that are in scope of the build.
-					if (!matches(impactFile, excludeMatchers)){
-						
-						// calculate abbreviated gitHash for impactFile
-						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
-						}
-						
-						// add file to buildset
-						buildSet.add(impactFile)
-						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
-					}
-					else {
-						// impactedFile found, but on Exclude List
-						//   Possible reasons: Exclude of file was defined after building the collection.
-						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-						if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
-					}
-				}
+
+		changedFiles.each { changedFile ->
+			// if the changed file has a build script then add to build list
+			if (ScriptMappings.getScriptName(changedFile)) {
+				buildSet.add(changedFile)
+				if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
 			}
 
-		}else {
-			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
-		}
-	}
+			// check if impact calculation should be performed, default true
+			if (shouldCalculateImpacts(changedFile)){
 
-	// Perform impact analysis for property changes
-	if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-		if (props.verbose) println "*** Perform impacted analysis for property changes."
+				// perform impact analysis on changed file
+				if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
 
-		changedBuildProperties.each { changedProp ->
-
-			if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
-
-				// perform impact analysis on changed property
-				if (props.verbose) println "** Performing impact analysis on property $changedProp"
-
-				// create logical dependency and query collections for logical files with this dependency
-				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-				logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
-
-
-				// get excludeListe
+				// get exclude list
 				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
 
-				logicalFileList.each { logicalFile ->
-					def impactFile = logicalFile.getFile()
+				// list of impacts
+				String impactSearch = props.getFileProperty('impactSearch', changedFile)
+				def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
+				
+
+				impacts.each { impact ->
+					def impactFile = impact.getFile()
 					if (props.verbose) println "** Found impacted file $impactFile"
 					// only add impacted files that have a build script mapped to it
 					if (ScriptMappings.getScriptName(impactFile)) {
@@ -991,12 +947,12 @@ def verifyCollections() {
 
 }
 
-/* 
+/*
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
- *  
+ *
  *  returns null if file not found + mustExist
- *  
+ *
  *  scenarios / mode
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
@@ -1040,7 +996,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
 	// Scenario 4:
-	//    Repository name is used as application root directory and 
+	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
@@ -1071,7 +1027,7 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 
 /**
  *  shouldCalculateImpacts
- *  
+ *
  *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
  *   returns a boolean - default true
  */
