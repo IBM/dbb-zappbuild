@@ -136,8 +136,8 @@ build options:
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
  
 
-web application credentials
- -url,--url <arg>             DBB repository URL
+Db2 MetadataStore configuration options
+ -url,--url <arg>             Db2 URL for the MetadataStore
  -id,--id <arg>               DBB repository id
  -pw,--pw <arg>               DBB repository password
  -pf,--pwFile <arg>           Absolute or relative (from workspace) path to

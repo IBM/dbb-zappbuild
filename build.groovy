@@ -248,7 +248,7 @@ options:
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
 	// web application credentials (overrides properties in build.properties)
-	cli.url(longOpt:'url', args:1, 'Db2 URL for the MetadataStore')
+	cli.url(longOpt:'url', args:1, 'Db2 JDBC URL for the MetadataStore. Example: jdbc:db2:<Db2 server location>')
 	cli.id(longOpt:'id', args:1, 'Db2 id for the MetadataStore')
 	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
 	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing Db2 password')
