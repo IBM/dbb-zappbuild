@@ -116,8 +116,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
 		// set logical file in the dependency resolver if using deprecated API
-		if (dependencyResolver && (dependencyResolver instanceof DependencyResolver)) 
-			dependencyResolver.setLogicalFile(lfile) 
+		//dependencyResolver.setLogicalFile(lfile) 
 
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
