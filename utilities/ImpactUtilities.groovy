@@ -619,6 +619,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 
 	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
 
+
 	try {
 
 		if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
