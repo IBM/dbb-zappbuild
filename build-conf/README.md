@@ -50,6 +50,7 @@ generateDb2BindInfoRecord | Flag to control the generation of a generic DBB buil
 dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
 metadataStoreType | DBB MetadataStore Type configuration property. Valid options are 'file' or 'db2'. Default: file
+metadataStoreFileLocation | DBB File MetadataStore location. Default: $USER
 metadataStoreDb2Url | DBB configuration property for Db2 URL.  ***Can be overridden by build.groovy option -url, --url***
 metadataStoreDb2ConnectionConf | DBB configuration property for Db2 configuration properties file. 
 
