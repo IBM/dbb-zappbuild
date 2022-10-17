@@ -71,7 +71,6 @@ def createImpactBuildList() {
 			// Get impacted files using the SearchPathImpactFinder
 			String impactSearch = props.getFileProperty('impactSearch', changedFile)
 			def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
-			println(" ***** Impacts for changed file ${changedFile}: ${impacts.toString()}")
 			
 			impacts.each { impact ->
 				def impactFile = impact.getFile()
