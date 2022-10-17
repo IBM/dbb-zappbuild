@@ -30,11 +30,10 @@ println("\n** Build start at $props.startTime")
 // initialize build
 initializeBuildProcess(args)
 
-// create build list and list of deletedFiles
+// create build list
 List<String> buildList = new ArrayList() 
-List<String> deletedFiles = new ArrayList()
 
-(buildList, deletedFiles) = createBuildList()
+buildList = createBuildList()
 
 // build programs in the build list
 def processCounter = 0
@@ -66,15 +65,6 @@ else {
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
 		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
-	}
-}
-
-// document deletions in build report
-if (deletedFiles.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
-	println("** Document deleted files in Build Report.")
-	if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
-		buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
-		buildReportUtils.processDeletedFilesList(deletedFiles)
 	}
 }
 
@@ -457,8 +447,10 @@ def createBuildList() {
 
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
+	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
-
+	Set<String> renamedFiles = new HashSet<String>() // not yet used for any post-processing
+	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
 	// check if full build
@@ -470,7 +462,7 @@ def createBuildList() {
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		if (repositoryClient) {
-			(buildSet, deletedFiles) = impactUtils.createImpactBuildList(repositoryClient)		}
+			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(repositoryClient)		}
 		else {
 			println "*! Impact build requires a repository client connection to a DBB web application"
 		}
@@ -479,12 +471,12 @@ def createBuildList() {
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
 		if (repositoryClient) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, deletedFiles) = impactUtils.createMergeBuildList(repositoryClient)		}
+				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(repositoryClient)		}
 		else {
 			println "*! Merge build requires a repository client connection to a DBB web application"
 		}
 	}
-
+	
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {
 
@@ -514,9 +506,8 @@ def createBuildList() {
 	// now that we are done adding to the build list convert the set to a list
 	List<String> buildList = new ArrayList<String>()
 	buildList.addAll(buildSet)
-	buildSet = null
 
-	// 
+	// convert set of deleted files to a list 
 	List<String> deleteList = new ArrayList<String>()
 	deleteList.addAll(deletedFiles)
 	
@@ -535,7 +526,7 @@ def createBuildList() {
 	// write out list of deleted files (for documentation, not actually used by build scripts)
 	if (deletedFiles.size() > 0){
 		String deletedFilesListLoc = "${props.buildOutDir}/deletedFilesList.${props.buildListFileExt}"
-		println "** Writing lists of deleted files to $deletedFilesListLoc"
+		println "** Writing list of deleted files to $deletedFilesListLoc"
 		File deletedFilesListFile = new File(deletedFilesListLoc)
 		deletedFilesListFile.withWriter(enc) { writer ->
 			deletedFiles.each { file ->
@@ -558,8 +549,40 @@ def createBuildList() {
 		println "** Populating file level properties from individual property files."
 		buildUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
+	
+	// Perform analysis and build report of external impacts
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && repositoryClient){
 
-	return [buildList, deleteList]
+		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
+			if (buildSet && changedFiles) {
+				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
+				impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
+			}
+			else if(buildSet) {
+				println "** Perform analysis and reporting of external impacted files for the build list."
+				impactUtils.reportExternalImpacts(repositoryClient, buildSet)
+			}
+		} else{
+			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
+		}
+	}
+	
+	// Document and validate concurrent changes
+	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
+		println "** Calculate and document concurrent changes."
+		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
+	}
+	
+	// document deletions in build report
+	if (deleteList.size() != 0 && props.documentDeleteRecords && props.documentDeleteRecords.toBoolean()) {
+		println("** Document deleted files in Build Report.")
+		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) {
+			buildReportUtils = loadScript(new File("utilities/BuildReportUtilities.groovy"))
+			buildReportUtils.processDeletedFilesList(deleteList)
+		}
+	}
+
+	return buildList
 }
 
 
