@@ -11,9 +11,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field MetadataStore metadataStore
-
-@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -115,7 +113,7 @@ sortedList.each { buildFile ->
 					// only scan the load module if load module scanning turned on for file
 					if(!props.userBuild){
 						String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-						if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore()) {
+						if (scanLoadModule && scanLoadModule.toBoolean()) {
 							String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
 							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 						}
@@ -359,11 +357,5 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 	return linkedit
-}
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
 }
 

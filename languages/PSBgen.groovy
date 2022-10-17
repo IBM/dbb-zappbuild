@@ -7,7 +7,6 @@ import groovy.transform.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field MetadataStore metadataStore
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -232,11 +231,5 @@ def createACBgenCommand(String buildFile, String member, File logFile) {
 	acbgen.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 
 	return acbgen
-}
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
 }
 

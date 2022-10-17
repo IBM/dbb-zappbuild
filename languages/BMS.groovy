@@ -9,8 +9,6 @@ import groovy.transform.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 
-@Field MetadataStore metadataStore
-
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -148,12 +146,6 @@ def createLinkEditCommand(String buildFile, String member, File logFile) {
 	return linkedit
 }
 
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	
-	return metadataStore
-}
 
 
 

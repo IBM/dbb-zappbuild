@@ -12,7 +12,6 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field MetadataStore metadataStore
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
@@ -110,7 +109,7 @@ sortedList.each { buildFile ->
 				// only scan the load module if load module scanning turned on for file
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore())
+					if (scanLoadModule && scanLoadModule.toBoolean())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 				}
 			}
@@ -344,13 +343,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 		
 	return linkedit
-}
-
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
 }
 
 

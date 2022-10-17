@@ -29,8 +29,6 @@ import groovy.transform.*
 // Set to keep information about which datasets where already checked/created
 @Field HashSet<String> verifiedBuildDatasets = new HashSet<String>()
 
-@Field MetadataStore metadataStore
-
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -95,12 +93,5 @@ buildList.each { buildFile ->
 			buildUtils.updateBuildResult(errorMsg:errorMsg)
 		}
 	}
-}
-
-// internal methods
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
 }
 

@@ -7,7 +7,6 @@ import groovy.transform.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field MetadataStore metadataStore
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -159,8 +158,3 @@ def createDBDLinkEditCommand(String buildFile, String member, File logFile) {
 }
 
 
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
-}

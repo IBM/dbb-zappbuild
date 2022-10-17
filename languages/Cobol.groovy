@@ -14,7 +14,6 @@ import com.ibm.dbb.build.report.records.*
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
-@Field MetadataStore metadataStore
 	
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -104,7 +103,7 @@ sortedList.each { buildFile ->
 				if(!props.userBuild && !isZUnitTestCase){
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('cobol_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore())
+					if (scanLoadModule && scanLoadModule.toBoolean())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 				}
 			}
@@ -378,14 +377,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 
 	return linkedit
-}
-
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-
-	return metadataStore
 }
 
 boolean buildListContainsTests(List<String> buildList) {

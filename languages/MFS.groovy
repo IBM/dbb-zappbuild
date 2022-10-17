@@ -9,7 +9,6 @@ import groovy.transform.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field MetadataStore metadataStore
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -144,10 +143,4 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 	mfsPhase2.copy(new CopyToHFS().ddName("UTPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 	
 	return mfsPhase2
-}
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
 }

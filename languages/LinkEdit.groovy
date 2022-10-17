@@ -9,7 +9,6 @@ import groovy.transform.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field MetadataStore metadataStore
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -57,7 +56,7 @@ sortedList.each { buildFile ->
 		if(!props.userBuild){
 			// only scan the load module if load module scanning turned on for file
 			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
-			if (scanLoadModule && scanLoadModule.toBoolean() && getMetadataStore())
+			if (scanLoadModule && scanLoadModule.toBoolean())
 				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 		}
 	}
@@ -112,14 +111,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding))
 
 	return linkedit
-}
-
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-
-	return metadataStore
 }
 
 
