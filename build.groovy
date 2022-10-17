@@ -170,7 +170,7 @@ def initializeBuildProcess(String[] args) {
 			System.exit(1)
 		}
 
-		if (props.verbose) println "** ${props.metadataStoreType} MetadataStore initialized"
+		if (props.verbose) println "** ${props.metadataStoreType.capitalize()} MetadataStore initialized"
 	}
 
 	// handle -r,--reset option
