@@ -137,11 +137,11 @@ build options:
  
 
 Db2 MetadataStore configuration options
- -url,--url <arg>             Db2 URL for the MetadataStore
- -id,--id <arg>               DBB repository id
- -pw,--pw <arg>               DBB repository password
- -pf,--pwFile <arg>           Absolute or relative (from workspace) path to
-                              file containing DBB password
+ -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
+                              Example: jdbc:db2:<Db2 server location>
+ -id,--id <arg>               Db2 user id for the MetadataStore
+ -pw,--pw <arg>               Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+ -pf,--pwFile <arg>           Absolute or relative (from workspace) path to file containing Db2 password
 
 IDz/ZOD User Build options
  -u,--userBuild               Flag indicating running a user build
