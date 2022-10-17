@@ -48,7 +48,7 @@ def createImpactBuildList() {
 	}
 
 	// scan files and update source collection for impact analysis
-	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
+	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
 
 	if (calculatedChanges) {
@@ -77,7 +77,7 @@ def createImpactBuildList() {
 
 				// list of impacts
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
+				def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
 				
 
 				impacts.each { impact ->

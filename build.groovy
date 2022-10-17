@@ -592,18 +592,18 @@ def createBuildList() {
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-			impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
+			impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
 		}
 		else if(buildSet) {
 			println "** Perform analysis and reporting of external impacted files for the build list."
-			impactUtils.reportExternalImpacts(repositoryClient, buildSet)
+			impactUtils.reportExternalImpacts(buildSet)
 		}
 	}
 	
 	// Document and validate concurrent changes
-	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
+		impactUtils.calculateConcurrentChanges(buildSet)
 	}
 	
 	// document deletions in build report
