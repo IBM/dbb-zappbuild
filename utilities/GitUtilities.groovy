@@ -1,11 +1,11 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 /*
  * Tests if directory is in a local git repository
@@ -25,7 +25,7 @@ def isGitDir(String dir) {
 	if (gitError) {
 		String warningMsg = "*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError"
 		println(warningMsg)
-		updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
+		updateBuildResult(warningMsg:warningMsg)
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
@@ -145,7 +145,7 @@ def getCurrentGitHash(String gitDir, boolean abbrev) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $gitError"
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		updateBuildResult(errorMsg:errorMsg)
 	}
 	return gitHash.toString().trim()
 }
@@ -260,7 +260,7 @@ def getChangedFiles(String cmd) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $git_error \n *! Attempting to parse unstable git command for changed files..."
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg,client:getRepositoryClient())
+		updateBuildResult(errorMsg:errorMsg)
 	}
 
 	for (line in git_diff.toString().split("\n")) {
@@ -383,21 +383,22 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 
 /** helper methods **/
 
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-	return repositoryClient
+def getMetadataStore() {
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
+	return metadataStore
 }
 
 /*
  * updateBuildResult - for git cmd related issues
  */
 def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, client:repoClient
+	// args : errorMsg / warningMsg
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	// update build results only in non-userbuild scenarios
-	if (args.client && !props.userBuild) {
-		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore && !props.userBuild) {
+		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
@@ -412,7 +413,5 @@ def updateBuildResult(Map args) {
 			// buildResult.setStatus(buildResult.WARNING)
 			buildResult.addProperty("warning", args.warningMsg)
 		}
-		// save result
-		buildResult.save()
 	}
 }

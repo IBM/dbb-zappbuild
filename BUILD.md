@@ -55,7 +55,7 @@ $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1
 ## Common User Build Invocation Examples
 **Build one program**
 
-Build a single program in a user build context. Does not require a repository client connection to the DBB WebApp.
+Build a single program in a user build context. Does not require use of the MetadataStore (filesystem or Db2)
 ```
 $DBB_HOME/bin/groovyz build.groovy --workspace /u/build/repos --application app1 --outDir /u/build/out --hlq BUILD.APP1 --userBuild app1/cobol/epsmpmt.cbl
 ```
@@ -136,12 +136,12 @@ build options:
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
  
 
-web application credentials
- -url,--url <arg>             DBB repository URL
- -id,--id <arg>               DBB repository id
- -pw,--pw <arg>               DBB repository password
- -pf,--pwFile <arg>           Absolute or relative (from workspace) path to
-                              file containing DBB password
+Db2 MetadataStore configuration options
+ -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
+                              Example: jdbc:db2:<Db2 server location>
+ -id,--id <arg>               Db2 user id for the MetadataStore
+ -pw,--pw <arg>               Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+ -pf,--pwFile <arg>           Absolute or relative (from workspace) path to file containing Db2 password
 
 IDz/ZOD User Build options
  -u,--userBuild               Flag indicating running a user build
@@ -173,7 +173,7 @@ utility options
 
 Build a single program in the application. 
 
-By leveraging `--userBuild` zAppBuild does not connect to the repositoryClient to the DBB WebApp and also does not store a build result.  
+By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.  
 
 ```
 groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq USER.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --userBuild --verbose MortgageApplication/cobol/epsnbrvl.cbl

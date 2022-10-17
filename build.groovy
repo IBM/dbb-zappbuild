@@ -1,6 +1,6 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.html.*
@@ -20,7 +20,7 @@ import groovy.cli.commons.*
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
-@Field RepositoryClient repositoryClient
+@Field MetadataStore metadataStore
 
 // start time message
 def startTime = new Date()
@@ -64,7 +64,7 @@ else {
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
-		impactUtils.scanOnlyStaticDependencies(buildList, repositoryClient)
+		impactUtils.scanOnlyStaticDependencies(buildList)
 	}
 }
 
@@ -88,8 +88,8 @@ if (props.error)
 def initializeBuildProcess(String[] args) {
 	if (props.verbose) println "** Initializing build process . . ."
 
-	// build properties initial set
-	populateBuildProperties(args)
+	def opts = parseArgs(args) // parse incoming options and arguments
+	populateBuildProperties(opts) // build properties initial set
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
@@ -103,31 +103,79 @@ def initializeBuildProcess(String[] args) {
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
 
-	// create a repository client for this script
-	if (props."dbb.RepositoryClient.url" && !props.userBuild) {
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-		println "** Repository client created for ${props.getProperty('dbb.RepositoryClient.url')}"
+	// create metadata store for this script
+	if (!props.userBuild) {
+		if (props.metadataStoreType == 'file')
+			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreLocation)
+		else if (props.metadataStoreType == 'db2') {
+			// Get ID
+			String id
+			if (opts.id)
+				id = opts.id
+
+			//Get password file or encrypted password from command line
+			String password
+			File passwordFile
+			if (opts.pf)  
+				passwordFile = new File(opts.pf)
+			else if (opts.pw)
+				password = opts.pw
+
+			if (props.metadataStoreDb2ConnectionConf) { // Db2 Configuration properties file
+			
+				// Check if the configuration properties file exists
+				File propertiesFile = new File(props.metadataStoreDb2ConnectionConf)
+				if (!propertiesFile.exists()) {
+					println("Db2 Connection Configuration property file does not exist: ${propertiesFile.getAbsolutePath()}\nPlease verify that the provided path is correct")
+					System.exit(1)
+				}
+				// Load properties file into Properties object
+				Properties db2ConnectionProps = new Properties()
+				db2ConnectionProps.load(propertiesFile)
+				
+				// Call correct Db2 MetadataStore constructor
+				if (passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(id, passwordFile, db2ConnectionProps)
+				else
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(id, password as String, db2ConnectionProps)
+			}
+			else { // Not using Db2 Config Properties file
+				
+				// Assert URL property is defined
+				if (!props.metadataStoreDb2Url) {
+					println("For Db2 MetadataStore, please define the metadataStoreDb2Url build property or pass '-url jdbc:db2:<Db2 server location>' on the command line." )
+					System.exit(1)
+				}
+				
+				/// Call correct Db2 MetadataStore constructor
+				if (passwordFile)
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, passwordFile)
+				else 
+					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, password as String)
+			}
+			
+		}
+		else {
+			println("Invalid MetadataStore Type: ${props.metadataStoreType}.\nOnly valid options for 'metadataStoreType' are 'file' and 'db2'.")
+			System.exit(1)
+		}
+
+		if (props.verbose) println "** ${props.metadataStoreType.capitalize()} MetadataStore initialized"
 	}
 
 	// handle -r,--reset option
 	if (props.reset && props.reset.toBoolean())  {
 		println("** Reset option selected")
-		if (props."dbb.RepositoryClient.url") {
-			repositoryClient = new RepositoryClient().forceSSLTrusted(true)
 
-			println("* Deleting collection ${props.applicationCollectionName}")
-			repositoryClient.deleteCollection(props.applicationCollectionName)
+		println("* Deleting collection ${props.applicationCollectionName}")
+		metadataStore.deleteCollection(props.applicationCollectionName)
 
-			println("* Deleting collection ${props.applicationOutputsCollectionName}")
-			repositoryClient.deleteCollection(props.applicationOutputsCollectionName)
+		println("* Deleting collection ${props.applicationOutputsCollectionName}")
+		metadataStore.deleteCollection(props.applicationOutputsCollectionName)
 
-			println("* Deleting build result group ${props.applicationBuildGroup}")
-			repositoryClient.deleteBuildResults(props.applicationBuildGroup)
-		}
-		else {
-			println("*! No repository client URL provided. Unable to reset!")
-		}
-
+		println("* Deleting build result group ${props.applicationBuildGroup}")
+		metadataStore.deleteBuildResults(props.applicationBuildGroup)
+	
 		System.exit(0)
 	}
 
@@ -138,22 +186,21 @@ def initializeBuildProcess(String[] args) {
 	// initialize build report
 	BuildReportFactory.createDefaultReport()
 
-	// initialize build result (requires repository connection)
-	if (repositoryClient) {
-		def buildResult = repositoryClient.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	// initialize build result (requires MetadataStore)
+	if (metadataStore) {
+		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		buildResult.setState(buildResult.PROCESSING)
 		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
 		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
 		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
 		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
 		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
-		buildResult.save()
-		props.buildResultUrl = buildResult.getUrl()
-		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}")
+
+		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
 	}
 
 	// verify/create/clone the collections for this build
-	impactUtils.verifyCollections(repositoryClient)
+	impactUtils.verifyCollections()
 }
 
 /*
@@ -181,7 +228,7 @@ options:
 	cli.i(longOpt:'impactBuild', 'Flag indicating to build only programs impacted by changed files since last successful build.')
 	cli.b(longOpt:'baselineRef',args:1,'Comma seperated list of git references to overwrite the baselineHash hash in an impactBuild scenario.')
 	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
-	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the DBB repository')
+	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 
 	// scan options
@@ -191,10 +238,10 @@ options:
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
 	// web application credentials (overrides properties in build.properties)
-	cli.url(longOpt:'url', args:1, 'DBB repository URL')
-	cli.id(longOpt:'id', args:1, 'DBB repository id')
-	cli.pw(longOpt:'pw', args:1,  'DBB repository password')
-	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing DBB password')
+	cli.url(longOpt:'url', args:1, 'Db2 JDBC URL for the MetadataStore. Example: jdbc:db2:<Db2 server location>')
+	cli.id(longOpt:'id', args:1, 'Db2 user id for the MetadataStore')
+	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
+	cli.pf(longOpt:'pwFile', args:1, 'Absolute or relative (from workspace) path to file containing Db2 password')
 
 	// IDz/ZOD User build options
 	cli.u(longOpt:'userBuild', 'Flag indicating running a user build')
@@ -249,10 +296,8 @@ options:
  * populateBuildProperties - loads all build property files, creates properties for command line
  * arguments and sets calculated propertied for he build process
  */
-def populateBuildProperties(String[] args) {
+def populateBuildProperties(def opts) {
 
-	// parse incoming options and arguments
-	def opts = parseArgs(args)
 	def zAppBuildDir =  getScriptDir()
 	props.zAppBuildDir = zAppBuildDir
 
@@ -356,11 +401,6 @@ def populateBuildProperties(String[] args) {
 		props.scanLoadmodules = 'true'
 	}
 
-	if (opts.url) props.url = opts.url
-	if (opts.id) props.id = opts.id
-	if (opts.pw) props.pw = opts.pw
-	if (opts.pf) props.pf = opts.pf
-
 	// set debug flag
 	if (opts.d) props.debug = 'true'
 
@@ -381,11 +421,9 @@ def populateBuildProperties(String[] args) {
 	// set buildframe options
 	if (opts.re) props.reportExternalImpacts = 'true'
 
-	// set DBB configuration properties
-	if (opts.url) props.'dbb.RepositoryClient.url' = opts.url
-	if (opts.id) props.'dbb.RepositoryClient.userId' = opts.id
-	if (opts.pw) props.'dbb.RepositoryClient.password' = opts.pw
-	if (opts.pf) props.'dbb.RepositoryClient.passwordFile' = opts.pf
+	// set Db2 URL configuration properties
+	if (opts.url) props.metadataStoreDb2Url = opts.url
+	// db2 id, password, and passwordFile are no longer properties
 
 	// set IDz/ZOD user build options
 	if (opts.e) props.errPrefix = opts.e
@@ -461,19 +499,19 @@ def createBuildList() {
 	// check if impact build
 	else if (props.impactBuild) {
 		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
-		if (repositoryClient) {
-			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList(repositoryClient)		}
+		if (metadataStore) {
+			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
-			println "*! Impact build requires a repository client connection to a DBB web application"
+			println "*! Impact build requires a Filesystem or Db2 MetadataStore"
 		}
 	}
 	else if (props.mergeBuild){
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
-		if (repositoryClient) {
+		if (metadataStore) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
-				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList(repositoryClient)		}
+				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList()		}
 		else {
-			println "*! Merge build requires a repository client connection to a DBB web application"
+			println "*! Merge build requires a Filesystem or Db2 MetadataStore"
 		}
 	}
 	
@@ -541,7 +579,7 @@ def createBuildList() {
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
-		impactUtils.updateCollection(buildList, null, null, repositoryClient)
+		impactUtils.updateCollection(buildList, null, null)
 	}
 	
 	// Loading file/member level properties from member specific properties files
@@ -551,26 +589,21 @@ def createBuildList() {
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean() && repositoryClient){
-
-		if (buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.3")) { // validate minimum dbbToolkitVersion
-			if (buildSet && changedFiles) {
-				println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-				impactUtils.reportExternalImpacts(repositoryClient, buildSet.plus(changedFiles))
-			}
-			else if(buildSet) {
-				println "** Perform analysis and reporting of external impacted files for the build list."
-				impactUtils.reportExternalImpacts(repositoryClient, buildSet)
-			}
-		} else{
-			println "*! Perform analysis and reporting of external impacted files requires at least IBM Dependency Based Build Toolkit version 1.1.3."
+	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+		if (buildSet && changedFiles) {
+			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
+			impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
+		}
+		else if(buildSet) {
+			println "** Perform analysis and reporting of external impacted files for the build list."
+			impactUtils.reportExternalImpacts(buildSet)
 		}
 	}
 	
 	// Document and validate concurrent changes
-	if (repositoryClient && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean() && repositoryClient){
+	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(repositoryClient, buildSet)
+		impactUtils.calculateConcurrentChanges(buildSet)
 	}
 	
 	// document deletions in build report
@@ -593,8 +626,8 @@ def finalizeBuildProcess(Map args) {
 	def buildResult = null
 
 	// update repository artifacts
-	if (repositoryClient) {
-		buildResult = repositoryClient.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore) {
+		buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 
 		// add git hashes for each build directory
 		List<String> srcDirs = []
@@ -618,7 +651,7 @@ def finalizeBuildProcess(Map args) {
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
-					def lastBuildResult= buildUtils.retrieveLastBuildResult(repositoryClient)
+					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
 						String baselineHash = lastBuildResult.getProperty(key)
 						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
@@ -637,8 +670,7 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
 		buildResult.setState(buildResult.COMPLETE)
 
-		// save updates
-		buildResult.save()
+
 
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
@@ -646,6 +678,10 @@ def finalizeBuildProcess(Map args) {
 		buildResultProps.each { buildResultPropName ->
 			buildReportRecord.addProperty(buildResultPropName, buildResult.getProperty(buildResultPropName))
 		}
+		// def buildResultProps = buildResult.getProperties()
+		// buildResultProps.each { name, value ->
+		// 	buildReportRecord.addProperty(name, value)
+		// }
 		buildReport.addRecord(buildReportRecord)
 	}
 
@@ -660,25 +696,22 @@ def finalizeBuildProcess(Map args) {
 	// create build report html file
 	def htmlOutputFile = new File("${props.buildOutDir}/BuildReport.html")
 	println "** Writing build report to ${htmlOutputFile}"
-	def htmlTemplate = null  // Use default HTML template.
-	def css = null       // Use default theme.
-	def renderScript = null  // Use default rendering.
-	def transformer = HtmlTransformer.getInstance()
-	transformer.transform(jsonOutputFile, htmlTemplate, css, renderScript, htmlOutputFile, buildReportEncoding)
+	buildReport.generateHTML(htmlOutputFile)
 
 
 	// attach build report & result
-	if (repositoryClient) {
+	if (metadataStore) {
 		buildReport.save(jsonOutputFile, buildReportEncoding)
+		// Save build report & build report data
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))
 		buildResult.setBuildReportData(new FileInputStream(jsonOutputFile))
-		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel} at ${props.buildResultUrl}"
-		buildResult.save()
+		println "** Updating build result BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}"
 	}
 
 	// print end build message
 	def endTime = new Date()
 	def duration = TimeCategory.minus(endTime, args.start)
+	//buildResult.setProperty("buildDuration", duration.toString())
 	def state = (props.error) ? "ERROR" : "CLEAN"
 	println("** Build ended at $endTime")
 	println("** Build State : $state")

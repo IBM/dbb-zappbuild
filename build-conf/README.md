@@ -49,10 +49,10 @@ documentDeleteRecords | Option determine if the build framework should document 
 generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property. 
 dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
-dbb.RepositoryClient.url | DBB configuration property for web application URL.  ***Can be overridden by build.groovy option -url, --url***
-dbb.RepositoryClient.userId | DBB configuration property for web application logon id.  ***Can be overridden by build.groovy option -id, --id***
-dbb.RepositoryClient.password | DBB configuration property for web application logon password.  ***Can be overridden by build.groovy option -pw, --pw***
-dbb.RepositoryClient.passwordFile | DBB configuration property for web application logon password file.  ***Can be overridden by build.groovy option -pf, --pf***
+metadataStoreType | DBB MetadataStore Type configuration property. Valid options are 'file' or 'db2'. Default: file
+metadataStoreFileLocation | DBB File MetadataStore location. Default: $USER
+metadataStoreDb2Url | DBB configuration property for Db2 URL.  ***Can be overridden by build.groovy option -url, --url***
+metadataStoreDb2ConnectionConf | DBB configuration property for Db2 configuration properties file. 
 
 ### dependencyReport.properties
 Properties used by the impact utilities to generate a report of external impacted files
