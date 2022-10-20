@@ -17,8 +17,9 @@ import com.ibm.dbb.build.report.records.*
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+if (buildUtils.useSearchPathAPI()) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
+	}
 	
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -46,7 +47,8 @@ sortedList.each { buildFile ->
 
 	// configure appropriate dependency resolver
 	def dependencyResolver
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.cobol_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+	if (buildUtils.useSearchPathAPI()) { // use new SearchPathDependencyResolver
+		buildUtils.assertBuildProperties("cobol_dependencySearch")
 		String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
 		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	} else { // use deprecated DependencyResolver
@@ -63,7 +65,7 @@ sortedList.each { buildFile ->
 
 	// get logical file
 	LogicalFile logicalFile
-	if (dependencyResolver instanceof SearchPathDependencyResolver) {
+	if (buildUtils.useSearchPathAPI()) {
 		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 	}
 	else {

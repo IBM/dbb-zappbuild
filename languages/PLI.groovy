@@ -16,8 +16,9 @@ import com.ibm.dbb.build.report.records.*
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+if (buildUtils.useSearchPathAPI()) {
+	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
+	}
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -44,16 +45,14 @@ sortedList.each { buildFile ->
 
 	// configure dependency resolution and create logical file 	
 	def dependencyResolver
-	LogicalFile logicalFile
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.pli_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+	if (buildUtils.useSearchPathAPI()) { // use new SearchPathDependencyResolver
+		buildUtils.assertBuildProperties("pli_dependencySearch")
 		String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
 		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 	} else { // use deprecated DependencyResolver
 		String rules = props.getFileProperty('pli_resolutionRules', buildFile)
 		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
 	}
 	
 	// copy build file and dependency files to data sets
@@ -61,6 +60,15 @@ sortedList.each { buildFile ->
 		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+	}
+	
+	// get logical file
+	LogicalFile logicalFile
+	if (buildUtils.useSearchPathAPI()) {
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	}
+	else {
+		logicalFile = dependencyResolver.getLogicalFile()
 	}
 
 	// create mvs commands
