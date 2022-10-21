@@ -924,7 +924,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
  * these to determine that this file gets rebuilt if a LINK dependency changes.
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile, RepositoryClient repositoryClient) {
-	if (repositoryClient) {
+	if (repositoryClient && !props.error) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
