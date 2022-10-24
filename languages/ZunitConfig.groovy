@@ -10,7 +10,6 @@ import groovy.xml.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
 @Field def resolverUtils
@@ -61,15 +60,6 @@ buildUtils.createLanguageDatasets(langQualifier)
 		logicalFile = dependencyResolver.getLogicalFile()
 	}
 
-	// get logical file
-	LogicalFile logicalFile
-	if (buildUtils.useSearchPathAPI()) {
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	}
-	else {
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
-	
 	// Parse the playback from the bzucfg file
 	boolean hasPlayback = false
  	LogicalDependency playbackFile
