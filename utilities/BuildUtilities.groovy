@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -115,7 +115,9 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		
+		// set logical file in the dependency resolver if using deprecated API
+		//dependencyResolver.setLogicalFile(lfile) 
+
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
 
@@ -155,23 +157,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	}
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
-		List<PhysicalDependency> physicalDependencies
-
-		if (dependencyResolver instanceof DependencyResolver) { // deprecated DependencyResolver
-			physicalDependencies = dependencyResolver.resolve()
-			if (props.verbose) {
-				println "*** Resolution rules for $buildFile:"
-
-				if (props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-					printResolutionRules(dependencyResolver.getResolutionRules())
-				} else {
-					dependencyResolver.getResolutionRules().each{ rule -> println rule }
-				}
-			}
-		} else if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-			resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
-			physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
-		}
+		
+		resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
+		List<PhysicalDependency> physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
+		
 
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
@@ -281,11 +270,11 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
  * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, logs[logName:logFile], client:repoClient
-
+	// args : errorMsg / warningMsg, logs[logName:logFile]
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// update build results only in non-userbuild scenarios
-	if (args.client && !props.userBuild) {
-		def buildResult = args.client.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (metadataStore && !props.userBuild) {
+		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return
@@ -313,8 +302,6 @@ def updateBuildResult(Map args) {
 			}
 		}
 
-		// save result
-		buildResult.save()
 	}
 }
 
@@ -322,48 +309,48 @@ def updateBuildResult(Map args) {
  * createDependencyResolver - Creates a dependency resolver using resolution rules declared
  * in a build or file property (json format).
  */
-def createDependencyResolver(String buildFile, String rules) {
-	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
+// def createDependencyResolver(String buildFile, String rules) {
+// 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
 
-	// create a dependency resolver for the build file
-	DependencyResolver resolver = new DependencyResolver().file(buildFile)
-			.sourceDir(props.workspace)
+// 	// create a dependency resolver for the build file
+// 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
+// 			.sourceDir(props.workspace)
 	
-	// add scanner if userBuild Dep File not provided, or not a user build
-	if (!props.userBuildDependencyFile || !props.userBuild)
-		resolver.setScanner(getScanner(buildFile))
+// 	// add scanner if userBuild Dep File not provided, or not a user build
+// 	if (!props.userBuildDependencyFile || !props.userBuild)
+// 		resolver.setScanner(getScanner(buildFile))
 
-	// add resolution rules
-	if (rules)
-		resolver.setResolutionRules(parseResolutionRules(rules))
+// 	// add resolution rules
+// 	if (rules)
+// 		resolver.setResolutionRules(parseResolutionRules(rules))
 
-	return resolver
-}
+// 	return resolver
+// }
 
-def parseResolutionRules(String json) {
-	List<ResolutionRule> rules = new ArrayList<ResolutionRule>()
-	JsonSlurper slurper = new groovy.json.JsonSlurper()
-	List jsonRules = slurper.parseText(json)
-	if (jsonRules) {
-		jsonRules.each { jsonRule ->
-			ResolutionRule resolutionRule = new ResolutionRule()
-			resolutionRule.library(jsonRule.library)
-			resolutionRule.lname(jsonRule.lname)
-			resolutionRule.category(jsonRule.category)
-			if (jsonRule.searchPath) {
-				jsonRule.searchPath.each { jsonPath ->
-					DependencyPath dependencyPath = new DependencyPath()
-					dependencyPath.collection(jsonPath.collection)
-					dependencyPath.sourceDir(jsonPath.sourceDir)
-					dependencyPath.directory(jsonPath.directory)
-					resolutionRule.path(dependencyPath)
-				}
-			}
-			rules << resolutionRule
-		}
-	}
-	return rules
-}
+// def parseResolutionRules(String json) {
+// 	List<ResolutionRule> rules = new ArrayList<ResolutionRule>()
+// 	JsonSlurper slurper = new groovy.json.JsonSlurper()
+// 	List jsonRules = slurper.parseText(json)
+// 	if (jsonRules) {
+// 		jsonRules.each { jsonRule ->
+// 			ResolutionRule resolutionRule = new ResolutionRule()
+// 			resolutionRule.library(jsonRule.library)
+// 			resolutionRule.lname(jsonRule.lname)
+// 			resolutionRule.category(jsonRule.category)
+// 			if (jsonRule.searchPath) {
+// 				jsonRule.searchPath.each { jsonPath ->
+// 					DependencyPath dependencyPath = new DependencyPath()
+// 					dependencyPath.collection(jsonPath.collection)
+// 					dependencyPath.sourceDir(jsonPath.sourceDir)
+// 					dependencyPath.directory(jsonPath.directory)
+// 					resolutionRule.path(dependencyPath)
+// 				}
+// 			}
+// 			rules << resolutionRule
+// 		}
+// 	}
+// 	return rules
+// }
 
 
 
@@ -535,20 +522,20 @@ def getLangPrefix(String scriptName){
 }
 
 /*
- * retrieveLastBuildResult(RepositoryClient)
+ * retrieveLastBuildResult()
  * returns last successful build result
  *
  */
-def retrieveLastBuildResult(RepositoryClient repositoryClient){
-
+def retrieveLastBuildResult(){
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// get the last build result
-	def lastBuildResult = repositoryClient.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	def lastBuildResult = metadataStore.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 
 	if (lastBuildResult == null && props.topicBranchBuild){
 		// if this is the first topic branch build get the main branch build result
 		if (props.verbose) println "** No previous successful topic branch build result. Retrieving last successful main branch build result."
 		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
-		lastBuildResult = repositoryClient.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+		lastBuildResult = metadataStore.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
 	}
 
 	if (lastBuildResult == null) {
@@ -614,9 +601,9 @@ def generateDb2InfoRecord(String buildFile){
 def validateDependencyFile(String buildFile, String depFilePath) {
 	String[] allowedEncodings = ["UTF-8", "IBM-1047"]
 	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
-	
+	depFilePath = getAbsolutePath(depFilePath)
 	// Load dependency file and verify existance
-	File depFile = new File(getAbsolutePath(depFilePath))
+	File depFile = new File(depFilePath)
 	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
 	
 	// Parse the JSON file
@@ -639,7 +626,9 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
 	}
 	// Validate depFileData.fileName == buildFile
-	assert getAbsolutePath(depFileData.fileName) == getAbsolutePath(buildFile) : "*! Dependency file mismatch: fileName does not match build file"
+	String buildFilePath = getAbsolutePath(buildFile)
+	String fileNamePath = getAbsolutePath(depFileData.fileName)
+	assert fileNamePath == buildFilePath : "*! Dependency file mismatch: The dependency file 'fileName' value does not match build file"
 	return depFileData // return the parsed JSON object
 }
 
@@ -701,29 +690,29 @@ def retrieveHFSFileEncoding(File file) {
  * Logs the resolution rules of the DependencyResolver in a table format
  * 
  */
-def printResolutionRules(List<ResolutionRule> rules) {
+// def printResolutionRules(List<ResolutionRule> rules) {
 
-	println("*** Configured resulution rules:")
+// 	println("*** Configured resulution rules:")
 	
-	// Print header of table
-	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
-	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
+// 	// Print header of table
+// 	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
+// 	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
 
-	// iterate over rules configured for the dependencyResolver
-	rules.each{ rule ->
-		searchPaths = rule.getSearchPath()
-		searchPaths.each { DependencyPath searchPath ->
-			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
-			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
-			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
-			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
-			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
-			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
-			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
+// 	// iterate over rules configured for the dependencyResolver
+// 	rules.each{ rule ->
+// 		searchPaths = rule.getSearchPath()
+// 		searchPaths.each { DependencyPath searchPath ->
+// 			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
+// 			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
+// 			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
+// 			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
+// 			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
+// 			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
+// 			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
 
-		}
-	}
-}
+// 		}
+// 	}
+// }
 
 /*
  * Logs information about the physical dependencies in a table format

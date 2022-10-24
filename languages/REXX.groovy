@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 
 
 // define script properties
@@ -7,12 +7,7 @@ import com.ibm.dbb.repository.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field RepositoryClient repositoryClient
-
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
+@Field def resolverUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
@@ -32,22 +27,15 @@ sortedList.each { buildFile ->
 	println "*** Building file $buildFile"
 
 	
-	// configure dependency resolution and create logical file
-	def dependencyResolver
-	LogicalFile logicalFile
-	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.rexx_dependencySearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('rexx_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
+	// configure dependency resolution and create logical file	
+	String dependencySearch = props.getFileProperty('rexx_dependencySearch', buildFile)
+	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, dependencyResolver)
+
+	// Get logical file
+	LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
@@ -76,7 +64,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -89,14 +77,14 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				if (!props.userBuild){
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('rexx_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
+					if (scanLoadModule && scanLoadModule.toBoolean())
+						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -241,10 +229,3 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	return linkedit
 }
 
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
