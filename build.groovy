@@ -167,14 +167,23 @@ def initializeBuildProcess(String[] args) {
 	if (props.reset && props.reset.toBoolean())  {
 		println("** Reset option selected")
 
-		println("* Deleting collection ${props.applicationCollectionName}")
-		metadataStore.deleteCollection(props.applicationCollectionName)
+		if (metadataStore.collectionExists(props.applicationCollectionName)) {
+			println("* Deleting collection ${props.applicationCollectionName}")
+			metadataStore.deleteCollection(props.applicationCollectionName)
+		}
+		else println("*! Collection ${props.applicationCollectionName} does not exist")
 
-		println("* Deleting collection ${props.applicationOutputsCollectionName}")
-		metadataStore.deleteCollection(props.applicationOutputsCollectionName)
+		if (metadataStore.collectionExists(props.applicationOutputsCollectionName)) {
+			println("* Deleting collection ${props.applicationOutputsCollectionName}")
+			metadataStore.deleteCollection(props.applicationOutputsCollectionName)
+		}
+		else println("*! Collection ${props.applicationOutputsCollectionName} does not exist")
 
-		println("* Deleting build result group ${props.applicationBuildGroup}")
-		metadataStore.deleteBuildResults(props.applicationBuildGroup)
+		if (metadataStore.listBuildResultGroups().contains(props.applicationBuildGroup)) {
+			println("* Deleting build result group ${props.applicationBuildGroup}")
+			metadataStore.deleteBuildResults(props.applicationBuildGroup)
+		}
+		else println("*! Build result group ${props.applicationBuildGroup} does not exist")
 	
 		System.exit(0)
 	}
