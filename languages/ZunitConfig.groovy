@@ -10,12 +10,11 @@ import groovy.xml.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 @Field RepositoryClient repositoryClient
 
 @Field def resolverUtils
 // Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
+if (buildUtils.useSearchPathAPI()) {
 	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
@@ -40,7 +39,8 @@ buildUtils.createLanguageDatasets(langQualifier)
 	// configure dependency resolution
 	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
+	if (buildUtils.useSearchPathAPI()) { // use new SearchPathDependencyResolver
+		buildUtils.assertBuildProperties("zunit_dependencySearch")
 		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
 		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
 	} else { // use deprecated DependencyResolver
@@ -49,12 +49,21 @@ buildUtils.createLanguageDatasets(langQualifier)
 	}
 	
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
+
+	// get logical file
+	LogicalFile logicalFile
+	if (buildUtils.useSearchPathAPI()) {
+		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	}
+	else {
+		logicalFile = dependencyResolver.getLogicalFile()
+	}
 
 	// Parse the playback from the bzucfg file
-	Boolean hasPlayback = false
-	String playback
-	(hasPlayback, playback) = getPlaybackFile(buildFile);
+	boolean hasPlayback = false
+ 	LogicalDependency playbackFile
+ 	(hasPlayback, playbackFile) = getPlaybackFile(logicalFile);
 	
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
@@ -80,7 +89,7 @@ jcl += """\
 	if (hasPlayback) { // bzucfg contains reference to a playback file
 		jcl +=
 		"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
-		"// DSN=${props.zunit_bzuplayPDS}(${playback}) \n"
+		"// DSN=${props.zunit_bzuplayPDS}(${playbackFile.getLname()}) \n"
 	} else { // no playbackfile referenced
 		jcl +=
 		"//REPLAY.BZUPLAY DD DUMMY   \n"
@@ -236,17 +245,17 @@ def getRepositoryClient() {
 }
 
 /*
- * returns containsPlayback, 
+ * returns the LogicalDependency of the playbackfile
  */
-def getPlaybackFile(String xmlFile) {
-	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
-	def parser = new XmlParser().parseText(xml)
-	if (parser.'runner:playback'.playbackFile.size()==0) return [false, null]
-	else {
-		String playbackFileName = parser.'runner:playback'.@moduleName[0]
-		return [true, playbackFileName]
-	}
-}
+def getPlaybackFile(LogicalFile logicalFile) {
+ 	// find playback file dependency
+ 	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
+ 		it.getLibrary() == "SYSPLAY"
+ 	}
+ 	if (playbackDependency) {
+ 		return [true, playbackDependency]
+ 	} 
+ }
 
 /**
  *  Parsing the result file and prints summary of the result

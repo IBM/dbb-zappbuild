@@ -57,9 +57,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		// create build list using impact analysis
 		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
-		Set<String> changedBuildPropertyFiles = new HashSet<String>()
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-
 
 		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
@@ -137,12 +135,12 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-
+	
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 			if (props.verbose) println "*** Perform impacted analysis for property changes."
 
-			changedBuildProperties.each { changedProp ->
+      changedBuildProperties.each { changedProp ->
 
 				if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
 
@@ -182,22 +180,9 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
-
-		// Perform analysis and build report of external impacts
-		if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-			if (props.verbose) println "*** Analyze and report external impacted files."
-			reportExternalImpacts(repositoryClient, changedFiles)
-		}
-
-		// Document and validate concurrent changes
-		if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-			if (props.verbose) println "*** Calculate and document concurrent changes."
-			calculateConcurrentChanges(repositoryClient, buildSet)
-		}
-
 	}
 
-	return [buildSet, deletedFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
 
@@ -231,40 +216,34 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		}
 	}
 
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
-	}
-
-	return [buildSet, deletedFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
 
 /*
  * calculateChangedFiles - method to caluclate the the changed files
- * 
+ *
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-/* 
- * calculateChangedFiles - 
- *   this method is used for zAppBuild built modes to 
- * 	  calculate changed files and 
+/*
+ * calculateChangedFiles -
+ *   this method is used for zAppBuild built modes to
+ * 	  calculate changed files and
  *    return a list of identified changed, renamed, deleted and modified build properties
- *  
- *  High-Level flow for 
- *   - impactBuild 
+ *
+ *  High-Level flow for
+ *   - impactBuild
  *  	parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
  *      	   obtains the baseline hash/es for the different referenced directories
  *             performs a git diff between current and baseline
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - impactBuild with baselineReference
  *      parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
@@ -272,7 +251,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and baselineReference
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - mergeBuild
  *      parms: no build result is passed to the method
  *      flow:  obtains current hash for directories
@@ -280,13 +259,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and mainBuildBranch
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - concurrentChangesAnalysis
  *      parms: no build result is passed to the method, calculateConcurrentChanges=true, gitReference containing the git configuration
  *      flow:  no calculation of baseline hash for the directories
  *             performs a git diff between HEAD and the passed gitReference
  *             calculates the correct offset from the git diff
- *    
+ *
  *   @return the set for changed, renamed, deleted and modified build properties to caller
  */
 
@@ -474,51 +453,6 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	]
 }
 
-/**
- * Method to calculate and report the changes between the current configuration and concurrent configurations;
- * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
- * 
- * Invokes method generateConcurrentChangesReports to produce the reports
- * 
- * @param repositoryClient
- * @param buildSet
- * 
- */
-def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-	
-		// initialize patterns
-		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
-	
-		// obtain all current remote branches
-		// TODO: Handle / Exclude branches from other repositories
-		Set<String> remoteBranches = new HashSet<String>()
-		props.applicationSrcDirs.split(",").each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-		}
-		
-		// Run analysis for each remoteBranch, which matches the configured criteria
-		remoteBranches.each { gitReference ->
-	
-			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
-	
-				Set<String> concurrentChangedFiles = new HashSet<String>()
-				Set<String> concurrentRenamedFiles = new HashSet<String>()
-				Set<String> concurrentDeletedFiles = new HashSet<String>()
-				Set<String> concurrentBuildProperties = new HashSet<String>()
-	
-				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-	
-				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
-	
-				// generate reports and verify for intersects
-				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
-	
-			}
-		}
-	
-	}
-
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
  * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
@@ -558,109 +492,52 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 	}
 }
 
-/*
- * Method to query the DBB collections with a list of changed files  
- * Configured through reportExternalImpacts* build properties
+
+
+/**
+ * Method to calculate and report the changes between the current configuration and concurrent configurations;
+ * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
+ *
+ * Invokes method generateConcurrentChangesReports to produce the reports
+ *
+ * @param repositoryClient
+ * @param buildSet
+ *
  */
-
-def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
-	// query external collections to produce externalImpactList
-
-	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
-	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
-
-	// caluclated and collect external impacts
-	changedFiles.each{ changedFile ->
-
-		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
-
-		if(matches(changedFile, fileMatchers)){
-
-			if (props.reportExternalImpactsAnalysisDepths == "simple"){
-				// Simple resolution without recursive resolution
-				String memberName = CopyToPDS.createMemberName(changedFile)
-
-				def ldepFile = new LogicalDependency(memberName, null, null);
-				repositoryClient.getAllCollections().each{ collection ->
-					String cName = collection.getName()
-					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-							def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-							def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
-							logicalFiles.each{ logicalFile ->
-								def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-								// if (props.verbose) println("*** $impactRecord")
-								externalImpactList.add(impactRecord)
-							}
-							collectionImpactsSetMap.put(cName, externalImpactList)
-						}
-					}
-					else{
-						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-					}
-				}
-			}
-			else if(props.reportExternalImpactsAnalysisDepths == "deep"){
-				// Recursive analysis to support nested scenarios
-
-				// Configure impact resolver
-				ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
-
-				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-				impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
-
-				repositoryClient.getAllCollections().each{ collection ->
-					String cName = collection.getName()
-					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-							impactResolver.addCollection(cName) // add collection of foreign application
-						}
-					}
-					else{
-						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-					}
-				}
-				// resolve external impacted files
-				def externalImpactedFiles = impactResolver.resolve()
-
-				// report scanning results
-				if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
-				externalImpactedFiles.each{ externalImpact ->
-					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
-					def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-					// if (props.verbose) println("*** $impactRecord")
-					externalImpactList.add(impactRecord)
-					collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
-				}
-			}
-			else {
-				println("*! build property reportExternalImpactsAnalysisDepths has in invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
+def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
+	
+		// initialize patterns
+		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
+	
+		// obtain all current remote branches
+		// TODO: Handle / Exclude branches from other repositories
+		Set<String> remoteBranches = new HashSet<String>()
+		props.applicationSrcDirs.split(",").each { dir ->
+			dir = buildUtils.getAbsolutePath(dir)
+			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
+		}
+		
+		// Run analysis for each remoteBranch, which matches the configured criteria
+		remoteBranches.each { gitReference ->
+	
+			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
+	
+				Set<String> concurrentChangedFiles = new HashSet<String>()
+				Set<String> concurrentRenamedFiles = new HashSet<String>()
+				Set<String> concurrentDeletedFiles = new HashSet<String>()
+				Set<String> concurrentBuildProperties = new HashSet<String>()
+	
+				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+	
+				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+	
+				// generate reports and verify for intersects
+				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
+	
 			}
 		}
-		else {
-			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
-		}
+	
 	}
-
-	// generate reports by collection / application
-	collectionImpactsSetMap.each{ entry ->
-		externalImpactList = entry.value
-		if (externalImpactList.size()!=0){
-			// write impactedFiles per application to build workspace
-			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
-			if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-			File impactListFile = new File(impactListFileLoc)
-			String enc = props.logEncoding ?: 'IBM-1047'
-			impactListFile.withWriter(enc) { writer ->
-				externalImpactList.each { file ->
-					// if (props.verbose) println file
-					writer.write("$file\n")
-				}
-			}
-		}
-	}
-
-}
 
 /*
  * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
@@ -748,6 +625,165 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 			}
 		}
 	}
+}
+
+/**
+ * Method to query the DBB collections with a list of files
+ * Configured through reportExternalImpacts* build properties
+ */
+
+def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
+	// query external collections to produce externalImpactList
+
+	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
+	Set<String> impactedFiles = new HashSet<String>()
+
+	List<String> externalImpactReportingList = new ArrayList()
+
+	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
+
+	try {
+
+		if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
+
+			// get directly impacted candidates first
+			if (props.verbose) println("*** Running external impact analysis for files ")
+
+			// calculate and collect external impacts
+			changedFiles.each{ changedFile ->
+
+				List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
+
+				// check that file is on reportExternalImpactsAnalysisFileFilter
+				if(matches(changedFile, fileMatchers)){
+
+					// get directly impacted candidates first
+					if (props.verbose) println("     $changedFile ")
+
+					externalImpactReportingList.add(changedFile)
+				}
+				else {
+					if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
+				}
+			}
+
+			if (externalImpactReportingList.size() != 0) {
+				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, repositoryClient, "***", "buildSet")
+
+
+				// get impacted files of idenfied impacted files
+				if (props.reportExternalImpactsAnalysisDepths == "deep") {
+					if (props.verbose) println("**** Running external impact analysis for identified external impacted files as dependent files of the initial set. ")
+					impactedFiles.each{ impactedFile ->
+						if (props.verbose) println("     $impactedFile ")
+
+					}
+					def impactsBin
+					(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, repositoryClient, "****", "impactSet")
+				}
+
+			}
+
+			// generate reports by collection / application
+			collectionImpactsSetMap.each{ entry ->
+				externalImpactList = entry.value
+				if (externalImpactList.size()!=0){
+					// write impactedFiles per application to build workspace
+					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+					if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+					File impactListFile = new File(impactListFileLoc)
+					String enc = props.logEncoding ?: 'IBM-1047'
+					impactListFile.withWriter(enc) { writer ->
+						externalImpactList.each { file ->
+							// if (props.verbose) println file
+							writer.write("$file\n")
+						}
+					}
+				}
+			}
+
+		}
+		else {
+			println("*! build property reportExternalImpactsAnalysisDepths has an invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
+		}
+
+	} catch (Exception e) {
+		println("*! (ImpactUtilities.reportExternalImpacts) Exception caught during reporting of external impacts. Build continues.")
+		println(e.getMessage())
+	}
+}
+
+/*
+ * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
+ */
+
+def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, RepositoryClient repositoryClient, String indentationMsg, String analysisMode) {
+
+	// local matchers to inspect files and collections
+	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
+
+	// local
+	List<LogicalDependency> logicalDependencies = new ArrayList()
+	
+	// will be returned
+	Set<String> impactedFiles = new HashSet<String>()
+
+	// creating a list logical dependencies
+	fileList.each{ file ->
+		// go after all the files passed in; assess the identified impacted files to skip analysis for files from an impactSet which are on the changed files
+		if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
+			String memberName = CopyToPDS.createMemberName(file)
+			def ldepFile = new LogicalDependency(memberName, null, null);
+			logicalDependencies.add(ldepFile)
+		}else {
+			// debug-output
+			// println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
+		}
+	}
+
+	if(logicalDependencies.size != 0) {
+
+		// iterate over collections
+		repositoryClient.getAllCollections().each{ collection ->
+			String cName = collection.getName()
+			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
+
+				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
+				// query dbb web app for files with all logicalDependencies
+				def logicalImpactedFiles = repositoryClient.getAllImpactedFiles([cName], logicalDependencies);
+
+				// API request unable to be processed
+				if (repositoryClient.getLastStatusCode() == 400 ) {
+					def exceptionMsg = "*!* (ImpactUtilities.calculateLogicalImpactedFiles) API to getAllImpactedFiles returned an error code (${repositoryClient.getLastStatusCode()}). Skipping calculation of external impacts. Please make sure the DBB Server is on 1.1.3 or later to be able to process the request."
+					throw new Exception(exceptionMsg)
+				}
+				
+				logicalImpactedFiles.each{ logicalFile ->
+					if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+					externalImpactList.add(impactRecord)
+					impactedFiles.add(logicalFile.getFile())
+				}
+				// adding updated record
+				collectionImpactsSetMap.put(cName, externalImpactList)
+
+			}
+			else{
+				// debug-output
+				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
+			}
+		}
+	}
+	else {
+		// debug-output
+		//if (props.verbose) println("Empty fileList")
+	}
+
+
+	return [
+		collectionImpactsSetMap,
+		impactedFiles
+	]
 }
 
 def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
@@ -885,7 +921,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
  * these to determine that this file gets rebuilt if a LINK dependency changes.
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile, RepositoryClient repositoryClient) {
-	if (repositoryClient) {
+	if (repositoryClient && !props.error) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
@@ -951,12 +987,12 @@ def verifyCollections(RepositoryClient repositoryClient) {
 
 }
 
-/* 
+/*
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
- *  
+ *
  *  returns null if file not found + mustExist
- *  
+ *
  *  scenarios / mode
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
@@ -1000,7 +1036,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
 	// Scenario 4:
-	//    Repository name is used as application root directory and 
+	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
@@ -1031,7 +1067,7 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 
 /**
  *  shouldCalculateImpacts
- *  
+ *
  *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
  *   returns a boolean - default true
  */
