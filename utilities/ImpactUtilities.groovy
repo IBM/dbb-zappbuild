@@ -52,14 +52,12 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	// scan files and update source collection for impact analysis
 	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
 
-
 	if (calculatedChanges) {
 
 		// create build list using impact analysis
 		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-
 
 		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
@@ -142,7 +140,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 			if (props.verbose) println "*** Perform impacted analysis for property changes."
 
-			changedBuildProperties.each { changedProp ->
+      changedBuildProperties.each { changedProp ->
 
 				if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
 
@@ -182,7 +180,6 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
-
 	}
 
 	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
