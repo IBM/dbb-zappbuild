@@ -274,12 +274,8 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	assembler.dd(new DDStatement().name("SYSPRINT").options(props.assembler_tempOptions))
 	assembler.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
-	// Write SYSLIN to temporary dataset if performing link edit
-	String doLinkEdit = props.getFileProperty('assembler_linkEdit', buildFile)
-	if (doLinkEdit && doLinkEdit.toBoolean())
-		assembler.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.assembler_tempOptions).pass(true))
-	else
-		assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
+	// define object dataset allocation
+	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
@@ -357,29 +353,24 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// linkEdit stream specified
 	if (linkEditStream) {
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-	} else { // dynamically add any required statements via SYSIN
-
-		// add mq stub according to file flags
-		if(buildUtils.isMQ(logicalFile)) {
-			// include mq stub program
-			// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
-			sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
-		}
+	} 
+	
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
 	}
 
-	// Define SYSIN dd
+	// Define SYSIN dd as instream data
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		 linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 
-	// Overwriting SYSLIN with SYSPIN, see
-	// dynalloc macro -- ddname list
-	// https://www.ibm.com/docs/en/zos/2.4.0?topic=facilities-invoking-binder-program-from-another-program
-	//
-	linkedit.dd(new DDStatement().name("SYSPIN").dsn("&&TEMPOBJ").options("SHR"))
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr'))
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
-	linkedit.setDdnames("SYSPIN,,SYSLMOD,SYSLIB,,SYSPRINT,,,,,,,,,,,,,")
 	
 	
 	// add a syslib to the linkedit command
