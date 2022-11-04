@@ -106,7 +106,7 @@ def initializeBuildProcess(String[] args) {
 	// create metadata store for this script
 	if (!props.userBuild) {
 		if (props.metadataStoreType == 'file')
-			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreLocation)
+			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreFileLocation)
 		else if (props.metadataStoreType == 'db2') {
 			// Get ID
 			String id
@@ -131,7 +131,7 @@ def initializeBuildProcess(String[] args) {
 				}
 				// Load properties file into Properties object
 				Properties db2ConnectionProps = new Properties()
-				db2ConnectionProps.load(propertiesFile)
+				db2ConnectionProps.load(new FileInputStream(propertiesFile))
 				
 				// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
