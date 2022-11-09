@@ -38,7 +38,7 @@ sortedList.each { buildFile ->
 
 	// configure SearchPathDependencyResolver
 	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
-	SearchPathDependencyResolver dependencyResolver = buildUtils.createSearchPathDependencyResolver(dependencySearch)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	
 	// copy build file and dependency files to data sets

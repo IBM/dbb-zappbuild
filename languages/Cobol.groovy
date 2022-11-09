@@ -40,7 +40,7 @@ sortedList.each { buildFile ->
 
 	// configure dependency resolution and create logical file	
 	String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
-	SearchPathDependencyResolver dependencyResolver = buildUtils.createSearchPathDependencyResolver(dependencySearch)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
