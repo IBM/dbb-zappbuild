@@ -11,7 +11,6 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -30,13 +29,13 @@ sortedList.each { buildFile ->
 
 	// Configure dependency resolution
 	String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
-	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+	SearchPatchDependencyResolver dependencyResolver = buildUtils.createSearchPathDependencyResolver(dependencySearch)
 	
 	// Copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildFile, props.assembler_srcPDS, 'assembler_dependenciesDatasetMapping', null ,dependencyResolver)
 
 	// Create logical file
-	LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)

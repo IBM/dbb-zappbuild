@@ -91,7 +91,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, Object dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, SearchPathDependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -115,8 +115,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		// set logical file in the dependency resolver if using deprecated API
-		//dependencyResolver.setLogicalFile(lfile) 
 
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
@@ -158,9 +156,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
 		
-		resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
-		List<PhysicalDependency> physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
-		
+		List<PhysicalDependency> physicalDependencies = resolveDependencies(dependencyResolver, buildFile)
 
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
@@ -305,6 +301,45 @@ def updateBuildResult(Map args) {
 	}
 }
 
+/**
+ * Method to create the logical file using SearchPathDependencyResolver
+ *
+ *  evaluates if it should resolve file flags for resolved dependencies
+ *
+ * @param spDependencyResolver
+ * @param buildFile
+ * @return logicalFile
+ */
+
+def createLogicalFile(SearchPathDependencyResolver spDependencyResolver, String buildFile) {
+	
+	LogicalFile logicalFile
+	
+	if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) {
+		// include resolved dependencies to define file flags of logicalFile
+		logicalFile = spDependencyResolver.resolveSubsystems(buildFile,props.workspace)
+	}
+	else {
+		logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+	}
+
+	return logicalFile
+
+}
+
+/**
+ * Method to execute dependency resolution based on configured SearchPathDependencyResolver
+ * 
+ * @return resolved list of physical dependencies
+ */
+
+def resolveDependencies(SearchPathDependencyResolver dependencyResolver, String buildFile) {
+	if (props.verbose) {
+		println "*** Resolution rules for $buildFile:"
+		println dependencyResolver.getSearchPath()
+	}
+	return dependencyResolver.resolveDependencies(buildFile, props.workspace)
+}
 
 /*
  * isCICS - tests to see if the program is a CICS program. If the logical file is false, then
