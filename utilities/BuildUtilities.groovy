@@ -305,54 +305,6 @@ def updateBuildResult(Map args) {
 	}
 }
 
-/*
- * createDependencyResolver - Creates a dependency resolver using resolution rules declared
- * in a build or file property (json format).
- */
-// def createDependencyResolver(String buildFile, String rules) {
-// 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
-
-// 	// create a dependency resolver for the build file
-// 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
-// 			.sourceDir(props.workspace)
-	
-// 	// add scanner if userBuild Dep File not provided, or not a user build
-// 	if (!props.userBuildDependencyFile || !props.userBuild)
-// 		resolver.setScanner(getScanner(buildFile))
-
-// 	// add resolution rules
-// 	if (rules)
-// 		resolver.setResolutionRules(parseResolutionRules(rules))
-
-// 	return resolver
-// }
-
-// def parseResolutionRules(String json) {
-// 	List<ResolutionRule> rules = new ArrayList<ResolutionRule>()
-// 	JsonSlurper slurper = new groovy.json.JsonSlurper()
-// 	List jsonRules = slurper.parseText(json)
-// 	if (jsonRules) {
-// 		jsonRules.each { jsonRule ->
-// 			ResolutionRule resolutionRule = new ResolutionRule()
-// 			resolutionRule.library(jsonRule.library)
-// 			resolutionRule.lname(jsonRule.lname)
-// 			resolutionRule.category(jsonRule.category)
-// 			if (jsonRule.searchPath) {
-// 				jsonRule.searchPath.each { jsonPath ->
-// 					DependencyPath dependencyPath = new DependencyPath()
-// 					dependencyPath.collection(jsonPath.collection)
-// 					dependencyPath.sourceDir(jsonPath.sourceDir)
-// 					dependencyPath.directory(jsonPath.directory)
-// 					resolutionRule.path(dependencyPath)
-// 				}
-// 			}
-// 			rules << resolutionRule
-// 		}
-// 	}
-// 	return rules
-// }
-
-
 
 /*
  * isCICS - tests to see if the program is a CICS program. If the logical file is false, then
