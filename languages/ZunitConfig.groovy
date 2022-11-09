@@ -11,7 +11,6 @@ import groovy.xml.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -34,7 +33,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 	
 	String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
-	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+	SearchPathDependency dependencyResolver = buildUtils.createSearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
