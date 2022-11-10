@@ -400,6 +400,44 @@ def isDLI(LogicalFile logicalFile) {
 }
 
 /*
+ * isMQ - tests to see if the program uses MQ. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isMQ(LogicalFile logicalFile) {
+	boolean isMQ = logicalFile.isMQ()
+	if (!isMQ) {
+		String isMQFlag = props.getFileProperty('isMQ', logicalFile.getFile())
+		if (isMQFlag)
+			isMQ = isMQFlag.toBoolean()
+	}
+
+	return isMQ
+}
+
+/*
+ * getMqStubInstruction -
+ *  returns include defintion for mq sub program for link edit
+ */
+def getMqStubInstruction(LogicalFile logicalFile) {
+	String mqStubInstruction
+	
+	if (isMQ(logicalFile)) {
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		if (isCICS(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQCSTUB)\n"
+		} else if (isDLI(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQQSTUB)\n"
+		} else {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"
+		}
+	} else {
+		println("*! (BuildUtilities.getMqStubInstruction) MQ file attribute for ${logicalFile.getFile()} is false.")	
+	}
+	
+	return mqStubInstruction
+}
+
+/*
  * getAbsolutePath - returns the absolute path of a relative (to workspace) file or directory
  */
 def getAbsolutePath(String path) {

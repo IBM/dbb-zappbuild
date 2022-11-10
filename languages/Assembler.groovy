@@ -250,25 +250,20 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	// add DD statements to the compile command
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 
-	// Pass different allocations
-	// Case: BATCH - allocation SYSIN
-	if (!buildUtils.isCICS(logicalFile) && !buildUtils.isSQL(logicalFile)) assembler.dd(new DDStatement().name("SYSIN").dsn("${assembler_srcPDS}($member)").options('shr'))
-	//	else assembler.dd(new DDStatement().name("SYSCIN").ddref("SYSIN"))
-
-	// Case: CICS - translator overwrite Ddnames
-	if (buildUtils.isCICS(logicalFile)) assembler.setDdnames("SYSLIN,,,SYSLIB,SYSPUNCH,,,,,,,,,,,,,,")
-	else if (buildUtils.isSQL(logicalFile)) assembler.setDdnames("SYSLIN,,,SYSLIB,SYSCIN,,,,,,,,,,,,,,")
+	// Pass different input allocations
+	if (buildUtils.isCICS(logicalFile)) {  	// Case: CICS - translator overwrite Ddnames
+		assembler.setDdnames("SYSLIN,,,SYSLIB,SYSPUNCH,,,,,,,,,,,,,,")
+	} else if (buildUtils.isSQL(logicalFile)) { // Case: Db2 - translator overwrite Ddnames
+		assembler.setDdnames("SYSLIN,,,SYSLIB,SYSCIN,,,,,,,,,,,,,,")
+	} else { // Case: Plain batch
+		assembler.dd(new DDStatement().name("SYSIN").dsn("${assembler_srcPDS}($member)").options('shr'))
+	}
 
 	assembler.dd(new DDStatement().name("SYSPRINT").options(props.assembler_tempOptions))
 	assembler.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
-
-	// Write SYSLIN to temporary dataset if performing link edit
-	String doLinkEdit = props.getFileProperty('assembler_linkEdit', buildFile)
-	if (doLinkEdit && doLinkEdit.toBoolean())
-		assembler.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.assembler_tempOptions).pass(true))
-	else
-		assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
+	// define object dataset allocation
+	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
@@ -297,6 +292,8 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	if (buildUtils.isCICS(logicalFile))
 		assembler.dd(new DDStatement().dsn(props.SDFHMAC).options("shr"))
 	//if (buildUtils.isSQL(logicalFile))
+	if (buildUtils.isMQ(logicalFile)) 		
+		assembler.dd(new DDStatement().dsn(props.SCSQMACS).options("shr"))
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
@@ -318,7 +315,9 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
  */
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parameters = props.getFileProperty('assembler_linkEditParms', buildFile)
-
+	String linkEditStream = props.getFileProperty('assembler_linkEditStream', buildFile)
+	
+	
 	// obtain githash for buildfile
 	String assembler_storeSSI = props.getFileProperty('assembler_storeSSI', buildFile)
 	if (assembler_storeSSI && assembler_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
@@ -328,14 +327,40 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
-
+	
 	// add DD statements to the linkedit command
 	String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
 	String deployType = buildUtils.getDeployType("assembler", buildFile, logicalFile)
 	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${assembler_loadPDS}($member)").options('shr').output(true).deployType(deployType))
+	
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.assembler_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
+	// Create linkEditInstream
+	String sysin_linkEditInstream = ''
+	// linkEdit stream specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	} 
+	
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
+	}
+
+	// Define SYSIN dd as instream data
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr'))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	
+	
 	// add a syslib to the linkedit command
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_objPDS).options("shr"))
 	// add custom concatenation
@@ -353,6 +378,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
+	
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 	return linkedit

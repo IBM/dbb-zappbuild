@@ -173,13 +173,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.pli_tempOptions))
 	}
 
-	// Write SYSLIN to temporary dataset if performing link edit
-	String doLinkEdit = props.getFileProperty('pli_linkEdit', buildFile)
-	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
-	if (linkEditStream == null && doLinkEdit && doLinkEdit.toBoolean())
-		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.pli_tempOptions).pass(true))
-	else
-		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	// define object dataset allocation
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -205,9 +200,13 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	
+	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
-		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SDFHPL1).options("shr"))
 	
+	if (buildUtils.isMQ(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SCSQPLIC).options("shr"))
+		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
 		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
@@ -264,6 +263,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String parms = props.getFileProperty('pli_linkEditParms', buildFile)
 	String linker = props.getFileProperty('pli_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('pli_linkDebugExit', buildFile)
+	
 
 	// obtain githash for buildfile
 	String pli_storeSSI = props.getFileProperty('pli_storeSSI', buildFile)
@@ -272,21 +273,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
-	// Create the link stream if needed
-	if ( linkEditStream != null ) {
-		def langQualifier = "linkedit"
-		buildUtils.createLanguageDatasets(langQualifier)
-		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
-		if (lnkFile.exists())
-			lnkFile.delete()
-
-		lnkFile << "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-		if (props.verbose)
-			println("Copying ${props.buildOutDir}/linkCard.lnk to ${props.linkedit_srcPDS}($member)")
-		new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
-
-	}
-
+	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
@@ -300,11 +287,36 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.pli_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.pli_tempOptions))
 
-	// add the link source code
-	if ( linkEditStream != null ) {
-		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
+	// Assemble linkEditInstream to define SYSIN as instreamData
+	String sysin_linkEditInstream = ''
+	
+	// appending configured linkEdit stream if specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	} 
+
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
 	}
 
+	// appending debug exit to link instructions
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
+
+	// Define SYSIN dd
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr'))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	
 	// add RESLIB
 	if ( props.RESLIB )
 		linkedit.dd(new DDStatement().name("RESLIB").dsn(props.RESLIB).options("shr"))
@@ -319,12 +331,16 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
+	
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
+		
 	// add dummy SYSDEFSD to avoid IEW2689W 4C40 DEFINITION SIDE FILE IS NOT DEFINED message from program binder
 	if (isZUnitTestCase)
 		linkedit.dd(new DDStatement().name("SYSDEFSD").options("DUMMY"))
