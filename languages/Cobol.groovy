@@ -13,7 +13,6 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 	
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
@@ -41,7 +40,7 @@ sortedList.each { buildFile ->
 
 	// configure dependency resolution and create logical file	
 	String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
-	def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
@@ -51,7 +50,7 @@ sortedList.each { buildFile ->
 	}
 
 	// Get logical file
-	LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
