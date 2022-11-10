@@ -74,7 +74,6 @@ assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
 assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
-assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 assembler_dependencySearch | Assembler dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 assembler_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 assembler_deployType | default deployType for build output | true
@@ -106,7 +105,6 @@ Application properties used by zAppBuild/language/Cobol.groovy
 Property | Description | Overridable
 --- | --- | ---
 cobol_fileBuildRank | Default Cobol program build rank. Used to sort Cobol build file sub-list. Leave empty. | true
-cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 cobol_dependencySearch | Cobol dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 cobol_compilerVersion | Default Cobol compiler version. | true
 cobol_compileMaxRC | Default compile maximum RC allowed. | true
@@ -153,7 +151,6 @@ Application properties used by zAppBuild/language/LinkEdit.groovy
 Property | Description | Overridable
 --- | --- | ---
 pli_fileBuildRank | Default PLI program build rank. Used to sort PLI program sub-list. Leave empty. | true
-pli_resolutionRules | PLI dependency resolution rules used to create a PLI dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 pli_dependencySearch | PLI dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 pli_compilerVersion | Default PLI compiler version. | true
 pli_compileMaxRC | Default compile maximum RC allowed. | true
@@ -254,7 +251,6 @@ Property | Description | Overridable
 zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
 zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
 zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
@@ -269,7 +265,6 @@ Property | Description | Overridable
 --- | --- | ---
 rexx_compileMaxRC | Default compile maximum RC allowed. | true
 rexx_linkEditMaxRC | Default link edit maximum RC allowed. | true
-rexx_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
 rexx_dependencySearch | Default REXX dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 rexx_compileParms | Default base compile parameters. | true
 rexx_compiler | Default REXX compiler | true
