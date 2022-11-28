@@ -805,9 +805,26 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
 			File fileLevelPropFile = new File(propertyFile)
 
+			// Define the setup for ext.properties overrides
+			def (pgextm, pgexta) = member.tokenize(".")
+			String propertyPropGrpFile = "${propertyFilePath}/${pgexta}.${propertyExtention}"
+			File fileLevelPropGrpFile = new File(propertyPropGrpFile)
+			
 			if (fileLevelPropFile.exists()) {
 				if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
 				InputStream propertyFileIS = new FileInputStream(propertyFile)
+				Properties fileLevelProps = new Properties()
+				fileLevelProps.load(propertyFileIS)
+
+				fileLevelProps.entrySet().each { entry ->
+					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
+					props.addFilePattern(entry.key, entry.value, buildFile)
+				}
+			} 
+			else if ((fileLevelPropGrpFile.exists()) && !(fileLevelPropFile.exists())) {
+				// if individual file.properties do not exist see if ext.properties overides (propgrp) exist
+				if (props.verbose) println "* Populating PropGrp property file $propertyPropGrpFile for $buildFile"
+				InputStream propertyFileIS = new FileInputStream(propertyPropGrpFile)
 				Properties fileLevelProps = new Properties()
 				fileLevelProps.load(propertyFileIS)
 
