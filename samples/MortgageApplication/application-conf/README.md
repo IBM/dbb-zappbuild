@@ -97,6 +97,6 @@ linkEdit_linkEditSyslibConcatenation | A comma-separated list of libraries to be
 ### languageDefinitionMapping.properties
 Sample Language Definition mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy 
 
-This contain the mapping of the files and their corresponding Language Definition properties file residing in zAppBuild/build-conf to override the default file properties.
-Example: The entry - `epsnbrvl.cbl=langDefProps01`, means the file properties of file epsnbrvl.cbl will be overridden by the properties mentioned in zAppBuild/build-conf/langDefProps01.properties
+This contain the mapping of the files and their corresponding Language Definition properties file residing in `zAppBuild/build-conf` to override the default file properties.
+Example: The entry - `epsnbrvl.cbl=langDefProps01`, means the file properties of file epsnbrvl.cbl will be overridden by the properties mentioned in `zAppBuild/build-conf/langDefProps01.properties`
 Note: To enable Language Definition mapping, the property `loadLanguageDefinitionProperties` should be enabled in application.properties or in file.properties.  

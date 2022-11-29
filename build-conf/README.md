@@ -290,4 +290,4 @@ transfer_outputDatasets | List of output datasets to document deletions ** Can 
 ### langDefProps01.properties
 Sample Language Definition properties used by dbb-zappbuild/utilities/BuildUtilities.groovy 
 
-This is a custom properties file to override file properties for a group of files, based on mapping defined in zAppBuild/samples/application-conf/languageDefinitionMapping.properties. Multiple Language Definition property files can be defined and mapped against different file groups in zAppBuild/samples/application-conf/languageDefinitionMapping.properties.
+This is a custom properties file to override file properties for a group of files, based on mapping defined in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`. Multiple Language Definition property files can be defined and mapped against different file groups in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`.
