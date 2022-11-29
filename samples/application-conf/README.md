@@ -25,6 +25,7 @@ skipImpactCalculationList | Files for which the impact analysis should be skippe
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual property files for a build file | true
+loadLanguageDefinitionProperties | Flag to enable the zAppBuild capability to load language definition properties for build files mapped in languageDefinitionMapping.properties | true
 propertyFilePath | relative path to folder containing individual property files | true
 propertyFileExtension | file extension for individual property files | true
 **Dependency and Impact resolution configuration** ||
@@ -282,3 +283,10 @@ Application properties used by zAppBuild/language/Transfer.groovy
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+
+### languageDefinitionMapping.properties
+Sample Language Definition mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy 
+
+This contain the mapping of the files and their corresponding Language Definition properties file residing in zAppBuild/build-conf to override the default file properties.
+Example: The entry - `epsnbrvl.cbl=langDefProps01`, means the file properties of file epsnbrvl.cbl will be overridden by the properties mentioned in zAppBuild/build-conf/langDefProps01.properties
+Note: To enable Language Definition mapping, the property `loadLanguageDefinitionProperties` should be enabled in application.properties or in file.properties.  
