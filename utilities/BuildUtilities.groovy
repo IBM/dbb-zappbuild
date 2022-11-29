@@ -769,14 +769,37 @@ def getShortGitHash(String buildFile) {
 def loadFileLevelPropertiesFromFile(List<String> buildList) {
 
 	buildList.each { String buildFile ->
+	    String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
+	    String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+	    String member = new File(buildFile).getName()
+	    
+	    // check for language definition group level overwrite
+	    if (props.loadLanguageDefinitionProperties && props.loadLanguageDefinitionProperties.toBoolean()) {
+	    	String languageDefinitionPropertyFileName = props."$member"
+	        if (languageDefinitionPropertyFileName != null) {
+	    			
+	    		// String languageDefinitionPropertyFilePath = getAbsolutePath(props.application) + "/${propertyFilePath}/${languageDefinitionPropertyFileName}.${propertyExtention}"					
+	    		String languageDefinitionPropertyFilePath = "${props.zAppBuildDir}/build-conf/${languageDefinitionPropertyFileName}.${propertyExtention}"
 
+	    		File languageDefinitionPropertyFile = new File(languageDefinitionPropertyFilePath)
+
+	    		if (languageDefinitionPropertyFile.exists()) {
+	    			loadProgramTypeProperties(languageDefinitionPropertyFilePath, buildFile)							
+	    		} else {
+	    			if (props.verbose) println "* No language definition property file found for $languageDefinitionPropertyFilePath. Build will take the defaults or already defined file properties for $buildFile."
+	    		}
+	    	   	
+	    	} else {
+	    		if (props.verbose) println "* No language definition property file defined for $buildFile"
+	    	}	    			
+	    	
+	    }
+	
 		// check for file level overwrite
 		loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
 		if (loadFileLevelProperties && loadFileLevelProperties.toBoolean()) {
 
-			String member = new File(buildFile).getName()
-			String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
-			String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+			
 			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
 			File fileLevelPropFile = new File(propertyFile)
 
@@ -789,6 +812,17 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 				fileLevelProps.entrySet().each { entry ->
 					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
 					props.addFilePattern(entry.key, entry.value, buildFile)
+					
+					// Check if there is a program type property
+					if (entry.key == "languageDefGroup") {
+						String languageDefGroupFilePath = getAbsolutePath(props.application) + "/${propertyFilePath}/${entry.value}.${propertyExtention}"
+						File languageDefGroupFile = new File(languageDefGroupFilePath)
+						if (languageDefGroupFile.exists()) {
+							loadProgramTypeProperties(languageDefGroupFilePath, buildFile)							
+						} else {
+							if (props.verbose) println "* No program type property file found for $languageDefGroupFilePath. Build will take the defaults or already defined file properties."
+						}
+					}					
 				}
 			} else {
 				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
@@ -797,3 +831,16 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	}
 }
 
+def loadProgramTypeProperties(String languageDefGroupFile, String buildFile) {
+	
+	if (props.verbose) println "* Populating language definition property file $languageDefGroupFile for $buildFile"
+	
+	InputStream languageDefGroupFileIS = new FileInputStream(languageDefGroupFile)
+	Properties languageDefProps = new Properties()
+	languageDefProps.load(languageDefGroupFileIS)
+	
+	languageDefProps.entrySet().each { entry ->
+	    if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
+	    props.addFilePattern(entry.key, entry.value, buildFile)
+	}
+}
