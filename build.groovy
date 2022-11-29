@@ -583,11 +583,6 @@ def createBuildList() {
 	}
 	
 	// Loading file/member level properties from member specific properties files
-	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") || props.loadFileLevelProperties) {
-		println "** Populating file level properties from individual property files."
-		buildUtils.loadFileLevelPropertiesFromFile(buildList)
-	}
-	// Loading file/member level properties from member specific properties files
 	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") 
 	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
 		|| (props.loadLanguageDefinitionProperties && props.loadLanguageDefinitionProperties.toBoolean())) {
