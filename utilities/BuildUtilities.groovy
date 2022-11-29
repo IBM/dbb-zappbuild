@@ -774,7 +774,8 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	    String member = new File(buildFile).getName()
 	    
 	    // check for language definition group level overwrite
-	    if (props.loadLanguageDefinitionProperties && props.loadLanguageDefinitionProperties.toBoolean()) {
+	    loadLanguageDefinitionProperties = props.getFileProperty('loadLanguageDefinitionProperties', buildFile)
+	    if (loadLanguageDefinitionProperties && loadLanguageDefinitionProperties.toBoolean()) {
 	    	String languageDefinitionPropertyFileName = props."$member"
 	        if (languageDefinitionPropertyFileName != null) {
 	    			
