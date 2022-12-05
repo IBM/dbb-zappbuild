@@ -16,7 +16,8 @@ This will be a file property merge, i.e. if both individual file property and la
 
 
 ### 1. Individual File Property
-The Individual File Property option can be enabled setting the property `loadFileLevelProperties` in `application-conf/application.properties` file as `true`.  To enable this option for a specific file/set of files the property `loadFileLevelProperties` needs to be set as true in `application-conf/file.properties` file. Below is a sample to enable Individual File Property for all the programs starting with `eps` and `lga` in `application-conf/file.properties` file.
+
+The Individual File Property option can be enabled setting the property `loadFileLevelProperties` in `application-conf/application.properties` file as `'true'`.  To enable this option for a specific file/set of files the property `loadFileLevelProperties` needs to be set as `'true'` in `application-conf/file.properties` file. Below is a sample to enable Individual File Property for all the programs starting with `'eps'` and `'lga'` in `application-conf/file.properties` file.
 
 `loadFileLevelProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl` 
 
@@ -26,11 +27,20 @@ This properties file needs to be created in the folder mentioned in `propertyFil
 
 The name of the properties file needs to have the entire file name including the extension i.e. the properties file for `epsmlist.cbl` needs to be `epsmlist.cbl.properties` and not `epsmlist.properties`.  
 
-The extension of the properties file needs to be mentioned in `propertyFileExtension` in `application-conf/application.properties` i.e. if `propertyFileExtension=properties`, the properties file extersion needs to be kept as `.properties`.
+The extension of the properties file needs to be mentioned in `propertyFileExtension` in `application-conf/application.properties` i.e. if `propertyFileExtension=properties`, the properties file extension needs to be kept as `properties`.
 
-Please refer sample properties file in [properties](../samples/MortgageApplication/properties) folder
-
-
+Add the individual file properties that needs to be added to the file in the properties file created for that file.  Please refer sample properties file - [epsmlist.cbl.properties](../samples/MortgageApplication/properties/epsmlist.cbl.properties).
 
 
-### 2. Language File Definition
+### 2. Language Definition Property
+
+The Language Definition Property option can be enabled setting the property `loadLanguageDefinitionProperties` in `application-conf/application.properties` file as `'true'`.  To enable this option for a specific file/set of files the property `loadLanguageDefinitionProperties` needs to be set as `'true'` in `application-conf/file.properties` file. Below is a sample to enable Individual File Property for all the programs starting with `'eps'` and `'lga'` in `application-conf/file.properties` file.
+
+`loadLanguageDefinitionProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl` 
+
+The Language Definition Property files need to be created in `build-conf` folder.  Add the file properties that needs tobe grouped together in the Language Definition Property files.  We can create multiple property files under `build-conf` folder.  Please refer sample properties file [langDefProps01.properties](../build-conf/langDefProps01.properties).  
+
+Create `languageDefinitionMapping.properties` file in `application-conf` folder and add the program file - property file mapping in the language definition mapping file. For example, the entry `epsnbrvl.cbl=langDefProps01` means the file `epsnbrvl.cbl` uses `build-conf/langDefProps01.properties` for file property override.  Please refer the sample language definition mapping file - [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties).
+
+The extension of the properties file needs to be mentioned in `propertyFileExtension` in `application-conf/application.properties` i.e. if `propertyFileExtension=properties`, the properties file extension needs to be kept as `properties`.
+
