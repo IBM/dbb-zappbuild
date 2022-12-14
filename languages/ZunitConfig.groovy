@@ -32,7 +32,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 	
 	String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
-	SearchPathDependency dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
 	buildUtils.copySourceFiles(buildFile, props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
