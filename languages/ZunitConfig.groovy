@@ -38,7 +38,7 @@ buildUtils.createLanguageDatasets(langQualifier)
 	buildUtils.copySourceFiles(buildFile, props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
 	// get logical file
-	LogicalFile logicalFile = dependencyResolver.getLogicalFile()
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 		
 	// get playback dependency for bzucfg file from logicalFile
 	boolean hasPlayback = false
