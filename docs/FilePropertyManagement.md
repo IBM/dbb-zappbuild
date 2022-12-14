@@ -1,5 +1,14 @@
 # File Property Management
 
+## Table of contents
+
+- [Introduction](#introduction)
+- [zAppBuild's hierarchy to configure the build parameters for application artifacts](#zappbuilds-hierarchy-to-configure-the-build-parameters-for-application-artifacts)
+- [1. DBB file property syntax](#1-dbb-file-property-syntax)
+- [2. Individual File Property](#2-individual-file-property)
+- [3. Language Definition Property](#3-language-definition-property)
+- [4. Default properties](#4-default-properties)
+
 ## Introduction
 
 Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. For example, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. This may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
@@ -89,8 +98,8 @@ An alternative way to define build properties for a subgroup of files leverages 
 
 This approach requires:
 
-* a mapping of build artifact to a language definition
-* a property file for the language definitions
+- a mapping of build artifact to a language definition
+- a property file for the language definitions
 
 The Language Definition Property approach can be enabled by setting the property `loadLanguageDefinitionProperties` in `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files the property, use the DBB file property syntax and set  `loadLanguageDefinitionProperties` set as `true` in the `application-conf/file.properties` file. Below is a sample to enable Language Definition Property for all programs starting with `eps` and `lga` in `application-conf/file.properties` file:
 
