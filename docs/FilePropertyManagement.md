@@ -2,12 +2,14 @@
 
 ## Table of contents
 
-- [Introduction](#introduction)
-- [zAppBuild's hierarchy to configure the build parameters for application artifacts](#zappbuilds-hierarchy-to-configure-the-build-parameters-for-application-artifacts)
-- [1. DBB file property syntax](#1-dbb-file-property-syntax)
-- [2. Individual File Property](#2-individual-file-property)
-- [3. Language Definition Property](#3-language-definition-property)
-- [4. Default properties](#4-default-properties)
+- [File Property Management](#file-property-management)
+  - [Table of contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [zAppBuild's hierarchy to configure the build parameters for application artifacts](#zappbuilds-hierarchy-to-configure-the-build-parameters-for-application-artifacts)
+  - [1. DBB file property syntax](#1-dbb-file-property-syntax)
+  - [2. Individual File Property](#2-individual-file-property)
+  - [3. Language Definition Property](#3-language-definition-property)
+  - [4. Default properties](#4-default-properties)
 
 ## Introduction
 
@@ -23,9 +25,9 @@ zAppBuild's implementation supports overriding the majority of build properties.
 
 zAppBuild leverages DBB's API and allows you to define build parameters on three different levels for each language script:
 
-  1. General defaults in corresponding the Language property files - for example, defining the compile options for building COBOL programs in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties)
-  2. A group definition, using a mapping to a language definition file to override the defaults using [application-conf/file.properties](../samples/application-conf/file.properties).
-  3. An individual file-level definition to override the parameters leveraging Dependency Based Builds file properties syntax.
+  1. General defaults in corresponding the Language property files - for example, defining the compile options for building COBOL programs in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties). The property keys make use of a language prefix, for COBOL programs this is `cobol_`.
+  2. A group definition, using a mapping to a language definition file to override the defaults, like [application-conf/languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties).
+  3. An individual file-level definition to override the parameters leveraging Dependency Based Builds file properties syntax using [application-conf/file.properties](../samples/application-conf/file.properties).
 
 In order to handle the above scenarios to override the default file properties for specific file or set of files, zAppBuild comes with various strategies that can be combined:
 
@@ -33,7 +35,7 @@ In order to handle the above scenarios to override the default file properties f
   2. *Language Definition mapping* - Allows you to override  build parameters for a group of mapped application artifacts
   3. *Individual file properties* - Allows you to override build parameters for individual files
 
-From highest to lowest, the order of precedence of adding the file property is:
+From highest to lowest, the order of precedence of evaluating the file property is:
 
   1. Individual file property
   2. Language Definition property
@@ -59,19 +61,19 @@ For merging file properties of this file-level override with the default setting
 cobol_compileParms=${cobol_compileParms},SOURCE :: **/cobol/epsnbrvl.cbl
 ```
 
-The file property path syntax also allows you to override the build parameters for a group of files using wildcards. For example, let's assusme that you are storing all CICS modules in `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all files in this subfolder. However, it is recommended not to store information about the build configuration within the layout of folders.
+The file property path syntax also allows you to override the a build parameter for a set of files using wildcards. For example, let's assume that you are storing all CICS modules in `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all COBOL files in this subfolder with the file extension `*.cbl`. However, it is recommended not to store information about the build configuration within the layout of folders, because an update would require to move files into different directories.
 
 ```properties
-isCICS = true :: **/cobol_cics/*epsmlist*.cbl
+isCICS = true :: **/cobol_cics/*.cbl
 ```
 
-The MortgageApplication sample contains a good sample of how the DBB file property can be used. Typically these overrides are defined in [application-conf/file.properties](../samples/MortgageApplication/application-conf/file.properties).
+The MortgageApplication sample contains a good sample of how the DBB file property can be used. Typically, these overrides are defined in [application-conf/file.properties](../samples/MortgageApplication/application-conf/file.properties).
 
 ## 2. Individual File Property
 
 The approach of using the DBB file property syntax might become cumbersome if you want to manage multiple property overrides for a given application artifact. To change the way of specifying the properties and manage multiple property overrides together for a given build artifact or set of build artifacts, you can enable zAppbuild to look for an individual properties file.
 
-This functionality to load properties from an individual properties file can be activated by setting the property `loadFileLevelProperties` in `application-conf/application.properties` file to `true`.  To enable this feature to look for a specific file or a subset of application artifacts, leverage a DBB file property in `application-conf/file.properties` file to set `loadFileLevelProperties` to `true`. Below is a sample to enable Individual File Property for all the programs starting with `eps` and `lga` in `application-conf/file.properties` file.
+This functionality to load properties from an individual properties file can be activated by setting the property `loadFileLevelProperties` in `application-conf/application.properties` file to `true`. To enable this feature to look for a specific file or a subset of application artifacts, leverage a DBB file property in `application-conf/file.properties` file to set `loadFileLevelProperties` to `true`. Below is a sample to enable Individual File Property for all the programs starting with `eps` and `lga` in `application-conf/file.properties` file.
 
 ```properties
 loadFileLevelProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl` 
@@ -79,7 +81,7 @@ loadFileLevelProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl`
 
 Individual property files are resolved using the pattern `<propertyFilePath directory>/<sourceFile>.<propertyFileExtension>`. The `propertyFilePath` and `propertyFileExtension` can be customized in [application-conf/application.properties](../samples/MortgageApplication/application-conf/application.properties). For example, for the source file `epsmlist.cbl`, the process searches for a file in the propertyFilePath directory. If no corresponding property file is found, the build will use the default build values or, if any file properties were defined using the DBB file property path syntax, then the build will use those.
 
-Once the `loadFileLevelProperties` property is enabled, create a property file for each application artifact for which the Individual File Properties need to be defined. For example: to override file parameters for file `epsmlist.cbl` create the properties file `epsmlist.cbl.properties` in the defined folder. The name of the properties file needs to have the entire file name including the extension i.e. the properties file for `epsmlist.cbl` needs to be `epsmlist.cbl.properties` and not `epsmlist.properties`.
+Once the `loadFileLevelProperties` property functionality is enabled, create a property file for each application artifact for which the Individual File Properties need to be defined. For example: to override file parameters for file `epsmlist.cbl` create the properties file `epsmlist.cbl.properties` in the defined folder. The name of the properties file needs to have the entire file name including the extension i.e. the properties file for `epsmlist.cbl` needs to be `epsmlist.cbl.properties` and not `epsmlist.properties`.
 
 The individual properties file allows you to define build properties using the standard property syntax; for instance, in `epsmlist.cbl.properties`, you can define the following properties:
 
