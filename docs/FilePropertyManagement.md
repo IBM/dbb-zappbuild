@@ -14,11 +14,11 @@
 
 ## Introduction
 
-Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. Additionally, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. This may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
+Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. Additionally, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. An override may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
 
 In existing mainframe toolchains, this customization is performed by assigning a type to the application artifact. This *type* is often used to specify the build parameters and options for the entire **subgroup** of application artifacts. Obviously, it allows that an application program might have some individual overrides as well.
 
-Generally, think of these settings as either as a default value or an override of the build parameter for an application artifact.
+Generally, think of these settings as either as a default value or as an override of the build parameter for an application artifact.
 
 ## Overriding build properties with DBB and zAppBuild
 
@@ -36,8 +36,8 @@ zAppBuild comes with various strategies that can be combined via an order of pre
 
 ||Strategy|Use case|
 |-|-|-|
-|1.|Individual file properties|Override build parameters for individual files|
-|2.|Language definition mapping|Override  build parameters for a group of mapped application artifacts|
+|1.|Individual file properties|Override one or multiple build parameters for individual files|
+|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|
 |3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|
 |4.|Default properties|General build properties used when no overrides are defined|
 
@@ -49,9 +49,11 @@ To understand the order of precedence, think of this as a merge of the property 
 
 Default properties can be set in the corresponding language properties file.  For example, the COBOL file properties can be set in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties), while the Assembler file properties can be set in [application-conf/Assembler.properties](../samples/application-conf/Assembler.properties), and so on.
 
+zAppBuild is currently proposing to store these properties within the application repository and let the application team have control over these files. If you are looking for a more centralized way to manage the default options for all applications, you can move these definitions into the zAppBuild build framework itself by either merging them into the appropriate language property file under [build-conf](../build-conf/) or store them in a separate directory within zAppBuild itself and leverage the `applicationConfRootDir` property in [build-conf/build.propertiees](../build-conf/build.properties).
+
 ## Overriding properties
 
-The following section describes the various strategies to override the default value. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different needs to simplify migration by either leveraging an individual properties file per application artifact or by defining a language definition mapping.
+The following section describes the various strategies to override the default value. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different needs and requirement to simplify the adoption of zAppBuild by either leveraging an individual properties file per application artifact or by defining a language definition mapping.
 
 ### DBB file properties
 
