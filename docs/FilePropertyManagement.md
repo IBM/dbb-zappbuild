@@ -13,7 +13,7 @@
 
 Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. For example, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. This may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
 
-In existing mainframe toolchains, this customization is performed by assigning a type to the application artifact. This *type* is often used to specify the build parameters and options for the entire **subgroup** of application artifacts. Obviously, it allows that an application program might have some individual overwrites as well.
+In existing mainframe toolchains, this customization is performed by assigning a type to the application artifact. This *type* is often used to specify the build parameters and options for the entire **subgroup** of application artifacts. Obviously, it allows that an application program might have some individual overrides as well.
 
 ## zAppBuild's hierarchy to configure the build parameters for application artifacts
 
@@ -27,21 +27,16 @@ zAppBuild leverages DBB's API and allows you to define build parameters on three
   2. A group definition, using a mapping to a language definition file to override the defaults using [application-conf/file.properties](../samples/application-conf/file.properties).
   3. An individual file-level definition to override the parameters leveraging Dependency Based Builds file properties syntax.
 
-In order to handle the above scenarios to override the default file properties for specific file or set of files, zAppBuild comes with various strategies that can be combined:
+In order to handle the above scenarios to override the default file properties for specific file or set of files, zAppBuild comes with various strategies that can be combined via an order of precedence. The following table summarizes the strategies for overriding file properties from highest to lowest precedence:
 
-  1. *DBB file property syntax* - Allows you to override a single build parameter for individual files or a grouped list of application artifacts
-  2. *Language Definition mapping* - Allows you to override  build parameters for a group of mapped application artifacts
-  3. *Individual file properties* - Allows you to override build parameters for individual files
+||Strategy|Use case|
+|-|-|-|
+|1.|Individual file properties|Override build parameters for individual files|
+|2.|Language definition mapping|Override  build parameters for a group of mapped application artifacts|
+|3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|
+|4.|Default properties|General build properties used when no overrides are defined|
 
-From highest to lowest, the order of precedence of adding the file property is:
-
-  1. Individual file property
-  2. Language Definition property
-  3. Default properties
-
-If both Individual file property and Language Definition mapping is enabled for a file, then the individual file property will take precedence over language definition mapping.
-
-Think of this as a merge of the property configurations, i.e. if both individual file property and language definition mapping is configured for a file, then file properties defined through the individual file property definition take precedence, are merged with other properties defined by the language definition property and the default properties.
+To understand the order of precedence, think of this as a merge of the property configurations. For example, if both individual file properties and a language definition mapping are configured for a file, then the properties defined through the individual file property definition take precedence, but are also merged with other properties defined by the language definition mapping and the default properties.
 
 ## 1. DBB file property syntax
 
