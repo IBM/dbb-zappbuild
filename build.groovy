@@ -24,6 +24,7 @@ import groovy.cli.commons.*
 
 // start time message
 def startTime = new Date()
+buildOutputTime = startTime // Create a global of start time for build folder timestamp format
 props.startTime = startTime.format("yyyyMMdd.hhmmss.mmm")
 println("\n** Build start at $props.startTime")
 
@@ -446,7 +447,7 @@ def populateBuildProperties(def opts) {
 
 	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
 	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationBuildLabel = "build.${props.startTime}" as String
+	props.applicationBuildLabel = ("build." + ( (props.buildOutputTSformat) ? buildOutputTime.format("${props.buildOutputTSformat}") : "${props.startTime}" ) ) as String
 	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
