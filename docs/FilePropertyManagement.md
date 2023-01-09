@@ -106,7 +106,22 @@ With the above configuration, zAppBuild will import these properties and set the
 
 You can view a sample properties file, [epsmlist.cbl.properties](../samples/MortgageApplication/properties/epsmlist.cbl.properties), within the MortgageApplication sample.
 
-Please note that overriding the same build property using the DBB file property syntax using a group filter, may cause contingencies.
+**Note:** Overrides for a given build property should be managed either via the DBB file property path syntax or in the individual property files, but not both at the same time (as this can cause unpredictable behavior). The following example shows how both approaches for defining file properties can be combined to specify a set of build properties for the same source file:
+
+- Example using the DBB file property path syntax and individual property files to define build properties for a source file named `app/cobol/AB123456.cbl`:
+  - You can use the DBB file property path syntax to define a file property for a group of files. The below defines the `deployType` for all source files in the folder cobol beginning with `AB*` to be `BATCHLOAD`:
+
+    ```properties
+    cobol_deployType = BATCHLOAD :: **/cobol/AB*.cbl
+    ```
+
+  - At the same time, you can define an individual file property file for `app/cobol/AB123456.cbl` with the following *different* build property:
+
+    ```properties
+    cobol_compileParms = LIB,SOURCE
+    ```
+
+  - During the build, the file `app/cobol/AB123456.cbl` will have the `deployType` `BATCHLOAD` and the COBOL compile parameters `LIB` and `SOURCE`.
 
 ### Language Definition Mapping
 
