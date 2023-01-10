@@ -22,7 +22,7 @@ Generally, each build parameter for an application artifact will either have a d
 
 Dependency Based Build comes with its own [APIs](https://www.ibm.com/docs/api/v1/content/SS6T76_2.0.0/javadoc/index.html) to manage build properties, which extend the standard key-value pair strategy of *java.util.Properties*. DBB refers to the term *File properties* to allow overriding the corresponding default build properties using the DBB file property path syntax. See [IBM DBB Docs - Build properties](https://www.ibm.com/docs/en/dbb/latest?topic=apis-build-properties#file-properties) for more details about this syntax.
 
-The zAppBuild framework supports overriding the majority of DBB build properties. The full list can be viewed at [application-conf/README.md](../samples/application-conf/README.md).
+zAppBuild supports overriding the majority of build properties defined within its framework. The full list can be viewed at [application-conf/README.md](../samples/application-conf/README.md).
 
 zAppBuild leverages DBB's API and allows you to define build parameters on three different levels for each language script:
 
