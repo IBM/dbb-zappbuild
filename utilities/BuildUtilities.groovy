@@ -466,17 +466,25 @@ def relativizeFolderPath(String folder, String path) {
 }
 
 /*
- * getScannerInstantiates - returns the mapped scanner or default scanner
+ * getScanner() 
+ *  
+ *  returns the mapped scanner or null if build file is not mapped 
  */
 def getScanner(String buildFile){
-	if (props.runzTests && props.runzTests.toBoolean()) {
-		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
-		scanner = scannerUtils.getScanner(buildFile)
+	
+	def scanner = null
+	// check scannerMapping
+	def mapping = new PropertyMappings("dbb.scannerMapping")
+	if (mapping.isMapped("ZUnitConfigScanner", buildFile)) {
+		scanner = new ZUnitConfigScanner()
 	}
-	else {
-		if (props.verbose) println("*** Scanning file with the default scanner")
+	else if (mapping.isMapped("DependencyScanner", buildFile)){
 		scanner = new DependencyScanner()
+	} else {
+		if (props.verbose) println("*** No scanner specified for $buildFile")
 	}
+	
+	return scanner
 }
 
 /*

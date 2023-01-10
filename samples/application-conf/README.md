@@ -38,7 +38,7 @@ Location of file properties, script mappings and file-level property overrides. 
 Property | Description
 --- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
-dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+dbb.scannerMapping | DBB scanner mapping to define the scanner. Defaults are set in [build-conf/defaultApplicationSettings.properties](../../build-conf/defaultApplicationSettings.properties)
 isSQL | File property overwrite to indicate that a file requires to include SQL parameters
 isCICS | File property overwrite to indicate that a file requires to include CICS parameters
 isMQ | File property overwrite to indicate that a file requires to include MQ parameters

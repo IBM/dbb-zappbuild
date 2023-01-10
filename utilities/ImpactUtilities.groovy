@@ -825,11 +825,18 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// make sure file is not an excluded file
 		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
-			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
 
 			def scanner = buildUtils.getScanner(file)
 			try {
-				def logicalFile = scanner.scan(file, props.workspace)
+				def logicalFile
+				if (scanner != null) {
+					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
+					logicalFile = scanner.scan(file, props.workspace)
+				} else {
+					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
+					// New logical file with Membername, buildfile, language UNKN
+					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, "UNKN" , false, false, false)
+				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
 				// Update logical file with dependencies to build properties
@@ -840,7 +847,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 				// If configured, update test case program dependencies
 				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
 					// If the file is a zUnit configuration file (BZUCFG)
-					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+					if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 
 						def logicalDependencies = logicalFile.getLogicalDependencies()
 
