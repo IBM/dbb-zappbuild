@@ -834,8 +834,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					logicalFile = scanner.scan(file, props.workspace)
 				} else {
 					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
-					// New logical file with Membername, buildfile, language UNKN
-					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, "UNKN" , false, false, false)
+					// New logical file with Membername, buildfile, language set to file extension
+					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1), false, false, false)
 				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
