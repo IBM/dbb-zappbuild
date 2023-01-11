@@ -65,19 +65,21 @@ For example, to use a DBB file property to override the default COBOL compile pa
 cobol_compileParms=LIB,SOURCE :: **/cobol/epsnbrvl.cbl
 ```
 
-For merging the property value of this file-level override with the default COBOL compile parameters (rather than overriding them), you can specify the following syntax:
+For merging the property values of this file-level override with the default COBOL compile parameters (rather than just overriding them), you can specify the following syntax:
 
 ```properties
 cobol_compileParms=${cobol_compileParms},SOURCE :: **/cobol/epsnbrvl.cbl
 ```
 
-The file property path syntax also allows you to override the a build parameter for a set of files using wildcards. For example, let's assume that you are storing all CICS modules in the `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all COBOL files in this subfolder with the file extension `*.cbl`. However, it is recommended not to store information about the build configuration within the layout of folders, because an update would require to move files into different directories.
+The file property path syntax also allows you to override the a build parameter for a set of files using wildcards. For example, let's assume that you are storing all CICS modules in the `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all COBOL files in this subfolder with the file extension `*.cbl`.
 
 ```properties
 isCICS = true :: **/cobol_cics/*.cbl
 ```
 
-The MortgageApplication sample contains a good sample of how the DBB file property can be used. Typically, these overrides are defined in [application-conf/file.properties](../samples/MortgageApplication/application-conf/file.properties).
+- **Note:** We do not recommend organizing the layout of repository folders/files based on build property management, because future updates to the build information of a file could require it to be moved into different folders. Instead, we recommend that the repository's folder layout represent the functional context of the files.
+
+The MortgageApplication sample contains a good example of how the DBB file property can be used. Typically, these overrides are defined in [application-conf/file.properties](../samples/MortgageApplication/application-conf/file.properties).
 
 ### Individual File Property
 
