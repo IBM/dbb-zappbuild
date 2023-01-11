@@ -61,10 +61,8 @@ buildUtils.createLanguageDatasets(langQualifier)
 	}
 
 	// Parse the playback from the bzucfg file
-	boolean hasPlayback = false
- 	LogicalDependency playbackFile
- 	(hasPlayback, playbackFile) = getPlaybackFile(logicalFile);
-	
+ 	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
+	 
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
@@ -86,7 +84,7 @@ zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
 jcl += """\
 //  PARM=('$zunitParms')
 """
-	if (hasPlayback) { // bzucfg contains reference to a playback file
+	if (playbackFile != null) { // bzucfg contains reference to a playback file
 		jcl +=
 		"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
 		"// DSN=${props.zunit_bzuplayPDS}(${playbackFile.getLname()}) \n"
@@ -252,9 +250,7 @@ def getPlaybackFile(LogicalFile logicalFile) {
  	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
  		it.getLibrary() == "SYSPLAY"
  	}
- 	if (playbackDependency) {
- 		return [true, playbackDependency]
- 	} 
+	return  playbackDependency
  }
 
 /**
