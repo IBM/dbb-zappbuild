@@ -27,19 +27,21 @@ zAppBuild supports overriding the majority of build properties defined within it
 zAppBuild leverages DBB's API and allows you to define build parameters on three different levels for each language script:
 
 1. General defaults in the corresponding language property files: For example, you can define the compile options for building COBOL programs in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties). Property keys make use of a language prefix; for instance, COBOL property keys are prefixed with `cobol_`.
-2. A group definition that overrides the default in one of two ways:
-   - By using DBB's file property syntax and specifying the application artifact group via a pattern filter on the path name(s)
+2. A group definition that overrides the general default in one of two ways:
+   - By using DBB's file property syntax in [application-conf/file.properties](../samples/application-conf/file.properties), and specifying the application artifact group via a pattern filter on the path name(s)
    - By mapping to a language definition file to override the defaults, such as in [application-conf/languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties)
-3. An individual file-level definition to override a single parameter via Dependency Based Build's file properties syntax using [application-conf/file.properties](../samples/application-conf/file.properties) or multiple parameters for a specific file using the individual property file. For example: [epsmlist.cbl.properties](../samples/MortgageApplication/properties/epsmlist.cbl.properties).
+3. An individual file-level definition that overwrites the general default in one of two ways:
+   - By using DBB's file properties syntax in [application-conf/file.properties](../samples/application-conf/file.properties), and specifying the application artifact's path as the file path pattern
+   - By specifying multiple parameters for a specific file using the individual property file. For example: [epsmlist.cbl.properties](../samples/MortgageApplication/properties/epsmlist.cbl.properties).
 
 zAppBuild comes with various build property strategies that can be combined via an order of precedence. The following table summarizes the strategies for overriding file properties from highest to lowest precedence:
 
-||Strategy|Use case|
-|-|-|-|
-|1.|Individual file properties|Override one or multiple build parameters for individual files|
-|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|
-|3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|
-|4.|Default properties|General build properties used when no overrides are defined|
+|Precedence|Strategy|Use case|Implementation|
+|-|-|-|-|
+|1.|Individual file properties|Override one or multiple build parameters for individual files|DBB file property defining an override for the specific file[^1]|
+|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|DBB file property defining an override for the specific file(s)[^1]|
+|3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|DBB file property defining an override for the specific[^1]  or grouped list[^2] of application artifacts|
+|4.|Default properties|General build properties used when no overrides are defined|Build property defining the default value for all files|
 
 To understand the order of precedence, think of this as a merge of the property configurations. For example, if both individual file properties and a language definition mapping are configured for a file, then the properties defined through the individual file property definition take precedence, but are also merged with other properties defined by the language definition mapping and the default properties.
 
@@ -49,7 +51,10 @@ The following sections explain these build property strategies in more detail.
 
 Default properties can be set in the corresponding language properties file. For example, the COBOL file properties can be set in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties), while the Assembler file properties can be set in [application-conf/Assembler.properties](../samples/application-conf/Assembler.properties), and so on.
 
-zAppBuild is currently proposing to store these properties within the application repository and let the application team have control over these files. If you are looking for a more centralized way to manage the default options for all applications, you can move these definitions into the zAppBuild build framework itself by either merging them into the appropriate language property file under [build-conf](../build-conf/), or by storing them in a separate directory within zAppBuild itself and leveraging the `applicationConfRootDir` property in [build-conf/build.propertiees](../build-conf/build.properties).
+By default, zAppBuild applies the properties stored in the [application-conf](../samples/application-conf) folder of the application repository, which allows the application team to have control over these files. These property definitions in [application-conf](../samples/application-conf) take precedence over corresponding properties defined in the [build-conf](../build-conf/) folder. If you are looking for a more centralized way to manage the default options for all applications, you can move the relevant property definitions into the zAppBuild build framework itself by taking them out of the [application-conf](../samples/application-conf) folder, and then only storing them in one of the following locations:
+
+- In the appropriate language property file(s) under [build-conf](../build-conf/)
+- In a separate directory within zAppBuild itself, while using the applicationConfRootDir property in [build-conf/build.properties](../build-conf/build.properties)
 
 ## Overriding properties
 
@@ -57,7 +62,7 @@ The following section describes the various strategies to override default build
 
 ### DBB file properties
 
-The most common way to override a single build parameter makes use of the [DBB file property syntax](https://www.ibm.com/docs/en/dbb/latest?topic=apis-build-properties#file-properties).
+The most common way to override a single build parameter makes use of the [DBB file property syntax](https://www.ibm.com/docs/en/dbb/latest?topic=apis-build-properties#file-properties). This strategy can be applied to individual artifacts or groups of artifacts.
 
 For example, to use a DBB file property to override the default COBOL compile parameters for build artifact `MortgageApplication/cobol/epsnbrvl.cbl`, follow the DBB file property syntax in `file.properties`, which is the default property file for configuring file property overrides:
 
@@ -71,7 +76,7 @@ For merging the property values of this file-level override with the default COB
 cobol_compileParms=${cobol_compileParms},SOURCE :: **/cobol/epsnbrvl.cbl
 ```
 
-The file property path syntax also allows you to override the a build parameter for a set of files using wildcards. For example, let's assume that you are storing all CICS modules in the `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all COBOL files in this subfolder with the file extension `*.cbl`.
+In order to override the build parameter for a group of files, you can use wildcards when specifying the file path pattern in DBB's file property path syntax. For example, let's assume that you are storing all CICS modules in the `cobol_cics` subfolder. Using the following sample will ensure that the file flag `isCICS` is set to `true` for all COBOL files in this subfolder with the file extension `*.cbl`.
 
 ```properties
 isCICS = true :: **/cobol_cics/*.cbl
@@ -164,3 +169,6 @@ To map files to the language definition, create a `languageDefinitionMapping.pro
 See [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) for a sample language definition mapping file.
 
 This Language Definition Mapping implementation again leverages DBB's file property concept to define these settings only for the mapped files.
+
+[^1]: DBB is managing the DBB file properties in its separate internal table compared to the default properties. This table leverages the combination of [property name + file pattern] as the key of the internal table. When the same key is declared a second time, it overrides the first one.
+[^2]: Because of managing DBB file properties is done in a single table, you can experience unpredictable behaviour when mixing qualified file path pattern definitions and file path patterns containing wildcards for the same property name.
