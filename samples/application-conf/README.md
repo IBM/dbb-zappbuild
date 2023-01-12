@@ -285,17 +285,10 @@ Property | Description | Overridable
 transfer_deployType | deployType | true
 
 ### languageDefinitionMapping.properties
-Sample Language Definition mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy 
+Sample language definition mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
 
-This contain the mapping of the files and their corresponding Language Definition properties file residing in `zAppBuild/build-conf` to override the default file properties.
+This contains the mapping of the files and their corresponding Language Definition properties files residing in `zAppBuild/build-conf` to override the default file properties.
 
 Example: The entry - `epsnbrvl.cbl=langDefProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `zAppBuild/build-conf/langDefProps01.properties`
 
-Note: To enable Language Definition mapping, the property `loadLanguageDefinitionProperties` should be enabled in `application.properties` or in `file.properties`.  If both individual file property set by `loadFileLevelProperties` flag and language definition property is set for a file, then the individual file property will take precedence over language definition property. 
-
-The order of precedence of adding the file property is:
-  1. Individual file property 
-  2. Language Definition property 
-  3. Default file properties
-
-This will be a file property merge, i.e. if both individual file property and language definition property is set for a file, then file properties mentioned individual file property will be added to the file and those properties which are not mentioned in individual file property will be added from lower levels - Language Definition property and then from default file properties.
+See the [language definition mapping documentation](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md#language-definition-mapping) for more details on how to enable and use language definiton mapping.
