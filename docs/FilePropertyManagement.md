@@ -6,9 +6,9 @@
 - [Overriding build properties with DBB and zAppBuild](#overriding-build-properties-with-dbb-and-zappbuild)
 - [Default properties](#default-properties)
 - [Overriding properties](#overriding-properties)
-- [DBB file properties](#dbb-file-properties)
-- [Individual artifact properties file](#individual-artifact-properties-file)
-- [Language definition mapping](#language-definition-mapping)
+  - [DBB file properties](#dbb-file-properties)
+  - [Individual artifact properties file](#individual-artifact-properties-file)
+  - [Language definition mapping](#language-definition-mapping)
 
 ## Introduction
 
