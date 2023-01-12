@@ -56,6 +56,7 @@ zAppBuild comes with a set of reporting features. It helps development teams to 
 Folder/File | Description | Documentation Link
 --- | --- | ---
 build-conf | This folder contains global configuration properties used by build.groovy and language build scripts. | [build-conf/README.md](build-conf/README.md)
+docs | This folder contains supplemental documentation to help explain the implementation and usage of zAppBuild features. | [docs/README.md](docs/README.md)
 languages | This folder contains the language specific build scripts that are associated to build files via script mappings (see `samples/application-conf/files.properties`) and called by build.groovy. | [languages/README.md](languages/README.md)
 samples/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [samples/application-conf/README.md](samples/application-conf/README.md)
 samples/MortgageApplication | This is an updated version of the original [MortgageApplication](https://github.com/IBM/dbb/tree/master/Build/MortgageApplication) sample designed to be built by zAppBuild. | [samples/MortgageApplication/README.md](samples/MortgageApplication/README.md)
