@@ -136,8 +136,8 @@ An alternative way to define build properties for a **subgroup of files** is by 
 
 This approach consists of:
 
-- A mapping of the application artifact(s) to a language definition
-- For each language definition, a properties file defining that language definition's build parameters
+- Language definition mapping file: A mapping of the application artifact(s) to a language definition
+- Language definition properties file(s): For each language definition, a properties file defining that language definition's build parameters
 
 The "language definition mapping" approach can be enabled by setting the property `loadLanguageDefinitionProperties` in the `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files, use the DBB file property syntax and set  `loadLanguageDefinitionProperties` to `true` in the `application-conf/file.properties` file. Below is a sample to enable language definition mapping for all programs starting with `eps` and `lga` via the `application-conf/file.properties` file:
 
@@ -145,7 +145,7 @@ The "language definition mapping" approach can be enabled by setting the propert
 loadLanguageDefinitionProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl
 ```
 
-The language definition properties files need to be created in the `build-conf` folder. This will allow you to define file properties that support overriding in the Language Definition Property file. You can create multiple Language Definition Property files under `build-conf` folder to serve different variations or types. A sample Language Definition Property file can be found at [langDefProps01.properties](../build-conf/langDefProps01.properties).  
+Build properties for a language definition are specified in a language definition properties file, which should be created in the `build-conf` folder. This will allow you to define file properties that support overriding in the language definition properties file. You can implement multiple language definitions to serve different variations or types by creating multiple language definition properties files under the `build-conf` folder. A sample language definition properties file can be found at [langDefProps01.properties](../build-conf/langDefProps01.properties).  
 
 A language definition properties file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit those build properties. However, in the case of combining the language definition mapping with an individual artifact properties file override, for any build property that is defined in both places, the property definition in the individual artifact properties file will take precedence and be applied. Properties that are not specified in the individual artifact properties file will be defined by lower precedence strategies - that is, from the language definition mapping if defined there, or if not, then from the default file properties.
 

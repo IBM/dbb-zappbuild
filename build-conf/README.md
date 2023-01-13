@@ -288,6 +288,6 @@ transfer_srcOptions | BPXWDYN creation options for creating 'source' type data s
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets 
 
 ### langDefProps01.properties
-Sample Language Definition properties used by dbb-zappbuild/utilities/BuildUtilities.groovy 
+Sample language definition properties file used by dbb-zappbuild/utilities/BuildUtilities.groovy.
 
-This is a custom properties file to override file properties for a group of files, based on mapping defined in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`. Multiple Language Definition property files can be defined and mapped against different file groups in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`.
+This is a custom properties file to override file properties for a group of files, based on mapping defined in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`. Multiple language definition properties files can be defined and mapped against different file groups in `zAppBuild/samples/application-conf/languageDefinitionMapping.properties`.

@@ -787,11 +787,11 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	    		if (languageDefinitionPropertyFile.exists()) {
 	    			loadProgramTypeProperties(languageDefinitionPropertyFilePath, buildFile)							
 	    		} else {
-	    			if (props.verbose) println "* No language definition property file found for $languageDefinitionPropertyFilePath. Build will take the defaults or already defined file properties for $buildFile."
+	    			if (props.verbose) println "* No language definition properties file found for $languageDefinitionPropertyFilePath. Build will take the defaults or already defined file properties for $buildFile."
 	    		}
 	    	   	
 	    	} else {
-	    		if (props.verbose) println "* No language definition property file defined for $buildFile"
+	    		if (props.verbose) println "* No language definition properties file defined for $buildFile"
 	    	}	    			
 	    	
 	    }
@@ -834,7 +834,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 
 def loadProgramTypeProperties(String languageDefGroupFile, String buildFile) {
 	
-	if (props.verbose) println "* Populating language definition property file $languageDefGroupFile for $buildFile"
+	if (props.verbose) println "* Populating language definition properties file $languageDefGroupFile for $buildFile"
 	
 	InputStream languageDefGroupFileIS = new FileInputStream(languageDefGroupFile)
 	Properties languageDefProps = new Properties()
