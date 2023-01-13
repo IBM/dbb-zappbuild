@@ -1,4 +1,11 @@
-ebcdic
-pycodestyle
-pylint
-pytest
+# This is the minimum set of packages to install.
+# (Other dependencies will be automatically resolved.)
+mkdocs
+mkdocs-awesome-pages-plugin
+mkdocs-git-authors-plugin
+mkdocs-git-revision-date-localized-plugin
+mkdocs-macros-plugin
+mkdocs-material
+mkdocs-material-extensions
+mkdocs-minify-plugin
+pymdown-extensions
