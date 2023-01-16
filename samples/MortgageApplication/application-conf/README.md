@@ -30,7 +30,7 @@ Location of file properties, script mappings and file level property overrides. 
 Property | Description 
 --- | --- 
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
-dbb.scannerMapping | DBB scanner mapping to define the scanner. Defaults are set in [build-conf/defaultApplicationSettings.properties](../../../build-conf/defaultApplicationSettings.properties)
+dbb.scannerMapping | DBB scanner mapping to define the scanner. Specifying it here will override the defaults set in [build-conf/defaultApplicationSettings.properties](../../build-conf/defaultApplicationSettings.properties).
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
 ### BMS.properties
