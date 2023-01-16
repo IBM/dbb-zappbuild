@@ -62,6 +62,7 @@ Property | Description
 dbb.scannerMapping | DBB PropertyMapping specifying the scanner implementation to be used 
 continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
 createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
+buildOutputTSformat | Defines the build timestamp format for build output subfolder and build label.
 formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data on verbose output
 generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property.
 generateDb2BindInfoRecordProperties | Comma-separated list of the bind parameters to be added to the DBB build record.
