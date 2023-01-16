@@ -12,9 +12,9 @@
 
 ## Introduction
 
-Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. For example, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. An override may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
+This document explains how to define compiler and other options when building a program or subset of programs with zAppBuild. Building mainframe application programs requires configuring various parameters and options for the different build steps, such as the pre-compile, compile, or link-edit step. For example, an application can contain COBOL programs that need to be link edited with the option `NCAL` or without the option `NCAL` for different purposes. An override may be required for any build parameter for the various build steps like compile parameters, bind parameters, link edit parameters, and so on.
 
-In existing mainframe toolchains, this customization is performed by assigning a type to the application artifact. This *type* is often used to specify the build parameters and options for an entire **subgroup** of application artifacts. Additionally, it allows that an application program might have some individual overrides as well.
+In existing mainframe toolchains, this customization is performed by assigning a type to the application artifact[^1]. This *type* is often used to specify the build parameters and options for an entire **subgroup** of application artifacts. Additionally, it allows that an application program might have some individual overrides as well.
 
 Generally, each build parameter for an application artifact will either have a default value or an override of the default value.
 
@@ -38,9 +38,9 @@ zAppBuild comes with various build property strategies that can be combined via 
 
 |Precedence|Strategy|Use case|Implementation|
 |-|-|-|-|
-|1.|Individual artifact properties file|Override one or multiple build parameters for individual files|DBB file property defining an override for the specific file[^1]|
-|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|DBB file property defining an override for the specific file(s)[^1]|
-|3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|DBB file property defining an override for the specific[^1]  or grouped list[^2] of application artifacts|
+|1.|Individual artifact properties file|Override one or multiple build parameters for individual files|DBB file property defining an override for the specific file[^2]|
+|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|DBB file property defining an override for the specific file(s)[^2]|
+|3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|DBB file property defining an override for the specific[^2]  or grouped list[^3] of application artifacts|
 |4.|Default properties|General build properties used when no overrides are defined|Build property defining the default value for all files|
 
 To understand the order of precedence, think of this as a merge of the property configurations. For example, if both an individual artifact properties file and a language definition mapping are configured for a file, then the properties defined through the individual artifact properties file take precedence, but are also merged with other properties defined by the language definition mapping and the default properties.
@@ -168,5 +168,6 @@ To map files to a language definition, create a `languageDefinitionMapping.prope
 
 See [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) for a sample language definition mapping file.
 
-[^1]: DBB is managing the DBB file properties in its separate internal table compared to the default properties. This table leverages the combination of [property name + file pattern] as the key of the internal table. When the same key is declared a second time, it overrides the first one.
-[^2]: Because of managing DBB file properties is done in a single table, you can experience unpredictable behaviour when mixing qualified file path pattern definitions and file path patterns containing wildcards for the same property name.
+[^1]: The term "artifact" and "file" in this document refer to program source code that will built (as opposed to JCL or other non-buildable items), for example by DBB.
+[^2]: DBB is managing the DBB file properties in its separate internal table compared to the default properties. This table leverages the combination of [property name + file pattern] as the key of the internal table. When the same key is declared a second time, it overrides the first one.
+[^3]: Because of managing DBB file properties is done in a single table, you can experience unpredictable behaviour when mixing qualified file path pattern definitions and file path patterns containing wildcards for the same property name.
