@@ -813,17 +813,6 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 				fileLevelProps.entrySet().each { entry ->
 					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
 					props.addFilePattern(entry.key, entry.value, buildFile)
-					
-					// Check if there is a program type property
-					if (entry.key == "languageDefGroup") {
-						String languageDefGroupFilePath = getAbsolutePath(props.application) + "/${propertyFilePath}/${entry.value}.${propertyExtention}"
-						File languageDefGroupFile = new File(languageDefGroupFilePath)
-						if (languageDefGroupFile.exists()) {
-							loadProgramTypeProperties(languageDefGroupFilePath, buildFile)							
-						} else {
-							if (props.verbose) println "* No program type property file found for $languageDefGroupFilePath. Build will take the defaults or already defined file properties."
-						}
-					}					
 				}
 			} else {
 				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
