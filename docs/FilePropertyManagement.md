@@ -6,9 +6,9 @@
 - [Overriding build properties with DBB and zAppBuild](#overriding-build-properties-with-dbb-and-zappbuild)
 - [Default properties](#default-properties)
 - [Overriding properties](#overriding-properties)
-- [DBB file properties](#dbb-file-properties)
-- [Individual artifact properties file](#individual-artifact-properties-file)
-- [Language definition mapping](#language-definition-mapping)
+  - [DBB file properties](#dbb-file-properties)
+  - [Individual artifact properties file](#individual-artifact-properties-file)
+  - [Language definition mapping](#language-definition-mapping)
 
 ## Introduction
 
@@ -132,24 +132,24 @@ You can view a sample individual artifact properties file, [epsmlist.cbl.propert
 
 ### Language definition mapping
 
-An alternative way to define build properties for a **subgroup of files** is leveraging a mapping approach. Rather than specifying individual parameters or properties for an individual application artifact, the application artifact is mapped to a language definition, which can then define multiple build parameters in a central properties file. All mapped application artifacts will inherit the defined build parameters.
+An alternative way to define build properties for a **subgroup of files** is by leveraging a mapping approach. Rather than specifying individual parameters or properties for an individual application artifact, the application artifacts are mapped to a language definition, which can then define multiple build parameters in a central language definition properties file. All mapped application artifacts will inherit those defined build parameters.
 
-This approach requires:
+This approach consists of:
 
-- a mapping of the application artifact(s) to a language definition
-- a property file for defining the build parameters for each language definition
+- Language definition mapping file: A mapping of the application artifact(s) to a language definition
+- Language definition properties file(s): For each language definition, a properties file defining that language definition's build parameters
 
-The Language Definition Property approach can be enabled by setting the property `loadLanguageDefinitionProperties` in the `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files, use the DBB file property syntax and set  `loadLanguageDefinitionProperties` to `true` in the `application-conf/file.properties` file. Below is a sample to enable Language Definition Mapping for all programs starting with `eps` and `lga` via the `application-conf/file.properties` file:
+The "language definition mapping" approach can be enabled by setting the property `loadLanguageDefinitionProperties` in the `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files, use the DBB file property syntax and set  `loadLanguageDefinitionProperties` to `true` in the `application-conf/file.properties` file. Below is a sample to enable language definition mapping for all programs starting with `eps` and `lga` via the `application-conf/file.properties` file:
 
 ```properties
 loadLanguageDefinitionProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl
 ```
 
-The Language Definition Property files need to be created in the `build-conf` folder. This will allow you to define file properties that support overriding in the Language Definition Property file. You can create multiple Language Definition Property files under `build-conf` folder to serve different variations or types. A sample Language Definition Property file can be found at [langDefProps01.properties](../build-conf/langDefProps01.properties).  
+Build properties for a language definition are specified in a language definition properties file, which should be created in the `build-conf` folder. You can implement multiple language definitions to serve different variations or types by creating multiple language definition properties files under the `build-conf` folder. A sample language definition properties file can be found at [langDefProps01.properties](../build-conf/langDefProps01.properties).  
 
-The language definition property file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit the build properties. However, in the case of combining the language definition mapping with an individual artifact properties file override, the settings in the individual artifact properties file will take precedence.
+A language definition properties file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit those build properties. However, in the case of combining the language definition mapping with an individual artifact properties file override, for any build property that is defined in both places, the property definition in the individual artifact properties file will take precedence and be applied. Properties that are not specified in the individual artifact properties file will be defined by lower precedence strategies - that is, from the language definition mapping if defined there, or if not, then from the default properties.
 
-In the following sample language definition, *langDefProps01.properties* is overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
+In the following sample language definition properties file `build-conf/langDefProps01.properties`, the properties defined in this snippet are overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
 
 ```properties
 cobol_compileParms=LIB,SOURCE
@@ -157,9 +157,9 @@ isCICS = true
 cobol_linkEditStream=    INCLUDE OBJECT(@{member})\n    INCLUDE SYSLIB(CUSTOBJ)
 ```
 
-To map files to the language definition, create a `languageDefinitionMapping.properties` file in the `application-conf` folder of your application repo and specify the language definition mapping.
+To map files to a language definition, create a `languageDefinitionMapping.properties` file in the `application-conf` folder of your application repository. Then, within this new language definition mapping file, map each artifact to its corresponding language definition using the syntax `<sourceFileName.extension>=<languageDefinitionPropertiesFileName>`.
 
-- For example, the following snippet in `languageDefinitionMapping.properties` maps both files `epsnbrvl.cbl` and `epsmlist.cbl` to use the `build-conf/langDefProps01.properties` for Language Definition Property overrides.:
+- For example, the following snippet in `application-conf/languageDefinitionMapping.properties` maps both files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefProps01.properties` for language definition mapping overrides:
 
   ```properties
   epsnbrvl.cbl=langDefProps01
@@ -168,7 +168,7 @@ To map files to the language definition, create a `languageDefinitionMapping.pro
 
 See [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) for a sample language definition mapping file.
 
-This Language Definition Mapping implementation again leverages DBB's file property concept to define these settings only for the mapped files.
+This language definition mapping implementation again leverages DBB's file property concept to define these settings only for the mapped files.
 
 [^1]: DBB is managing the DBB file properties in its separate internal table compared to the default properties. This table leverages the combination of [property name + file pattern] as the key of the internal table. When the same key is declared a second time, it overrides the first one.
 [^2]: Because of managing DBB file properties is done in a single table, you can experience unpredictable behaviour when mixing qualified file path pattern definitions and file path patterns containing wildcards for the same property name.
