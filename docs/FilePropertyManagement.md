@@ -159,11 +159,12 @@ cobol_linkEditStream=    INCLUDE OBJECT(@{member})\n    INCLUDE SYSLIB(CUSTOBJ)
 
 To map files to a language definition, create a `languageDefinitionMapping.properties` file in the `application-conf` folder of your application repository. Then, within this new language definition mapping file, map each artifact to its corresponding language definition using the syntax `<sourceFileName.extension>=<languageDefinitionPropertiesFileName>`.
 
-- For example, the following snippet in `application-conf/languageDefinitionMapping.properties` maps both files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefs/langDefProps01.properties` for language definition mapping overrides:
+- For example, the following snippet in `[application-conf/languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties)` maps files - `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefs/langDefProps01.properties` and `epscmort.cbl` to use the properties defined in `build-conf/langDefs/langDefProps02.properties`for language definition mapping overrides:
 
   ```properties
   epsnbrvl.cbl=langDefProps01
   epsmlist.cbl=langDefProps01
+  epscmort.cbl=langDefProps02
   ```
 
 See [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) for a sample language definition mapping file.
