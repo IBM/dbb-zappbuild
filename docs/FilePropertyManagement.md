@@ -145,11 +145,11 @@ The "language definition mapping" approach can be enabled by setting the propert
 loadLanguageDefinitionProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl
 ```
 
-You can specify build properties for a language definition in a language definition properties file, which should be created in the `build-conf` folder. zAppBuild will import these properties from the language definition properties file and set them as DBB file properties for the mapped artifacts. You can implement multiple language definitions to serve different variations or types by creating multiple language definition properties files under the `build-conf` folder. A sample language definition properties file can be found at [langDefProps01.properties](../build-conf/langDefProps01.properties).  
+You can specify build properties for a language definition in a language definition properties file, which should be created in the `build-conf/langDefs` folder. zAppBuild will import these properties from the language definition properties file and set them as DBB file properties for the mapped artifacts. You can implement multiple language definitions to serve different variations or types by creating multiple language definition properties files under the `build-conf/langDefs` folder. A sample language definition properties file can be found at [langDefProps01.properties](../build-conf/langDefs/langDefProps01.properties).  
 
 A language definition properties file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit those build properties. However, in the case of combining the language definition mapping with an individual artifact properties file override, for any build property that is defined in both places, the property definition in the individual artifact properties file will take precedence and be applied. Properties that are not specified in the individual artifact properties file will be defined by lower precedence strategies - that is, from the language definition mapping if defined there, or if not, then from the default properties.
 
-In the following sample language definition properties file `build-conf/langDefProps01.properties`, the properties defined in this snippet are overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
+In the following sample language definition properties file, the properties defined in this snippet are overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
 
 ```properties
 cobol_compileParms=LIB,SOURCE
@@ -159,7 +159,7 @@ cobol_linkEditStream=    INCLUDE OBJECT(@{member})\n    INCLUDE SYSLIB(CUSTOBJ)
 
 To map files to a language definition, create a `languageDefinitionMapping.properties` file in the `application-conf` folder of your application repository. Then, within this new language definition mapping file, map each artifact to its corresponding language definition using the syntax `<sourceFileName.extension>=<languageDefinitionPropertiesFileName>`.
 
-- For example, the following snippet in `application-conf/languageDefinitionMapping.properties` maps both files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefProps01.properties` for language definition mapping overrides:
+- For example, the following snippet in `application-conf/languageDefinitionMapping.properties` maps both files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefs/langDefProps01.properties` for language definition mapping overrides:
 
   ```properties
   epsnbrvl.cbl=langDefProps01

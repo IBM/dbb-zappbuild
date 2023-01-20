@@ -780,7 +780,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	        if (languageDefinitionPropertyFileName != null) {
 	    			
 	    		// String languageDefinitionPropertyFilePath = getAbsolutePath(props.application) + "/${propertyFilePath}/${languageDefinitionPropertyFileName}.${propertyExtention}"					
-	    		String languageDefinitionPropertyFilePath = "${props.zAppBuildDir}/build-conf/${languageDefinitionPropertyFileName}.${propertyExtention}"
+	    		String languageDefinitionPropertyFilePath = "${props.zAppBuildDir}/build-conf/langDefs/${languageDefinitionPropertyFileName}.${propertyExtention}"
 
 	    		File languageDefinitionPropertyFile = new File(languageDefinitionPropertyFilePath)
 
