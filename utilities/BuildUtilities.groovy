@@ -821,15 +821,15 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	}
 }
 
-def loadProgramTypeProperties(String languageDefGroupFile, String buildFile) {
+def loadProgramTypeProperties(String languageConfigurationPropertyFile, String buildFile) {
 	
-	if (props.verbose) println "* Populating language configuration properties file $languageDefGroupFile for $buildFile"
+	if (props.verbose) println "* Populating language configuration properties file $languageConfigurationPropertyFile for $buildFile"
 	
-	InputStream languageDefGroupFileIS = new FileInputStream(languageDefGroupFile)
-	Properties languageDefProps = new Properties()
-	languageDefProps.load(languageDefGroupFileIS)
+	InputStream languageConfigurationPropertyFileIS = new FileInputStream(languageConfigurationPropertyFile)
+	Properties languageConfigProps = new Properties()
+	languageConfigProps.load(languageConfigurationPropertyFileIS)
 	
-	languageDefProps.entrySet().each { entry ->
+	languageConfigProps.entrySet().each { entry ->
 	    if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
 	    props.addFilePattern(entry.key, entry.value, buildFile)
 	}
