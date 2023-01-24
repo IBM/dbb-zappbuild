@@ -101,4 +101,4 @@ This contains the mapping of the files and their corresponding Language Configur
 
 Example: The entry - `epsnbrvl.cbl=languageConfigProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `dbb-zappbuild/build-conf/language-conf/languageConfigProps01.properties`
 
-See the [language configuration mapping documentation](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.
+See the [language configuration mapping documentation](../../../docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.
