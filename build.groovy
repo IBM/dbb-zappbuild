@@ -585,7 +585,7 @@ def createBuildList() {
 	// Loading file/member level properties from member specific properties files
 	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") 
 	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
-		|| (props.loadLanguageDefinitionProperties && props.loadLanguageDefinitionProperties.toBoolean())) {
+		|| (props.loadLanguageConfigurationProperties && props.loadLanguageConfigurationProperties.toBoolean())) {
 		println "** Populating file level properties from individual artifact properties files."
 		buildUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
