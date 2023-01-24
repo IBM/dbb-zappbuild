@@ -37,7 +37,7 @@ process.waitForProcessOutput(outputStream, System.err)
 println "** Validating reset build"
 
 // Validate clean reset build
-assert (outputStream.contains("Build finished")) && (process.exitValue() != 0) : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
+assert (outputStream.contains("Build finished")) && (process.exitValue() == 0) : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
   
 println "**"
 println "** RESET OF THE BUILD : PASSED **"
