@@ -33,12 +33,20 @@ def process = ['bash', '-c', resetBuildCommand.join(" ")].execute()
 def outputStream = new StringBuffer();
 process.waitForProcessOutput(outputStream, System.err)
 
-// Validate reset build
-println "** Validating reset build"
 
-// Validate clean reset build
-assert (outputStream.contains("Build finished")) && (process.exitValue() == 0) : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
-  
-println "**"
-println "** RESET OF THE BUILD : PASSED **"
-println "**"
+try {
+	// Validate reset build
+	println "** Validating reset build"
+
+	// Validate clean reset build
+	assert (outputStream.contains("Build finished")) && (process.exitValue() == 0) : "*! RESET OF THE BUILD FAILED\nOUTPUT STREAM:\n$outputStream\n"
+
+	println "**"
+	println "** RESET OF THE BUILD : PASSED **"
+	println "**"
+
+}catch(AssertionError e) {
+	def result = e.getMessage()
+	assertionList << result;
+	props.testsSucceeded = 'false'
+}
