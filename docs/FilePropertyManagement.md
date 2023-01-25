@@ -8,7 +8,7 @@
 - [Overriding properties](#overriding-properties)
   - [DBB file properties](#dbb-file-properties)
   - [Individual artifact properties file](#individual-artifact-properties-file)
-  - [Language definition mapping](#language-definition-mapping)
+  - [Language configuration mapping](#language-configuration-mapping)
 
 ## Introduction
 
@@ -29,7 +29,7 @@ zAppBuild leverages DBB's API and allows you to define build parameters on three
 1. General defaults in the corresponding language properties files: For example, you can define the compile options for building COBOL programs in [application-conf/Cobol.properties](../samples/application-conf/Cobol.properties). Property keys make use of a language prefix; for instance, COBOL property keys are prefixed with `cobol_`.
 2. A group definition that overrides the general default in one of two ways:
    - By using DBB's file property syntax in [application-conf/file.properties](../samples/application-conf/file.properties), and specifying the application artifact group via a pattern filter on the path name(s)
-   - By mapping to a language definition file to override the defaults, such as in [application-conf/languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties)
+   - By mapping to a language configuration file to override the defaults, such as in [application-conf/languageConfigurationMapping.properties](../samples/MortgageApplication/application-conf/languageConfigurationMapping.properties)
 3. An individual file-level definition that overwrites the general default in one of two ways:
    - By using DBB's file properties syntax in [application-conf/file.properties](../samples/application-conf/file.properties), and specifying the application artifact's path as the file path pattern
    - By specifying multiple parameters for a specific file using the individual artifact properties file. For example: [epsmlist.cbl.properties](../samples/MortgageApplication/properties/epsmlist.cbl.properties).
@@ -39,11 +39,11 @@ zAppBuild comes with various build property strategies that can be combined via 
 |Precedence|Strategy|Use case|Implementation|
 |-|-|-|-|
 |1.|Individual artifact properties file|Override one or multiple build parameters for individual files|DBB file property defining an override for the specific file[^2]|
-|2.|Language definition mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|DBB file property defining an override for the specific file(s)[^2]|
+|2.|Language configuration mapping|Override and define one or multiple build parameters for a group of mapped application artifacts|DBB file property defining an override for the specific file(s)[^2]|
 |3.|DBB file properties|Override a single build parameter for individual files or a grouped list of application artifacts|DBB file property defining an override for the specific[^2]  or grouped list[^3] of application artifacts|
 |4.|Default properties|General build properties used when no overrides are defined|Build property defining the default value for all files|
 
-To understand the order of precedence, think of this as a merge of the property configurations. For example, if both an individual artifact properties file and a language definition mapping are configured for a file, then the properties defined through the individual artifact properties file take precedence, but are also merged with other properties defined by the language definition mapping and the default properties.
+To understand the order of precedence, think of this as a merge of the property configurations. For example, if both an individual artifact properties file and a language configuration mapping are configured for a file, then the properties defined through the individual artifact properties file take precedence, but are also merged with other properties defined by the language configuration mapping and the default properties.
 
 The following sections explain these build property strategies in more detail.
 
@@ -58,7 +58,7 @@ By default, zAppBuild applies the properties stored in the [application-conf](..
 
 ## Overriding properties
 
-The following section describes the various strategies to override default build property values. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different use cases, and can be used to simplify the adoption of zAppBuild by either leveraging an individual artifact properties file per application artifact, or by defining a language definition mapping.
+The following section describes the various strategies to override default build property values. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different use cases, and can be used to simplify the adoption of zAppBuild by either leveraging an individual artifact properties file per application artifact, or by defining a language configuration mapping.
 
 ### DBB file properties
 
@@ -130,26 +130,26 @@ You can view a sample individual artifact properties file, [epsmlist.cbl.propert
 
   - During the build, the file `app/cobol/AB123456.cbl` will have the `deployType` `BATCHLOAD` and the COBOL compile parameters `LIB` and `SOURCE`.
 
-### Language definition mapping
+### Language configuration mapping
 
-An alternative way to define build properties for a **subgroup of files** is by leveraging a mapping approach. Rather than specifying individual parameters or properties for an individual application artifact, the application artifacts are mapped to a language definition, which can then define multiple build parameters in a central language definition properties file. All mapped application artifacts will inherit those defined build parameters.
+An alternative way to define build properties for a **subgroup of files** is by leveraging a mapping approach. Rather than specifying individual parameters or properties for an individual application artifact, the application artifacts are mapped to a language configuration, which can then define multiple build parameters in a central language configuration properties file. All mapped application artifacts will inherit those defined build parameters.
 
 This approach consists of:
 
-- Language definition mapping file: A mapping of the application artifact(s) to a language definition
-- Language definition properties file(s): For each language definition, a properties file defining that language definition's build parameters
+- Language configuration mapping file: A mapping of the application artifact(s) to a language configuration file
+- Language configuration properties file(s): For each language configuration, a properties file defining that language's build parameters
 
-The "language definition mapping" approach can be enabled by setting the property `loadLanguageDefinitionProperties` in the `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files, use the DBB file property syntax and set  `loadLanguageDefinitionProperties` to `true` in the `application-conf/file.properties` file. Below is a sample to enable language definition mapping for all programs starting with `eps` and `lga` via the `application-conf/file.properties` file:
+The "language configuration mapping" approach can be enabled by setting the property `loadLanguageConfigurationProperties` in the `application-conf/application.properties` file to `true`. To enable this option for a specific file or a set of files, use the DBB file property syntax and set  `loadLanguageConfigurationProperties` to `true` in the `application-conf/file.properties` file. Below is a sample to enable language configuration mapping for all programs starting with `eps` and `lga` via the `application-conf/file.properties` file:
 
 ```properties
-loadLanguageDefinitionProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl
+loadLanguageConfigurationProperties = true :: **/cobol/eps*.cbl, **/cobol/lga*.cbl
 ```
 
-You can specify build properties for a language definition in a language definition properties file, which should be created in the `build-conf/langDefs` folder. zAppBuild will import these properties from the language definition properties file and set them as DBB file properties for the mapped artifacts. You can implement multiple language definitions to serve different variations or types by creating multiple language definition properties files under the `build-conf/langDefs` folder. A sample language definition properties file can be found at [langDefProps01.properties](../build-conf/langDefs/langDefProps01.properties).  
+You can specify build properties for a language in a language configuration properties file, which should be created in the `build-conf/language-conf` folder. zAppBuild will import these properties from the language configuration properties file and set them as DBB file properties for the mapped artifacts. You can implement multiple language configurations to serve different variations or types by creating multiple language configuration properties files under the `build-conf/language-conf` folder. A sample language configuration properties file can be found at [languageConfigProps01.properties](../build-conf/language-conf/languageConfigProps01.properties).  
 
-A language definition properties file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit those build properties. However, in the case of combining the language definition mapping with an individual artifact properties file override, for any build property that is defined in both places, the property definition in the individual artifact properties file will take precedence and be applied. Properties that are not specified in the individual artifact properties file will be defined by lower precedence strategies - that is, from the language definition mapping if defined there, or if not, then from the default properties.
+A language configuration properties file allows you to centrally specify build properties for the group of mapped application artifacts. All mapped files will inherit those build properties. However, in the case of combining the language configuration mapping with an individual artifact properties file override, for any build property that is defined in both places, the property definition in the individual artifact properties file will take precedence and be applied. Properties that are not specified in the individual artifact properties file will be defined by lower precedence strategies - that is, from the language configuration mapping if defined there, or if not, then from the default properties.
 
-In the following sample language definition properties file, the properties defined in this snippet are overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
+In the following sample language configuration properties file, the properties defined in this snippet are overriding the default COBOL compile parameters (`cobol_compileParms`), the file flag `isCICS`, and the linkEdit statement (`cobol_linkEditStream`):
 
 ```properties
 cobol_compileParms=LIB,SOURCE
@@ -157,17 +157,17 @@ isCICS = true
 cobol_linkEditStream=    INCLUDE OBJECT(@{member})\n    INCLUDE SYSLIB(CUSTOBJ)
 ```
 
-To map files to a language definition, create a `languageDefinitionMapping.properties` file in the `application-conf` folder of your application repository. Then, within this new language definition mapping file, map each artifact to its corresponding language definition using the syntax `<sourceFileName.extension>=<languageDefinitionPropertiesFileName>`.
+To map files to a language configuration, create a `languageConfigurationMapping.properties` file in the `application-conf` folder of your application repository. Then, within this new language configuration mapping file, map each artifact to its corresponding language configuration using the syntax `<sourceFileName.extension>=<languageConfigurationPropertiesFileName>`.
 
-- For example, the following snippet in [application-conf/languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) maps both source files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/langDefs/langDefProps01.properties`,  while the source file `epscmort.cbl` is mapped to use the properties defined in `build-conf/langDefs/langDefProps02.properties` for language definition mapping overrides:
+- For example, the following snippet in [application-conf/languageConfigurationMapping.properties](../samples/MortgageApplication/application-conf/languageConfigurationMapping.properties) maps both source files `epsnbrvl.cbl` and `epsmlist.cbl` to use the properties defined in `build-conf/language-conf/languageConfigProps01.properties`,  while the source file `epscmort.cbl` is mapped to use the properties defined in `build-conf/language-conf/languageConfigProps02.properties` for language configuration mapping overrides:
 
   ```properties
-  epsnbrvl.cbl=langDefProps01
-  epsmlist.cbl=langDefProps01
-  epscmort.cbl=langDefProps02
+  epsnbrvl.cbl=languageConfigProps01
+  epsmlist.cbl=languageConfigProps01
+  epscmort.cbl=languageConfigProps02
   ```
 
-See [languageDefinitionMapping.properties](../samples/MortgageApplication/application-conf/languageDefinitionMapping.properties) for a sample language definition mapping file.
+See [languageConfigurationMapping.properties](../samples/MortgageApplication/application-conf/languageConfigurationMapping.properties) for a sample language configuration mapping file.
 
 [^1]: The term "artifact" and "file" in this document refer to program source code that will built (as opposed to JCL or other non-buildable items), for example by DBB.
 [^2]: DBB is managing the DBB file properties in its separate internal table compared to the default properties. This table leverages the combination of [property name + file pattern] as the key of the internal table. When the same key is declared a second time, it overrides the first one.

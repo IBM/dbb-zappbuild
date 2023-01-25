@@ -25,7 +25,7 @@ skipImpactCalculationList | Files for which the impact analysis should be skippe
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
-loadLanguageDefinitionProperties | Flag to enable the zAppBuild capability to load language definition properties for build files mapped in languageDefinitionMapping.properties | true
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties for build files mapped in languageConfigurationMapping.properties | true
 propertyFilePath | relative path to folder containing individual artifact properties files | true
 propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||
@@ -284,11 +284,11 @@ Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
 
-### languageDefinitionMapping.properties
-Sample language definition mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
+### languageConfigurationMapping.properties
+Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
 
-This contains the mapping of the files and their corresponding Language Definition properties files residing in `zAppBuild/build-conf` to override the default file properties.
+This contains the mapping of the files and their corresponding Language Configuration properties files residing in `zAppBuild/build-conf/language-conf` to override the default file properties.
 
-Example: The entry - `epsnbrvl.cbl=langDefProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `zAppBuild/build-conf/langDefProps01.properties`
+Example: The entry - `epsnbrvl.cbl=languageConfigProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `zAppBuild/build-conf/language-conf/languageConfigProps01.properties`
 
-See the [language definition mapping documentation](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md#language-definition-mapping) for more details on how to enable and use language definiton mapping.
+See the [language configuration mapping documentation](../../docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.
