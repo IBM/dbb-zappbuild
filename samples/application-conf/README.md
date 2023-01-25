@@ -25,7 +25,7 @@ skipImpactCalculationList | Files for which the impact analysis should be skippe
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
-loadLanguageDefinitionProperties | Flag to enable the zAppBuild capability to load language definition properties for build files mapped in languageDefinitionMapping.properties | true
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties for build files mapped in languageConfigurationMapping.properties | true
 propertyFilePath | relative path to folder containing individual artifact properties files | true
 propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||

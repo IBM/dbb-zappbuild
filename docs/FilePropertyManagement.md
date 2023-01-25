@@ -58,7 +58,7 @@ By default, zAppBuild applies the properties stored in the [application-conf](..
 
 ## Overriding properties
 
-The following section describes the various strategies to override default build property values. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different use cases, and can be used to simplify the adoption of zAppBuild by either leveraging an individual artifact properties file per application artifact, or by defining a language definition mapping.
+The following section describes the various strategies to override default build property values. The DBB file property syntax is the most commonly used approach within the zAppBuild samples. Two alternate approaches to override build properties are implemented in zAppBuild to serve the different use cases, and can be used to simplify the adoption of zAppBuild by either leveraging an individual artifact properties file per application artifact, or by defining a language configuration mapping.
 
 ### DBB file properties
 
