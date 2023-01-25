@@ -147,6 +147,7 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 	catch(AssertionError e) {
 		def result = e.getMessage()
 		assertionList << result;
+		props.testsSucceeded = 'false'
 	}
 }
 def cleanUpDatasets() {
