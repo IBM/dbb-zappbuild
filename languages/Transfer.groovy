@@ -55,16 +55,28 @@ buildList.each { buildFile ->
 
 		// evaluate the datasetmapping, which maps build files to targetDataset defintions
 		PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
+		PropertyMappings dsOptionsMapping = new PropertyMappings("transfer_srcOptions")
 
 		// obtain the target dataset based on the mapped dataset key
-		String targetDataset = props.getProperty(dsMapping.getValue(buildFile))
-
+		mappedDatesetDef = dsMapping.getValue(buildFile)
+		String targetDataset = props.getProperty(mappedDatesetDef)
+		
 		if (targetDataset != null) {
-
+			
+			// obtain the dataset reference for targetDataset
+			String datasetOptions = dsOptionsMapping.getValue(mappedDatesetDef)
+			
+			if (datasetOptions == null) {
+				String errorMsg =  "*! Dataset options for $buildFile could not be obtained PropertyMappings <transfer_srcOptions>. "
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
+			} 
+			
 			// allocate target dataset
 			if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
 				verifiedBuildDatasets.add(targetDataset)
-				buildUtils.createDatasets(targetDataset.split(), props.transfer_srcOptions)
+				buildUtils.createDatasets(targetDataset.split(), datasetOptions)
 			}
 
 			// copy the file to the target dataset
@@ -72,7 +84,7 @@ buildList.each { buildFile ->
 
 			try {
 				int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
-				if (props.verbose) println "** Copyied $buildFile to $targetDataset with deployTyoe $deployType; rc = $rc"
+				if (props.verbose) println "** Copied $buildFile to $targetDataset with deployType $deployType (rc = $rc)"
 
 				if (rc!=0){
 					String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
