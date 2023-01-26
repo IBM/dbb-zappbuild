@@ -26,7 +26,7 @@ def assertBuildProperties(String requiredProps) {
 
 		buildProps.each { buildProp ->
 			buildProp = buildProp.trim()
-			assert props."$buildProp" : "*! Missing required build property '$buildProp'"
+			assert (props."$buildProp" || !(new PropertyMappings("$buildProp").getValues().isEmpty())) : "*! Missing required build property '$buildProp'"
 		}
 	}
 }
