@@ -55,7 +55,7 @@ buildList.each { buildFile ->
 
 		// evaluate the datasetmapping, which maps build files to targetDataset defintions
 		PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
-		PropertyMappings dsOptionsMapping = new PropertyMappings("transfer_srcOptions")
+		PropertyMappings dsOptionsMapping = new PropertyMappings("transfer_dsOptions")
 
 		// obtain the target dataset based on the mapped dataset key
 		mappedDatesetDef = dsMapping.getValue(buildFile)
@@ -67,7 +67,7 @@ buildList.each { buildFile ->
 			String datasetOptions = dsOptionsMapping.getValue(mappedDatesetDef)
 			
 			if (datasetOptions == null) {
-				String errorMsg =  "*! Dataset options for $buildFile could not be obtained PropertyMappings <transfer_srcOptions>. "
+				String errorMsg =  "*! Dataset options for $buildFile could not be obtained PropertyMappings <transfer_dsOptions>. "
 				println(errorMsg)
 				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg)
