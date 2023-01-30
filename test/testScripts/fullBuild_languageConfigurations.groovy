@@ -100,7 +100,7 @@ finally {
 def copyAndCommitBuildConfig(String configFile) {
 	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/$configFile to ${props.zAppBuildDir}/"
 	def commands = """
-	cp ${props.zAppBuildDir}/test/applications/${props.app}/$configFile ${props.zAppBuildDir}/
+	cp ${props.zAppBuildDir}/test/applications/${props.app}/$configFile ${props.zAppBuildDir}/$configFile
 	cd ${props.appLocation}/
 	git add .
 	git commit . -m "updated language configuration file"
