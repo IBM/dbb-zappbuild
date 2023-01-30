@@ -91,7 +91,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, Object dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, SearchPathDependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -115,8 +115,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		String lname = CopyToPDS.createMemberName(buildFile)
 		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
-		// set logical file in the dependency resolver if using deprecated API
-		//dependencyResolver.setLogicalFile(lfile) 
 
 		// get list of dependencies from userBuildDependencyFile
 		List<String> dependencyPaths = depFileData.dependencies
@@ -158,9 +156,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
 		
-		resolverUtils = loadScript(new File("ResolverUtilities.groovy"))
-		List<PhysicalDependency> physicalDependencies = resolverUtils.resolveDependencies(dependencyResolver, buildFile)
-		
+		List<PhysicalDependency> physicalDependencies = resolveDependencies(dependencyResolver, buildFile)
 
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
@@ -305,54 +301,45 @@ def updateBuildResult(Map args) {
 	}
 }
 
-/*
- * createDependencyResolver - Creates a dependency resolver using resolution rules declared
- * in a build or file property (json format).
+/**
+ * Method to create the logical file using SearchPathDependencyResolver
+ *
+ *  evaluates if it should resolve file flags for resolved dependencies
+ *
+ * @param spDependencyResolver
+ * @param buildFile
+ * @return logicalFile
  */
-// def createDependencyResolver(String buildFile, String rules) {
-// 	if (props.verbose) println "*** Creating dependency resolver for $buildFile with $rules rules"
 
-// 	// create a dependency resolver for the build file
-// 	DependencyResolver resolver = new DependencyResolver().file(buildFile)
-// 			.sourceDir(props.workspace)
+def createLogicalFile(SearchPathDependencyResolver spDependencyResolver, String buildFile) {
 	
-// 	// add scanner if userBuild Dep File not provided, or not a user build
-// 	if (!props.userBuildDependencyFile || !props.userBuild)
-// 		resolver.setScanner(getScanner(buildFile))
+	LogicalFile logicalFile
+	
+	if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) {
+		// include resolved dependencies to define file flags of logicalFile
+		logicalFile = spDependencyResolver.resolveSubsystems(buildFile,props.workspace)
+	}
+	else {
+		logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
+	}
 
-// 	// add resolution rules
-// 	if (rules)
-// 		resolver.setResolutionRules(parseResolutionRules(rules))
+	return logicalFile
 
-// 	return resolver
-// }
+}
 
-// def parseResolutionRules(String json) {
-// 	List<ResolutionRule> rules = new ArrayList<ResolutionRule>()
-// 	JsonSlurper slurper = new groovy.json.JsonSlurper()
-// 	List jsonRules = slurper.parseText(json)
-// 	if (jsonRules) {
-// 		jsonRules.each { jsonRule ->
-// 			ResolutionRule resolutionRule = new ResolutionRule()
-// 			resolutionRule.library(jsonRule.library)
-// 			resolutionRule.lname(jsonRule.lname)
-// 			resolutionRule.category(jsonRule.category)
-// 			if (jsonRule.searchPath) {
-// 				jsonRule.searchPath.each { jsonPath ->
-// 					DependencyPath dependencyPath = new DependencyPath()
-// 					dependencyPath.collection(jsonPath.collection)
-// 					dependencyPath.sourceDir(jsonPath.sourceDir)
-// 					dependencyPath.directory(jsonPath.directory)
-// 					resolutionRule.path(dependencyPath)
-// 				}
-// 			}
-// 			rules << resolutionRule
-// 		}
-// 	}
-// 	return rules
-// }
+/**
+ * Method to execute dependency resolution based on configured SearchPathDependencyResolver
+ * 
+ * @return resolved list of physical dependencies
+ */
 
-
+def resolveDependencies(SearchPathDependencyResolver dependencyResolver, String buildFile) {
+	if (props.verbose) {
+		println "*** Resolution rules for $buildFile:"
+		println dependencyResolver.getSearchPath()
+	}
+	return dependencyResolver.resolveDependencies(buildFile, props.workspace)
+}
 
 /*
  * isCICS - tests to see if the program is a CICS program. If the logical file is false, then
@@ -397,6 +384,44 @@ def isDLI(LogicalFile logicalFile) {
 	}
 
 	return isDLI
+}
+
+/*
+ * isMQ - tests to see if the program uses MQ. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isMQ(LogicalFile logicalFile) {
+	boolean isMQ = logicalFile.isMQ()
+	if (!isMQ) {
+		String isMQFlag = props.getFileProperty('isMQ', logicalFile.getFile())
+		if (isMQFlag)
+			isMQ = isMQFlag.toBoolean()
+	}
+
+	return isMQ
+}
+
+/*
+ * getMqStubInstruction -
+ *  returns include defintion for mq sub program for link edit
+ */
+def getMqStubInstruction(LogicalFile logicalFile) {
+	String mqStubInstruction
+	
+	if (isMQ(logicalFile)) {
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		if (isCICS(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQCSTUB)\n"
+		} else if (isDLI(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQQSTUB)\n"
+		} else {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"
+		}
+	} else {
+		println("*! (BuildUtilities.getMqStubInstruction) MQ file attribute for ${logicalFile.getFile()} is false.")	
+	}
+	
+	return mqStubInstruction
 }
 
 /*
