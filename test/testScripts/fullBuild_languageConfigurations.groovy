@@ -32,7 +32,7 @@ try {
 	// update language definitions files in Git repo
 	def langDefs = props.fullBuild_languageConfigurations_updatedLanguageConfigs.split(',')
 	langDefs.each{ langDef ->
-		copyAndCommitBuildConfig(langDef)
+		copyAndCommitBuildConfig(langDef.trim())
 	}
 	
 	// Run full build
