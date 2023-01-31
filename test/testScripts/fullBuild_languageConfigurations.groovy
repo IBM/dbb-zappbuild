@@ -63,8 +63,8 @@ try {
 	PropertyMappings compileParmsofFiles = new PropertyMappings("fullBuild_languageConfigurations_compileParms")
 	// Iterate over build list
 	expectedFilesBuiltList.each { file ->
-		expectedCompilerParms = compileParmsofFiles.getValue(file)
-		if (expectedCompilerParms) assert outputStream.contains("${expectedCompilerParms}") : "*! Expected Compiler Parms do not match for $file\nOUTPUT STREAM:\n$outputStream\n"
+		def expectedCompilerParms = compileParmsofFiles.getValue(file)
+		if (expectedCompilerParms) assert outputStream.contains("${expectedCompilerParms}") : "*! Expected Compiler Parms (${expectedCompilerParms}) do not match for $file\nOUTPUT STREAM:\n$outputStream\n"
 	}
 		
 	// Validate expected built files in output stream
