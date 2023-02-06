@@ -17,7 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
-@Field def filePropUtils= loadScript(new File("utilities/filePropUtilities.groovy"))
+@Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
