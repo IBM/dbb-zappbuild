@@ -19,7 +19,6 @@ import java.util.regex.*
 
 def createImpactBuildList() {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	resolverUtils = loadScript(new File("ResolverUtilities.groovy")) 
 	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
@@ -77,7 +76,7 @@ def createImpactBuildList() {
 
 				// list of impacts
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				def impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile)
+				def impacts = findImpactedFiles(impactSearch, changedFile)
 				
 
 				impacts.each { impact ->
@@ -195,6 +194,29 @@ def createMergeBuildList(){
 	}
 
 	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+}
+
+/*
+ * findImpactedFiles -
+ *  method to configure and invoke SearchPathImpactFinder
+ *
+ *  @return list of impacted files
+ *
+ */
+def findImpactedFiles(String impactSearch, String changedFile) {
+	
+	List<String> collections = new ArrayList<String>()
+	collections.add(props.applicationCollectionName)
+	collections.add(props.applicationOutputsCollectionName)
+	
+	if (props.verbose)
+		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
+	
+	def finder = new SearchPathImpactFinder(impactSearch, collections)
+	
+	// Find all files impacted by the changed file
+	impacts = finder.findImpactedFiles(changedFile, props.workspace)
+	return impacts
 }
 
 
@@ -881,7 +903,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	if (metadataStore) {
+	if (metadataStore && !props.error) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)

@@ -21,9 +21,9 @@ import groovy.cli.commons.*
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
 @Field MetadataStore metadataStore
+@Field startTime = new Date()
 
 // start time message
-def startTime = new Date()
 props.startTime = startTime.format("yyyyMMdd.hhmmss.mmm")
 println("\n** Build start at $props.startTime")
 
@@ -106,7 +106,7 @@ def initializeBuildProcess(String[] args) {
 	// create metadata store for this script
 	if (!props.userBuild) {
 		if (props.metadataStoreType == 'file')
-			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreLocation)
+			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreFileLocation)
 		else if (props.metadataStoreType == 'db2') {
 			// Get ID
 			String id
@@ -131,7 +131,7 @@ def initializeBuildProcess(String[] args) {
 				}
 				// Load properties file into Properties object
 				Properties db2ConnectionProps = new Properties()
-				db2ConnectionProps.load(propertiesFile)
+				db2ConnectionProps.load(new FileInputStream(propertiesFile))
 				
 				// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
@@ -446,7 +446,7 @@ def populateBuildProperties(def opts) {
 
 	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
 	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationBuildLabel = "build.${props.startTime}" as String
+	props.applicationBuildLabel = ("build." + ( (props.buildOutputTSformat) ? startTime.format("${props.buildOutputTSformat}") : "${props.startTime}" ) ) as String
 	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
