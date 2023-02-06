@@ -294,6 +294,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
+	if (props.verbose) println "Link-Edit parms for $buildFile = $parms"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
