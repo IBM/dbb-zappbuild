@@ -78,11 +78,11 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	            if (filePatternIsMappedAtFileName) {
 	                props.removeFileProperty(entry.key)
 	                noChangeFilePattern.each { noChangeFile ->
-	                    if (props.verbose) println "       Retaining ${entry.key} = ${noChangeFile.value} for ${noChangeFile.key}"
+	                    if (props.verbose) println "       Retaining file property override ${entry.key} = ${noChangeFile.value} for ${noChangeFile.key}"
 	                    props.addFilePattern(entry.key, noChangeFile.value, noChangeFile.key)
 	                 }
 	                 // Add the buildFile file pattern with new value    
-	                 if (props.verbose) println "    Updating ${entry.key} = ${entry.value} for ${buildFile}"
+	                 if (props.verbose) println "    Updating file property override ${entry.key} = ${entry.value} for ${buildFile}"
 	                 props.addFilePattern(entry.key, entry.value, buildFile)
 	            } else {
 	                println("    *! Warning: $buildFile is already mapped as a file pattern as part of a file group wildcard possibly in file.properties.")
@@ -98,7 +98,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	            }
 	         } else {
 	             // Add the buildFile file pattern with new value    
-	             if (props.verbose) println "    Adding ${entry.key} = ${entry.value} for ${buildFile}"
+	             if (props.verbose) println "    Adding file property override ${entry.key} = ${entry.value} for ${buildFile}"
 	             props.addFilePattern(entry.key, entry.value, buildFile)
 	         }
 	     }
