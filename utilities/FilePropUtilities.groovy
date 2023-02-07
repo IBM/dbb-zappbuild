@@ -174,7 +174,6 @@ def checkExistingFilesPropertyDefinition(String buildFile, String member, String
                 filePatternIsMappedAtFileName = true   
             } else { 
                 noChangeFilePattern[filePattern] = value
-                if (props.verbose) println("       Retaining ${entryKey} = ${value} for ${filePattern}")
             }
         }
     }   
