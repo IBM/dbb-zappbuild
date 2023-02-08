@@ -17,6 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -588,7 +589,7 @@ def createBuildList() {
 	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
 		|| (props.loadLanguageConfigurationProperties && props.loadLanguageConfigurationProperties.toBoolean())) {
 		println "** Populating file level properties from individual artifact properties files."
-		buildUtils.loadFileLevelPropertiesFromFile(buildList)
+		filePropUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
 	
 	// Perform analysis and build report of external impacts
