@@ -189,13 +189,13 @@ def addFilePropWarningRecord(String buildFile, Map noChangeFilePattern, String e
 	
 	// New Generic Property Record
 	def currPropList = []
-	PropertiesRecord filePropWarningInfo = new PropertiesRecord("File Property Warning : ${buildFile}")
+	PropertiesRecord filePropWarningInfo = new PropertiesRecord()
 	
 
 	// Add file property override warning info
 	def warningMsg1 = "$buildFile is already mapped as a file pattern as part of a file group wildcard possibly in file.properties."
 	def warningMsg2 = "Please check the existing file property list below and fix it to contain the correct file properties."
-	def warningMsg3 = "Override for $buildFile could not be applied. Existing file property value will be used: ${entryKey} = ${currValue}"
+	def warningMsg3 = "Override for $buildFile could not be applied. Existing file property value will be used: ${entryKey} = ${currValue}."
 	def warningMsg4 =  "Existing File Property value and patterns in existingFilePropList:"
 	noChangeFilePattern.each { noChangeFile ->
 	    currPropList.add("${entryKey} = ${noChangeFile.value} for ${noChangeFile.key}")
@@ -209,5 +209,8 @@ def addFilePropWarningRecord(String buildFile, Map noChangeFilePattern, String e
 	filePropWarningInfo.addProperty("existingFilePropList",currPropList.toString())
 	filePropWarningInfo.addProperty("skippedFileProperty","${entryKey} = ${entryValue}")
 	
+	def warning = warningMsg3 + " Check log or build report for more details."
+	
 	BuildReportFactory.getBuildReport().addRecord(filePropWarningInfo)
+	buildUtils.updateBuildResult(warningMsg:warning)
 }
