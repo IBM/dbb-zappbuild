@@ -1,6 +1,8 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.repository.*
-
+import com.ibm.dbb.dependency.*
+import com.ibm.dbb.build.*
+import groovy.transform.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -143,7 +145,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
 	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true))
-	String deployType = buildUtils.getDeployType("rexx_exec", buildFile, null)
+	String deployType = buildUtils.getDeployType("rexx_cexec", buildFile, null)
 	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType(deployType))
 	
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
