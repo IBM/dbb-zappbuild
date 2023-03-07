@@ -84,6 +84,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		String ssi = buildUtils.getShortGitHash(buildFile)
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
+	
+	if (props.verbose) println "Link-Edit parms for $buildFile = $parms"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
@@ -105,8 +108,19 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
-	linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (props.debug && props.SEQAMOD)
+		linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
+
+	if (props.SDFHLOAD)
+		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	
+	if (props.SDSNLOAD)
+		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+
+	if (props.SCSQLOAD)
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
+		
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding))
 

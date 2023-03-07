@@ -91,3 +91,11 @@ linkedit_deployTypeDLI | deployType for build output for build files with isDLI=
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 linkEdit_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
+### languageConfigurationMapping.properties
+Sample Language Configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
+
+This contains the mapping of the files and their corresponding Language Configuration properties files residing in `zAppBuild/build-conf/language-conf` to override the default file properties.
+
+Example: The entry - `epsnbrvl.cbl=languageConfigProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `dbb-zappbuild/build-conf/language-conf/languageConfigProps01.properties`
+
+See the [language configuration mapping documentation](../../../docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.

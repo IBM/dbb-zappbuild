@@ -17,13 +17,14 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
 @Field MetadataStore metadataStore
+@Field startTime = new Date()
 
 // start time message
-def startTime = new Date()
 props.startTime = startTime.format("yyyyMMdd.hhmmss.mmm")
 println("\n** Build start at $props.startTime")
 
@@ -446,7 +447,7 @@ def populateBuildProperties(def opts) {
 
 	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
 	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationBuildLabel = "build.${props.startTime}" as String
+	props.applicationBuildLabel = ("build." + ( (props.buildOutputTSformat) ? startTime.format("${props.buildOutputTSformat}") : "${props.startTime}" ) ) as String
 	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
@@ -583,9 +584,12 @@ def createBuildList() {
 	}
 	
 	// Loading file/member level properties from member specific properties files
-	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") || props.loadFileLevelProperties) {
-		println "** Populating file level properties from individual property files."
-		buildUtils.loadFileLevelPropertiesFromFile(buildList)
+	if (props.filePropertyValueKeySet().getAt("loadFileLevelProperties") 
+	    || props.filePropertyValueKeySet().getAt("loadLanguageConfigurationProperties") 
+	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
+		|| (props.loadLanguageConfigurationProperties && props.loadLanguageConfigurationProperties.toBoolean())) {
+		println "** Populating file level properties from individual artifact properties files."
+		filePropUtils.loadFileLevelPropertiesFromFile(buildList)
 	}
 	
 	// Perform analysis and build report of external impacts
