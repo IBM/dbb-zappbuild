@@ -539,6 +539,9 @@ def getLangPrefix(String scriptName){
 		case "PSBgen.groovy":
 			langPrefix = 'psbgen'
 			break;
+		case "Transfer.groovy":
+			langPrefix = 'transfer'
+			break;
 		default:
 			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
 			break;

@@ -21,6 +21,17 @@ import groovy.transform.*
  * * File names cannot exeed more than 8 characters, so they can be stored in
  *   the target dataset.
  * 
+ * * Review configurations in 
+ * 
+ *   build-conf/Transfer.properties
+ *     to define target datasets and dataset characteristics  
+ * 
+ *   application-conf/file.properties
+ *     to map files and define the deployType
+ *     
+ *   application-conf/Transfer.properties  
+ *     to specify the default deployType
+ *   
  */
 
 // define script properties
