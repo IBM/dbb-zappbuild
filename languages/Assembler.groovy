@@ -20,6 +20,11 @@ buildUtils.assertBuildProperties(props.assembler_requiredBuildProperties)
 def langQualifier = "assembler"
 buildUtils.createLanguageDatasets(langQualifier)
 
+// create debug dataset for the sidefile
+if (props.debug) {
+	buildUtils.createDatasets(props.assembler_debugPDS.split(), props.assembler_sidefileOptions)
+}
+
 // sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'assembler_fileBuildRank')
 
@@ -45,6 +50,7 @@ sortedList.each { buildFile ->
 	MVSExec assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
 	MVSExec assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
 	MVSExec assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
+	MVSExec debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
 	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
@@ -53,10 +59,11 @@ sortedList.each { buildFile ->
 
 	// initialize return codes
 	int rc = 0
+	
 	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 	// SQL preprocessor
-	if (buildUtils.isSQL(logicalFile)){
+	if (rc <= maxRC && buildUtils.isSQL(logicalFile)){
 		rc = assembler_SQLTranslator.execute()
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
@@ -74,7 +81,7 @@ sortedList.each { buildFile ->
 	}
 
 	// CICS preprocessor
-	if (buildUtils.isCICS(logicalFile)){
+	if (rc <= maxRC && buildUtils.isCICS(logicalFile)){
 		rc = assembler_CICSTranslator.execute()
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
@@ -95,34 +102,48 @@ sortedList.each { buildFile ->
 			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
-		else {
-			// if this program needs to be link edited . . .
-			String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
-			if (needsLinking && needsLinking.toBoolean()) {
-				rc = linkEdit.execute()
-				maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+	}
+	
+	// create sidefile
+	if (rc <= maxRC && props.debug) {
+		rc = debugSideFile.execute()
+		maxRC = 4
 
-				if (rc > maxRC) {
-					String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
-					println(errorMsg)
-					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
-				}
-				else {
-					// only scan the load module if load module scanning turned on for file
-					if(!props.userBuild){
-						String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-						if (scanLoadModule && scanLoadModule.toBoolean()) {
-							String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
-						}
+		if (rc > maxRC) {
+			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		}
+	}
+	
+	// linkedit
+	if (rc <= maxRC) {
+		// if this program needs to be link edited . . .
+		String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
+		if (needsLinking && needsLinking.toBoolean()) {
+			rc = linkEdit.execute()
+			maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+
+			if (rc > maxRC) {
+				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			}
+			else {
+				// only scan the load module if load module scanning turned on for file
+				if(!props.userBuild){
+					String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
+					if (scanLoadModule && scanLoadModule.toBoolean()) {
+						String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 					}
 				}
 			}
-
 		}
-
 	}
+
 	// clean up passed DD statements
 	job.stop()
 
@@ -236,13 +257,18 @@ def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFi
  * createCompileCommand - creates a MVSExec command for compiling the BMS Map (buildFile)
  */
 def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+	
 	def errPrefixOptions = props.getFileProperty('assembler_compileErrorPrefixParms', buildFile) ?: ""
-
+	def debugOptions = props.getFileProperty('assembler_debugParms', buildFile) ?: ""
+		
 	String parameters = props.getFileProperty('assembler_pgmParms', buildFile)
 
 	if (props.errPrefix)
 		parameters = "$parameters,$errPrefixOptions"
 
+	if (props.debug)
+		parameters = "$parameters,$debugOptions"	
+		
 	// define the MVSExec command to compile the BMS map
 	MVSExec assembler = new MVSExec().file(buildFile).pgm(props.assembler_pgm).parm(parameters)
 
@@ -296,9 +322,11 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
+	// SYSADATA allocation
+	assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataTempOptions).pass(true))
+		
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
-		assembler.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
 		assembler.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.assembler_compileErrorFeedbackXmlOptions))
 	}
@@ -308,6 +336,17 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	return assembler
 }
 
+
+/*
+ * createCompileCommand - creates a MVSExec command for compiling the BMS Map (buildFile)
+ */
+def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+
+	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm("EQALANGX").parm("(ASM ERROR LOUD")
+	generateSidefile.dd(new DDStatement().name("TASKLIB").dsn("${props.PDTCCMOD}").options("shr"))
+	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("SIDEFILE"))
+	return generateSidefile
+}
 
 /*
  * createLinkEditCommand - creates a MVSExec xommand for link editing the assembler object module produced by the compile
