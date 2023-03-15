@@ -24,16 +24,17 @@ excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
-loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual property files for a build file | true
-propertyFilePath | relative path to folder containing individual property files | true
-propertyFileExtension | file extension for individual property files | true
+loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties for build files mapped in languageConfigurationMapping.properties | true
+propertyFilePath | relative path to folder containing individual artifact properties files | true
+propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
 
 ### file.properties
-Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Additional file-level properties can be defined through individual property files in a separate directory of the repository. For more details, see the section _Build Property Management_ in `application.properties`
+Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Additional file-level properties can be defined through individual artifact properties files in a separate directory of the repository. For more details, see [File Property Management](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md).
 
 Property | Description
 --- | ---
@@ -281,3 +282,12 @@ Application properties used by zAppBuild/language/Transfer.groovy
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+
+### languageConfigurationMapping.properties
+Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
+
+This contains the mapping of the files and their corresponding Language Configuration properties files residing in `zAppBuild/build-conf/language-conf` to override the default file properties.
+
+Example: The entry - `epsnbrvl.cbl=languageConfigProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `zAppBuild/build-conf/language-conf/languageConfigProps01.properties`
+
+See the [language configuration mapping documentation](../../docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.

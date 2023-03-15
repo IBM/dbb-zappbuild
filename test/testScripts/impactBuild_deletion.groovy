@@ -25,7 +25,7 @@ fullBuildCommand << "--url ${props.url}"
 fullBuildCommand << "--id ${props.id}"
 fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "")
+fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}")
 fullBuildCommand << "--fullBuild"
 
 // create impact build command
@@ -41,7 +41,7 @@ impactBuildCommand << "--url ${props.url}"
 impactBuildCommand << "--id ${props.id}"
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 impactBuildCommand << "--verbose"
-impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "")
+impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
@@ -147,6 +147,7 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 	catch(AssertionError e) {
 		def result = e.getMessage()
 		assertionList << result;
+		props.testsSucceeded = 'false'
 	}
 }
 def cleanUpDatasets() {
