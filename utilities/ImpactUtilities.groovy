@@ -13,6 +13,7 @@ import java.util.regex.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+@Field def depScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field def resolverUtils
 
@@ -466,7 +467,7 @@ def scanOnlyStaticDependencies(List buildList){
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
 
-				def scanner = buildUtils.getScanner(buildFile)
+				def scanner = depScannerUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
 
 				String member = CopyToPDS.createMemberName(buildFile)
@@ -826,7 +827,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 
-			def scanner = buildUtils.getScanner(file)
+			def scanner = depScannerUtils.getScanner(file)
 			try {
 				def logicalFile
 				if (scanner != null) {
@@ -835,7 +836,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 				} else {
 					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
 					// New logical file with Membername, buildfile, language set to file extension
-					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1), false, false, false)
+					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
 				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 

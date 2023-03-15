@@ -465,27 +465,6 @@ def relativizeFolderPath(String folder, String path) {
 	return path
 }
 
-/*
- * getScanner() 
- *  
- *  returns the mapped scanner or null if build file is not mapped 
- */
-def getScanner(String buildFile){
-	
-	def scanner = null
-	// check scannerMapping
-	def mapping = new PropertyMappings("dbb.scannerMapping")
-	if (mapping.isMapped("ZUnitConfigScanner", buildFile)) {
-		scanner = new ZUnitConfigScanner()
-	}
-	else if (mapping.isMapped("DependencyScanner", buildFile)){
-		scanner = new DependencyScanner()
-	} else {
-		if (props.verbose) println("*** No scanner specified for $buildFile")
-	}
-	
-	return scanner
-}
 
 /*
  * createLanguageDatasets - gets the language used to create the datasets
@@ -795,3 +774,4 @@ def getShortGitHash(String buildFile) {
 	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
 	return null
 }
+

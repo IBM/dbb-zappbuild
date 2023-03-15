@@ -53,12 +53,6 @@ dbb.gateway.accountNumber | Interactive gateway Account Number
 dbb.gateway.groupId | Interactive gateway Group ID  
 dbb.gateway.regionSize | Interactive gateway Region Size    
 dbb.gateway.logLevel | Interactive gateway Log Level    
-
-### defaultApplicationSettings.properties
-Global default application properties used by zappbuild 
-
-Property | Description
---- | ---
 dbb.scannerMapping | DBB PropertyMapping specifying the scanner implementation to be used 
 continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
 createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
