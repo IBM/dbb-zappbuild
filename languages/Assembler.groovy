@@ -272,6 +272,10 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	// define the MVSExec command to compile the BMS map
 	MVSExec assembler = new MVSExec().file(buildFile).pgm(props.assembler_pgm).parm(parameters)
 
+	// asma options file
+	def asmaOpts = props.getFileProperty('assembler_asmaOptFile', buildFile) ?: ""
+	if (asmaOpts) assembler.dd(new DDStatement().name("ASMAOPT").dsn("${asmaOpts}").options("shr"))
+	
 	// add DD statements to the compile command
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 

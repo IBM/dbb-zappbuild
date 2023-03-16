@@ -67,6 +67,10 @@ Property | Description | Overridable
 assembler_fileBuildRank | Default Assemble program build rank. Used to sort Assembler build file sub-list. Leave empty. | true
 assembler_pgmParms | Default Assembler parameters. | true
 assembler_linkEditParms | Default parameters for the link edit step. | true
+assembler_debugParms | Assembler options when the debug flag is set. | true
+assembler_db2precompilerParms | Default Assembler parameters for Db2 precompiler step. | true
+assembler_cicsprecompilerParms | Default Assembler parameters for CICS precompiler step. | true
+assembler_asmaOptFile | Optional ASMAOPT file - dataset(member). | true
 assembler_compileErrorPrefixParms | Default parameters to support remote error feedback in user build scenarios | true
 assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 assembler_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
