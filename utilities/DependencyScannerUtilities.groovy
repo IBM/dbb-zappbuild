@@ -73,37 +73,42 @@ def populateDependencyScannerRegistry() {
 		scannerMapping.getValues().each{ scannerConfigJson ->
 
 			Map scannerConfig = parseJSONStringToMap(scannerConfigJson)
-			scannerClass = scannerConfig["scannerClass"]
-			languageHint = scannerConfig["languageHint"]
+			if (scannerConfig) {
+				scannerClass = scannerConfig["scannerClass"]
+				languageHint = scannerConfig["languageHint"]
 
-			// get file patterns / extensions
-			fileExtensionsPatterns = props.getFilePropertyPatterns("dbb.scannerMapping", scannerConfigJson)
-			if (fileExtensionsPatterns) {
-				fileExtensionsPatterns.each{ fileExt ->
+				// get file patterns / extensions
+				fileExtensionsPatterns = props.getFilePropertyPatterns("dbb.scannerMapping", scannerConfigJson)
+				if (fileExtensionsPatterns) {
+					fileExtensionsPatterns.each{ fileExt ->
 
-					// define scanner
-					def scanner
+						// define scanner
+						def scanner
 
-					// evaluate configuration
-					if (scannerClass == "DependencyScanner") {
-						scanner = new DependencyScanner()
-						scanner.setLanguageHint(languageHint)
-					} else if (scannerClass == "ZUnitConfigScanner") {
-						scanner = new ZUnitConfigScanner()
-					} else {
-						errorMsg = "*! DependencyScannerUtilities.populateDependencyScannerRegistry() - Specified Dependency Scanner class $scannerClass does not exist. Process exiting."
-						println errorMsg
-						System.exit(3)
+						// evaluate configuration
+						if (scannerClass == "DependencyScanner") {
+							scanner = new DependencyScanner()
+							scanner.setLanguageHint(languageHint)
+						} else if (scannerClass == "ZUnitConfigScanner") {
+							scanner = new ZUnitConfigScanner()
+						} else {
+							errorMsg = "*! DependencyScannerUtilities.populateDependencyScannerRegistry() - Specified Dependency Scanner class $scannerClass does not exist. Process exiting."
+							println errorMsg
+							System.exit(3)
+						}
+
+						// adding scanner mapping
+						if (props.verbose) println("*** Adding scanner mapping for file extension $fileExt : (languageHint: $languageHint, Scanner Class: $scannerClass)")
+						DependencyScannerRegistry.addScanner(fileExt, scanner)
 					}
-
-					// adding scanner mapping
-					if (props.verbose) println("*** Adding scanner mapping for file extension $fileExt : (languageHint: $languageHint, Scanner Class: $scannerClass)")
-					DependencyScannerRegistry.addScanner(fileExt, scanner)
+				}
+				else {
+					println("**! Warning - No Patterns found for $scannerConfigJson for build property mapping dbb.scannerMapping.")
 				}
 			}
 			else {
-				println("**! Warning - No Patterns found for $scannerConfigJson for build property mapping dbb.scannerMapping.")
-			}
+				println("**! The scanner configuration $scannerConfigJson could not successfully be scanned and is skipped.")
+			} 
 		}
 	}
 	else {
@@ -119,10 +124,9 @@ def parseJSONStringToMap(String mappingString) {
 		JsonSlurper slurper = new groovy.json.JsonSlurper()
 		map = slurper.parseText(mappingString)
 	} catch (Exception e) {
-		errorMsg = "*! DependencyScannerUtilities.parseJSONStringToMap() - Converting String $mappingString a Map object failed. Process exiting."
+		errorMsg = "*! DependencyScannerUtilities.parseJSONStringToMap() - Converting String $mappingString a Map object failed."
 		println errorMsg
-		println e.getMessage()
-		System.exit(3)
+		return null
 	}
 	return map
 }
