@@ -107,7 +107,7 @@ def populateDependencyScannerRegistry() {
 				}
 			}
 			else {
-				println("**! The scanner configuration $scannerConfigJson could not successfully be scanned and is skipped.")
+				println("**! The scanner configuration $scannerConfigJson could not successfully be parsed and is skipped.")
 			} 
 		}
 	}
