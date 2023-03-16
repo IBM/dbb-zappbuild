@@ -99,7 +99,7 @@ sortedList.each { buildFile ->
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
 				}
 			}
 		}
