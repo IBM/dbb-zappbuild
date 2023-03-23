@@ -26,7 +26,7 @@ def assertBuildProperties(String requiredProps) {
 
 		buildProps.each { buildProp ->
 			buildProp = buildProp.trim()
-			assert props."$buildProp" : "*! Missing required build property '$buildProp'"
+			assert (props."$buildProp" || !(new PropertyMappings("$buildProp").getValues().isEmpty())) : "*! Missing required build property '$buildProp'"
 		}
 	}
 }
@@ -538,6 +538,9 @@ def getLangPrefix(String scriptName){
 			break;
 		case "PSBgen.groovy":
 			langPrefix = 'psbgen'
+			break;
+		case "Transfer.groovy":
+			langPrefix = 'transfer'
 			break;
 		default:
 			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
