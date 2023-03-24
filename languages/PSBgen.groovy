@@ -8,7 +8,7 @@ import groovy.transform.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.psbgen_requiredBuildProperties)
@@ -20,11 +20,12 @@ def acbgenLangQualifier = "acbgen"
 buildUtils.createLanguageDatasets(acbgenLangQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'psbgen_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'psbgen_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${sortedList.size()}"
 
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.psbgen_srcPDS, null, null, null)

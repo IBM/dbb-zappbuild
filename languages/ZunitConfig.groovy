@@ -11,7 +11,7 @@ import groovy.xml.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
@@ -19,11 +19,11 @@ buildUtils.assertBuildProperties(props.zunit_requiredBuildProperties)
 
 def langQualifier = "zunit"
 buildUtils.createLanguageDatasets(langQualifier)
-
+int currentBuildFileNumber = 1
 
 // iterate through build list
-(argMap.buildList).each { buildFile ->
-	println "*** Building file $buildFile"
+(argMap.buildList.sort()).each { buildFile ->
+	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${argMap.buildList.size()}"
 
 	String member = CopyToPDS.createMemberName(buildFile)
 
