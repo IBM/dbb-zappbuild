@@ -10,7 +10,10 @@ import groovy.transform.*
 import groovy.time.*
 import groovy.xml.*
 import groovy.cli.commons.*
-
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -526,13 +529,24 @@ def createBuildList() {
 			println "** Adding files listed in ${props.buildFile} to $action build list"
 
 			File jBuildFile = new File(props.buildFile)
-			List<String> files = jBuildFile.readLines()
-			files.each { file ->
-				String relFile = buildUtils.relativizePath(file)
-				if (relFile)
-					buildSet.add(relFile)
+			List<String> patterns = jBuildFile.readLines()
+			Path root = Paths.get(props.workspace)
+
+			patterns.each { pattern ->
+				java.nio.file.Files.walk(root).forEach { filePath ->
+					if (Files.isRegularFile(filePath)) {
+						String globPattern = "glob:${root}/${pattern}"
+						java.nio.file.PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher(globPattern)
+						if (pathMatcher.matches(filePath)) {
+							String relFile = buildUtils.relativizePath(filePath.toString())
+							if (relFile)
+								buildSet.add(relFile)
+						}
+					}
+				}
 			}
 		}
+
 		// else it's a single file to build
 		else {
 			println "** Adding ${props.buildFile} to $action build list"
