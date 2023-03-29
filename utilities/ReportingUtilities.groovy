@@ -11,7 +11,7 @@ import java.net.URLEncoder
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
-@Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def impactUtils= loadScript(new File("ImpactUtilities.groovy"))
 
 /**
  * This utilities script is a collection of methods for the reporting 
