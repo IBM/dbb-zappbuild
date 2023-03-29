@@ -9,6 +9,9 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
