@@ -225,7 +225,7 @@ def calculateConcurrentChanges(Set<String> buildSet) {
 				Set<String> concurrentDeletedFiles = new HashSet<String>()
 				Set<String> concurrentBuildProperties = new HashSet<String>()
 	
-				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
+				if (props.verbose) println "***  Analysing and validating changes for branch : $gitReference"
 	
 				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = impactUtils.calculateChangedFiles(null, true, gitReference)
 	
