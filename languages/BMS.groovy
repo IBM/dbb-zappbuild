@@ -22,7 +22,7 @@ List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'bms
 int currentBuildFileNumber = 1
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${sortedList.size()}"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 	
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.bms_srcPDS, null, null, null)

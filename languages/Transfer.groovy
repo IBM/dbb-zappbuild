@@ -38,7 +38,7 @@ int currentBuildFileNumber = 1
 
 // iterate through build list
 buildList.each { buildFile ->
-	println "*** Transferring file $buildFile - ${currentBuildFileNumber++} of ${buildList.size()}"
+	println "*** (${currentBuildFileNumber++}/${buildList.size()}) Transferring file $buildFile"
 
 	// local variables and log file
 	String member = CopyToPDS.createMemberName(buildFile)

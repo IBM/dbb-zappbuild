@@ -25,7 +25,7 @@ int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${sortedList.size()}"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.psbgen_srcPDS, null, null, null)

@@ -26,7 +26,7 @@ int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${sortedList.size()}"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	
 	// configure dependency resolution and create logical file	

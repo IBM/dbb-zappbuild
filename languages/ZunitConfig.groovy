@@ -23,7 +23,7 @@ int currentBuildFileNumber = 1
 
 // iterate through build list
 (argMap.buildList.sort()).each { buildFile ->
-	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${argMap.buildList.size()}"
+	println "*** (${currentBuildFileNumber++}/${argMap.buildList.size()}) Building file $buildFile"
 
 	String member = CopyToPDS.createMemberName(buildFile)
 

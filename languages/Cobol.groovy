@@ -34,7 +34,7 @@ if (buildListContainsTests(sortedList)) {
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile - ${currentBuildFileNumber++} of ${sortedList.size()}"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
 	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
