@@ -3,6 +3,7 @@ import java.nio.file.PathMatcher
 import java.util.regex.*
 import com.ibm.dbb.build.*
 import com.ibm.dbb.dependency.*
+import com.ibm.dbb.metadata.*
 import groovy.transform.*
 
 // define script properties
