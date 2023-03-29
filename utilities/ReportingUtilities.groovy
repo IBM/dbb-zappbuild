@@ -150,17 +150,23 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
 
 				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-				// query dbb web app for files with all logicalDependencies
-				def logicalImpactedFiles = metadataStore.getImpactedFiles([cName], logicalDependencies);
+				// query dbb metadatastore for files with all logicalDependencies
+				def logicalImpactedFilesCollections = metadataStore.getImpactedFiles([cName], logicalDependencies);
 				
-				logicalImpactedFiles.each{ logicalFile ->
-					if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
-					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-					externalImpactList.add(impactRecord)
-					impactedFiles.add(logicalFile.getFile())
+				logicalImpactedFilesCollections.each { collection ->
+					List<LogicalFile> logicalImpactedFiles = collection.getLogicalFiles()
+					logicalImpactedFiles.each{ logicalFile ->
+						if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
+						def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
+						externalImpactList.add(impactRecord)
+						impactedFiles.add(logicalFile.getFile())
+					}
+					// adding updated record
+					collectionImpactsSetMap.put(cName, externalImpactList)
+					
 				}
-				// adding updated record
-				collectionImpactsSetMap.put(cName, externalImpactList)
+				
+				
 
 			}
 			else{
