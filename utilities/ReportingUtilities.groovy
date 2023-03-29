@@ -109,6 +109,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 	} catch (Exception e) {
 		println("*! (ReportingUtilities.reportExternalImpacts) Exception caught during reporting of external impacts. Build continues.")
 		println(e.getMessage())
+		println(e.printStackTrace())
 	}
 }
 
