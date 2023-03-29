@@ -11,6 +11,7 @@ import java.net.URLEncoder
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+@Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 
 /**
  * This utilities script is a collection of methods for the reporting 
@@ -226,7 +227,7 @@ def calculateConcurrentChanges(Set<String> buildSet) {
 	
 				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
 	
-				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
+				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = impactUtils.calculateChangedFiles(null, true, gitReference)
 	
 				// generate reports and verify for intersects
 				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference)
