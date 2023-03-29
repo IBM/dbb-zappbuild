@@ -17,6 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
@@ -596,18 +597,18 @@ def createBuildList() {
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-			impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
+			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
 		}
 		else if(buildSet) {
 			println "** Perform analysis and reporting of external impacted files for the build list."
-			impactUtils.reportExternalImpacts(buildSet)
+			reportingUtils.reportExternalImpacts(buildSet)
 		}
 	}
 	
 	// Document and validate concurrent changes
 	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(buildSet)
+		reportingUtils.calculateConcurrentChanges(buildSet)
 	}
 	
 	// document deletions in build report
