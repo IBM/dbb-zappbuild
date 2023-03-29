@@ -5,6 +5,7 @@ import com.ibm.dbb.build.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.metadata.*
 import groovy.transform.*
+import java.net.URLEncoder
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -88,7 +89,9 @@ def reportExternalImpacts(Set<String> changedFiles){
 				externalImpactList = entry.value
 				if (externalImpactList.size()!=0){
 					// write impactedFiles per application to build workspace
-					String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
+					// naming convention: externalImpacts_<collectionName>.log
+					String encodedFileName = URLEncoder.encode("externalImpacts_${entry.key}.log", "UTF-8")
+					String impactListFileLoc = "${props.buildOutDir}/${encodedFileName}"
 					if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
 					File impactListFile = new File(impactListFileLoc)
 					String enc = props.logEncoding ?: 'IBM-1047'
