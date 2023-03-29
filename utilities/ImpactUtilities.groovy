@@ -85,7 +85,7 @@ def createImpactBuildList() {
 					// only add impacted files that have a build script mapped to it
 					if (ScriptMappings.getScriptName(impactFile)) {
 						// only add impacted files, that are in scope of the build.
-						if (!matches(impactFile, excludeMatchers)){
+						if (!buildUtils.matches(impactFile, excludeMatchers)){
 
 							// calculate abbreviated gitHash for impactFile
 							filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
@@ -137,7 +137,7 @@ def createImpactBuildList() {
 						// only add impacted files that have a build script mapped to it
 						if (ScriptMappings.getScriptName(impactFile)) {
 							// only add impacted files, that are in scope of the build.
-							if (!matches(impactFile, excludeMatchers)){
+							if (!buildUtils.matches(impactFile, excludeMatchers)){
 								buildSet.add(impactFile)
 								if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
 							}
@@ -410,7 +410,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
-				if ( !matches(file, excludeMatchers)) {
+				if ( !buildUtils.matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
@@ -427,7 +427,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
 		deleted.each { file ->
-			if ( !matches(file, excludeMatchers)) {
+			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
@@ -436,7 +436,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
 		renamed.each { file ->
-			if ( !matches(file, excludeMatchers)) {
+			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
@@ -538,7 +538,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	changedFiles.each { file ->
 
 		// make sure file is not an excluded file
-		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
+		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
 
@@ -752,17 +752,6 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	return [defaultValue, null]
 }
 
-def matches(String file, List<PathMatcher> pathMatchers) {
-	def result = pathMatchers.any { matcher ->
-		Path path = FileSystems.getDefault().getPath(file);
-		if ( matcher.matches(path) )
-		{
-			return true
-		}
-	}
-	return result
-}
-
 /**
  *  shouldCalculateImpacts
  *
@@ -772,7 +761,7 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 def boolean shouldCalculateImpacts(String changedFile){
 	// retrieve Pathmaters from property and check
 	List<PathMatcher> nonImpactingFiles = buildUtils.createPathMatcherPattern(props.skipImpactCalculationList)
-	onskipImpactCalculationList = matches(changedFile, nonImpactingFiles)
+	onskipImpactCalculationList = buildUtils.matches(changedFile, nonImpactingFiles)
 
 	// return false if changedFile found in skipImpactCalculationList
 	if (onskipImpactCalculationList) return false

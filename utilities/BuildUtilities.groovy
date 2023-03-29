@@ -811,3 +811,19 @@ def createPathMatcherPattern(String property) {
 	}
 	return pathMatchers
 }
+
+/**
+ * matches
+ * Generic method to validate if a file is matching any pathmatchers  
+ * 
+ */
+def matches(String file, List<PathMatcher> pathMatchers) {
+	def result = pathMatchers.any { matcher ->
+		Path path = FileSystems.getDefault().getPath(file);
+		if ( matcher.matches(path) )
+		{
+			return true
+		}
+	}
+	return result
+}

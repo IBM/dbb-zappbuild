@@ -54,7 +54,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 				List<PathMatcher> fileMatchers = buildUtils.createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
 
 				// check that file is on reportExternalImpactsAnalysisFileFilter
-				if(matches(changedFile, fileMatchers)){
+				if(buildUtils.matches(changedFile, fileMatchers)){
 
 					// get directly impacted candidates first
 					if (props.verbose) println("     $changedFile ")
