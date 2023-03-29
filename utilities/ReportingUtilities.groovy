@@ -153,8 +153,8 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 				// query dbb metadatastore for files with all logicalDependencies
 				def logicalImpactedFilesCollections = metadataStore.getImpactedFiles([cName], logicalDependencies);
 				
-				logicalImpactedFilesCollections.each { collection ->
-					List<LogicalFile> logicalImpactedFiles = collection.getLogicalFiles()
+				logicalImpactedFilesCollections.each{ collectionImpacts ->
+					List<LogicalFile> logicalImpactedFiles = collectionImpacts.getLogicalFiles()
 					logicalImpactedFiles.each{ logicalFile ->
 						if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
 						def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
