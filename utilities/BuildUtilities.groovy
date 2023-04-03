@@ -792,10 +792,16 @@ def getShortGitHash(String buildFile) {
 }
 
 /**
- * print the logicalFile attributes and indicates if attributes are overriden
- * by file property overrides.
+ * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
+ * and indicating if an attribute is overridden through a property definition.
  * 
- * //File attributes: CICS=Yes, SQL=Yes*, DLI=No, MQ=No
+ * sample output:
+ * File attributes: CICS=Yes, SQL=Yes*, DLI=No, MQ=No
+ * 
+ * additional notes:
+ * An suffixed asterisk (*) of the value for an attribute is indicating if a property definition 
+ * is overriding the value. When the values are identical, no asterisk is presented, even when 
+ * a property is setting the same value.
  * 
  * This is implementing 
  * https://github.com/IBM/dbb-zappbuild/issues/339
@@ -808,7 +814,7 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 	String dliFlag = (logicalFile.isDLI() == isDLI(logicalFile)) ? "${logicalFile.isDLI()}" : "${isDLI(logicalFile)}*"
 	String mqFlag = (logicalFile.isMQ() == isMQ(logicalFile)) ? "${logicalFile.isMQ()}" : "${isMQ(logicalFile)}*"
 	
-	println "DBB File attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
+	println "File attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
 	
 }
 
