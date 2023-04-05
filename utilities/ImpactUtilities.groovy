@@ -1190,6 +1190,6 @@ def sortFileList(list) {
  * isMappedAsZUnitConfigFile
  * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
  */
-def isMappedAsZUnitConfigFile(file) {
-	return (depScannerUtils.getScanner(buildFile).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+def isMappedAsZUnitConfigFile(String file) {
+	return (depScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
 }
