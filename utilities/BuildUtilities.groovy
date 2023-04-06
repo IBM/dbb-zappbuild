@@ -796,7 +796,7 @@ def getShortGitHash(String buildFile) {
  * and indicating if an attribute is overridden through a property definition.
  * 
  * sample output:
- * File attributes: CICS=Yes, SQL=Yes*, DLI=No, MQ=No
+ * Program attributes: CICS=true, SQL=true*, DLI=false, MQ=false
  * 
  * additional notes:
  * An suffixed asterisk (*) of the value for an attribute is indicating if a property definition 
@@ -814,7 +814,7 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 	String dliFlag = (logicalFile.isDLI() == isDLI(logicalFile)) ? "${logicalFile.isDLI()}" : "${isDLI(logicalFile)}*"
 	String mqFlag = (logicalFile.isMQ() == isMQ(logicalFile)) ? "${logicalFile.isMQ()}" : "${isMQ(logicalFile)}*"
 	
-	println "File attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
+	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
 	
 }
 
