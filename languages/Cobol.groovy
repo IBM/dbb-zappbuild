@@ -103,7 +103,7 @@ sortedList.each { buildFile ->
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('cobol_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.cobol_loadPDS, logicalFile)
 				}
 			}
 		}
