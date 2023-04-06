@@ -348,7 +348,7 @@ def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member
 
 	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm("EQALANGX").parm("(ASM ERROR LOUD")
 	generateSidefile.dd(new DDStatement().name("TASKLIB").dsn("${props.PDTCCMOD}").options("shr"))
-	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("SIDEFILE"))
+	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("EQALANGX"))
 	return generateSidefile
 }
 
