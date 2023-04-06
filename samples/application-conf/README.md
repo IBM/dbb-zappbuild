@@ -74,8 +74,11 @@ assembler_asmaOptFile | Optional ASMAOPT file - dataset(member). | true
 assembler_compileErrorPrefixParms | Default parameters to support remote error feedback in user build scenarios | true
 assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
 assembler_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
-assembler_maxRC | Default Assembler maximum RC allowed. | true
-assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
+assembler_maxSQLTranslatorRC | Default maximum return code for the sql translator step. | true
+assembler_maxCICSTranslatorRC | Default maximum return code for the cics translator step. | true
+assembler_maxRC | Default maximum return code for the Assembler step. | true
+assembler_maxIDILANGX_RC | Default maximum return code for the debug IDILANGX sidefile generation step. | true
+assembler_linkEditMaxRC | Default maximum return code for the linkEdit step. | true
 assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
