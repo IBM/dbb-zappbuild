@@ -50,7 +50,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 			// get directly impacted candidates first
 			if (props.verbose) println("*** Running external impact analysis for files ")
 
-			// calculate and collect external impacts
+			// collect list changes files for which the analysis should be performed
 			changedFiles.each{ changedFile ->
 
 				List<PathMatcher> fileMatchers = buildUtils.createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
@@ -60,8 +60,8 @@ def reportExternalImpacts(Set<String> changedFiles){
 
 					// get directly impacted candidates first
 					if (props.verbose) println("     $changedFile ")
-
 					externalImpactReportingList.add(changedFile)
+					
 				}
 				else {
 					if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
@@ -69,40 +69,29 @@ def reportExternalImpacts(Set<String> changedFiles){
 			}
 
 			if (externalImpactReportingList.size() != 0) {
-				(collectionImpactsSetMap, impactedFiles) = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, collectionImpactsSetMap, "***", "buildSet")
-
-
-				// get impacted files of idenfied impacted files
+				
+				// calculate impacted files and write the report
+				def List<Collection> logicalImpactedFilesCollections = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, "buildSet")
+				writeExternalImpactReports(logicalImpactedFilesCollections, "***")
+				
+				
+				// calculate impacted files and write the report, this performs the second level of impact analysis 
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
+					
 					if (props.verbose) println("**** Running external impact analysis for identified external impacted files as dependent files of the initial set. ")
-					impactedFiles.each{ impactedFile ->
-						if (props.verbose) println("     $impactedFile ")
-
-					}
-					def impactsBin
-					(collectionImpactsSetMap, impactsBin) = calculateLogicalImpactedFiles(new ArrayList(impactedFiles), changedFiles, collectionImpactsSetMap, "****", "impactSet")
-				}
-
-			}
-
-			// generate reports by collection / application
-			collectionImpactsSetMap.each{ entry ->
-				externalImpactList = entry.value
-				if (externalImpactList.size()!=0){
-					// write impactedFiles per application to build workspace
-					// naming convention: externalImpacts_<collectionName>.log
-					String encodedFileName = URLEncoder.encode("externalImpacts_${entry.key}.log", "UTF-8")
-					String impactListFileLoc = "${props.buildOutDir}/${encodedFileName}"
-					if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-					File impactListFile = new File(impactListFileLoc)
-					String enc = props.logEncoding ?: 'IBM-1047'
-					impactListFile.withWriter(enc) { writer ->
-						externalImpactList.each { file ->
-							// if (props.verbose) println file
-							writer.write("$file\n")
+					externalImpactReportingList.clear()
+					logicalImpactedFilesCollections.each { logicalImpactedFilesCollection ->
+						logicalImpactedFilesCollection.getLogicalFiles().each{ logicalFile ->
+							def impactedFile = logicalFile.getFile()
+							if (props.verbose) println("     $impactedFile ")
+							externalImpactReportingList.add(impactedFile)
 						}
 					}
+
+					logicalImpactedFilesCollections = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, "impactSet")
+					writeExternalImpactReports(logicalImpactedFilesCollections, "****")					
 				}
+
 			}
 
 		}
@@ -117,23 +106,29 @@ def reportExternalImpacts(Set<String> changedFiles){
 	}
 }
 
-/*
+/**
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
+ * 
+ * Returns a collection of the identified potential impacts
+ * 
  */
 
-def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, Map<String,HashSet> collectionImpactsSetMap, String indentationMsg, String analysisMode) {
+def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, String analysisMode) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
 
-	// local
+	// local variables
 	List<LogicalDependency> logicalDependencies = new ArrayList()
+	List<Collection> logicalImpactedFilesCollections = new ArrayList()
 	
 	// will be returned
 	Set<String> impactedFiles = new HashSet<String>()
 
-	// creating a list logical dependencies
+	// construct the logical dependencies from the build list and filter on those files 
+	//   that we will search for
+	
 	fileList.each{ file ->
 		// go after all the files passed in; assess the identified impacted files to skip analysis for files from an impactSet which are on the changed files
 		if(analysisMode.equals('buildSet') || (analysisMode.equals('impactSet') && !changedFiles.contains(file))){
@@ -148,47 +143,56 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 
 	if(logicalDependencies.size != 0) {
 
-		// iterate over collections
-		metadataStore.getCollections().each{ collection ->
-			String cName = collection.getName()
-			if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-
-				def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-				// query dbb metadatastore for files with all logicalDependencies
-				def logicalImpactedFilesCollections = metadataStore.getImpactedFiles([cName], logicalDependencies);
-				
-				logicalImpactedFilesCollections.each{ collectionImpacts ->
-					List<LogicalFile> logicalImpactedFiles = collectionImpacts.getLogicalFiles()
-					logicalImpactedFiles.each{ logicalFile ->
-						if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${cName} ")
-						def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-						externalImpactList.add(impactRecord)
-						impactedFiles.add(logicalFile.getFile())
-					}
-					// adding updated record
-					collectionImpactsSetMap.put(cName, externalImpactList)
-					
-				}
-				
-				
-
-			}
-			else{
-				// debug-output
-				//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-			}
+		// get all collections which match pattern
+		List<String> selectedCollections = new ArrayList()
+		metadataStore.getCollections().each{ it ->
+			cName = it.getName()
+			if (matchesPattern(cName,collectionMatcherPatterns)) selectedCollections.add(cName)
 		}
+		
+		// run query
+		logicalImpactedFilesCollections = metadataStore.getImpactedFiles(selectedCollections, logicalDependencies);
+		
 	}
 	else {
 		// debug-output
 		//if (props.verbose) println("Empty fileList")
 	}
 
+	return logicalImpactedFilesCollections
+}
 
-	return [
-		collectionImpactsSetMap,
-		impactedFiles
-	]
+
+
+/**
+ * Generate the report files of the external impacts and write them to the build output directory
+ * 
+ */
+def writeExternalImpactReports(List<Collection> logicalImpactedFilesCollections, String indentationMsg) {
+
+	
+	// generate reports by collection / application
+	
+	logicalImpactedFilesCollections.each{ collectionImpacts ->
+
+		def List<LogicalFile> logicalImpactedFiles = collectionImpacts.getLogicalFiles()
+		def collectionName = collectionImpacts.getName()
+
+		String encodedFileName = URLEncoder.encode("externalImpacts_${collectionName}.log", "UTF-8")
+		String impactListFileLoc = "${props.buildOutDir}/${encodedFileName}"
+		if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+		File impactListFile = new File(impactListFileLoc)
+		String enc = props.logEncoding ?: 'IBM-1047'
+		impactListFile.withWriter(enc) { writer ->
+
+			// write message for each file
+			logicalImpactedFiles.each{ logicalFile ->
+				if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${collectionName} ")
+				def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${collectionName}"
+				writer.write("$impactRecord\n")
+			}
+		}
+	}
 }
 
 // Methods for reporting concurrent changes
