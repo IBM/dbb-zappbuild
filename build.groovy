@@ -104,6 +104,12 @@ def initializeBuildProcess(String[] args) {
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
 
+	// evaluate preview flag to set the reportOnly
+	if (props.preview) {
+		println "** Running in reportOnly mode. Will process build options but not execute any steps."
+		props.put("dbb.command.reportOnly","true")
+	}
+	
 	// create metadata store for this script
 	if (!props.userBuild) {
 		if (props.metadataStoreType == 'file')
@@ -190,13 +196,17 @@ def initializeBuildProcess(String[] args) {
 	// initialize build result (requires MetadataStore)
 	if (metadataStore) {
 		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+		// set build state and status
 		buildResult.setState(buildResult.PROCESSING)
+		if (props.preview) buildResult.setStatus(4)
+		
 		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
 		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
 		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
 		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
 		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
-
+		if (props.preview) buildResult.setProperty('preview', 'true')
+				
 		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
 	}
 
@@ -231,7 +241,8 @@ options:
 	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
-
+	cli.pr(longOpt:'preview', 'Flag to run build in preview mode without processing any files.')
+	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
 	cli.ss(longOpt:'scanSource', 'Flag indicating to only scan source files for application without building anything')
@@ -392,7 +403,8 @@ def populateBuildProperties(def opts) {
 	if (opts.v) props.verbose = 'true'
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
-	
+	if (opts.pr) props.preview = 'true'
+		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
 	if (opts.ss) props.scanOnly = 'true'
@@ -688,7 +700,7 @@ def finalizeBuildProcess(Map args) {
 		// }
 		buildReport.addRecord(buildReportRecord)
 	}
-
+		
 	// create build report data file
 	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
 	def buildReportEncoding = "UTF-8"
