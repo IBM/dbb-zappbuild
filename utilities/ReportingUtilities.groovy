@@ -42,7 +42,6 @@ def reportExternalImpacts(Set<String> changedFiles){
 
 	if (props.verbose) println("*** Running external impact analysis with file filter ${props.reportExternalImpactsAnalysisFileFilter} and collection patterns ${props.reportExternalImpactsCollectionPatterns} with analysis mode ${props.reportExternalImpactsAnalysisDepths}")
 
-
 	try {
 
 		if (props.reportExternalImpactsAnalysisDepths == "simple" || props.reportExternalImpactsAnalysisDepths == "deep"){
@@ -62,8 +61,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 					if (props.verbose) println("     $changedFile ")
 					externalImpactReportingList.add(changedFile)
 					
-				}
-				else {
+				} else {
 					if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
 				}
 			}
@@ -73,7 +71,6 @@ def reportExternalImpacts(Set<String> changedFiles){
 				// calculate impacted files and write the report
 				def List<Collection> logicalImpactedFilesCollections = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, "buildSet")
 				writeExternalImpactReports(logicalImpactedFilesCollections, "***")
-				
 				
 				// calculate impacted files and write the report, this performs the second level of impact analysis 
 				if (props.reportExternalImpactsAnalysisDepths == "deep") {
@@ -91,9 +88,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 					logicalImpactedFilesCollections = calculateLogicalImpactedFiles(externalImpactReportingList, changedFiles, "impactSet")
 					writeExternalImpactReports(logicalImpactedFilesCollections, "****")					
 				}
-
 			}
-
 		}
 		else {
 			println("*! build property reportExternalImpactsAnalysisDepths has an invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
@@ -135,9 +130,6 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 			String memberName = CopyToPDS.createMemberName(file)
 			def ldepFile = new LogicalDependency(memberName, null, null);
 			logicalDependencies.add(ldepFile)
-		}else {
-			// debug-output
-			// println("$indentationMsg!* Skipped redundant analysis. $file was already or will be procceed soon.")
 		}
 	}
 
@@ -152,13 +144,7 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 		
 		// run query
 		logicalImpactedFilesCollections = metadataStore.getImpactedFiles(selectedCollections, logicalDependencies);
-		
 	}
-	else {
-		// debug-output
-		//if (props.verbose) println("Empty fileList")
-	}
-
 	return logicalImpactedFilesCollections
 }
 
@@ -170,9 +156,7 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
  */
 def writeExternalImpactReports(List<Collection> logicalImpactedFilesCollections, String indentationMsg) {
 
-	
 	// generate reports by collection / application
-	
 	logicalImpactedFilesCollections.each{ collectionImpacts ->
 
 		def List<LogicalFile> logicalImpactedFiles = collectionImpacts.getLogicalFiles()
