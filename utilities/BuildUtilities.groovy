@@ -9,6 +9,9 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
@@ -792,6 +795,40 @@ def getShortGitHash(String buildFile) {
 }
 
 /**
+ * createPathMatcherPattern
+ * Generic method to build PathMatcher from a build property
+ */
+
+def createPathMatcherPattern(String property) {
+	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
+	if (property) {
+		property.split(',').each{ filePattern ->
+			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
+				filePattern = "glob:$filePattern"
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
+			pathMatchers.add(matcher)
+		}
+	}
+	return pathMatchers
+}
+
+/**
+ * matches
+ * Generic method to validate if a file is matching any pathmatchers  
+ * 
+ */
+def matches(String file, List<PathMatcher> pathMatchers) {
+	def result = pathMatchers.any { matcher ->
+		Path path = FileSystems.getDefault().getPath(file);
+		if ( matcher.matches(path) )
+		{
+			return true
+		}
+	}
+	return result
+}
+
+/**
  * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
  * and indicating if an attribute is overridden through a property definition.
  * 
@@ -817,4 +854,5 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
 	
 }
-
+	
+	
