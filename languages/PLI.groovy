@@ -51,6 +51,9 @@ sortedList.each { buildFile ->
 	// Get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
+	// print logicalFile details and overrides
+	if (props.verbose) buildUtils.printLogicalFileAttributes(logicalFile)
+	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
@@ -99,7 +102,7 @@ sortedList.each { buildFile ->
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
 				}
 			}
 		}
