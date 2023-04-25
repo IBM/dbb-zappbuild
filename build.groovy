@@ -204,8 +204,9 @@ def initializeBuildProcess(String[] args) {
 		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
 		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
 		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
-		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
 		if (props.preview) buildResult.setProperty('preview', 'true')
+		
+		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
 				
 		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
 	}
@@ -241,7 +242,7 @@ options:
 	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
-	cli.pr(longOpt:'preview', 'Flag to run build in preview mode without processing any files.')
+	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')

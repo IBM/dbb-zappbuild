@@ -200,7 +200,9 @@ build options:
  -ss,--scanSource             Flag indicating to only scan source files for application without building anything
  -sl,--scanLoad               Flag indicating to only scan load modules for application without building anything
  -sa,--scanAll                Flag indicating to scan both source files and load modules for application without building anything
- 
+ -pv,--preview                Supplemental flag indicating to run build in preview mode without processing the execute commands
+
+
  -r,--reset                   Deletes the application's dependency collections 
                               and build result group from the DBB repository
  -v,--verbose                 Flag to turn on script trace
