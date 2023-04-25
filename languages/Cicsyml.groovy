@@ -8,26 +8,35 @@ import groovy.transform.*
 /*
 The language script is for running the CICS tool (zrb) on CICS definitions in YML (yaml)
 format.
-The system should have a Env variable ZRB_LOC which would point to the zrb executable.
-The script will get the CICS yml file names from the buildlist and proceed to execute 
+The crb.properties file should provide 
+ - the zrb location on the host
+ - the path to the Model file 
+ - the application constraints file
+The script will get the resource CICS yml file names from the buildlist and proceed to execute 
 the zrb executable on them. This will create a CSD formatted file, which can be stored as an artifact 
 or can be run on Z/OS through DFHCSDUP or CicsDef.groovy script
 */
+
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
+// verify required build properties
+buildUtils.assertBuildProperties(props.CRB_requiredBuildProperties)
 
-//Get the value of the ZRB_LOC environment variable
-def zrbPath = System.getenv("ZRB_LOC")
-def modelFile, resFile, appFile
+//Get the path to the zrb executable
+def zrbPath = props.CRB_LOC
+//set the model and appl constraint paths
+def modelFile = props.CRB_App
+def appFile = props.CRB_Model
+
+def resFile, extIndex
+
 // zrb command to execute
 def zrb_cmd = ""
 //Set the o/p file name 
-def outputFile = "commands.out"
+def outputFile
+//if MaxRc is null or blank set a default maxRC of 4
+def maxRC = props.CRB_MAXRC ?: "4"
 
-List<String> buildList = argMap.buildList
-
-def artiServerName = 'jfrog-tass-sachin1'
-def serverA = Artifactory.server artiServerName
 
 File zrbExe = new File(zrbPath)
 if (!zrbExe.exists()){
@@ -37,12 +46,13 @@ if (!zrbExe.exists()){
 //	buildUtils.updateBuildResult(errorMsg:errorMsg)
 }
 
-
+List<String> buildList = argMap.buildList
 
 println("** Processing files mapped to ${this.class.getName()}.groovy script")
 
-// typically to run zrb we need 3 files 
-assert buildList.size() == 3
+
+def sout = new StringBuilder()
+def serr = new StringBuilder()
 
 // iterate through build list
 buildList.each { buildFile ->
@@ -55,34 +65,32 @@ buildList.each { buildFile ->
 
 	if (absoluteFile.exists()){
         // Best guess on the file type
-        //absoluteFile.eachLine('ISO8859-1') 
          absoluteFile.eachLine { line ->
             line = line.trim()
             if (line.startsWith('#'))  
                 skip
-            else if(line.startsWith("resourceModel:"))
-                modelFile = absolutePath
             else if(line.startsWith("resourceDefinitions:"))
                  resFile = absolutePath
-            else if(line.startsWith("application:"))
-                 appFile = absolutePath        
         }
     }else {
 		println "$absolutePath does not exist."
 	}
 
+    // generate the file name for the CSD formatted file
+    extIndex = buildFile.lastIndexOf('.')
+	outputFile = buildFile.substring(0, extIndex) + ".csd"
+
     //Build the shell command to execute  
     zrb_cmd = zrbPath + " build --model"
     zrb_cmd = zrb_cmd + " " + modelFile + " --application " + appFile + " --resources " + resFile + " --output " + outputFile
 
-    def sout = new StringBuilder()
-    def serr = new StringBuilder()
-    //execute the command
+
+    //execute the command and save the console o/p in sout & serr
     def pExe = zrb_cmd.execute()
     pExe.consumeProcessOutput(sout, serr)
     pExe.waitFor()
     println sout + "  " + pExe.exitValue() 
-    if (pExe.exitValue()  > 4){
+    if (pExe.exitValue()  > maxRC){
             println("!!! ERROR !!!! " + pExe.exitValue() )
             println pExe.text
     }
@@ -97,6 +105,7 @@ buildList.each { buildFile ->
     ussRecord.setAttribute("file", buildFile)
     ussRecord.setAttribute("label", "CICS YAML")
     ussRecord.setAttribute("outputfile", absolutePath)
+    ussRecord.setAttribute("deployType", "CSD")
 
     // add new record to build report
     if(props.verbose) "* Adding USS_RECORD for $buildFile"
