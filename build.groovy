@@ -405,7 +405,7 @@ def populateBuildProperties(def opts) {
 	if (opts.v) props.verbose = 'true'
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
-	if (opts.pr) props.preview = 'true'
+	if (opts.pv) props.preview = 'true'
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -528,6 +528,10 @@ def createBuildList() {
 		else {
 			println "*! Merge build requires a Filesystem or Db2 MetadataStore"
 		}
+	}
+	
+	if (props.preview) {
+		println "** --preview sub-option provided. Process all phases of the supplied build option, but will not execute the commands and not create a build result."
 	}
 	
 	// if build file present add additional files to build list (mandatory build list)
@@ -686,7 +690,11 @@ def finalizeBuildProcess(Map args) {
 
 		// add files processed and set state
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
-		buildResult.setState(buildResult.COMPLETE)
+		if (props.preview) {
+			buildResult.setState(4) // setting state to a none predefined state
+		} else { 
+			buildResult.setState(buildResult.COMPLETE)
+		}
 
 
 
@@ -733,6 +741,7 @@ def finalizeBuildProcess(Map args) {
 	def state = (props.error) ? "ERROR" : "CLEAN"
 	println("** Build ended at $endTime")
 	println("** Build State : $state")
+	if (props.preview) println("** Executed in Preview / ReportOnly mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
 }
