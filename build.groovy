@@ -506,9 +506,13 @@ def createBuildList() {
 	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
+	// check if preview sub-option
+	if (props.preview) { println "** --preview cli option provided. Processing all phases of the supplied build option, but will not execute the commands." }
+			
 	// check if full build
 	if (props.fullBuild) {
 		println "** --fullBuild option selected. $action all programs for application ${props.application}"
+
 		buildSet = buildUtils.createFullBuildList()
 	}
 	// check if impact build
@@ -529,11 +533,7 @@ def createBuildList() {
 			println "*! Merge build requires a Filesystem or Db2 MetadataStore"
 		}
 	}
-	
-	if (props.preview) {
-		println "** --preview sub-option provided. Process all phases of the supplied build option, but will not execute the commands and not create a build result."
-	}
-	
+		
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {
 
@@ -690,12 +690,7 @@ def finalizeBuildProcess(Map args) {
 
 		// add files processed and set state
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
-		if (props.preview) {
-			buildResult.setState(4) // setting state to a none predefined state
-		} else { 
-			buildResult.setState(buildResult.COMPLETE)
-		}
-
+		buildResult.setState(buildResult.COMPLETE)
 
 
 		// store build result properties in BuildReport.json
@@ -741,7 +736,7 @@ def finalizeBuildProcess(Map args) {
 	def state = (props.error) ? "ERROR" : "CLEAN"
 	println("** Build ended at $endTime")
 	println("** Build State : $state")
-	if (props.preview) println("** Executed in Preview / ReportOnly mode.")
+	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
 }
