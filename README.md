@@ -47,7 +47,8 @@ zAppBuild supports a number of build scenarios:
 * **Merge Build** - Build only changed programs which will be merged back into the mainBuildBranch by using a triple-dot git diff. 
 * **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
 * **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
-* **Build Preview** - Supplemental build option. Process all phases of the supplied build option, but will not execute the commands. A build report and build result is generated.
+* **Build Preview** - Supplemental build option. Process all phases of the supplied build option, but will not execute the commands. A build report and a build result are generated with a specific status that excludes them in subsequent impact build calculations. 
+
 
 Instructions on invoking a zAppBuild is included in [docs/BUILD.md](docs/BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console logs.
 
