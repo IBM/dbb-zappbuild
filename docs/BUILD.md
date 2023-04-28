@@ -1209,6 +1209,8 @@ Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
 
 For instance, use the `--preview` flag with the `--impactBuild` option to obtain a preview of the impact build actions such as identified changed files, the calculated impacted files, the build list, the build flow, the applied build properties and option including the outputs which would be produced.
 
+Use the `--preview` flag with the `--fullBuild` option to produce the full bill of material (documented in a build report) for the artifacts that could be generated in the datasets pointed by the `hlq` parameter.
+
 The build will generate a build report, which, depending of the provided build option, will be stored in the build group. However, the build result status is set to `4` and does not impact the calculation of changed file of subsequent impact builds.  
 
 The below sample build log is documenting an `--impactBuild --preview` with the reporting capablities activated to what the build would do and any potential conflicts of concurrent development activities.
