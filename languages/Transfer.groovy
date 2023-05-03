@@ -40,16 +40,16 @@ import groovy.transform.*
 // Set to keep information about which datasets where already checked/created
 @Field HashSet<String> verifiedBuildDatasets = new HashSet<String>()
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
-
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 // verify required build properties
 buildUtils.assertBuildProperties(props.transfer_requiredBuildProperties)
 
-List<String> buildList = argMap.buildList
+List<String> buildList = argMap.buildList.sort()
+int currentBuildFileNumber = 1
 
 // iterate through build list
 buildList.each { buildFile ->
-	println "*** Transferring file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${buildList.size()}) Transferring file $buildFile"
 
 	// local variables and log file
 	String member = CopyToPDS.createMemberName(buildFile)
