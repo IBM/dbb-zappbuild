@@ -276,6 +276,17 @@ rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
+### CRB.properties
+Build properties used by zAppBuild/language/CRB.groovy
+
+Property | Description
+--- | ---
+crb_requiredBuildProperties | Comma separated list of required build properties
+crb_zrbLocation | Path where CICS Resource build executable is stored
+crb_maxRC | Dataset to move zUnit Playback files to from USS
+crb_resourceModelFile | location of the resources model file. Is typically set on a Enterprise level.
+crb_applicationConstraintsFile | CRB aplication restriction yaml file. Is typically set on a Enterprise level.
+
 ### nonBuildable.properties
 Application properties used by zAppBuild/language/Transfer.groovy
 
