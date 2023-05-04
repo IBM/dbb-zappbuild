@@ -289,6 +289,17 @@ transfer_xmlPDS | Sample dataset for xml members
 transfer_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets 
 
+### CRB.properties
+Build properties used by zAppBuild/language/CRB.groovy
+
+Property | Description
+--- | ---
+crb_requiredBuildProperties | Comma separated list of required build properties
+crb_zrbLocation | Path where CICS Resource build executable is stored
+crb_maxRC | Dataset to move zUnit Playback files to from USS
+crb_resourceModelFile | location of the resources model file.
+crb_applicationConstraintsFile | CRB aplication restriction yaml file.
+
 ### language-conf/languageConfigProps01.properties
 Sample language configuration properties file used by dbb-zappbuild/utilities/BuildUtilities.groovy.
 
