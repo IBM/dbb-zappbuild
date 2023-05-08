@@ -34,11 +34,15 @@ buildUtils.assertBuildProperties(props.crb_requiredBuildProperties)
 
 List<String> buildList = argMap.buildList
 
-println("** Processing files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script"))
+
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort())
+int currentBuildFileNumber = 1
+
 
 // iterate through build list
-buildList.each { buildFile ->
-	println("*** Building file $buildFile")
+sortedList.each { buildFile ->
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
     // Get the path to the zrb executable
     String zrbPath = props.getFileProperty('crb_zrbLocation', buildFile)
