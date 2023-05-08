@@ -9,6 +9,14 @@ import groovy.transform.*
 /*
 The language script is for running the CICS tool (zrb) on CICS definitions in YML (yaml)
 format.
+The script will be used to process CICS definition files from the repo with suffix .yml or .yaml.
+The script will need the CICS definition file in YAML format, it will also need the Model file and 
+the application constraints file.
+The YAML formatted CICS definition files are created by the CICS TS resource builder tool.
+Further information on the CICS TS resource builder tool and can be found at 
+https://www.ibm.com/docs/en/cics-resource-builder/1.0?topic=overview
+The link also gives a good explanation of the Model file and application constraints file and its usage.
+
 The crb.properties file should provide 
  - the zrb location on the host
  - the path to the Model file 
@@ -61,6 +69,8 @@ buildList.each { buildFile ->
     if (applicationConstraintsFile) 
         applicationParm = "--application $applicationConstraintsFile"
     def zrb_cmd = zrbPath + " build --model $resourceModelFile $applicationParm --resources ${props.workspace}/${buildFile} --output ${props.buildOutDir}/$outputFile"
+    if (props.verbose)
+        println("*** Executing zrb command: $zrb_cmd")    
 
     // Execute the command and save the console output in sout & serr
     def process = zrb_cmd.execute()
