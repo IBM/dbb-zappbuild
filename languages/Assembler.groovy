@@ -63,8 +63,10 @@ sortedList.each { buildFile ->
 	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 	// SQL preprocessor
-	if (rc <= maxRC && buildUtils.isSQL(logicalFile)){
+	if (buildUtils.isSQL(logicalFile)){
 		rc = assembler_SQLTranslator.execute()
+		maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
+		
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -83,6 +85,8 @@ sortedList.each { buildFile ->
 	// CICS preprocessor
 	if (rc <= maxRC && buildUtils.isCICS(logicalFile)){
 		rc = assembler_CICSTranslator.execute()
+		maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
+		
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -107,8 +111,8 @@ sortedList.each { buildFile ->
 	// create sidefile
 	if (rc <= maxRC && props.debug) {
 		rc = debugSideFile.execute()
-		maxRC = 4
-
+		maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
+		
 		if (rc > maxRC) {
 			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -254,7 +258,7 @@ def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFi
 }
 
 /*
- * createCompileCommand - creates a MVSExec command for compiling the BMS Map (buildFile)
+ * createCompileCommand - creates a MVSExec command for compiling the source code
  */
 def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	
@@ -342,7 +346,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 
 /*
- * createCompileCommand - creates a MVSExec command for compiling the BMS Map (buildFile)
+ * createDebugSideFileCommand - creates a MVSExec command creating a IDILANGX side file
  */
 def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 
