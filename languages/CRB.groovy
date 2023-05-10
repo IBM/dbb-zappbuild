@@ -7,24 +7,13 @@ import com.ibm.dbb.build.report.*
 import groovy.transform.*
 
 /*
-The language script is for running the CICS tool (zrb) on CICS definitions in YML (yaml)
-format.
-
-The script will be used to process CICS definition files from the repo with suffix .yml or .yaml.
-The script will need the CICS definition file in YAML format, it will also need the Model file and 
-the application constraints file.
-The YAML formatted CICS definition files are created by the CICS TS resource builder tool.
+The language script is invoking the 'CICS TS resource builder utility' for the CICS definitions in YAML (yml) format.
+The script processes CICS definition files stored in the git repository with suffix .yml or .yaml to produce a CSD formatted file.
+The model file and the application constraints file, required by the CICS TS resource builder, are referenced through the CRB.properties file.
+The script expects that the CICS TS resource builder is installed on the build machin in Z/OS UNIX. The location of it is also referenced in the properties file.
+The output of the process is a CSD formatted file, which is reported in the DBB build report for further post-build processing such as packaging and deployment into target environment
 Further information on the CICS TS resource builder tool and can be found at 
-https://www.ibm.com/docs/en/cics-resource-builder/1.0?topic=overview
-The link also gives a good explanation of the Model file and application constraints file and its usage.
-
-The crb.properties file should provide 
- - the zrb location on the host
- - the path to the Model file 
- - the application constraints file
-The script will get the resource CICS yml file names from the buildlist and proceed to execute 
-the zrb executable on them. This will create a CSD formatted file, which can be stored as an artifact 
-or can be run on Z/OS through DFHCSDUP or CicsDef.groovy script
+  https://www.ibm.com/docs/en/cics-resource-builder/1.0?topic=overview
 */
 
 @Field BuildProperties props = BuildProperties.getInstance()
