@@ -6,7 +6,7 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild.groovy"
+println "\n** Executing test script impactBuild_preview.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -63,8 +63,8 @@ impactBuildCommand << "--impactBuild"
 // iterate through change files to test impact build
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_preview_expectedFilesBuilt')
-def changedFiles = props.impactBuild_changedFiles.split(',')
-println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_preview_changedFiles}")
+def changedFiles = props.impactBuild_preview_changedFiles.split(',')
+println("** Processing changed files from impactBuild_preview_changedFiles property : ${props.impactBuild_preview_changedFiles}")
 try {
 	
 	println "\n** Running full build to set baseline"
@@ -160,7 +160,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
  }
 }
 def cleanUpDatasets() {
-	def segments = props.impactBuild_datasetsToCleanUp.split(',')
+	def segments = props.impactBuild_preview_datasetsToCleanUp.split(',')
 	
 	println "Deleting impact build PDSEs ${segments}"
 	segments.each { segment ->
