@@ -60,10 +60,9 @@ try {
 	if (buildReportFile) {
 		def buildReport = testUtils.parseBuildReport(buildReportFile)
 		if (buildReport) {
-
-			expectedFilesBuiltList.each { expectedFile ->
+			expectedFilesBuiltList.each{ expectedFile ->
 				def expectedOutputs = expectedBuildOutputsMapping.getValue(expectedFile)
-				expectedOutputs.split(",") { expectedOutput ->
+				expectedOutputs.split(",").each { expectedOutput ->
 					(member, deployType) = expectedOutput.split(":")
 					assert testUtils.buildReportIncludesOutput(buildReport, member, deployType)  : "*! EXPECTED OUTPUT ($member) with deployType ($deployType) not found in buildreport \nOUTPUT STREAM:\n$outputStream\n"
 				}
