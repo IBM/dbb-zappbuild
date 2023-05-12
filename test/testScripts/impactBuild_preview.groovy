@@ -6,7 +6,7 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild.groovy"
+println "\n** Executing test script impactBuild_preview.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -63,8 +63,8 @@ impactBuildCommand << "--impactBuild"
 // iterate through change files to test impact build
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_preview_expectedFilesBuilt')
-def changedFiles = props.impactBuild_changedFiles.split(',')
-println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_preview_changedFiles}")
+def changedFiles = props.impactBuild_preview_changedFiles.split(',')
+println("** Processing changed files from impactBuild_preview_changedFiles property : ${props.impactBuild_preview_changedFiles}")
 try {
 	
 	println "\n** Running full build to set baseline"
@@ -121,9 +121,9 @@ finally {
 //*************************************************************
 
 def copyAndCommit(String changedFile) {
-	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
+	println "** Updating and committing ${props.appLocation}/${changedFile}"
 	def commands = """
-    cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
+    echo ' ' >> ${props.appLocation}/${changedFile}
     cd ${props.appLocation}/
     git add .
     git commit . -m "edited program file"
@@ -160,7 +160,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
  }
 }
 def cleanUpDatasets() {
-	def segments = props.impactBuild_datasetsToCleanUp.split(',')
+	def segments = props.impactBuild_preview_datasetsToCleanUp.split(',')
 	
 	println "Deleting impact build PDSEs ${segments}"
 	segments.each { segment ->
