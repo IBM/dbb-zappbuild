@@ -6,7 +6,7 @@ import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
 
-@Field def testUtils = loadScript(new File("../testUtilities.groovy"))
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
 
 println "\n** Executing test script fullBuild_debug.groovy"
 
