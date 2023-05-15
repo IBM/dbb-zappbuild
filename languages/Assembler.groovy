@@ -336,7 +336,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 	// SYSADATA allocation
 	if (props.errPrefix || props.debug) {	
-		assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataOptions).pass(true))
+		assembler.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}($member)").options("shr"))
 	}	
 	
 	// add IDz User Build Error Feedback DDs
@@ -362,7 +362,7 @@ def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member
 	
 	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm(props.assembler_eqalangx).parm(parameters)
 	generateSidefile.dd(new DDStatement().name("TASKLIB").dsn("${props.PDTCCMOD}").options("shr"))
-	generateSidefile.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}").options("shr"))
+	generateSidefile.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}($member)").options("shr"))
 	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("EQALANGX"))
 	return generateSidefile
 }
