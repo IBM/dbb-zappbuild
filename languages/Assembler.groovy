@@ -21,7 +21,7 @@ def langQualifier = "assembler"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // create sysadata dataset used in errorPrefix and debug
-if (props.errPrefix || props.debug) {
+if (props.errPrefix || props.debug) {
 	buildUtils.createDatasets(props.assembler_sysadataPDS.split(), props.assembler_sysadataOptions)
 }
 
@@ -335,7 +335,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
 	// SYSADATA allocation
-	if (props.errPrefix || props.debug) {	
+	if (props.errPrefix || props.debug) {	
 		assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataOptions).pass(true))
 	}	
 	
