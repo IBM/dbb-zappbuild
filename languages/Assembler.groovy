@@ -120,29 +120,28 @@ sortedList.each { buildFile ->
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
-	
-	// linkedit
-	if (rc <= maxRC) {
-		// if this program needs to be link edited . . .
-		String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
-		if (needsLinking && needsLinking.toBoolean()) {
-			rc = linkEdit.execute()
-			maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
 
-			if (rc > maxRC) {
-				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
-				println(errorMsg)
-				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
-			}
-			else {
-				// only scan the load module if load module scanning turned on for file
-				if(!props.userBuild){
-					String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean()) {
-						String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-						impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
-					}
+	
+	String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
+	// linkedit
+	if (rc <= maxRC && needsLinking && needsLinking.toBoolean()) {
+
+		rc = linkEdit.execute()
+		maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+
+		if (rc > maxRC) {
+			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		}
+		else {
+			// only scan the load module if load module scanning turned on for file
+			if(!props.userBuild){
+				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
+				if (scanLoadModule && scanLoadModule.toBoolean()) {
+					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
+					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 				}
 			}
 		}
