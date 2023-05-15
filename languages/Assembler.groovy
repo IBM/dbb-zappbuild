@@ -20,6 +20,11 @@ buildUtils.assertBuildProperties(props.assembler_requiredBuildProperties)
 def langQualifier = "assembler"
 buildUtils.createLanguageDatasets(langQualifier)
 
+// create sysadata dataset used in errorPrefix and debug
+if (props.errPrefix || props.debug) {
+	buildUtils.createDatasets(props.assembler_sysadataPDS.split(), props.assembler_sysadataOptions)
+}
+
 // create debug dataset for the sidefile
 if (props.debug) {
 	buildUtils.createDatasets(props.assembler_debugPDS.split(), props.assembler_sidefileOptions)
@@ -330,8 +335,10 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
 	// SYSADATA allocation
-	assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataOptions).pass(true))
-		
+	if (props.errPrefix || props.debug) {	
+		assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataOptions).pass(true))
+	}	
+	
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
