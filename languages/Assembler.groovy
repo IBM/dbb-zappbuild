@@ -330,7 +330,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
 	// SYSADATA allocation
-	assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataTempOptions).pass(true))
+	assembler.dd(new DDStatement().name("SYSADATA").dsn("&&ADATA").options(props.assembler_sysadataOptions).pass(true))
 		
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
@@ -346,11 +346,16 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 /*
  * createDebugSideFileCommand - creates a MVSExec command creating a IDILANGX side file
+ * https://www.ibm.com/docs/en/developer-for-zos/16.0?topic=program-creating-eqalangx-file-assembler
+ * 
  */
 def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 
-	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm("EQALANGX").parm("(ASM ERROR LOUD")
+	String parameters = props.getFileProperty('assembler_eqalangxParms', buildFile)
+	
+	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm(props.assembler_eqalangx).parm(parameters)
 	generateSidefile.dd(new DDStatement().name("TASKLIB").dsn("${props.PDTCCMOD}").options("shr"))
+	generateSidefile.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}").options("shr"))
 	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("EQALANGX"))
 	return generateSidefile
 }

@@ -76,12 +76,16 @@ assembler_srcPDS | Dataset to move assembler source files to from USS
 assembler_macroPDS | Dataset to move macro files to from USS
 assembler_objPDS | Dataset to create object decks in from Assembler step
 assembler_dbrmPDS | Dataset to create DB2 DBRM modules in from Assembler step
+assembler_sysadataPDS | Dataset to create  sysadata file that contains source and symbolic data about the program
+assembler_debugPDS | Dataset to create the eqalangx side file for the IBM Debug Tool
 assembler_loadPDS | Dataset to create load modules in from link edit step
 assembler_srcDataSets | Comma separated list of 'source' type data sets
 assembler_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 assembler_loadDatasets | Comma separated list of 'load module' type data sets
 assembler_loadOptions | BPXWDYN creation options for 'load module' type data sets
 assembler_tempOptions | BPXWDYN creation options for temporary data sets
+assembler_sysadataOptions | BPXWDYN creation options for assembler sysadata data sets
+assembler_sidefileOptions | BPXWDYN creation options for eqalangx sidefile
 assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 assembler_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 assembler_pgm | MVS program name of the high level assembler
