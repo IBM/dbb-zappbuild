@@ -17,6 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
@@ -104,6 +105,12 @@ def initializeBuildProcess(String[] args) {
 	// verify required build properties
 	buildUtils.assertBuildProperties(props.requiredBuildProperties)
 
+	// evaluate preview flag to set the reportOnly
+	if (props.preview) {
+		println "** Running in reportOnly mode. Will process build options but not execute any steps."
+		props.put("dbb.command.reportOnly","true")
+	}
+	
 	// create metadata store for this script
 	if (!props.userBuild) {
 		if (props.metadataStoreType == 'file')
@@ -190,13 +197,18 @@ def initializeBuildProcess(String[] args) {
 	// initialize build result (requires MetadataStore)
 	if (metadataStore) {
 		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+		// set build state and status
 		buildResult.setState(buildResult.PROCESSING)
+		if (props.preview) buildResult.setStatus(4)
+		
 		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
 		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
 		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
 		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
+		if (props.preview) buildResult.setProperty('preview', 'true')
+		
 		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
-
+				
 		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
 	}
 
@@ -231,7 +243,8 @@ options:
 	cli.m(longOpt:'mergeBuild', 'Flag indicating to build only changes which will be merged back to the mainBuildBranch.')	
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
-
+	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
+	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
 	cli.ss(longOpt:'scanSource', 'Flag indicating to only scan source files for application without building anything')
@@ -392,7 +405,8 @@ def populateBuildProperties(def opts) {
 	if (opts.v) props.verbose = 'true'
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
-	
+	if (opts.pv) props.preview = 'true'
+		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
 	if (opts.ss) props.scanOnly = 'true'
@@ -492,9 +506,13 @@ def createBuildList() {
 	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 
+	// check if preview sub-option
+	if (props.preview) { println "** --preview cli option provided. Processing all phases of the supplied build option, but will not execute the commands." }
+			
 	// check if full build
 	if (props.fullBuild) {
 		println "** --fullBuild option selected. $action all programs for application ${props.application}"
+
 		buildSet = buildUtils.createFullBuildList()
 	}
 	// check if impact build
@@ -515,7 +533,7 @@ def createBuildList() {
 			println "*! Merge build requires a Filesystem or Db2 MetadataStore"
 		}
 	}
-	
+		
 	// if build file present add additional files to build list (mandatory build list)
 	if (props.buildFile) {
 
@@ -596,18 +614,18 @@ def createBuildList() {
 	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
-			impactUtils.reportExternalImpacts(buildSet.plus(changedFiles))
+			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
 		}
 		else if(buildSet) {
 			println "** Perform analysis and reporting of external impacted files for the build list."
-			impactUtils.reportExternalImpacts(buildSet)
+			reportingUtils.reportExternalImpacts(buildSet)
 		}
 	}
 	
 	// Document and validate concurrent changes
 	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
-		impactUtils.calculateConcurrentChanges(buildSet)
+		reportingUtils.calculateConcurrentChanges(buildSet)
 	}
 	
 	// document deletions in build report
@@ -675,7 +693,6 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setState(buildResult.COMPLETE)
 
 
-
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
 		def buildResultProps = buildResult.getPropertyNames()
@@ -688,7 +705,7 @@ def finalizeBuildProcess(Map args) {
 		// }
 		buildReport.addRecord(buildReportRecord)
 	}
-
+		
 	// create build report data file
 	def jsonOutputFile = new File("${props.buildOutDir}/BuildReport.json")
 	def buildReportEncoding = "UTF-8"
@@ -719,6 +736,7 @@ def finalizeBuildProcess(Map args) {
 	def state = (props.error) ? "ERROR" : "CLEAN"
 	println("** Build ended at $endTime")
 	println("** Build State : $state")
+	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
 }

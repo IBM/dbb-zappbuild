@@ -110,7 +110,7 @@ App-EPSM/cobol/epsplist.cbl
 
 ### Purpose
 
-Concurrent development activies in separated isolated branches on the same source code, lead to the need to merge the code at some point in time. Git does an excellent job for this task and supports the developer for this task. While pessimistic locking is a common practise on the mainframe, developers will need to keep an eye on what is happening in the git repository, which follows the optimistic locking approach.
+Concurrent development activities in separated isolated branches on the same source code, lead to the need to merge the code at some point in time. Git does an excellent job for this task and supports the developer for this task. While pessimistic locking is a common practise on the mainframe, developers will need to keep an eye on what is happening in the git repository, which follows the optimistic locking approach.
 
 The _Report concurrent changes_ feature can be activated to generate a report to document changes in other configurations within the repository. Additionally, it validates if the current build list intersects with those changes.
 

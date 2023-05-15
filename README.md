@@ -28,6 +28,7 @@ The zAppBuild sample provides the following *language* build scripts by default:
 * PSBgen.groovy
 * MFS.groovy
 * ZunitConfig.groovy
+* Transfer.groovy (for transport non-buildable files like JCL or PROC into build libraries and register them as build output)
 
 All language scripts both compile and optionally link-edit programs. The language build scripts are intended to be useful out of the box but depending on the complexity of your applications' build requirements, may require modifications to meet your development team's needs.  By following the examples used in the existing language build scripts of keeping all application specific references out of the build scripts and instead using configuration properties with strong default values, the zAppBuild sample can continue to be a generic build solution for all of your specific applications.
 
@@ -46,11 +47,16 @@ zAppBuild supports a number of build scenarios:
 * **Merge Build** - Build only changed programs which will be merged back into the mainBuildBranch by using a triple-dot git diff. 
 * **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
 * **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
+* **Build Preview** - Supplemental build option. Process all phases of the supplied build option, but will not execute the commands. A build report and a build result are generated with a specific status that excludes them in subsequent impact build calculations. 
 
 
-Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console log.
+Instructions on invoking a zAppBuild is included in [docs/BUILD.md](docs/BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console logs.
 
-zAppBuild comes with a set of reporting features. It helps development teams to understand the impact of changed files across multiple applications. Another feature helps to identify conflicts due to concurrent development activities within their application. An overview of these features are documented in [REPORT.md](REPORT.md).
+Application-level build properties such as compile and link options can be defined in various ways to set global defaults, application-level overrides or even file level (member-level) overrides. The various supported strategies are documented in [docs/FilePropertyManagement.md](docs/FilePropertyManagement.md).
+
+zAppBuild comes with a set of reporting features. It helps development teams to understand the impact of changed files across multiple applications. Another feature helps to identify conflicts due to concurrent development activities within their application. An overview of these features are documented in [docs/REPORTS.md](docs/REPORTS.md).
+
+Links to additional documentation is provided in the table below.  
 
 ## Repository Legend
 Folder/File | Description | Documentation Link
