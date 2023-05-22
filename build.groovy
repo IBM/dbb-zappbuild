@@ -333,6 +333,18 @@ def populateBuildProperties(def opts) {
 			props.load(new File(propFile))
 		}
 	}
+	
+	// load additional build property files
+	if (props.applicationDefaultPropFiles) {
+		String[] applicationDefaultPropFiles = props.applicationDefaultPropFiles.split(',')
+		applicationDefaultPropFiles.each { propFile ->
+			if (!propFile.startsWith('/'))
+				propFile = "${buildConf}/${propFile}"
+
+			if (opts.v) println "** Loading property file ${propFile}"
+			props.load(new File(propFile))
+		}
+	}
 
 
 	// load application.properties

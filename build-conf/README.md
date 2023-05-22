@@ -37,6 +37,7 @@ General properties used mainly by `build.groovy` but can also be a place to decl
 Property | Description
 --- | ---
 buildPropFiles | Comma separated list of additional build property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to `zAppBuild/build-conf/`.
+applicationDefaultPropFiles | Comma separated list of default application configuration property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to `zAppBuild/build-conf/`.
 buildListFileExt | File extension that indicates the build file is really a build list.
 applicationConfRootDir | Alternate root directory for application-conf location.  Allows for the deployment of the application-conf directories to a static location.  Defaults to ${workspace}/${application}
 gitRepositoryCompareService | Service URL for the Git provider to record a link to the git provider for a visual comparision of two hashes
@@ -54,6 +55,12 @@ dbb.gateway.groupId | Interactive gateway Group ID
 dbb.gateway.regionSize | Interactive gateway Region Size    
 dbb.gateway.logLevel | Interactive gateway Log Level    
 dbb.scannerMapping | DBB PropertyMapping specifying the scanner implementation to be used 
+
+### defaultzAppBuildConf.properties
+General application properties used by zAppBuild.
+
+Property | Description
+--- | ---
 continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
 createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
 buildOutputTSformat | Defines the build timestamp format for build output subfolder and build label.
