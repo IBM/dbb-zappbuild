@@ -9,6 +9,9 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
@@ -26,7 +29,7 @@ def assertBuildProperties(String requiredProps) {
 
 		buildProps.each { buildProp ->
 			buildProp = buildProp.trim()
-			assert props."$buildProp" : "*! Missing required build property '$buildProp'"
+			assert (props."$buildProp" || !(new PropertyMappings("$buildProp").getValues().isEmpty())) : "*! Missing required build property '$buildProp'"
 		}
 	}
 }
@@ -526,6 +529,9 @@ def getLangPrefix(String scriptName){
 		case "PSBgen.groovy":
 			langPrefix = 'psbgen'
 			break;
+		case "Transfer.groovy":
+			langPrefix = 'transfer'
+			break;
 		default:
 			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
 			break;
@@ -773,5 +779,67 @@ def getShortGitHash(String buildFile) {
 	if (abbrevGitHash != null ) return abbrevGitHash
 	if (props.verbose) println "*! Could not obtain abbreviated githash for buildFile $buildFile"
 	return null
+}
+
+
+/**
+ * createPathMatcherPattern
+ * Generic method to build PathMatcher from a build property
+ */
+
+def createPathMatcherPattern(String property) {
+	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
+	if (property) {
+		property.split(',').each{ filePattern ->
+			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
+				filePattern = "glob:$filePattern"
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
+			pathMatchers.add(matcher)
+		}
+	}
+	return pathMatchers
+}
+
+/**
+ * matches
+ * Generic method to validate if a file is matching any pathmatchers  
+ * 
+ */
+def matches(String file, List<PathMatcher> pathMatchers) {
+	def result = pathMatchers.any { matcher ->
+		Path path = FileSystems.getDefault().getPath(file);
+		if ( matcher.matches(path) )
+		{
+			return true
+		}
+	}
+	return result
+}
+
+/**
+ * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
+ * and indicating if an attribute is overridden through a property definition.
+ * 
+ * sample output:
+ * Program attributes: CICS=true, SQL=true*, DLI=false, MQ=false
+ * 
+ * additional notes:
+ * An suffixed asterisk (*) of the value for an attribute is indicating if a property definition 
+ * is overriding the value. When the values are identical, no asterisk is presented, even when 
+ * a property is setting the same value.
+ * 
+ * This is implementing 
+ * https://github.com/IBM/dbb-zappbuild/issues/339
+ *  
+*/
+
+def printLogicalFileAttributes(LogicalFile logicalFile) {
+	String cicsFlag = (logicalFile.isCICS() == isCICS(logicalFile)) ? "${logicalFile.isCICS()}" : "${isCICS(logicalFile)}*"
+	String sqlFlag = (logicalFile.isSQL() == isSQL(logicalFile)) ? "${logicalFile.isSQL()}" : "${isSQL(logicalFile)}*"
+	String dliFlag = (logicalFile.isDLI() == isDLI(logicalFile)) ? "${logicalFile.isDLI()}" : "${isDLI(logicalFile)}*"
+	String mqFlag = (logicalFile.isMQ() == isMQ(logicalFile)) ? "${logicalFile.isMQ()}" : "${isMQ(logicalFile)}*"
+	
+	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
+	
 }
 

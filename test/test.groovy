@@ -102,9 +102,6 @@ def loadBuildProperties(String [] args) {
 	if (options.f) props.propFiles = options.f
 	if (options.o) props.outDir = options.o
 	
-	// load application test.properties file
-	props.load(new File("${getScriptDir()}/applications/${props.app}/test.properties"))
-	
 	// add some additional properties
 	props.testBranch = 'zAppBuildTesting'
 	props.zAppBuildDir = new File(getScriptDir()).getParent()
@@ -126,6 +123,10 @@ def loadBuildProperties(String [] args) {
 	props.appLocation = "${props.zAppBuildDir}/samples/${props.app}" as String
 	props.workspace = "${props.zAppBuildDir}/samples" as String
 
+	// load application test.properties file
+	props.load(new File("${getScriptDir()}/applications/${props.app}/test.properties"))
+
+	
 	// print properties
 	if (props.verbose) {
 		println "** Properties args and applications/${props.app}/test.properties"

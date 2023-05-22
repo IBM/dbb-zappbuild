@@ -70,15 +70,15 @@ def populateDependencyScannerRegistry() {
 
 	if (scannerMapping) {
 		// get all values
-		scannerMapping.getValues().each{ scannerConfigJson ->
+		scannerMapping.getValues().each{ scannerConfig ->
 
-			Map scannerConfig = parseJSONStringToMap(scannerConfigJson)
-			if (scannerConfig) {
-				scannerClass = scannerConfig["scannerClass"]
-				languageHint = scannerConfig["languageHint"]
+			Map scannerConfigMap = parseConfigStringToMap(scannerConfig)
+			if (scannerConfigMap) {
+				scannerClass = scannerConfigMap.scannerClass
+				languageHint = scannerConfigMap.languageHint ? scannerConfigMap.languageHint : "none"
 
 				// get file patterns / extensions
-				fileExtensionsPatterns = props.getFilePropertyPatterns("dbb.scannerMapping", scannerConfigJson)
+				fileExtensionsPatterns = props.getFilePropertyPatterns("dbb.scannerMapping", scannerConfig)
 				if (fileExtensionsPatterns) {
 					fileExtensionsPatterns.each{ fileExt ->
 
@@ -88,7 +88,7 @@ def populateDependencyScannerRegistry() {
 						// evaluate configuration
 						if (scannerClass == "DependencyScanner") {
 							scanner = new DependencyScanner()
-							scanner.setLanguageHint(languageHint)
+							if (scannerConfigMap.languageHint) scanner.setLanguageHint(languageHint)
 						} else if (scannerClass == "ZUnitConfigScanner") {
 							scanner = new ZUnitConfigScanner()
 						} else {
@@ -98,16 +98,16 @@ def populateDependencyScannerRegistry() {
 						}
 
 						// adding scanner mapping
-						if (props.verbose) println("*** Adding scanner mapping for file extension $fileExt : (languageHint: $languageHint, Scanner Class: $scannerClass)")
+						// if (props.verbose) println("*** Adding scanner mapping for file extension $fileExt : (languageHint: $languageHint, Scanner Class: $scannerClass)")
 						DependencyScannerRegistry.addScanner(fileExt, scanner)
 					}
 				}
 				else {
-					println("**! Warning - No Patterns found for $scannerConfigJson for build property mapping dbb.scannerMapping.")
+					println("**! Warning - No Patterns found for $scannerConfig for build property mapping dbb.scannerMapping.")
 				}
 			}
 			else {
-				println("**! The scanner configuration $scannerConfigJson could not successfully be parsed and is skipped.")
+				println("**! The scanner configuration $scannerConfig could not successfully be parsed and is skipped.")
 			} 
 		}
 	}
@@ -115,18 +115,39 @@ def populateDependencyScannerRegistry() {
 		println("**! Warning - Build configuration is not specifying the scanner mapping configuration - dbb.scannerMapping . Using default map of file extensions to IDependencyScanner instances. See DBB toolkit Javadoc.")
 	}
 }
+
 /*
- *  This is a helper method which parses a JSON String representing a map of key value pairs to a proper map
+ * Helper Method for populateDependencyScannerRegistry() to read through the string
+ * 
+ * Decision was to not use JSON for this.
+ * 
+ * Tests:
+ * 
+ *    "languageHint:COB,scannerClass:DependencyScanner"
+ *    "languageHint:COB, scannerClass:DependencyScanner"
+ *    "languageHint : COB, scannerClass : DependencyScanner"
+ *    "languageHint : COB, scannerClass : DependencyScanner"
+ *    "scannerClass : DependencyScanner  ,languageHint : COB"
+ *    "'scannerClass' : 'DependencyScanner'  ,'languageHint' : 'COB'"
+ *    '"scannerClass" : "DependencyScanner"  ,"languageHint" : "COB"'
+ *    '"scannerClass" : "DependencyScanner"  ,"languageHint" : "COB"'
+ *    '"scannerClass" : "DependencyScanner"'
+ * 
  */
-def parseJSONStringToMap(String mappingString) {
-	Map map = [:]
-	try {
-		JsonSlurper slurper = new groovy.json.JsonSlurper()
-		map = slurper.parseText(mappingString)
-	} catch (Exception e) {
-		errorMsg = "*! DependencyScannerUtilities.parseJSONStringToMap() - Converting String $mappingString a Map object failed."
-		println errorMsg
-		return null
+def parseConfigStringToMap(String configString) {
+	// map
+	Map<String,String> scannerConfigMap = new HashMap<String,String>()
+
+	// string parsing
+	configString.replaceAll("'","").replaceAll('"','').split(',').each(){ entry ->
+		def pair = entry.split(':')
+		if(pair.size() == 2) {
+			scannerConfigMap.put(pair[0].trim(),pair[1].trim())
+		}
 	}
-	return map
+	
+	// validate existance of scannerClass definition
+	assert scannerConfigMap.scannerClass != null
+	
+	return scannerConfigMap
 }

@@ -10,6 +10,12 @@ This script is called by test.groovy to run a full build and multiple user build
 - userBuild TC1 to have a successful override of a previously defined file level property
 - userBuild TC2 to validate a failing override and check on an expected warning message
 
+## fullBuild_debug.groovy
+This script is called by test.groovy to run a full build by creating a new “automation” branch from the feature branch specified in the command line argument. It verifies the below requirements
+- Full build with the `--debug` cli option ran clean
+- Number of expected build files equal the number of files build during the full build in the console.
+- Checks if output files are documented in the BuildReport.json. Specifically use it to check if the SIDEFILE for Assembler is present. Cobol and PLI don't produce an additional output file.
+
 ## impactBuild.groovy
 This script that is called by test.groovy to run an impact build against all the program file specified in the [test.properties](/test/applications/MortgageApplication/test.properties). It verifies the below requirements
 - Impact build ran clean

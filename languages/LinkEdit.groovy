@@ -10,7 +10,7 @@ import groovy.transform.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.linkedit_requiredBuildProperties)
@@ -19,11 +19,12 @@ def langQualifier = "linkedit"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'linkedit_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'linkedit_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null, null)
