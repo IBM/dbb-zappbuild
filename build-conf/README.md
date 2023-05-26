@@ -106,7 +106,6 @@ assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD
 assembler_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 assembler_pgm | MVS program name of the high level assembler
 assembler_linkEditor | MVS program name of the link editor
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 assembler_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### BMS.properties
@@ -156,7 +155,6 @@ cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
 
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### LinkEdit.properties
 Build properties used by zAppBuild/language/LinkEdit.groovy
@@ -204,7 +202,6 @@ pli_outputDatasets | List of output datasets to document deletions ** Can be ov
 pli_listOptions | BPXWDYN creation options for LIST data sets
 pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 pli_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### MFS.properties
 Build properties used by zAppBuild/language/MFS.groovy
@@ -242,7 +239,6 @@ dbdgen_outputDatasets | List of output datasets to document deletions ** Can be
 dbdgen_pgm | MVS program name of the high level assembler
 dbdgen_linkEditor | MVS program name of the link editor
 dbdgen_deployType | Deploy Type of build outputs
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### PSBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy
@@ -263,7 +259,6 @@ psbgen_outputDatasets | List of output datasets to document deletions ** Can be
 psbgen_pgm | MVS program name of the high level assembler
 psbgen_linkEditor | MVS program name of the link editor
 psbgen_deployType | Deploy Type of build outputs
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### ACBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy; ACBgen is part of the PSBgen process
