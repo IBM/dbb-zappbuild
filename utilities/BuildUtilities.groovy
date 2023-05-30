@@ -18,7 +18,7 @@ import groovy.ant.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
-@Field def depScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 
 
 /*
@@ -118,7 +118,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
-		def scanner = depScannerUtils.getScanner(buildFile)
+		def scanner = dependencyScannerUtils.getScanner(buildFile)
 		String language = 'UNKN'
 		if (scanner instanceof com.ibm.dbb.dependency.DependencyScanner && ((DependencyScanner) scanner).getLanguageHint() != null) {
 			language = ((DependencyScanner) scanner).getLanguageHint()

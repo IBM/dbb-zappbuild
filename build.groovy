@@ -19,7 +19,7 @@ import groovy.cli.commons.*
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
-@Field def depScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -217,7 +217,7 @@ def initializeBuildProcess(String[] args) {
 	impactUtils.verifyCollections()
 	
 	// loading the scanner mapping to fill the DependencyScannerRegistry  
-	depScannerUtils.populateDependencyScannerRegistry()
+	dependencyScannerUtils.populateDependencyScannerRegistry()
 	
 }
 

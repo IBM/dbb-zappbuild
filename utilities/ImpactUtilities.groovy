@@ -13,7 +13,7 @@ import java.util.regex.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
-@Field def depScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field def resolverUtils
 
@@ -467,7 +467,7 @@ def scanOnlyStaticDependencies(List buildList){
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
 
-				def scanner = depScannerUtils.getScanner(buildFile)
+				def scanner = dependencyScannerUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
 
 				String member = CopyToPDS.createMemberName(buildFile)
@@ -542,7 +542,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 
-			def scanner = depScannerUtils.getScanner(file)
+			def scanner = dependencyScannerUtils.getScanner(file)
 			try {
 				def logicalFile
 				if (scanner != null) {
@@ -849,5 +849,5 @@ def sortFileList(list) {
  * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
  */
 def isMappedAsZUnitConfigFile(String file) {
-	return (depScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
 }
