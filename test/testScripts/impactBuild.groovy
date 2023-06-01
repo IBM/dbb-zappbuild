@@ -6,6 +6,8 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
 println "\n** Executing test script impactBuild.groovy"
 
 // Get the DBB_HOME location
@@ -67,7 +69,8 @@ try {
 		println "\n** Running impact build test for changed file $changedFile"
 		
 		// update changed file in Git repo test branch
-		copyAndCommit(changedFile)
+		testUtils.updateFileAndCommit(props.appLocation, changedFile)
+
 		
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
@@ -80,7 +83,7 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	testUtils.cleanUpDatasets(props.impactBuild_datasetsToCleanUp)
 	if (assertionList.size()>0) {
         println "\n***"
 	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -94,19 +97,6 @@ finally {
 //*************************************************************
 // Method Definitions
 //*************************************************************
-
-def copyAndCommit(String changedFile) {
-	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
-	def commands = """
-    cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
-    cd ${props.appLocation}/
-    git add .
-    git commit . -m "edited program file"
-"""
-	def task = ['bash', '-c', commands].execute()
-	def outputStream = new StringBuffer();
-	task.waitForProcessOutput(outputStream, System.err)
-}
 
 def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
@@ -133,16 +123,4 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
         assertionList << result;
 		props.testsSucceeded = 'false'
  }
-}
-def cleanUpDatasets() {
-	def segments = props.impactBuild_datasetsToCleanUp.split(',')
-	
-	println "Deleting impact build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
 }

@@ -5,6 +5,8 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
 println "\n** Executing test script fullBuild_languageConfigurations.groovy"
 
 // Get the DBB_HOME location
@@ -157,7 +159,7 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	cleanUpDatasets()
+	testUtils.cleanUpDatasets(props.fullBuild_languageConfigurations_datasetsToCleanUp)
 	// reset language configuration changes
 	resetLanguageConfigurationChanges()
 	
@@ -214,15 +216,3 @@ def resetLanguageConfigurationChanges() {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def cleanUpDatasets() {
-	def segments = props.fullBuild_languageConfigurations_datasetsToCleanUp.split(',')
-	
-	println "Deleting full build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
-}

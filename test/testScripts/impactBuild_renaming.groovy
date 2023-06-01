@@ -6,6 +6,8 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
 println "\n** Executing test script impactBuild_renaming.groovy"
 
 // Get the DBB_HOME location
@@ -60,7 +62,7 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	testUtils.cleanUpDatasets(props.impactBuild_rename_datasetsToCleanUp)
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -116,15 +118,4 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 		props.testsSucceeded = 'false'
 	}
 }
-def cleanUpDatasets() {
-	def segments = props.impactBuild_rename_datasetsToCleanUp.split(',')
 
-	println "Deleting impact build PDSEs ${segments}"
-	segments.each { segment ->
-		def pds = "'${props.hlq}.${segment}'"
-		if (ZFile.dsExists(pds)) {
-			if (props.verbose) println "** Deleting ${pds}"
-			ZFile.remove("//$pds")
-		}
-	}
-}

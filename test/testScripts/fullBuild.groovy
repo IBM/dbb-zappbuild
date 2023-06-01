@@ -5,6 +5,8 @@ import com.ibm.dbb.build.*
 import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
 println "\n** Executing test script fullBuild.groovy"
 
 // Get the DBB_HOME location
@@ -60,7 +62,7 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	cleanUpDatasets()
+	testUtils.cleanUpDatasets(props.fullBuild_datasetsToCleanUp)
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED FULL BUILD TEST RESULTS**\n"
@@ -76,16 +78,3 @@ finally {
 //*************************************************************
 // Method Definitions
 //*************************************************************
-
-def cleanUpDatasets() {
-	def segments = props.fullBuild_datasetsToCleanUp.split(',')
-	
-	println "Deleting full build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
-}

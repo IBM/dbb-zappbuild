@@ -6,6 +6,9 @@ import java.util.regex.Matcher
 import com.ibm.dbb.build.report.BuildReport
 import com.ibm.dbb.build.report.records.*
 
+// properties instance
+@Field BuildProperties props = BuildProperties.getInstance()
+
 /*
  * testUtilities
  * 
@@ -82,5 +85,69 @@ boolean buildReportIncludesOutput(BuildReport buildReport, String member, String
 		return true
 	} else {
 		return false
+	}
+}
+
+
+/**
+ * updateFileAndCommit 
+ *   is inserting a blank line at the end of the provided file
+ *   and commits the file back to the repository
+ * 
+ * used in impact build test scenarios
+ * 
+ */
+
+def updateFileAndCommit(String path, String changedFile) {
+	println "** Updating and committing ${path}/${changedFile}"
+	def commands = """
+    echo ' ' >> ${path}/${changedFile}
+    cd ${path}/
+    git add .
+    git commit . -m "edited program file $changedFile"
+"""
+	def task = ['bash', '-c', commands].execute()
+	def outputStream = new StringBuffer();
+	task.waitForProcessOutput(outputStream, System.err)
+}
+
+/**
+ * copyAndCommit 
+ *  copies a reference file and commits it to the test branch
+ * 
+ * used in impact build test scenarios
+ * 
+ */
+def copyAndCommit(String changedFile) {
+	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
+	def commands = """
+	cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
+	cd ${props.appLocation}/
+	git add .
+	git commit . -m "edited program file $changedFile"
+"""
+	def task = ['bash', '-c', commands].execute()
+	def outputStream = new StringBuffer();
+	task.waitForProcessOutput(outputStream, System.err)
+}
+
+/**
+ * cleanUpDatasets
+ *  deletes datasets 
+ * 
+ * accepts a comma separated list of last level qualifiers (llq)
+ * iterates over the lists to delete them
+ * 
+ */
+def cleanUpDatasets(String datasets) {
+	def segments = datasets.split(',')
+	
+	println "Deleting build PDSEs ${segments}"
+	segments.each { segment ->
+		def pds = "'${props.hlq}.${segment}'"
+		if (ZFile.dsExists(pds)) {
+		   if (props.verbose) println "** Deleting ${pds}"
+		   ZFile.remove("//$pds")
+		}
 	}
 }
