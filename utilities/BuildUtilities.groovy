@@ -18,6 +18,8 @@ import groovy.ant.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
+
 
 /*
  * assertBuildProperties - verify that required build properties for a script exist
@@ -116,7 +118,11 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 
 		// Manually create logical file for the user build program
 		String lname = CopyToPDS.createMemberName(buildFile)
-		String language = props.getFileProperty('dbb.DependencyScanner.languageHint', buildFile) ?: 'UNKN'
+		def scanner = dependencyScannerUtils.getScanner(buildFile)
+		String language = 'UNKN'
+		if (scanner instanceof com.ibm.dbb.dependency.DependencyScanner && ((DependencyScanner) scanner).getLanguageHint() != null) {
+			language = ((DependencyScanner) scanner).getLanguageHint()
+		}
 		LogicalFile lfile = new LogicalFile(lname, buildFile, language, depFileData.isCICS, depFileData.isSQL, depFileData.isDLI)
 
 		// get list of dependencies from userBuildDependencyFile
@@ -468,19 +474,6 @@ def relativizeFolderPath(String folder, String path) {
 	return path
 }
 
-/*
- * getScannerInstantiates - returns the mapped scanner or default scanner
- */
-def getScanner(String buildFile){
-	if (props.runzTests && props.runzTests.toBoolean()) {
-		scannerUtils= loadScript(new File("ScannerUtilities.groovy"))
-		scanner = scannerUtils.getScanner(buildFile)
-	}
-	else {
-		if (props.verbose) println("*** Scanning file with the default scanner")
-		scanner = new DependencyScanner()
-	}
-}
 
 /*
  * createLanguageDatasets - gets the language used to create the datasets
@@ -794,6 +787,7 @@ def getShortGitHash(String buildFile) {
 	return null
 }
 
+
 /**
  * createPathMatcherPattern
  * Generic method to build PathMatcher from a build property
@@ -854,5 +848,4 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
 	
 }
-	
-	
+

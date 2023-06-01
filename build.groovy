@@ -19,6 +19,7 @@ import groovy.cli.commons.*
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -214,6 +215,10 @@ def initializeBuildProcess(String[] args) {
 
 	// verify/create/clone the collections for this build
 	impactUtils.verifyCollections()
+	
+	// loading the scanner mapping to fill the DependencyScannerRegistry  
+	dependencyScannerUtils.populateDependencyScannerRegistry()
+	
 }
 
 /*
@@ -334,6 +339,18 @@ def populateBuildProperties(def opts) {
 	if (props.buildPropFiles) {
 		String[] buildPropFiles = props.buildPropFiles.split(',')
 		buildPropFiles.each { propFile ->
+			if (!propFile.startsWith('/'))
+				propFile = "${buildConf}/${propFile}"
+
+			if (opts.v) println "** Loading property file ${propFile}"
+			props.load(new File(propFile))
+		}
+	}
+	
+	// load additional build property files
+	if (props.applicationDefaultPropFiles) {
+		String[] applicationDefaultPropFiles = props.applicationDefaultPropFiles.split(',')
+		applicationDefaultPropFiles.each { propFile ->
 			if (!propFile.startsWith('/'))
 				propFile = "${buildConf}/${propFile}"
 

@@ -13,6 +13,7 @@ import java.util.regex.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field def resolverUtils
 
@@ -466,7 +467,7 @@ def scanOnlyStaticDependencies(List buildList){
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
 
-				def scanner = buildUtils.getScanner(buildFile)
+				def scanner = dependencyScannerUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
 
 				String member = CopyToPDS.createMemberName(buildFile)
@@ -540,11 +541,18 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// make sure file is not an excluded file
 		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
-			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
 
-			def scanner = buildUtils.getScanner(file)
+			def scanner = dependencyScannerUtils.getScanner(file)
 			try {
-				def logicalFile = scanner.scan(file, props.workspace)
+				def logicalFile
+				if (scanner != null) {
+					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
+					logicalFile = scanner.scan(file, props.workspace)
+				} else {
+					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
+					// New logical file with Membername, buildfile, language set to file extension
+					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
+				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
 				// Update logical file with dependencies to build properties
@@ -555,7 +563,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 				// If configured, update test case program dependencies
 				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
 					// If the file is a zUnit configuration file (BZUCFG)
-					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+					if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 
 						def logicalDependencies = logicalFile.getLogicalDependencies()
 
@@ -811,33 +819,35 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
 	}
 }
 
-/**
- * isMappedAsZUnitConfigFile
- * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
- */
-def isMappedAsZUnitConfigFile(mapping, file) {
-	return (mapping.isMapped("ZUnitConfigScanner", file))
-}
+
 
 /**
  * sortFileList
  * sort a list, putting the lines that defines files mapped as zUnit CFG files to the end
  */
 def sortFileList(list) {
-	def mapping = new PropertyMappings("dbb.scannerMapping")
+	
 	list.sort{s1, s2 ->
-		if (isMappedAsZUnitConfigFile(mapping, s1)) {
-			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+		if (isMappedAsZUnitConfigFile(s1)) {
+			if (isMappedAsZUnitConfigFile(s2)) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+			if (isMappedAsZUnitConfigFile(s2)) {
 				return -1;
 			} else {
 				return 0;
 			}
 		}
 	}
+}
+
+/**
+ * isMappedAsZUnitConfigFile
+ * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
+ */
+def isMappedAsZUnitConfigFile(String file) {
+	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
 }
