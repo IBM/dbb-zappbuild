@@ -1,4 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
+import groovy.transform.*
 import java.io.File
 import com.ibm.dbb.build.*
 import java.util.regex.Pattern
