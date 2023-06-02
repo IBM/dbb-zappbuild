@@ -110,7 +110,7 @@ def updateFileAndCommit(String path, String changedFile) {
 	}
 	
 	def commands = """
-    echo -en ${commentStmt} >> ${path}/${changedFile}
+    echo -en \'${commentStmt}\' >> ${path}/${changedFile}
     cd ${path}/
     git add .
     git commit . -m "edited program file $changedFile"
@@ -159,4 +159,50 @@ def cleanUpDatasets(String datasets) {
 		   ZFile.remove("//$pds")
 		}
 	}
+}
+
+/*
+ * Create and checkout a local test branch for testing
+ */
+def createTestBranch() {
+	println "** Creating and checking out branch ${props.testBranch}"
+	def createTestBranch = """
+    cd ${props.zAppBuildDir}
+    git checkout ${props.branch}
+    git checkout -b ${props.testBranch} ${props.branch}
+    git status
+"""
+	def job = ['bash', '-c', createTestBranch].execute()
+	job.waitFor()
+	def createBranch = job.in.text
+	println "$createBranch"
+}
+
+/*
+ * Deletes test branch
+ */
+def deleteTestBranch() {
+	println "\n** Deleting test branch ${props.testBranch}"
+	def deleteTestBranch = """
+    cd ${props.zAppBuildDir}
+    rm -r out
+    git reset --hard ${props.testBranch}
+    git checkout ${props.branch}
+    git branch -D ${props.testBranch}
+    git status
+"""
+	def job = ['bash', '-c', deleteTestBranch].execute()
+	job.waitFor()
+	def deleteBranch = job.in.text
+	println "$deleteBranch"
+}
+
+/*
+ * Reset test branch 
+ * to be used for any disruptive test scripts 
+ */
+def resetTestBranch() {
+	println "\n** Resetting test branch ${props.testBranch}"
+	deleteTestBranch()
+	createTestBranch()
 }

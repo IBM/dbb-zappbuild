@@ -6,10 +6,14 @@ import groovy.cli.commons.*
 println "** Executing zAppBuild test framework test/test.groovy"
 
 // Parse test script arguments and load build properties
-BuildProperties props = loadBuildProperties(args)
+@Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("utils/testUtilities.groovy"))
+
+// load test properties
+props = loadBuildProperties(args)
 
 // create a test branch to run under
-createTestBranch(props)
+testUtils.createTestBranch()
 
 // flag to control test process
 props.testsSucceeded = 'true'
@@ -32,7 +36,7 @@ try {
 }
 finally {
 	// delete test branch
-	deleteTestBranch(props)
+	testUtils.deleteTestBranch()
 	
 	// if error occurred signal process error
 	if (props.testsSucceeded.toBoolean() == false) {
@@ -134,40 +138,4 @@ def loadBuildProperties(String [] args) {
 	}
 		
 	return props
-}
-
-/*
- * Create and checkout a local test branch for testing
- */
-def createTestBranch(BuildProperties props) {
-	println "** Creating and checking out branch ${props.testBranch}"
-	def createTestBranch = """
-    cd ${props.zAppBuildDir}
-    git checkout ${props.branch}
-    git checkout -b ${props.testBranch} ${props.branch}
-    git status
-"""
-	def job = ['bash', '-c', createTestBranch].execute()
-	job.waitFor()
-	def createBranch = job.in.text
-	println "$createBranch"
-}
-
-/*
- * Deletes test branch
- */
-def deleteTestBranch(BuildProperties props) {
-	println "\n** Deleting test branch ${props.testBranch}"
-	def deleteTestBranch = """
-    cd ${props.zAppBuildDir}
-    rm -r out
-    git reset --hard ${props.testBranch}
-    git checkout ${props.branch}
-    git branch -D ${props.testBranch}
-    git status
-"""
-	def job = ['bash', '-c', deleteTestBranch].execute()
-	job.waitFor()
-	def deleteBranch = job.in.text
-	println "$deleteBranch"
 }
