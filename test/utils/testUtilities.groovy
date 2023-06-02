@@ -10,7 +10,6 @@ import com.ibm.dbb.build.report.records.*
 
 // properties instance
 @Field BuildProperties props = BuildProperties.getInstance()
-def dbbHome = EnvVars.getHome()
 
 /*
  * testUtilities
@@ -217,7 +216,9 @@ def resetTestBranch() {
 def runBaselineBuild() {
 
 	println "\n** Running full build to set baseline"
-		
+
+	def dbbHome = EnvVars.getHome()
+				
 	def fullBuildCommand = []
 	fullBuildCommand << "${dbbHome}/bin/groovyz"
 	fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
