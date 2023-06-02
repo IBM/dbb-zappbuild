@@ -40,10 +40,15 @@ finally {
 	
 	// if error occurred signal process error
 	if (props.testsSucceeded.toBoolean() == false) {
+		println "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		println("*! Not all test scripts completed successfully. Please check console outputs. Send exit signal.")
+		println "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		System.exit(1)
 	} else {
-		println("* ZAPPBUILD TESTFRAMEWORK COMPLETED. All tests (${props.test_testOrder}) completed successfully.")
+		println "\n================================================================================================"
+		println("* ZAPPBUILD TESTFRAMEWORK COMPLETED.\n   All tests (${props.test_testOrder}) completed successfully.")
+		println "================================================================================================"
+		
 	}
 	
 }

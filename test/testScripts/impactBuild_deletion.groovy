@@ -7,7 +7,9 @@ import com.ibm.dbb.build.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
 
-println "\n** Executing test script impactBuild_deletion.groovy"
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
