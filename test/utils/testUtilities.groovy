@@ -10,6 +10,7 @@ import com.ibm.dbb.build.report.records.*
 
 // properties instance
 @Field BuildProperties props = BuildProperties.getInstance()
+def dbbHome = EnvVars.getHome()
 
 /*
  * testUtilities
