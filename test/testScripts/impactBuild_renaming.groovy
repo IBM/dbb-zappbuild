@@ -37,6 +37,11 @@ PropertyMappings renamedFilesMapping = new PropertyMappings('impactBuild_rename_
 
 def renameFiles = props.impactBuild_rename_renameFiles.split(',')
 try {
+	
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
+	
+	// run through tests
 	renameFiles.each{ renameFile ->
 		
 		newFilename=renamedFilesMapping.getValue(renameFile)
@@ -61,7 +66,12 @@ try {
 	}
 }
 finally {
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
 	testUtils.cleanUpDatasets(props.impactBuild_rename_datasetsToCleanUp)
+	
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"

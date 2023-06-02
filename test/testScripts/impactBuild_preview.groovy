@@ -12,22 +12,6 @@ println "\n** Executing test script impactBuild_preview.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// Create full build command to set baseline
-def fullBuildCommand = []
-fullBuildCommand << "${dbbHome}/bin/groovyz"
-fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
-fullBuildCommand << "--workspace ${props.workspace}"
-fullBuildCommand << "--application ${props.app}"
-fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
-fullBuildCommand << "--hlq ${props.hlq}"
-fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
-fullBuildCommand << "--fullBuild"
-
 // create impact build command for preview
 def impactBuildPreviewCommand = []
 impactBuildPreviewCommand << "${dbbHome}/bin/groovyz"
@@ -67,17 +51,8 @@ def changedFiles = props.impactBuild_preview_changedFiles.split(',')
 println("** Processing changed files from impactBuild_preview_changedFiles property : ${props.impactBuild_preview_changedFiles}")
 try {
 	
-	println "\n** Running full build to set baseline"
-	
-	// run impact build
-	println "** Executing ${fullBuildCommand.join(" ")}"
-	def outputStream = new StringBuffer()
-	def process = [
-		'bash',
-		'-c',
-		fullBuildCommand.join(" ")
-	].execute()
-	process.waitForProcessOutput(outputStream, System.err)
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
 	
 	changedFiles.each { changedFile ->
 		println "\n** Running IMPACT BUILD WITH PREVIEW TEST for changed file $changedFile"

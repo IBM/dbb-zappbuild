@@ -206,3 +206,40 @@ def resetTestBranch() {
 	deleteTestBranch()
 	createTestBranch()
 }
+
+/**
+ *  runBaselineBuild to initialize collections and build result history 
+ *   
+ *    to be used by any test script which uses impact analysis
+ *  
+ */
+def runBaselineBuild() {
+
+	println "\n** Running full build to set baseline"
+		
+	def fullBuildCommand = []
+	fullBuildCommand << "${dbbHome}/bin/groovyz"
+	fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
+	fullBuildCommand << "--workspace ${props.workspace}"
+	fullBuildCommand << "--application ${props.app}"
+	fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
+	fullBuildCommand << "--hlq ${props.hlq}"
+	fullBuildCommand << "--logEncoding UTF-8"
+	fullBuildCommand << "--url ${props.url}"
+	fullBuildCommand << "--id ${props.id}"
+	fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+	fullBuildCommand << (props.verbose ? "--verbose" : "")
+	fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
+	fullBuildCommand << "--fullBuild"
+
+	// run impact build
+	println "** Executing ${fullBuildCommand.join(" ")}"
+	def outputStream = new StringBuffer()
+	def process = [
+		'bash',
+		'-c',
+		fullBuildCommand.join(" ")
+	].execute()
+	process.waitForProcessOutput(outputStream, System.err)
+
+}

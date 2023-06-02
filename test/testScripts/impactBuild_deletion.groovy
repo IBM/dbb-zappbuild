@@ -13,22 +13,6 @@ println "\n** Executing test script impactBuild_deletion.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// Create full build command to set baseline and populate output libraries
-def fullBuildCommand = []
-fullBuildCommand << "${dbbHome}/bin/groovyz"
-fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
-fullBuildCommand << "--workspace ${props.workspace}"
-fullBuildCommand << "--application ${props.app}"
-fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
-fullBuildCommand << "--hlq ${props.hlq}"
-fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}")
-fullBuildCommand << "--fullBuild"
-
 // create impact build command
 def impactBuildCommand = []
 impactBuildCommand << "${dbbHome}/bin/groovyz"
@@ -54,18 +38,10 @@ PropertyMappings outputsDeletedMappings = new PropertyMappings('impactBuild_dele
 def deleteFiles = props.impactBuild_deletion_deleteFiles.split(',')
 try {
 	
-	println "\n** Running full build to set baseline"
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
 
-	// run impact build
-	println "** Executing ${fullBuildCommand.join(" ")}"
-	def outputStream = new StringBuffer()
-	def process = [
-		'bash',
-		'-c',
-		fullBuildCommand.join(" ")
-	].execute()
-	process.waitForProcessOutput(outputStream, System.err)
-	
+	// test setup	
 	deleteFiles.each{ deleteFile ->
 		
 		// delete file in Git repo test branch
@@ -88,7 +64,13 @@ try {
 	}
 }
 finally {
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
 	testUtils.cleanUpDatasets(props.impactBuild_deletion_datasetsToCleanUp)
+		
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**\n"

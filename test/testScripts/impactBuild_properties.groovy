@@ -7,27 +7,11 @@ import com.ibm.dbb.build.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
 
-println "\n### Executing test script impactBuild_properties.groovy"
+println "\n** Executing test script impactBuild_properties.groovy"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
-
-// Create full build command to initilize property dependencies
-def fullBuildCommand = []
-fullBuildCommand << "${dbbHome}/bin/groovyz"
-fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
-fullBuildCommand << "--workspace ${props.workspace}"
-fullBuildCommand << "--application ${props.app}"
-fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
-fullBuildCommand << "--hlq ${props.hlq}"
-fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_properties_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_properties_buildPropSetting}")
-fullBuildCommand << "--fullBuild"
 
 // create impact build command
 def impactBuildCommand = []
@@ -49,18 +33,13 @@ impactBuildCommand << "--impactBuild"
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_properties_expectedFilesBuilt')
 def changedPropFile = props.impactBuild_properties_changedFile
-println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
 try {
 		
-		println "\n** Running build to set baseline"
-				
-		// run impact build
-		println "** Executing ${fullBuildCommand.join(" ")}"
-		def outputStream = new StringBuffer()
-		def process = ['bash', '-c', fullBuildCommand.join(" ")].execute()
-		process.waitForProcessOutput(outputStream, System.err)
-		
-		
+		// Create full build command to set baseline
+		testUtils.runBaselineBuild()
+
+		// Test process
+		println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
 		println "\n** Running impact build test for changed file $changedPropFile"
 		
 		// update changed file in Git repo test branch
@@ -76,7 +55,13 @@ try {
 		validateImpactBuild(changedPropFile, filesBuiltMappings, outputStream)
 }
 finally {
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
 	testUtils.cleanUpDatasets(props.impactBuild_properties_datasetsToCleanUp)
+	
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED IMPACT BUILD ON PROPERTY CHANGE TEST RESULTS**\n"

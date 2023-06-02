@@ -12,7 +12,7 @@ println "\n** Executing test script fullBuild_debug.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
-// Create full build command
+// Create full build command with debug option
 def fullBuildCommand = [] 
 fullBuildCommand << "${dbbHome}/bin/groovyz"
 fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
