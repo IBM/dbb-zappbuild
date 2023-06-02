@@ -102,8 +102,15 @@ boolean buildReportIncludesOutput(BuildReport buildReport, String member, String
 
 def updateFileAndCommit(String path, String changedFile) {
 	println "** Updating and committing ${path}/${changedFile}"
+	
+	def commentStmt = ' '
+
+	if (changedFile.endsWith("bms")) { // treat BMS files
+		commentStmt = '* Updated file \n        END'
+	}
+	
 	def commands = """
-    echo ' ' >> ${path}/${changedFile}
+    echo -en ${commentStmt} >> ${path}/${changedFile}
     cd ${path}/
     git add .
     git commit . -m "edited program file $changedFile"
