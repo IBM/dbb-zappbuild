@@ -41,7 +41,7 @@ def deleteFiles = props.impactBuild_deletion_deleteFiles.split(',')
 try {
 	
 	// Create full build command to set baseline
-	testUtils.runBaselineBuild(props.impactBuild_deletion_buildPropSetting)
+	testUtils.runBaselineBuild()
 
 	// test setup	
 	deleteFiles.each{ deleteFile ->
