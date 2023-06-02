@@ -36,8 +36,14 @@ mergeBuildCommand << "--mergeBuild"
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('mergeBuild_expectedFilesBuilt')
 def changedFiles = props.mergeBuild_changedFiles.split(',')
-println("** Processing changed files from mergeBuild_changedFiles property : ${props.mergeBuild_changedFiles}")
 try {
+	
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
+	
+	// test setup
+	println("** Processing changed files from mergeBuild_changedFiles property : ${props.mergeBuild_changedFiles}")
+		
 	changedFiles.each { changedFile ->
 		println "\n** Running merge build test for changed file $changedFile"
 		
