@@ -3,7 +3,6 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))

@@ -5,6 +5,7 @@ import com.ibm.dbb.build.*
 import java.util.regex.Pattern
 import java.util.regex.Matcher
 import com.ibm.dbb.build.report.BuildReport
+import com.ibm.jzos.ZFile
 import com.ibm.dbb.build.report.records.*
 
 // properties instance
