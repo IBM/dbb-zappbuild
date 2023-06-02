@@ -61,7 +61,7 @@ try {
 	}
 }
 finally {
-	testUtils.cleanUpDatasets(props.mergeBuild_datasetsToCleanUp)
+	// report failures
 	if (assertionList.size()>0) {
         println "\n***"
 	println "**START OF FAILED MERGED BUILD TEST RESULTS**\n"
@@ -69,6 +69,9 @@ finally {
 	println "\n**END OF FAILED MERGED BUILD TEST RESULTS**"
 	println "***"
   }
+  // cleanup datasets
+  testUtils.cleanUpDatasets(props.mergeBuild_datasetsToCleanUp)
+  
 }
 // script end  
 

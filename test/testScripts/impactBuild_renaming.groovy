@@ -66,12 +66,7 @@ try {
 	}
 }
 finally {
-	// reset test branch
-	testUtils.resetTestBranch()
-	
-	// cleanup datasets
-	testUtils.cleanUpDatasets(props.impactBuild_rename_datasetsToCleanUp)
-	
+	// report failures	
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -79,6 +74,12 @@ finally {
 		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
 		println "***"
 	}
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
+	testUtils.cleanUpDatasets(props.impactBuild_rename_datasetsToCleanUp)
 }
 // script end
 

@@ -208,13 +208,34 @@ def resetTestBranch() {
 	createTestBranch()
 }
 
+
 /**
- *  runBaselineBuild to initialize collections and build result history 
- *   
+ *  runBaselineBuild to initialize collections and build result history
+ *
  *    to be used by any test script which uses impact analysis
+ *
+ *    input parms:
+ *
+ *    testScriptPropFiles are used to configure
+ *    the test via additional properties files
+ *    that are loaded via the --propFiles cli argument
+ *
+ */
+
+/*
+ * without arguments, it will not pass any test scripts specific configuration
  *  
  */
+
 def runBaselineBuild() {
+	runBaselineBuild(null)
+}
+
+/*
+ * 
+ */
+
+def runBaselineBuild(String testScriptPropFiles) {
 
 	println "\n** Running full build to set baseline"
 
@@ -232,7 +253,11 @@ def runBaselineBuild() {
 	fullBuildCommand << "--id ${props.id}"
 	fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
 	fullBuildCommand << (props.verbose ? "--verbose" : "")
-	fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
+	if (props.propFiles && testScriptPropFiles) {
+		fullBuildCommand << "--propFiles ${props.propFiles},${testScriptPropFiles}"
+	} else if (props.propFiles) {
+		fullBuildCommand << "--propFiles ${props.propFiles}"
+	}
 	fullBuildCommand << "--fullBuild"
 
 	// run impact build

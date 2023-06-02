@@ -158,10 +158,8 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	testUtils.cleanUpDatasets(props.fullBuild_languageConfigurations_datasetsToCleanUp)
-	// reset language configuration changes
-	resetLanguageConfigurationChanges()
-	
+
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED TEST CASE for Language Configuration Overrides TEST RESULTS**\n"
@@ -169,6 +167,10 @@ finally {
 	println "\n**END OF FAILED TEST CASE for Language Configurations **"
 	println "***"
   }
+  
+  testUtils.cleanUpDatasets(props.fullBuild_languageConfigurations_datasetsToCleanUp)
+  // reset language configuration changes
+  resetLanguageConfigurationChanges()
 	
 }
 

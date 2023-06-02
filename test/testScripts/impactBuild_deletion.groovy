@@ -39,7 +39,7 @@ def deleteFiles = props.impactBuild_deletion_deleteFiles.split(',')
 try {
 	
 	// Create full build command to set baseline
-	testUtils.runBaselineBuild()
+	testUtils.runBaselineBuild(props.impactBuild_deletion_buildPropSetting)
 
 	// test setup	
 	deleteFiles.each{ deleteFile ->
@@ -65,12 +65,7 @@ try {
 }
 finally {
 	
-	// reset test branch
-	testUtils.resetTestBranch()
-	
-	// cleanup datasets
-	testUtils.cleanUpDatasets(props.impactBuild_deletion_datasetsToCleanUp)
-		
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**\n"
@@ -78,6 +73,12 @@ finally {
 		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**"
 		println "***"
 	}
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
+	testUtils.cleanUpDatasets(props.impactBuild_deletion_datasetsToCleanUp)
 }
 // script end
 

@@ -79,7 +79,8 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	testUtils.cleanUpDatasets(props.fullBuild_debug_datasetsToCleanUp)
+
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED FULL BUILD WITH DEBUG TEST RESULTS**\n"
@@ -87,6 +88,9 @@ finally {
 	println "\n**END OF FAILED FULL BUILD WITH DEBUG**"
 	println "***"
   }
+  
+  testUtils.cleanUpDatasets(props.fullBuild_debug_datasetsToCleanUp)
+  
 	
 }
 

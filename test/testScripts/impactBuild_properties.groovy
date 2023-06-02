@@ -36,7 +36,7 @@ def changedPropFile = props.impactBuild_properties_changedFile
 try {
 		
 		// Create full build command to set baseline
-		testUtils.runBaselineBuild()
+		testUtils.runBaselineBuild(props.impactBuild_properties_buildPropSetting)
 
 		// Test process
 		println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
@@ -55,20 +55,20 @@ try {
 		validateImpactBuild(changedPropFile, filesBuiltMappings, outputStream)
 }
 finally {
-	
-	// reset test branch
-	testUtils.resetTestBranch()
-	
-	// cleanup datasets
-	testUtils.cleanUpDatasets(props.impactBuild_properties_datasetsToCleanUp)
-	
-	if (assertionList.size()>0) {
+  // report failures
+  if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED IMPACT BUILD ON PROPERTY CHANGE TEST RESULTS**\n"
 	println "*FAILED IMPACT BUILD ON PROPERT CHANGE TEST  RESULTS*\n" + assertionList
 	println "\n**END OF FAILED IMPACT BUILD ON PROPERTY CHANGE TEST RESULTS**"
 	println "***"
   }
+  
+  // reset test branch
+  testUtils.resetTestBranch()
+  
+  // cleanup datasets
+  testUtils.cleanUpDatasets(props.impactBuild_properties_datasetsToCleanUp)
 }
 // script end
 

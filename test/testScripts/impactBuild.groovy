@@ -58,7 +58,7 @@ try {
 	}
 }
 finally {
-	testUtils.cleanUpDatasets(props.impactBuild_datasetsToCleanUp)
+	// report failures
 	if (assertionList.size()>0) {
         println "\n***"
 	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -66,6 +66,9 @@ finally {
 	println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
 	println "***"
   }
+  
+  // cleanup datasets
+  testUtils.cleanUpDatasets(props.impactBuild_datasetsToCleanUp)
 }
 // script end  
 
