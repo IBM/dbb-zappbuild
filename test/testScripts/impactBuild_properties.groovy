@@ -37,17 +37,18 @@ PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_properti
 def changedPropFile = props.impactBuild_properties_changedFile
 try {
 		
+		// Test process
+	
+		// update changed file in Git repo test branch
+		println("\n** Injecting property update impactBuild_properties_changedFiles property : ${changedPropFile}")
+		
+		testUtils.copyAndCommit(changedPropFile)
+		
 		// Create full build command to set baseline
 		testUtils.runBaselineBuild(props.impactBuild_properties_buildPropSetting)
 
-		// Test process
-		println("** Processing changed files from impactBuild_properties_changedFiles property : ${changedPropFile}")
-		println "\n** Running impact build test for changed file $changedPropFile"
-		
-		// update changed file in Git repo test branch
-		testUtils.copyAndCommit(changedPropFile)
-		
 		// run impact build
+		println "\n** Running impact build test for changed file $changedPropFile"
 		println "** Executing ${impactBuildCommand.join(" ")}"
 		outputStream = new StringBuffer()
 		process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
