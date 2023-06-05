@@ -39,14 +39,13 @@ try {
 		
 		// Test process
 	
+		// Create full build command to set baseline
+		testUtils.runBaselineBuild("${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_properties_buildPropSetting}")
+	
 		// update changed file in Git repo test branch
 		println("\n** Injecting property update impactBuild_properties_changedFiles property : ${changedPropFile}")
-		
 		testUtils.copyAndCommit(changedPropFile)
 		
-		// Create full build command to set baseline
-		testUtils.runBaselineBuild(props.impactBuild_properties_buildPropSetting)
-
 		// run impact build
 		println "\n** Running impact build test for changed file $changedPropFile"
 		println "** Executing ${impactBuildCommand.join(" ")}"
