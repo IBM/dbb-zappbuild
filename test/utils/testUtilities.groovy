@@ -152,7 +152,7 @@ def copyAndCommit(String changedFile) {
 def cleanUpDatasets(String datasets) {
 	def segments = datasets.split(',')
 	
-	println "Deleting build PDSEs ${segments}"
+	println "\n** Deleting build PDSEs ${segments}"
 	segments.each { segment ->
 		def pds = "'${props.hlq}.${segment}'"
 		if (ZFile.dsExists(pds)) {
