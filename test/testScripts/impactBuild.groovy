@@ -12,6 +12,22 @@ println "\n** Executing test script impactBuild.groovy"
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
+// Create full build command to set baseline
+def fullBuildCommand = []
+fullBuildCommand << "${dbbHome}/bin/groovyz"
+fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
+fullBuildCommand << "--workspace ${props.workspace}"
+fullBuildCommand << "--application ${props.app}"
+fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
+fullBuildCommand << "--hlq ${props.hlq}"
+fullBuildCommand << "--logEncoding UTF-8"
+fullBuildCommand << "--url ${props.url}"
+fullBuildCommand << "--id ${props.id}"
+fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+fullBuildCommand << (props.verbose ? "--verbose" : "")
+fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
+fullBuildCommand << "--fullBuild"
+
 // create impact build command
 def impactBuildCommand = []
 impactBuildCommand << "${dbbHome}/bin/groovyz"
@@ -34,6 +50,19 @@ PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expected
 def changedFiles = props.impactBuild_changedFiles.split(',')
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
 try {
+	
+	println "\n** Running full build to set baseline"
+	
+	// run impact build
+	println "** Executing ${fullBuildCommand.join(" ")}"
+	def outputStream = new StringBuffer()
+	def process = [
+		'bash',
+		'-c',
+		fullBuildCommand.join(" ")
+	].execute()
+	process.waitForProcessOutput(outputStream, System.err)
+	
 	changedFiles.each { changedFile ->
 		println "\n** Running impact build test for changed file $changedFile"
 		
@@ -42,8 +71,8 @@ try {
 		
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
-		def outputStream = new StringBuffer()
-		def process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
+		outputStream = new StringBuffer()
+		process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
 		process.waitForProcessOutput(outputStream, System.err)
 		
 		// validate build results
@@ -102,7 +131,7 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
     catch(AssertionError e) {
         def result = e.getMessage()
         assertionList << result;
-		props.testsSucceeded = false
+		props.testsSucceeded = 'false'
  }
 }
 def cleanUpDatasets() {

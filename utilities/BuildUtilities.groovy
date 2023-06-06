@@ -9,6 +9,9 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
@@ -26,7 +29,7 @@ def assertBuildProperties(String requiredProps) {
 
 		buildProps.each { buildProp ->
 			buildProp = buildProp.trim()
-			assert props."$buildProp" : "*! Missing required build property '$buildProp'"
+			assert (props."$buildProp" || !(new PropertyMappings("$buildProp").getValues().isEmpty())) : "*! Missing required build property '$buildProp'"
 		}
 	}
 }
@@ -387,6 +390,44 @@ def isDLI(LogicalFile logicalFile) {
 }
 
 /*
+ * isMQ - tests to see if the program uses MQ. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isMQ(LogicalFile logicalFile) {
+	boolean isMQ = logicalFile.isMQ()
+	if (!isMQ) {
+		String isMQFlag = props.getFileProperty('isMQ', logicalFile.getFile())
+		if (isMQFlag)
+			isMQ = isMQFlag.toBoolean()
+	}
+
+	return isMQ
+}
+
+/*
+ * getMqStubInstruction -
+ *  returns include defintion for mq sub program for link edit
+ */
+def getMqStubInstruction(LogicalFile logicalFile) {
+	String mqStubInstruction
+	
+	if (isMQ(logicalFile)) {
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		if (isCICS(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQCSTUB)\n"
+		} else if (isDLI(logicalFile)) {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQQSTUB)\n"
+		} else {
+			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"
+		}
+	} else {
+		println("*! (BuildUtilities.getMqStubInstruction) MQ file attribute for ${logicalFile.getFile()} is false.")	
+	}
+	
+	return mqStubInstruction
+}
+
+/*
  * getAbsolutePath - returns the absolute path of a relative (to workspace) file or directory
  */
 def getAbsolutePath(String path) {
@@ -500,6 +541,9 @@ def getLangPrefix(String scriptName){
 			break;
 		case "PSBgen.groovy":
 			langPrefix = 'psbgen'
+			break;
+		case "Transfer.groovy":
+			langPrefix = 'transfer'
 			break;
 		default:
 			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
@@ -750,37 +794,65 @@ def getShortGitHash(String buildFile) {
 	return null
 }
 
-/*
- * Loading file level properties for all files on the buildList or list which is passed to this method.
+/**
+ * createPathMatcherPattern
+ * Generic method to build PathMatcher from a build property
  */
-def loadFileLevelPropertiesFromFile(List<String> buildList) {
 
-	buildList.each { String buildFile ->
-
-		// check for file level overwrite
-		loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
-		if (loadFileLevelProperties && loadFileLevelProperties.toBoolean()) {
-
-			String member = new File(buildFile).getName()
-			String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
-			String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
-			String propertyFile = getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
-			File fileLevelPropFile = new File(propertyFile)
-
-			if (fileLevelPropFile.exists()) {
-				if (props.verbose) println "* Populating property file $propertyFile for $buildFile"
-				InputStream propertyFileIS = new FileInputStream(propertyFile)
-				Properties fileLevelProps = new Properties()
-				fileLevelProps.load(propertyFileIS)
-
-				fileLevelProps.entrySet().each { entry ->
-					if (props.verbose) println "* Adding file level pattern $entry.key = $entry.value for $buildFile"
-					props.addFilePattern(entry.key, entry.value, buildFile)
-				}
-			} else {
-				if (props.verbose) println "* No property file found for $buildFile. Build will take the defaults or already defined file properties."
-			}
+def createPathMatcherPattern(String property) {
+	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
+	if (property) {
+		property.split(',').each{ filePattern ->
+			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
+				filePattern = "glob:$filePattern"
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
+			pathMatchers.add(matcher)
 		}
 	}
+	return pathMatchers
 }
 
+/**
+ * matches
+ * Generic method to validate if a file is matching any pathmatchers  
+ * 
+ */
+def matches(String file, List<PathMatcher> pathMatchers) {
+	def result = pathMatchers.any { matcher ->
+		Path path = FileSystems.getDefault().getPath(file);
+		if ( matcher.matches(path) )
+		{
+			return true
+		}
+	}
+	return result
+}
+
+/**
+ * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
+ * and indicating if an attribute is overridden through a property definition.
+ * 
+ * sample output:
+ * Program attributes: CICS=true, SQL=true*, DLI=false, MQ=false
+ * 
+ * additional notes:
+ * An suffixed asterisk (*) of the value for an attribute is indicating if a property definition 
+ * is overriding the value. When the values are identical, no asterisk is presented, even when 
+ * a property is setting the same value.
+ * 
+ * This is implementing 
+ * https://github.com/IBM/dbb-zappbuild/issues/339
+ *  
+*/
+
+def printLogicalFileAttributes(LogicalFile logicalFile) {
+	String cicsFlag = (logicalFile.isCICS() == isCICS(logicalFile)) ? "${logicalFile.isCICS()}" : "${isCICS(logicalFile)}*"
+	String sqlFlag = (logicalFile.isSQL() == isSQL(logicalFile)) ? "${logicalFile.isSQL()}" : "${isSQL(logicalFile)}*"
+	String dliFlag = (logicalFile.isDLI() == isDLI(logicalFile)) ? "${logicalFile.isDLI()}" : "${isDLI(logicalFile)}*"
+	String mqFlag = (logicalFile.isMQ() == isMQ(logicalFile)) ? "${logicalFile.isMQ()}" : "${isMQ(logicalFile)}*"
+	
+	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
+	
+}
+	
+	

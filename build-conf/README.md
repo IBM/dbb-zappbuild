@@ -23,7 +23,9 @@ IBMZPLI_V51 | PLI Compiler Data Set for version 5.1. Example: PLI.V5R1M0.SIBMZCM
 SDFHMAC | CICS Macro Library. Example: CICSTS.V3R2M0.CICS.SDFHMAC
 SDFHLOAD | CICS Load Library. Example: CICSTS.V3R2M0.CICS.SDFHLOAD
 SDFHCOB | CICS COBOL Library. Example: CICSTS.V3R2M0.CICS.SDFHCOB
+SDFHPL1 | CICS PL1 Library. Example: CICSTS.V3R2M0.CICS.SDFHPL1
 SCSQCOBC | MQ COBOL Library. Example: CSQ.V9R1M0.SCSQCOBC
+SCSQPLIC | MQ PLI Library. Example: CSQ.V9R1M0.SCSQPLIC
 SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
@@ -74,12 +76,16 @@ assembler_srcPDS | Dataset to move assembler source files to from USS
 assembler_macroPDS | Dataset to move macro files to from USS
 assembler_objPDS | Dataset to create object decks in from Assembler step
 assembler_dbrmPDS | Dataset to create DB2 DBRM modules in from Assembler step
+assembler_sysadataPDS | Dataset to create  sysadata file that contains source and symbolic data about the program
+assembler_debugPDS | Dataset to create the eqalangx side file for the IBM Debug Tool
 assembler_loadPDS | Dataset to create load modules in from link edit step
 assembler_srcDataSets | Comma separated list of 'source' type data sets
 assembler_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 assembler_loadDatasets | Comma separated list of 'load module' type data sets
 assembler_loadOptions | BPXWDYN creation options for 'load module' type data sets
 assembler_tempOptions | BPXWDYN creation options for temporary data sets
+assembler_sysadataOptions | BPXWDYN creation options for assembler sysadata data sets
+assembler_sidefileOptions | BPXWDYN creation options for eqalangx sidefile
 assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD data set
 assembler_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 assembler_pgm | MVS program name of the high level assembler
@@ -286,3 +292,10 @@ transfer_jclPDS | Sample dataset for JCL members
 transfer_xmlPDS | Sample dataset for xml members
 transfer_srcOptions | BPXWDYN creation options for creating 'source' type data sets
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets 
+
+### language-conf/languageConfigProps01.properties
+Sample language configuration properties file used by dbb-zappbuild/utilities/BuildUtilities.groovy.
+
+This is a custom properties file to override file properties for a group of files, based on mapping defined in `zAppBuild/samples/application-conf/languageConfigurationMapping.properties`. Multiple language configuration properties files can be defined and mapped against different file groups in `zAppBuild/samples/application-conf/languageConfigurationMapping.properties`.
+
+Note: The name of this property file need not be `languageConfigProps01.properties`. Any name can be given to this property file and can use the same name while mapping source file in `zAppBuild/samples/application-conf/languageConfigurationMapping.properties`.

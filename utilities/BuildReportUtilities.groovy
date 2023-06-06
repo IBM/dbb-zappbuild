@@ -45,20 +45,36 @@ def processDeletedFilesList(List deletedList){
 
 					List<String> deletedOutputsList = new ArrayList<String>() 
 
-					String outputLibs = props.getFileProperty("${langPrefix}_outputDatasets", deletedFile)
-					outputLibs.split(',').each{ outputDS ->
-						// record for deleted dataset(member)
-						String outputRecord = "$outputDS"+"($member)"
-						if (props.verbose) println "** Document deletion ${outputRecord} for file ${deletedFile}"
-						deletedOutputsList.add(outputRecord)
-
-						// delete outputRecord from build datasets
-						if (ZFile.dsExists("//'$outputRecord'")) {
-							if (props.verbose) println "** Deleting ${outputRecord}"
-							ZFile.remove("//'$outputRecord'")
-						}
-
+					String outputLibs
+					// obtain output libraries
+					if (langPrefix == "transfer") {
+						// obtain the mapped dataset of the target dataset		
+						PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
+						def mappedDatesetDef = dsMapping.getValue(deletedFile)
+						outputLibs = props.getProperty(mappedDatesetDef)
+					} else {
+						// the defaul evaluates {langPrefix}_outputDatasets
+						outputLibs = props.getFileProperty("${langPrefix}_outputDatasets", deletedFile)
 					}
+					
+					if (outputLibs != null) {
+						outputLibs.split(',').each{ outputDS ->
+							// record for deleted dataset(member)
+							String outputRecord = "$outputDS"+"($member)"
+							if (props.verbose) println "** Document deletion ${outputRecord} for file ${deletedFile}"
+							deletedOutputsList.add(outputRecord)
+
+							// delete outputRecord from build datasets
+							if (ZFile.dsExists("//'$outputRecord'")) {
+								if (props.verbose) println "** Deleting ${outputRecord}"
+								ZFile.remove("//'$outputRecord'")
+							}
+
+						}
+					} else {
+						println "** No output library found for $deletedFile"
+					}
+						
 
 					if(deletedOutputsList.size() > 0 ) { 
 						deleteRecord.setAttribute("deletedBuildOutputs",deletedOutputsList)
