@@ -531,7 +531,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
-		sortFileList(changedFiles);
+		changedFiles = sortFileList(changedFiles);
 		if (props.verbose) println "*** Sorted list of changed files: $changedFiles"
 	}
 
@@ -827,7 +827,7 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
  */
 def sortFileList(list) {
 	
-	list.sort{s1, s2 ->
+	return list.sort{s1, s2 ->
 		if (isMappedAsZUnitConfigFile(s1)) {
 			if (isMappedAsZUnitConfigFile(s2)) {
 				return 0;
