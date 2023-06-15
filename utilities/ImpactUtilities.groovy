@@ -62,8 +62,13 @@ def createImpactBuildList() {
 		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
-				buildSet.add(changedFile)
-				if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+				// skip adding generated test cases, when the testing is disabled 
+				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) || !(props.runzTests && props.runzTests.toBoolean())) {
+					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
+				} else {
+					buildSet.add(changedFile)
+					if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+				}
 			}
 
 			// check if impact calculation should be performed, default true
@@ -773,6 +778,12 @@ def boolean shouldCalculateImpacts(String changedFile){
 
 	// return false if changedFile found in skipImpactCalculationList
 	if (onskipImpactCalculationList) return false
+	
+	// return false if the changed file is a generated test case program but testing is disabled
+	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) || !(props.runzTests && props.runzTests.toBoolean())) {
+		return false
+	}
+	
 	return true //default
 }
 
