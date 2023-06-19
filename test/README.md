@@ -12,13 +12,13 @@ testScripts  | This folder contains test scripts to execute full and impact buil
 # Testing Applications with zAppBuild
 The main script for testing applications against zAppBuild is `test.groovy`. It takes most of its input from the command line to run full and impact builds. `test.groovy` once executed from the command line calls [fullBuild.groovy](/test/testScripts/fullBuild.groovy) and [impactBuild.groovy](/test/testScripts/impactBuild.groovy) scripts to perform an end to end test on the given feature branch with the program specified for impact build. 
 
-test.groovy script has five required arguments that must be present during each invocation:
+test.groovy script has required arguments that must be present during each invocation:
 * --branch <arg> - zAppBuild branch to test
 * --app <arg> - Application that is being tested (example: MortgageApplication)
 * --hlq <arg> - HLQ for dataset reation / deletion (example: USER.BUILD)
-* --id <arg> - Db2 user id for the MetadataStore
 
-test.groovy script has three optional argument that can be present during each invocation
+test.groovy script has optional argument that can be present during each invocation
+* --id <arg> - Db2 user id for the MetadataStore
 * --url <arg> - Db2 JDBC URL for the MetadataStore.
 * --pw <arg> - Db2 password (encrypted with DBB Password Utility) for the MetadataStore
 * --pwFile <arg> - Absolute or relative (from workspace) path to file containing Db2 password
