@@ -127,7 +127,7 @@ nothing to commit, working tree clean
 ** Build finished
 ```
 
-When an error is detected, the test framework will print the entire log of the failed build for the analysis by the build script engineer:
+When an error is detected, the test framework will print the entire log of the failed test (failed assertion) for the analysis by the build script engineer:
 
 ```
 
