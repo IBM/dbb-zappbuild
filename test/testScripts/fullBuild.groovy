@@ -23,10 +23,10 @@ fullBuildCommand << "--application ${props.app}"
 fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << (props.url ? "--url ${props.url}")
-fullBuildCommand << (props.id ? "--id ${props.id}")
-fullBuildCommand << (props.pw ? "--pw ${props.pw}") 
-fullBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
+fullBuildCommand << (props.url ? "--url ${props.url}" : "")
+fullBuildCommand << (props.id ? "--id ${props.id}" : "")
+fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+fullBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"

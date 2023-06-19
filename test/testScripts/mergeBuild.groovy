@@ -27,10 +27,10 @@ mergeBuildCommand << "--application ${props.app}"
 mergeBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 mergeBuildCommand << "--hlq ${props.hlq}"
 mergeBuildCommand << "--logEncoding UTF-8"
-mergeBuildCommand << (props.url ? "--url ${props.url}")
-mergeBuildCommand << (props.id ? "--id ${props.id}")
-mergeBuildCommand << (props.pw ? "--pw ${props.pw}") 
-mergeBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
+mergeBuildCommand << (props.url ? "--url ${props.url}" : "")
+mergeBuildCommand << (props.id ? "--id ${props.id}" : "")
+mergeBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+mergeBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 mergeBuildCommand << (props.verbose ? "--verbose" : "")
 mergeBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.mergeBuild_buildPropSetting},${props.propFiles}" : "")
 mergeBuildCommand << "--mergeBuild"

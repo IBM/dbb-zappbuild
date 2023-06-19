@@ -22,10 +22,10 @@ resetBuildCommand << "--application ${props.app}"
 resetBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 resetBuildCommand << "--hlq ${props.hlq}"
 resetBuildCommand << "--logEncoding UTF-8"
-resetBuildCommand << (props.url ? "--url ${props.url}")
-resetBuildCommand << (props.id ? "--id ${props.id}")
-resetBuildCommand << (props.pw ? "--pw ${props.pw}") 
-resetBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
+resetBuildCommand << (props.url ? "--url ${props.url}" : "")
+resetBuildCommand << (props.id ? "--id ${props.id}" : "")
+resetBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+resetBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 resetBuildCommand << (props.verbose ? "--verbose" : "")
 resetBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 resetBuildCommand << "--reset"

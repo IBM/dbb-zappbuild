@@ -24,10 +24,10 @@ impactBuildCommand << "--application ${props.app}"
 impactBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
-impactBuildCommand << (props.url ? "--url ${props.url}")
-impactBuildCommand << (props.id ? "--id ${props.id}")
-impactBuildCommand << (props.pw ? "--pw ${props.pw}") 
-impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
+impactBuildCommand << (props.url ? "--url ${props.url}" : "")
+impactBuildCommand << (props.id ? "--id ${props.id}" : "")
+impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 impactBuildCommand << "--verbose"
 impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
