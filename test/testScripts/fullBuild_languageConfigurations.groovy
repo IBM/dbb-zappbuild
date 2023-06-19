@@ -23,9 +23,10 @@ fullBuildCommand << "--application ${props.app}"
 fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+fullBuildCommand << (props.url ? "--url ${props.url}")
+fullBuildCommand << (props.id ? "--id ${props.id}")
+fullBuildCommand << (props.pw ? "--pw ${props.pw}" 
+fullBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"
@@ -39,9 +40,10 @@ userBuildCommand << "--application ${props.app}"
 userBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 userBuildCommand << "--hlq ${props.hlq}"
 userBuildCommand << "--logEncoding UTF-8"
-userBuildCommand << "--url ${props.url}"
-userBuildCommand << "--id ${props.id}"
-userBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+userBuildCommand << (props.url ? "--url ${props.url}")
+userBuildCommand << (props.id ? "--id ${props.id}")
+userBuildCommand << (props.pw ? "--pw ${props.pw}" 
+userBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
 userBuildCommand << (props.verbose ? "--verbose" : "")
 userBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 userBuildCommand << "--userBuild ${props.userBuild_languageConfigurations_buildFile}"
