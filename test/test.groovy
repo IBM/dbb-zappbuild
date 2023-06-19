@@ -79,13 +79,13 @@ def loadBuildProperties(String [] args) {
 	   // zAppBuild options
 	   a(longOpt: 'app', 'Application that is being tested (example: MortgageApplication)', args: 1, required: true)
 	   q(longOpt: 'hlq', 'HLQ for dataset reation / deletion (example: USER.BUILD)', args: 1, required: true)
-	   u(longOpt: 'url', 'DBB Web Application server URL', args: 1, required: true)
-	   i(longOpt: 'id', 'DBB Web Application user id', args: 1, required: true)
-	   p(longOpt: 'pw', 'DBB Web Application user password', args: 1)
-	   P(longOpt: 'pwFile', 'DBB Web Application user password file', args: 1)
+	   u(longOpt: 'url', 'Db2 JDBC URL for the MetadataStore. \n Example: jdbc:db2:<Db2 server location>', args: 1, required: true)
+	   i(longOpt: 'id', 'Db2 user id for the MetadataStore', args: 1, required: true)
+	   p(longOpt: 'pw', 'Db2 password (encrypted with DBB Password Utility) for the MetadataStore', args: 1)
+	   P(longOpt: 'pwFile', 'Absolute or relative (from workspace) path to file containing Db2 password', args: 1)
 	   v(longOpt: 'verbose', 'Flag indicating to print trace statements')
 	   f(longOpt: 'propFiles', 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace', args:1)
-           o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
+       o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
 	}
 	
 	def options = cli.parse(args)

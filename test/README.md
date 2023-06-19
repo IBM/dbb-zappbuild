@@ -5,6 +5,7 @@ Test folder is designed to help test samples like the Mortgage Application again
 Folder/File | Description | Documentation Link
 --- | --- | ---
 applications/MortgageApplication | This folder contains modified language scripts used to execute impact build by replacing these modified files with the original language files | [MortgageApplication](applications/MortgageApplication/README.md)
+applications/HelloWorld | This folder contains sample programs for Assembler | [HelloWorld](applications/HelloWorld/)
 test.groovy  | This is the main build script that is called to start the test process | [test.groovy](/test/README.md#testing-applications-with-zappbuild)
 testScripts  | This folder contains test scripts to execute full and impact builds | [testScripts](/test/testScripts/README.md)
 
@@ -14,28 +15,37 @@ The main script for testing applications against zAppBuild is `test.groovy`. It 
 test.groovy script has five required arguments that must be present during each invocation:
 * --branch <arg> - zAppBuild branch to test
 * --app <arg> - Application that is being tested (example: MortgageApplication)
-* --url <arg> - DBB Web Application server URL
 * --hlq <arg> - HLQ for dataset reation / deletion (example: USER.BUILD)
-* --id <arg> - DBB Web Application user id
+* --id <arg> - Db2 user id for the MetadataStore
 
 test.groovy script has three optional argument that can be present during each invocation
-* --pw <arg> - DBB Web Application user password
-* --pwFile <arg> - DBB Web Application user password file
+* --url <arg> - Db2 JDBC URL for the MetadataStore.
+* --pw <arg> - Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+* --pwFile <arg> - Absolute or relative (from workspace) path to file containing Db2 password
 * --verbose <arg> - Flag indicating to print trace statements
-* --propFiles <arg> - Absolute path to the location of the datasets.properties
+* --propFiles <arg> - Absolute path to the location of the datasets.properties and other configuration files.
 * --outDir <arg> - Absolute path to out directory
+
+It is recommended to use the `--propFiles` to pass in any environment specific property files for your environment, such as the `dataset.properties`, the `build.properties` to configure the Metadatastore connection. 
+This avoids that you need to commit any environment specific configuration to the branch. 
 
 # Examples of running an end to end test:
 
 NOTE - For this invocation of the test framework, it is assumed to have the dataset.properties defined to the actual execution environment.
 
 ```
-$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u urlToDbbWebApp -i userID -p pwd
+$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy 
+                      --branch testBranch \ 
+					  --app MortgageApplication \ 
+					  --hlq USER.BUILD \ 
+					  --url jdbc:db2://system1.company.com:5040/DBB1 \ 
+					  --id JDBCID \
+					  --pwFile /var/dbb/pwdFile.txt
 ``` 
 
 Note -  With the invocation any kind of build properties, they are passed to zAppBuild.
 ```
-$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u urlToDbbWebApp -i userID -p pwd --propFiles /pathToDatasets/datasets.properties --outDir /pathToOutDir/out
+$DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy -b testBranch -a MortgageApplication -q USER.BUILD -u jdbcurl -i userID -p pwd --propFiles /pathToDatasets/datasets.properties --outDir /pathToOutDir/out
 ```
 
 # Examples of outputs to be expected:
@@ -210,10 +220,11 @@ test framework arguments:
 zAppBuild arguments:
 -a, --app       Application that is being tested (example: MortgageApplication), required
 -q, --hlq       HLQ for dataset reation / deletion (example: USER.BUILD), required
--u, --url       DBB Web Application server URL, required
--i, --id        DBB Web Application user id, required
--p, --pw        DBB Web Application user password
--P, --pwFile    DBB Web Application user password file
+-u, --url       Db2 JDBC URL for the MetadataStore.
+            	Example: jdbc:db2:<Db2 server location>
+-i, --id        Db2 user id for the MetadataStore
+-p, --pw        Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+-P, --pwFile    Absolute or relative (from workspace) path to file containing Db2 password
 -f, --propFiles Absolute path to the location of the datasets.properties 
 -o, --outDir    Absolute path to out directory
 ```
