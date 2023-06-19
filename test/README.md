@@ -39,7 +39,8 @@ $DBB_HOME/bin/groovyz ${repoPath}/test/test.groovy  \
 					  --url jdbc:db2://system1.company.com:5040/DBB1  \ 
 					  --id JDBCID  \ 
 					  --pwFile /var/dbb/pwdFile.txt  \ 
-					  --propFiles /pathToDatasets/datasets.properties --outDir /pathToOutDir/out
+					  --propFiles /pathToDatasets/datasets.properties  \ 
+					  --outDir /pathToOutDir/out
 ```
 
 # Examples of outputs to be expected:
