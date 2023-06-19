@@ -26,7 +26,7 @@ impactBuildPreviewCommand << "--hlq ${props.hlq}"
 impactBuildPreviewCommand << "--logEncoding UTF-8"
 impactBuildPreviewCommand << (props.url ? "--url ${props.url}")
 impactBuildPreviewCommand << (props.id ? "--id ${props.id}")
-impactBuildPreviewCommand << (props.pw ? "--pw ${props.pw}" 
+impactBuildPreviewCommand << (props.pw ? "--pw ${props.pw}") 
 impactBuildPreviewCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
 impactBuildPreviewCommand << (props.verbose ? "--verbose" : "")
 impactBuildPreviewCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
@@ -43,7 +43,7 @@ impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
 impactBuildCommand << (props.url ? "--url ${props.url}")
 impactBuildCommand << (props.id ? "--id ${props.id}")
-impactBuildCommand << (props.pw ? "--pw ${props.pw}" 
+impactBuildCommand << (props.pw ? "--pw ${props.pw}") 
 impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}")
 impactBuildCommand << (props.verbose ? "--verbose" : "")
 impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
