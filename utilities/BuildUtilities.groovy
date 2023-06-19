@@ -823,6 +823,46 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 }
 
 /**
+ * generates the IdentifyStatement for the Binder
+ * 
+ * parameter:
+ *  buildFile
+ * 
+ * returns:  
+ *  - IDENTIFY string following the pattern:
+ *    <application>/<abbreviatedGitHash>
+ *  
+ *  - null if statement cannot be generated 
+ *   
+ * additional information:
+ *  https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-identify-statement
+ * 
+ */
+def generateIdentifyStatement(String buildFile) {
+
+	def String identifyStmt
+
+	if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
+		
+		String member = CopyToPDS.createMemberName(buildFile)
+		String identifyString = props.application + "/" + getShortGitHash(buildFile)
+		//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
+		identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
+		
+		if (identifyString.length() > 40) {
+			println("*!* generateIdentifyStatement() - Identify string exceeds 40 chars: identifyStmt=$identifyStmt")
+			return null
+		} else {
+			return identifyStmt
+		}
+		
+		
+	} else {
+		return null
+	}
+}
+
+/**
  * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
  * and indicating if an attribute is overridden through a property definition.
  * 

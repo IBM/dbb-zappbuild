@@ -53,6 +53,8 @@ sortedList.each { buildFile ->
 	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.asm.log")
 	if (logFile.exists())
 		logFile.delete()
@@ -60,7 +62,8 @@ sortedList.each { buildFile ->
 	MVSExec assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
 	MVSExec assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
 	MVSExec debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit 
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -131,7 +134,6 @@ sortedList.each { buildFile ->
 	}
 
 	
-	String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
 	// linkedit
 	if (rc <= maxRC && needsLinking && needsLinking.toBoolean()) {
 
@@ -280,7 +282,9 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 
 	if (props.debug)
 		parameters = "$parameters,$debugOptions"	
-		
+
+	if (props.verbose) println "*** Assembler options for $buildFile = $parameters"
+				
 	// define the MVSExec command to compile the BMS map
 	MVSExec assembler = new MVSExec().file(buildFile).pgm(props.assembler_pgm).parm(parameters)
 
@@ -386,6 +390,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parameters = parameters + ",SSI=$ssi"
 	}
 	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parameters"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
 	
@@ -402,7 +408,17 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// linkEdit stream specified
 	if (linkEditStream) {
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-	} 
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('assembler_identifyLoad', buildFile)
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
 	
 	// appending mq stub according to file flags
 	if(buildUtils.isMQ(logicalFile)) {
@@ -413,7 +429,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Define SYSIN dd as instream data
 	if (sysin_linkEditInstream) {
-		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
 		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 

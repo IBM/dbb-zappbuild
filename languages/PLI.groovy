@@ -57,11 +57,15 @@ sortedList.each { buildFile ->
 	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
 	if (logFile.exists())
 		logFile.delete()
+		
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit 
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -87,7 +91,6 @@ sortedList.each { buildFile ->
 			BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
 		}
 
-		String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			maxRC = props.getFileProperty('pli_linkEditMaxRC', buildFile).toInteger()
@@ -147,7 +150,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
     if (parms.startsWith(','))
 		parms = parms.drop(1)
 
-	if (props.verbose) println "PLI compiler parms for $buildFile = $parms"
+	if (props.verbose) println "*** PLI compiler parms for $buildFile = $parms"
 	return parms
 }
 
@@ -276,6 +279,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parms"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
@@ -296,7 +301,17 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// appending configured linkEdit stream if specified
 	if (linkEditStream) {
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-	} 
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('pli_identifyLoad', buildFile)
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
 
 	// appending mq stub according to file flags
 	if(buildUtils.isMQ(logicalFile)) {
@@ -312,7 +327,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
-		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
 		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 
