@@ -3,30 +3,17 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild_deletion.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
-
-// Create full build command to set baseline and populate output libraries
-def fullBuildCommand = []
-fullBuildCommand << "${dbbHome}/bin/groovyz"
-fullBuildCommand << "${props.zAppBuildDir}/build.groovy"
-fullBuildCommand << "--workspace ${props.workspace}"
-fullBuildCommand << "--application ${props.app}"
-fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
-fullBuildCommand << "--hlq ${props.hlq}"
-fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
-fullBuildCommand << (props.verbose ? "--verbose" : "")
-fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}")
-fullBuildCommand << "--fullBuild"
 
 // create impact build command
 def impactBuildCommand = []
@@ -37,9 +24,10 @@ impactBuildCommand << "--application ${props.app}"
 impactBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
-impactBuildCommand << "--url ${props.url}"
-impactBuildCommand << "--id ${props.id}"
-impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+impactBuildCommand << (props.url ? "--url ${props.url}" : "")
+impactBuildCommand << (props.id ? "--id ${props.id}" : "")
+impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 impactBuildCommand << "--verbose"
 impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_deletion_buildPropSetting}")
 impactBuildCommand << "--impactBuild"
@@ -53,18 +41,10 @@ PropertyMappings outputsDeletedMappings = new PropertyMappings('impactBuild_dele
 def deleteFiles = props.impactBuild_deletion_deleteFiles.split(',')
 try {
 	
-	println "\n** Running full build to set baseline"
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
 
-	// run impact build
-	println "** Executing ${fullBuildCommand.join(" ")}"
-	def outputStream = new StringBuffer()
-	def process = [
-		'bash',
-		'-c',
-		fullBuildCommand.join(" ")
-	].execute()
-	process.waitForProcessOutput(outputStream, System.err)
-	
+	// test setup	
 	deleteFiles.each{ deleteFile ->
 		
 		// delete file in Git repo test branch
@@ -87,7 +67,8 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**\n"
@@ -95,6 +76,12 @@ finally {
 		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS FOR FILE DELETION**"
 		println "***"
 	}
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
+	testUtils.cleanUpDatasets(props.impactBuild_deletion_datasetsToCleanUp)
 }
 // script end
 
@@ -150,15 +137,4 @@ def validateImpactBuild(String deleteFile, PropertyMappings outputsDeletedMappin
 		props.testsSucceeded = 'false'
 	}
 }
-def cleanUpDatasets() {
-	def segments = props.impactBuild_deletion_datasetsToCleanUp.split(',')
 
-	println "Deleting impact build PDSEs ${segments}"
-	segments.each { segment ->
-		def pds = "'${props.hlq}.${segment}'"
-		if (ZFile.dsExists(pds)) {
-			if (props.verbose) println "** Deleting ${pds}"
-			ZFile.remove("//$pds")
-		}
-	}
-}

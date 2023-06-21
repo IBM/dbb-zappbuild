@@ -2,10 +2,13 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script fullBuild.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -20,9 +23,10 @@ fullBuildCommand << "--application ${props.app}"
 fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+fullBuildCommand << (props.url ? "--url ${props.url}" : "")
+fullBuildCommand << (props.id ? "--id ${props.id}" : "")
+fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+fullBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"
@@ -60,7 +64,7 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	cleanUpDatasets()
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED FULL BUILD TEST RESULTS**\n"
@@ -68,7 +72,8 @@ finally {
 	println "\n**END OF FAILED FULL BUILD **"
 	println "***"
   }
-	
+  
+  testUtils.cleanUpDatasets(props.fullBuild_datasetsToCleanUp)
 }
 
 // script end
@@ -76,16 +81,3 @@ finally {
 //*************************************************************
 // Method Definitions
 //*************************************************************
-
-def cleanUpDatasets() {
-	def segments = props.fullBuild_datasetsToCleanUp.split(',')
-	
-	println "Deleting full build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
-}

@@ -6,10 +6,14 @@ import groovy.cli.commons.*
 println "** Executing zAppBuild test framework test/test.groovy"
 
 // Parse test script arguments and load build properties
-BuildProperties props = loadBuildProperties(args)
+@Field BuildProperties props = BuildProperties.getInstance()
+@Field def testUtils = loadScript(new File("utils/testUtilities.groovy"))
+
+// load test properties
+props = loadBuildProperties(args)
 
 // create a test branch to run under
-createTestBranch(props)
+testUtils.createTestBranch()
 
 // flag to control test process
 props.testsSucceeded = 'true'
@@ -32,14 +36,19 @@ try {
 }
 finally {
 	// delete test branch
-	deleteTestBranch(props)
+	testUtils.deleteTestBranch()
 	
 	// if error occurred signal process error
 	if (props.testsSucceeded.toBoolean() == false) {
+		println "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		println("*! Not all test scripts completed successfully. Please check console outputs. Send exit signal.")
+		println "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		System.exit(1)
 	} else {
-		println("* ZAPPBUILD TESTFRAMEWORK COMPLETED. All tests (${props.test_testOrder}) completed successfully.")
+		println "\n================================================================================================"
+		println("* ZAPPBUILD TESTFRAMEWORK COMPLETED.\n   All tests (${props.test_testOrder}) completed successfully.")
+		println "================================================================================================"
+		
 	}
 	
 }
@@ -70,13 +79,13 @@ def loadBuildProperties(String [] args) {
 	   // zAppBuild options
 	   a(longOpt: 'app', 'Application that is being tested (example: MortgageApplication)', args: 1, required: true)
 	   q(longOpt: 'hlq', 'HLQ for dataset reation / deletion (example: USER.BUILD)', args: 1, required: true)
-	   u(longOpt: 'url', 'DBB Web Application server URL', args: 1, required: true)
-	   i(longOpt: 'id', 'DBB Web Application user id', args: 1, required: true)
-	   p(longOpt: 'pw', 'DBB Web Application user password', args: 1)
-	   P(longOpt: 'pwFile', 'DBB Web Application user password file', args: 1)
+	   u(longOpt: 'url', 'Db2 JDBC URL for the MetadataStore. \n Example: jdbc:db2:<Db2 server location>', args: 1)
+	   i(longOpt: 'id', 'Db2 user id for the MetadataStore', args: 1)
+	   p(longOpt: 'pw', 'Db2 password (encrypted with DBB Password Utility) for the MetadataStore', args: 1)
+	   P(longOpt: 'pwFile', 'Absolute or relative (from workspace) path to file containing Db2 password', args: 1)
 	   v(longOpt: 'verbose', 'Flag indicating to print trace statements')
 	   f(longOpt: 'propFiles', 'Commas spearated list of additional property files to load. Absolute paths or relative to workspace', args:1)
-           o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
+       o(longOpt: 'outDir', 'Absolute path to the build output root directory', args:1)
 	}
 	
 	def options = cli.parse(args)
@@ -134,40 +143,4 @@ def loadBuildProperties(String [] args) {
 	}
 		
 	return props
-}
-
-/*
- * Create and checkout a local test branch for testing
- */
-def createTestBranch(BuildProperties props) {
-	println "** Creating and checking out branch ${props.testBranch}"
-	def createTestBranch = """
-    cd ${props.zAppBuildDir}
-    git checkout ${props.branch}
-    git checkout -b ${props.testBranch} ${props.branch}
-    git status
-"""
-	def job = ['bash', '-c', createTestBranch].execute()
-	job.waitFor()
-	def createBranch = job.in.text
-	println "$createBranch"
-}
-
-/*
- * Deletes test branch
- */
-def deleteTestBranch(BuildProperties props) {
-	println "\n** Deleting test branch ${props.testBranch}"
-	def deleteTestBranch = """
-    cd ${props.zAppBuildDir}
-    rm -r out
-    git reset --hard ${props.testBranch}
-    git checkout ${props.branch}
-    git branch -D ${props.testBranch}
-    git status
-"""
-	def job = ['bash', '-c', deleteTestBranch].execute()
-	job.waitFor()
-	def deleteBranch = job.in.text
-	println "$deleteBranch"
 }
