@@ -8,6 +8,7 @@ import java.nio.file.PathMatcher
 import groovy.json.JsonSlurper
 import groovy.transform.*
 import java.util.regex.*
+import com.ibm.dbb.dependency.internal.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -554,9 +555,15 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
 					logicalFile = scanner.scan(file, props.workspace)
 				} else {
+					// The below logic should be replaced with Registration Scanner when available
+					// See reported idea: https://ibm-z-software-portal.ideas.ibm.com/ideas/DBB-I-48
 					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
+					
 					// New logical file with Membername, buildfile, language set to file extension
 					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
+					
+					// Add logicalFile to LogicalFileCache
+					LogicalFileCache.add(props.workspace, logicalFile)
 				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
