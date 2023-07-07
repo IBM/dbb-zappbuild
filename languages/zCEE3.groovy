@@ -89,8 +89,6 @@ sortedList.each { buildFile ->
 	} else {
 		def errorMsg = "Error when locating the api.war file" 
 		println("*! ${errorMsg}")
-		if (props.verbose)
-			println("*! zCEE OpenAPI 3 error:\n${shellError}")
 		props.error = "true"
 		buildUtils.updateBuildResult(errorMsg:errorMsg)
 		System.exit(process.exitValue())
