@@ -292,6 +292,17 @@ zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS | true
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified | true
+crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS | true
+crb_applicationConstraintsFile | Absolute path to the CICS Resource Builder application constraints YAML file on z/OS | true 
+
+
 ### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
 
