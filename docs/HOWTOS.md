@@ -8,17 +8,17 @@ This page collects information to configure and use specific features of zAppBui
 
 ## Signing load modules and program objects
 
-zAppBuild is configured to automatically insert a reference of the version of the source code (the githash), which was used to build the executables. At the moment, the feature is only available for build files which are mapped to `Assembler.groovy`, `Cobol.groovy` and `PLI.groovy`. It is available for pipeline builds.
+zAppBuild can be configured to automatically insert a reference of the version of the source code (the githash), which was used to build the executables. At the moment, the feature is only available for build files which are mapped to `Assembler.groovy`, `Cobol.groovy` and `PLI.groovy`. It is available for pipeline builds.
 
 It leverages the [IDENTIFY statement](https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-identify-statement) of the linkage editor.
 
 **How to enable the signing**
 
-The feature is enabled by default and is controlled via the `assembler_identifyLoad`, `cobol_identifyLoad` and the `cobol_identifyLoad` properties managed the corresponding property files of the language scripts.
+The feature is enabled by default and is controlled via the `assembler_identifyLoad`, `cobol_identifyLoad` and the `pli_identifyLoad` properties managed in the corresponding property files of the language scripts.
 
 **What to expect**
 
-The feature, will generate the linker statement `IDENTIFY` for the build file. It follows the structure:
+The feature will generate the linker statement `IDENTIFY` for the build file. It follows the structure:
 ```
    IDENTIFY BUILDMEMBER('APPLICATION/SHORT-GIT-HASH')
 ```
@@ -53,11 +53,11 @@ Alternatively, you can also find the information in the link listing:
 * It does not manage scenarios where multiple object decks are assembled into the load module
 
 
-**When is this useful**
+**When is this useful?**
 
-If you want to quickly understand the version of the source code which is running in a runtime, you can use the [amblist service aid](https://www.ibm.com/docs/en/zos/2.5.0?topic=sets-amblist-service-aid) to retrieve the information for a load module to answer which application system the modules belongs to and which version of the code is currently executed.
+If you want to quickly understand the version of the source code which is running in a runtime, you can use the [amblist service aid](https://www.ibm.com/docs/en/zos/2.5.0?topic=sets-amblist-service-aid) to retrieve the information for a load module or a program object. The IDENTIFY information can help you *to understand to which application the module belongs and which version of the source code was used to build the executed module.*
 
-Using the sample JCL, helps to obtain the information
+The following sample JCL showcases the use of AMBLIST to display load modules' or program objects' information:
 
 ```jcl
 //AMBLIST1 JOB (8550,030A,20,30),'AMBLIST JOB', 
