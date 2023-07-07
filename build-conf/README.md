@@ -292,6 +292,17 @@ zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
+### zCEE3.Properties
+Application properties used by zAppBuild/language/zCEE3.groovy
+
+Property | Description
+--- | --- | ---
+zCEE_alwaysRebuildWAR | Options to rebuild WAR file
+zCEE_shellEnvironment | Shell environment used to run the gradle command
+zCEE_gradlePath | Path to gradle executable
+zCEE_gradle_JAVA_OPTS | JAVA Options used with gradle
+
+
 ### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
 
