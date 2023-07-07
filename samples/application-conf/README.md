@@ -267,6 +267,16 @@ zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS | true
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified | true
+crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS | true
+crb_applicationConstraintsFile | Absolute path to the CICS Resource Builder application constraints YAML file on z/OS | true 
+
 ### REXX.properties
 Application properties used by zAppBuild/language/REXX.groovy
 
