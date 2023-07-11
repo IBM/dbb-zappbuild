@@ -11,9 +11,6 @@ import groovy.json.JsonSlurper
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 
-@Field def buildUtils = loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-
-
 /**
  * DependencyScannerUtilties
  * 
@@ -150,10 +147,8 @@ def parseConfigStringToMap(String configString) {
 	}
 	
 	if (scannerConfigMap.scannerClass == null) {
-		String warningMsg = "*! The provided scanner mapping configuration ($configString) is not formed correctly and skipped."
-		println warningMsg 
+		println "*! The provided scanner mapping configuration ($configString) is not formed correctly and skipped."
 		println "*! Sample syntax: 'dbb.scannerMapping = \"scannerClass\":\"DependencyScanner\", \"languageHint\":\"COB\" :: cbl,cpy,cob'"
-		buildUtils.updateBuildResult(warningMsg:warningMsg)
 		return null
 	}
 	
