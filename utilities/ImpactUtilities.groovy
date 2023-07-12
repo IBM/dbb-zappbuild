@@ -638,7 +638,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	if (metadataStore && !props.error) {
+	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
