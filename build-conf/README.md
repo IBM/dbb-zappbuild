@@ -37,24 +37,40 @@ General properties used mainly by `build.groovy` but can also be a place to decl
 Property | Description
 --- | ---
 buildPropFiles | Comma separated list of additional build property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to `zAppBuild/build-conf/`.
+applicationDefaultPropFiles | Comma separated list of default application configuration property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to `zAppBuild/build-conf/`.
 buildListFileExt | File extension that indicates the build file is really a build list.
-languagePropertyQualifiers | List of language script property qualifiers. Each language script property has a unique qualifier to avoid collision with other language script properties.
 applicationConfRootDir | Alternate root directory for application-conf location.  Allows for the deployment of the application-conf directories to a static location.  Defaults to ${workspace}/${application}
+createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
+buildOutputTSformat | Defines the build timestamp format for build output subfolder and build label.
 requiredDBBToolkitVersion | Minimum required DBB ToolkitVersion to run this version of zAppBuild.
 requiredBuildProperties | Comma separated list of required build properties for zAppBuild/build.groovy. Build and language scripts will validate that *required* build properties have been set before the script runs.  If any are missing or empty, then a validation error will be thrown.
-formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data
-impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds on changes of build properties within the application repository
-impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
-continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
-createBuildOutputSubfolder | Option to create a subfolder with the build label within the build output dir (outDir). Default: true.
-documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false. Requires DBB Toolkit 1.1.3 and higher.
-generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property. 
 dbb.file.tagging | Controls compile log and build report file tagging. Default: true.
-dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
 metadataStoreType | DBB MetadataStore Type configuration property. Valid options are 'file' or 'db2'. Default: file
 metadataStoreFileLocation | DBB File MetadataStore location. Default: $USER
 metadataStoreDb2Url | DBB configuration property for Db2 URL.  ***Can be overridden by build.groovy option -url, --url***
 metadataStoreDb2ConnectionConf | DBB configuration property for Db2 configuration properties file. 
+dbb.gateway.type | DBB configuration property to determine which gateway type is used for the build process
+dbb.gateway.procedureName | Interactive gateway Procedure Name  
+dbb.gateway.accountNumber | Interactive gateway Account Number  
+dbb.gateway.groupId | Interactive gateway Group ID  
+dbb.gateway.regionSize | Interactive gateway Region Size    
+dbb.gateway.logLevel | Interactive gateway Log Level    
+
+### defaultzAppBuildConf.properties
+General application properties used by zAppBuild.
+
+Property | Description
+--- | ---
+dbb.scannerMapping | DBB PropertyMapping specifying the scanner implementation to be used 
+gitRepositoryCompareService | Service URL for the Git provider to record a link to the git provider for a visual comparison of two hashes
+continueOnScanFailure | Determine the behavior when facing a scanner failure. true (default) to continue scanning. false will terminate the process. 
+formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data on verbose output
+generateDb2BindInfoRecord | Flag to control the generation of a generic DBB build record for a build file to document the configured db2 bind information (application-conf/bind.properties). Default: false ** Can be overridden by a file property.
+generateDb2BindInfoRecordProperties | Comma-separated list of the bind parameters to be added to the DBB build record.
+impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds on changes of build properties within the application repository
+impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
+documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false.
+dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
 
 ### dependencyReport.properties
 Properties used by the impact utilities to generate a report of external impacted files
@@ -90,7 +106,6 @@ assembler_compileErrorFeedbackXmlOptions | BPXWDYN creation options for SYSXMLSD
 assembler_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
 assembler_pgm | MVS program name of the high level assembler
 assembler_linkEditor | MVS program name of the link editor
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 assembler_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### BMS.properties
@@ -140,7 +155,6 @@ cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
 
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### LinkEdit.properties
 Build properties used by zAppBuild/language/LinkEdit.groovy
@@ -188,7 +202,6 @@ pli_outputDatasets | List of output datasets to document deletions ** Can be ov
 pli_listOptions | BPXWDYN creation options for LIST data sets
 pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 pli_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### MFS.properties
 Build properties used by zAppBuild/language/MFS.groovy
@@ -226,7 +239,6 @@ dbdgen_outputDatasets | List of output datasets to document deletions ** Can be
 dbdgen_pgm | MVS program name of the high level assembler
 dbdgen_linkEditor | MVS program name of the link editor
 dbdgen_deployType | Deploy Type of build outputs
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### PSBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy
@@ -247,7 +259,6 @@ psbgen_outputDatasets | List of output datasets to document deletions ** Can be
 psbgen_pgm | MVS program name of the high level assembler
 psbgen_linkEditor | MVS program name of the link editor
 psbgen_deployType | Deploy Type of build outputs
-dbb.DependencyScanner.languageHint | DBB configuration property used by the dependency scanner to disambiguate a source file's language
 
 ### ACBgen.properties
 Build properties used by zAppBuild/language/PSBgen.groovy; ACBgen is part of the PSBgen process

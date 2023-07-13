@@ -39,7 +39,7 @@ Location of file properties, script mappings and file-level property overrides. 
 Property | Description
 --- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
-dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+dbb.scannerMapping | zAppBuild configuration override/expansion to map files extensions to DBB dependency scanner configurations
 isSQL | File property overwrite to indicate that a file requires to include SQL parameters
 isCICS | File property overwrite to indicate that a file requires to include CICS parameters
 isMQ | File property overwrite to indicate that a file requires to include MQ parameters
