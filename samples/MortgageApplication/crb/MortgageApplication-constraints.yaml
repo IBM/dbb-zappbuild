@@ -1,0 +1,8 @@
+---
+schemaVersion: resourceModel/1.0
+application:
+  name: MortgageApplication
+  description: MortgageApplication constraints
+  constraints:
+  - id: program-name-prefix
+    prefix: EPSC
