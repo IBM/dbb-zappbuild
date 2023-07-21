@@ -272,10 +272,7 @@ Application properties used by zAppBuild/language/CRB.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS | true
-crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified | true
-crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS | true
-crb_applicationConstraintsFile | Absolute path to the CICS Resource Builder application constraints YAML file on z/OS | true 
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified) | true
 
 ### REXX.properties
 Application properties used by zAppBuild/language/REXX.groovy

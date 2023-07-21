@@ -295,12 +295,15 @@ zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to d
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
 
+zAppBuild contains the CICS Resource Builder resource model YAML and the CICS Resource Builder application constraints YAML for the MortgageApplication sample in 
+**build-conf/cicsResourceBuilderConfigurations**
+
 Property | Description
 --- | ---
+crb_requiredBuildProperties | Comma separated list of required build properties for language/CRB.groovy
 crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS
-crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified
 crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS
-crb_applicationConstraintsFile | Absolute path to the CICS Resource Builder application constraints YAML file on z/OS
+crb_applicationConstraintsFile | (Optional) Absolute path to the CICS Resource Builder application constraints YAML file on z/OS
 
 
 ### Transfer.properties
