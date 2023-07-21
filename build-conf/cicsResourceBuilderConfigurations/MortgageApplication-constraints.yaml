@@ -6,3 +6,9 @@ application:
   constraints:
   - id: program-name-prefix
     prefix: EPSC
+  - id: mapset-name-prefix
+    prefix: EPSM
+  - id: transaction-name-prefix
+    prefix: EPS 
+  - id: resource-name-prefix
+    prefix: EPS 

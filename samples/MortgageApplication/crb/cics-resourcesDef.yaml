@@ -2,8 +2,10 @@
 resourceDefinitions:
 - mapset:
     name: EPSMORT
+    group: EPSMTM
 - program:
     name: EPSCMORT
+    group: EPSMTM
     datalocation: ANY
     language: COBOL
     execkey: USER
@@ -12,6 +14,7 @@ resourceDefinitions:
     executionset: FULLAPI
 - program:
     name: EPSCSMRT
+    group: EPSMTM
     datalocation: ANY
     language: COBOL
     execkey: USER
@@ -20,4 +23,7 @@ resourceDefinitions:
     executionset: FULLAPI
 - transaction:
     name: EPSP
+    group: EPSMTM
     storageclear: NO
+    program: EPSCMORT
+

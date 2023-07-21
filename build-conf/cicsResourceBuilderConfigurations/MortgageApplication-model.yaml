@@ -8,10 +8,13 @@ resourceModel:
       public:
         name:
           required: true
+          constraintId: mapset-name-prefix
+        group: 
+          required: true 
+          constraintId: resource-name-prefix           
       private:
         resident: NO
         usage: NORMAL
-        group: EPSMTM
         uselpacopy: NO
         status: ENABLED
   - type: program
@@ -20,6 +23,9 @@ resourceModel:
         name:
           required: true
           constraintId: program-name-prefix
+        group: 
+          required: true
+          constraintId: resource-name-prefix        
         datalocation:
           required: true
         language:
@@ -34,7 +40,6 @@ resourceModel:
           required: true
       private:
         usage: NORMAL
-        group: EPSMTM
         uselpacopy: NO
         status: ENABLED
         reload: NO
@@ -47,12 +52,17 @@ resourceModel:
       public:
         name:
           required: true
+          constraintId: transaction-name-prefix
+        group: 
+          required: true
+          constraintId: resource-name-prefix
         storageclear:
           required: true
+        program: 
+          required: true
+          constraintId: program-name-prefix
       private:
         tranclass: DFHTCL00
-        program: EPSCMORT
-        group: EPSMTM
         status: ENABLED
         twasize: 0
         profile: DFHCICST
