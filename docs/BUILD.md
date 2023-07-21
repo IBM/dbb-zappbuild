@@ -16,7 +16,7 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1
 ```
-Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.  
+Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.
 
 ## Common Pipeline Invocation Examples
 
@@ -93,7 +93,7 @@ $DBB_HOME/bin/groovyz build.groovy  \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --debug \
-                      --impactBuild 
+                      --impactBuild
 ```
 **Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
 ```
@@ -117,12 +117,12 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
                       --outDir /u/build/out \
-                      --hlq BUILD.APP1 \ 
+                      --hlq BUILD.APP1 \
                       --userBuild app1/cobol/epsmpmt.cbl
 ```
 **Build one program using a [user build dependency file](samples/userBuildDependencyFile) predefining dependency information to skip DBB scans and dependency resolution.**
 
-Build a single program in a user build context and provide the dependency information from the IDE to skip scanning the files on USS. Useful when building on IBM ZD&T or Wazi Sandbox environments. 
+Build a single program in a user build context and provide the dependency information from the IDE to skip scanning the files on USS. Useful when building on IBM ZD&T or Wazi Sandbox environments.
 ```
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
@@ -173,7 +173,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 ```
 $DBB_HOME/bin/groovyz <zAppBuildLocation>/build.groovy [options] buildfile
 
-buildFile (optional):  Path of the source file to build (absolute or relative to workspace). 
+buildFile (optional):  Path of the source file to build (absolute or relative to workspace).
 If buildFile is a text file (*.txt), then it is assumed to be a build list file.
 
 Options:
@@ -193,8 +193,8 @@ build options:
                               by changed files since last successful build.
  -b,--baselineRef             Comma seperated list of git references to overwrite
                               the baselineHash hash in an impactBuild scenario.
- -m,--mergeBuild              Flag indicating to build only source code changes which will be 
-                              merged back to the mainBuildBranch. 
+ -m,--mergeBuild              Flag indicating to build only source code changes which will be
+                              merged back to the mainBuildBranch.
 
  -s,--scanOnly                Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
  -ss,--scanSource             Flag indicating to only scan source files for application without building anything
@@ -203,18 +203,18 @@ build options:
  -pv,--preview                Supplemental flag indicating to run build in preview mode without processing the execute commands
 
 
- -r,--reset                   Deletes the application's dependency collections 
+ -r,--reset                   Deletes the application's dependency collections
                               and build result group from the DBB repository
  -v,--verbose                 Flag to turn on script trace
  -d,--debug                   Flag to build modules for debugging with
                               IBM Debug for z/OS
- -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC 
+ -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC
                               directory for user build
  -zTest,--runzTests           Specify if zUnit Tests should be run
 
- -p,--propFiles               Comma separated list of additional property files 
+ -p,--propFiles               Comma separated list of additional property files
                               to load. Absolute paths or relative to workspace
- -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties                             
+ -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties
 
  -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
  -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
@@ -222,7 +222,7 @@ build options:
  -cco,--cccOptions            Headless Code Coverage Collector Options
 
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
- 
+
 
 Db2 MetadataStore configuration options
  -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
@@ -233,41 +233,36 @@ Db2 MetadataStore configuration options
 
 IDz/ZOD User Build options
  -u,--userBuild               Flag indicating running a user build
- -dz,--debugzUnitTestcase     Flag indicating to start a debug session for zUnit Test configurations as part of user build  
+ -dz,--debugzUnitTestcase     Flag indicating to start a debug session for zUnit Test configurations as part of user build
  -e,--errPrefix <arg>         Unique id used for IDz error message datasets
  -df,--dependencyFile <arg>   Absolute or relative path (from workspace) to user build JSON file containing dependency information.
 
 utility options
  -help,--help                 Prints this message
 ```
- 
+
 ## Invocation Samples including console log
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
-  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
-  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
-  - [Command Line Options Summary](#command-line-options-summary)
-  - [Invocation Samples including console log](#invocation-samples-including-console-log)
-    - [Build a Single Program](#build-a-single-program)
-    - [Build a List of Programs](#build-a-list-of-programs)
-    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-    - [Perform Impact Build](#perform-impact-build)
-    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-    - [Perform a Merge build](#perform-a-merge-build)
-    - [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
-    - [Perform a Scan Source build](#perform-a-scan-source-build)
-    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Build a Single Program](#build-a-single-program)
+- [Build a List of Programs](#build-a-list-of-programs)
+- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+- [Perform Impact Build](#perform-impact-build)
+- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+- [Perform a Merge build](#perform-a-merge-build)
+- [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
+- [Perform a Scan Source build](#perform-a-scan-source-build)
+- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
 
 <!-- /TOC -->
-### Build a Single Program 
+### Build a Single Program
 
-Build a single program in the application. 
+Build a single program in the application.
 
-By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.  
+By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.
 
 ```
 groovyz dbb-zappbuild/build.groovy \
@@ -282,7 +277,7 @@ groovyz dbb-zappbuild/build.groovy \
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 
 ** Build start at 20210622.080042.000
@@ -362,7 +357,7 @@ groovyz dbb-zappbuild/build.groovy \
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210622.081915.019
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
@@ -448,7 +443,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 
 </details>
 
-### Perform Full Build to build all files 
+### Perform Full Build to build all files
 
 The zAppBuild build option `--fullBuild` builds all files within the build scope which have a build script mapping defined in file.properties
 
@@ -687,7 +682,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 </details>
 
-### Perform Impact Build 
+### Perform Impact Build
 
 `--impactBuild` builds only programs impacted by source files that have changed since the last successful build.
 
@@ -845,7 +840,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 </details>
 
-### Perform Impact Build for topic branches 
+### Perform Impact Build for topic branches
 
 zAppBuild is able to detect when building a topic branch for the first time. It will automatically clone the dependency data collections from the main build branch (see `mainBuildBranch` build property in application.properties) in order to avoid having to rescan the entire application.
 
@@ -865,7 +860,7 @@ groovyz dbb-zappbuild/build.groovy \
 Please see the output provided in verbose mode when setting up the collections as well as the calculation of changed files:
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210622.085830.058
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.FEAT --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
@@ -959,7 +954,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 ** Build State : ERROR
 ** Total files processed : 2
 ** Total build time  : 44.702 seconds
-``` 
+```
 
 </details>
 
@@ -976,7 +971,7 @@ The syntax for `--baselineRef` is a comma-seperated list of mappings for each ap
 --baselineRef <application source dir>:<gitReference>,<application source dir>:<gitReference>,...
 ```
 
-Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`. 
+Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`.
 
 `gitReference` can either be a git commit hash or a git tag in the history.
 
@@ -995,7 +990,7 @@ groovyz dbb-zappbuild/build.groovy \
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210830.095350.053
 ** Input args = /var/dbb/dbb-zappbuild/samples --workDir /var/dbb/out/MortgageApplication --hlq DBB.ZAPP.REL --application MortgageApplication --verbose --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/jenkins/zappbuild_config/zappbuild.jenkins.properties --impactBuild --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8
@@ -1126,7 +1121,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Build State : CLEAN
 ** Total files processed : 3
 ** Total build time  : 8.546 seconds
-``` 
+```
 
 </details>
 
@@ -1135,11 +1130,11 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 `--mergeBuild` calculate the changes of a topic branch flowing back into the `mainBuildBranch` reference. This build type does not perform calculation of impacted files.
 
-The scenario is targeting for builds on topic branches. The scope of the build is focussing on the outgoing changes. It is not incremental. Any time you invoke this build, it will the changes which will be merged to the target reference. 
+The scenario is targeting for builds on topic branches. The scope of the build is focussing on the outgoing changes. It is not incremental. Any time you invoke this build, it will the changes which will be merged to the target reference.
 
-It leverages the git triple-dot diff syntax to identify the changes, similar to what can be seen in a pull/merge request.      
+It leverages the git triple-dot diff syntax to identify the changes, similar to what can be seen in a pull/merge request.
 
-In the below case both `MortgageApplication/cobol/epsmlist.cbl` and `MortgageApplication/copybook/epsnbrpm.cpy` are changed, but only the `epsmlist.cbl` is built because it is mapped to a build script.  
+In the below case both `MortgageApplication/cobol/epsmlist.cbl` and `MortgageApplication/copybook/epsnbrpm.cpy` are changed, but only the `epsmlist.cbl` is built because it is mapped to a build script.
 
 ```
 groovyz dbb-zappbuild/build.groovy \
@@ -1267,7 +1262,7 @@ For instance, use the `--preview` flag with the `--impactBuild` option to obtain
 
 Use the `--preview` flag with the `--fullBuild` option to produce the full bill of material (documented in a build report) for the artifacts that could be generated in the datasets pointed by the `hlq` parameter.
 
-The build will generate a build report, which, depending of the provided build option, will be stored in the build group. However, the build result status is set to `4` and does not impact the calculation of changed file of subsequent impact builds.  
+The build will generate a build report, which, depending of the provided build option, will be stored in the build group. However, the build result status is set to `4` and does not impact the calculation of changed file of subsequent impact builds.
 
 The below sample build log is documenting an `--impactBuild --preview` with the reporting capablities activated to what the build would do and any potential conflicts of concurrent development activities.
 
@@ -1317,14 +1312,14 @@ user.dir=/u/builduser
 ...
 preview=true
 ...
-** zAppBuild running on DBB Toolkit Version 2.0.0 20-Mar-2023 10:36:28 
+** zAppBuild running on DBB Toolkit Version 2.0.0 20-Mar-2023 10:36:28
 required props = buildOrder,buildListFileExt
 ** Running in reportOnly mode. Will process build options but not execute any steps.
 ** Db2 MetadataStore initialized
 ** Build output located at /var/dbb/work/mortgageout/build.20230425.160722.007
 ** Build result created for BuildGroup:MortgageApplication-350_preview_builds BuildLabel:build.20230425.160722.007
 ** --preview cli option provided. Processing all phases of the supplied build option, but will not execute the commands.
-** --impactBuild option selected. Building impacted programs for application MortgageApplication 
+** --impactBuild option selected. Building impacted programs for application MortgageApplication
 ** Getting current hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
 ** Storing MortgageApplication : 2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
 ** Getting baseline hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
@@ -1405,7 +1400,7 @@ required props = buildOrder,buildListFileExt
 ** MortgageApplication/cobol/epscmort.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
 ** Found impacted file MortgageApplication/link/epsmlist.lnk
 ** MortgageApplication/link/epsmlist.lnk is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
-** Calculation of impacted files by changed properties has been skipped due to configuration. 
+** Calculation of impacted files by changed properties has been skipped due to configuration.
 ** Writing build list file to /var/dbb/work/mortgageout/build.20230425.160722.007/buildList.txt
 MortgageApplication/cobol/epsmlist.cbl
 MortgageApplication/cobol/epscsmrt.cbl
@@ -1414,54 +1409,54 @@ MortgageApplication/link/epsmlist.lnk
 MortgageApplication/jcl/MYSAMP.jcl
 ** Populating file level properties from individual artifact properties files.
 * Populating file level properties overrides.
-** Checking file property overrides for MortgageApplication/cobol/epsmlist.cbl 
+** Checking file property overrides for MortgageApplication/cobol/epsmlist.cbl
 *** MortgageApplication/cobol/epsmlist.cbl has an individual artifact properties file defined in properties/epsmlist.cbl.properties
     Found file property cobol_compileParms = ${cobol_compileParms},SOURCE
 *** Checking for existing file property overrides
     Checking build property cobol_compileParms
     Adding file property override cobol_compileParms = ${cobol_compileParms},SOURCE for MortgageApplication/cobol/epsmlist.cbl
-** Checking file property overrides for MortgageApplication/cobol/epscsmrt.cbl 
+** Checking file property overrides for MortgageApplication/cobol/epscsmrt.cbl
 *** Checking for existing file property overrides
-** Checking file property overrides for MortgageApplication/cobol/epscmort.cbl 
+** Checking file property overrides for MortgageApplication/cobol/epscmort.cbl
 *** Checking for existing file property overrides
-** Checking file property overrides for MortgageApplication/link/epsmlist.lnk 
+** Checking file property overrides for MortgageApplication/link/epsmlist.lnk
 *** Checking for existing file property overrides
-** Checking file property overrides for MortgageApplication/jcl/MYSAMP.jcl 
+** Checking file property overrides for MortgageApplication/jcl/MYSAMP.jcl
 *** Checking for existing file property overrides
 ** Perform analysis and reporting of external impacted files for the build list including changed files.
 *** Running external impact analysis with file filter **/* and collection patterns .*-main.* with analysis mode deep
-*** Running external impact analysis for files 
-     MortgageApplication/cobol/epscmort.cbl 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/link/epsmlist.lnk 
-     MortgageApplication/jcl/MYSAMP.jcl 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/copybook/epsmtcom.cpy 
+*** Running external impact analysis for files
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/link/epsmlist.lnk
+     MortgageApplication/jcl/MYSAMP.jcl
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/copybook/epsmtcom.cpy
 *** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-outputs.log
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-outputs 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-outputs 
-*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs 
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-outputs
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-outputs
+*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs
 *** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-patch.log
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-patch 
-*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main-patch 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-patch 
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-patch
+*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main-patch
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-patch
 *** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main.log
-*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main 
-*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main 
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main
+*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main
 *** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-patch-outputs.log
-*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-patch-outputs 
-**** Running external impact analysis for identified external impacted files as dependent files of the initial set. 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-     MortgageApplication/link/epsmlist.lnk 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-     MortgageApplication/cobol/epscsmrt.cbl 
-     MortgageApplication/cobol/epsmlist.cbl 
-     MortgageApplication/cobol/epscmort.cbl 
-     MortgageApplication/link/epsmlist.lnk 
+*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-patch-outputs
+**** Running external impact analysis for identified external impacted files as dependent files of the initial set.
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/link/epsmlist.lnk
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/link/epsmlist.lnk
 ** Calculate and document concurrent changes.
 ***  Analysing and validating changes for branch : main
 ** Getting current hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
@@ -1508,7 +1503,7 @@ Program attributes: CICS=true*, SQL=false, DLI=false, MQ=false
 Cobol compiler parms for MortgageApplication/cobol/epscsmrt.cbl = LIB,CICS
 Link-Edit parms for MortgageApplication/cobol/epscsmrt.cbl = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
 *** Scanning load module for MortgageApplication/cobol/epscsmrt.cbl
-*** Logical file = 
+*** Logical file =
 {
    "cics": false,
    "dli": false,
@@ -1540,7 +1535,7 @@ Program attributes: CICS=true, SQL=true, DLI=false, MQ=false
 Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 Link-Edit parms for MortgageApplication/cobol/epscmort.cbl = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
 *** Scanning load module for MortgageApplication/cobol/epscmort.cbl
-*** Logical file = 
+*** Logical file =
 {
    "cics": false,
    "dli": false,
@@ -1570,7 +1565,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 *** Building file MortgageApplication/link/epsmlist.lnk
 Link-Edit parms for MortgageApplication/link/epsmlist.lnk = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
 *** Scanning load module for MortgageApplication/link/epsmlist.lnk
-*** Logical file = 
+*** Logical file =
 {
    "cics": false,
    "dli": false,
@@ -1760,7 +1755,7 @@ HTTP/1.1 200 OK
 
 </details>
 
-### Perform a Scan Source + Outputs build 
+### Perform a Scan Source + Outputs build
 
 `--fullBuild --scanAll` skips the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios). This build type also stores a build result to build a baseline for following impact builds.
 
