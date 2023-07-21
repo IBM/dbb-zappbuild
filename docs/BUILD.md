@@ -245,17 +245,22 @@ utility options
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Build a Single Program](#build-a-single-program)
-- [Build a List of Programs](#build-a-list-of-programs)
-- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-- [Perform Impact Build](#perform-impact-build)
-- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform a Merge build](#perform-a-merge-build)
-- [Perform a Build in preview mode](#perform-a-build-in-preview-mode)
-- [Perform a Scan Source build](#perform-a-scan-source-build)
-- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
+  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
+  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
+  - [Command Line Options Summary](#command-line-options-summary)
+  - [Invocation Samples including console log](#invocation-samples-including-console-log)
+    - [Build a Single Program](#build-a-single-program)
+    - [Build a List of Programs](#build-a-list-of-programs)
+    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+    - [Perform Impact Build](#perform-impact-build)
+    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+    - [Perform a Merge build](#perform-a-merge-build)
+    - [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
+    - [Perform a Scan Source build](#perform-a-scan-source-build)
+    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
 
 <!-- /TOC -->
 ### Build a Single Program 
@@ -265,7 +270,15 @@ Build a single program in the application.
 By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.  
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq USER.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --userBuild --verbose MortgageApplication/cobol/epsnbrvl.cbl
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq USER.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --userBuild \
+                      --verbose \
+                      MortgageApplication/cobol/epsnbrvl.cbl
 ```
 <details>
   <summary>Build log</summary>
@@ -337,7 +350,14 @@ MortgageApplication/cobol/epscmort.cbl
 ```
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --verbose \
+                      /var/dbb/MortgageApplication/myBuildList.txt
 
 ```
 <details>
@@ -433,7 +453,14 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 The zAppBuild build option `--fullBuild` builds all files within the build scope which have a build script mapping defined in file.properties
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --verbose
 
 ```
 
@@ -667,7 +694,14 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 This build scenario identifies the changed files based on diffing the git baseline hash and the current hash; then the list of changed files is passed into the impact analysis phase, which will detect the impacted files based on the `impactResolutionRules` which are defined in application.properties.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose
 
 ```
 <details>
@@ -819,7 +853,14 @@ It also leverages the last successful build result from the buildgroup of the `m
 
 The invocation is similar to other impact builds (you might want to consider a dedicated set of build libraries):
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.FEAT --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.FEAT \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose
 ```
 Please see the output provided in verbose mode when setting up the collections as well as the calculation of changed files:
 <details>
@@ -942,7 +983,15 @@ Alternatively, for the main application directory reference, it is sufficient to
 Another scenario of this build setup is to run the build with the DBB reportOnly option to build a cumulative deployment package without rebuilding the binaries.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.REL --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8 --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.REL \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8 \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1093,7 +1142,14 @@ It leverages the git triple-dot diff syntax to identify the changes, similar to 
 In the below case both `MortgageApplication/cobol/epsmlist.cbl` and `MortgageApplication/copybook/epsnbrpm.cpy` are changed, but only the `epsmlist.cbl` is built because it is mapped to a build script.  
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --mergeBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --mergeBuild \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1216,7 +1272,15 @@ The build will generate a build report, which, depending of the provided build o
 The below sample build log is documenting an `--impactBuild --preview` with the reporting capablities activated to what the build would do and any potential conflicts of concurrent development activities.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --mergeBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --preview \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1559,7 +1623,15 @@ required props = transfer_srcPDS,transfer_dsOptions,  transfer_deployType
 This build type also stores a build result to build a baseline for following impact builds.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanSource --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --scanSource \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1695,7 +1767,15 @@ HTTP/1.1 200 OK
 Please see also the [TechDoc for Advanced Build and Migration recipes](https://www.ibm.com/support/pages/node/6427617)
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanAll --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --scanAll \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1866,7 +1946,15 @@ To dynamically overwrite any build property, you can make use of the `--propOver
 
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose \
+                      --propOverwrite mainBuildBranch=develop
 ```
 <details>
   <summary>Build log</summary>
