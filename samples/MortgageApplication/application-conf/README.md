@@ -75,6 +75,13 @@ cobol_scanLoadModule | Flag indicating to scan the load module for link dependen
 cobol_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 cobol_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified) | true
+
 ### LinkEdit.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy
 
