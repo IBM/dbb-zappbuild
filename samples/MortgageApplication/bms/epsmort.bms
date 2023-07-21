@@ -40,4 +40,3 @@ MSGERR  DFHMDF POS=(24,15),ATTRB=(PROT,DRK),LENGTH=40,                 X00340000
                ATTRB=(ASKIP,BRT)
 EPSMORT  DFHMSD TYPE=FINAL                                               0036000
         END                                                             00370000
- 
