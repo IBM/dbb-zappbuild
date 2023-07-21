@@ -1,3 +1,4 @@
+
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
@@ -9,7 +10,7 @@ import groovy.transform.*
 The language script is invoking the 'CICS TS resource builder utility' for the CICS definitions in YAML (yml) format.
 The script processes CICS definition files stored in the git repository with suffix .yml or .yaml to produce a CSD formatted file.
 The model file and the application constraints file, required by the CICS TS resource builder, are referenced through the CRB.properties file.
-The script expects that the CICS TS resource builder is installed on the build machin in Z/OS UNIX. The location of it is also referenced in the properties file.
+The script expects that the CICS TS resource builder is installed on the build machine in Z/OS UNIX. The location of it is also referenced in the properties file.
 The output of the process is a CSD formatted file, which is reported in the DBB build report for further post-build processing such as packaging and deployment into target environment
 Further information on the CICS TS resource builder tool and can be found at 
   https://www.ibm.com/docs/en/cics-resource-builder/1.0?topic=overview
@@ -41,12 +42,20 @@ buildList.each { buildFile ->
 
 
     File zrbExe = new File(zrbPath)
+	
+	
     if (!zrbExe.exists()) {
         String errorMsg = "*! The zrb utility was not found at $zrbPath."
         println(errorMsg)
         props.error = "true"
         buildUtils.updateBuildResult(errorMsg:errorMsg)
     }
+	
+	// log file
+	String member = CopyToPDS.createMemberName(buildFile)
+	File logFile = new File("${props.buildOutDir}/${member}.zrb.log")
+	if (logFile.exists())
+		logFile.delete()
 
     // Generate the file name for the CSD formatted file
     def extIndex = buildFile.lastIndexOf('.')
@@ -54,7 +63,6 @@ buildList.each { buildFile ->
     if (slashIndex < 0) slashIndex = 0
 	def outputFile = buildFile.substring(slashIndex + 1, extIndex) + ".csd"
 
-    println("*** Output file is ${props.buildOutDir}/$outputFile.")
     // Build the shell command to execute
     def applicationParm = ""
     if (applicationConstraintsFile) 
@@ -63,19 +71,31 @@ buildList.each { buildFile ->
     if (props.verbose)
         println("*** Executing zrb command: $commandString")    
 
-    // Execute the command and save the console output and error streams
+    // Execute the command and direct console output and error streams to buffer
     def process = commandString.execute()
-    process.waitForProcessOutput(System.out, System.err)
+	StringBuffer zrbOut = new StringBuffer()
+	StringBuffer zrbErr = new StringBuffer()
+	process.waitForProcessOutput(zrbOut, zrbErr)
     def returnCode = process.exitValue()
+	
+	// write outputs to log file
+	String enc = props.logEncoding ?: 'IBM-1047'
+	logFile.withWriter(enc) { writer ->
+		writer.append(zrbOut)
+		writer.append(zrbErr)
+	}
+	
+	// evaluate return code
     if (returnCode > maxRC) {
         String errorMsg = "*! Error executing zrb: $returnCode"
         println(errorMsg)
         props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.zrb.log":logFile])
     } else {
-        if (props.verbose)
-            println("*** zrb return code: $returnCode")
-        // Create a new record of type AnyTypeRecord
+        if (props.verbose) println("*** zrb return code: $returnCode")
+		println("*** Output file is ${props.buildOutDir}/$outputFile.")
+        
+		// Create a new record of type AnyTypeRecord
         AnyTypeRecord CRBRecord = new AnyTypeRecord("USS_RECORD")
         CRBRecord.setAttribute("file", buildFile)
         CRBRecord.setAttribute("label", "CICS Resource Builder YAML file")
