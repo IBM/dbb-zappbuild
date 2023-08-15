@@ -374,7 +374,7 @@ def populateBuildProperties(def opts) {
 	applicationProperties = "${appConf}/application.properties"
 	applicationPropertiesFile = new File(applicationProperties)
 	
-	if (applicationPropertiesFile.exits()) {
+	if (applicationPropertiesFile.exists()) {
 		if (opts.v) println "** Loading property file ${applicationProperties}"
 		buildUtils.loadBuildProperties(applicationProperties)
 
