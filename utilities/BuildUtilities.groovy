@@ -859,7 +859,6 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 def loadBuildProperties(String propertyFile) {
 	File propFile = new File("$propertyFile")
 	if (propFile.exists()) {
-		if (opts.v) println "** Loading property file ${propertyFile}"
 		props.load(propFile)
 	} else {
 		println "*!* The specified $propertyFile does not exist. Build exits."
