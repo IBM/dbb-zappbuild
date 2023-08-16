@@ -29,7 +29,7 @@ impactBuildCommand << (props.id ? "--id ${props.id}" : "")
 impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
 impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 impactBuildCommand << "--verbose"
-impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
+impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_rename_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_rename_buildPropSetting}")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
