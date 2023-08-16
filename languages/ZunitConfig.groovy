@@ -211,6 +211,8 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
 		}
+	} else { // skip evaluating Unit tests result
+		if (props.verbose) println "*** Evaluation of zUnit test result skipped, because running in preview mode."
 	}
 
 }
