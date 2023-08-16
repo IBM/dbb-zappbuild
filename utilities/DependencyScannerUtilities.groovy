@@ -146,8 +146,11 @@ def parseConfigStringToMap(String configString) {
 		}
 	}
 	
-	// validate existance of scannerClass definition
-	assert scannerConfigMap.scannerClass != null
+	if (scannerConfigMap.scannerClass == null) {
+		println "*! The provided scanner mapping configuration ($configString) is not formed correctly and skipped."
+		println "*! Sample syntax: 'dbb.scannerMapping = \"scannerClass\":\"DependencyScanner\", \"languageHint\":\"COB\" :: cbl,cpy,cob'"
+		return null
+	}
 	
 	return scannerConfigMap
 }

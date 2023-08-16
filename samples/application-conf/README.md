@@ -277,6 +277,13 @@ zCEE_shellEnvironment | Shell environment used to run the gradle command | true
 zCEE_gradlePath | Path to gradle executable | true
 zCEE_gradle_JAVA_OPTS | JAVA Options used with gradle | true
 
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified) | true
+
 ### REXX.properties
 Application properties used by zAppBuild/language/REXX.groovy
 

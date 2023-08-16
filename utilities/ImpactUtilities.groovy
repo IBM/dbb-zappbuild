@@ -64,7 +64,7 @@ def createImpactBuildList() {
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
 				// skip adding generated test cases, when the testing is disabled 
-				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) || !(props.runzTests && props.runzTests.toBoolean())) {
+				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
 				} else {
 					buildSet.add(changedFile)
@@ -638,7 +638,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	if (metadataStore && !props.error) {
+	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
@@ -787,7 +787,7 @@ def boolean shouldCalculateImpacts(String changedFile){
 	if (onskipImpactCalculationList) return false
 	
 	// return false if the changed file is a generated test case program but testing is disabled
-	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) || !(props.runzTests && props.runzTests.toBoolean())) {
+	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 		return false
 	}
 	

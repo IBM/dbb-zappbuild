@@ -1,0 +1,92 @@
+---
+schemaVersion: resourceModel/1.0
+resourceModel:
+  target: cicsts-6.1.0
+  defines:
+  - type: mapset
+    attributes:
+      public:
+        name:
+          required: true
+          constraintId: mapset-name-prefix
+        group: 
+          required: true 
+          constraintId: resource-name-prefix           
+      private:
+        resident: NO
+        usage: NORMAL
+        uselpacopy: NO
+        status: ENABLED
+  - type: program
+    attributes:
+      public:
+        name:
+          required: true
+          constraintId: program-name-prefix
+        group: 
+          required: true
+          constraintId: resource-name-prefix        
+        datalocation:
+          required: true
+        language:
+          required: true
+        execkey:
+          required: true
+        concurrency:
+          required: true
+        dynamic:
+          required: true
+        executionset:
+          required: true
+      private:
+        usage: NORMAL
+        uselpacopy: NO
+        status: ENABLED
+        reload: NO
+        resident: NO
+        cedf: YES
+        api: CICSAPI
+        jvm: NO
+  - type: transaction
+    attributes:
+      public:
+        name:
+          required: true
+          constraintId: transaction-name-prefix
+        group: 
+          required: true
+          constraintId: resource-name-prefix
+        storageclear:
+          required: true
+        program: 
+          required: true
+          constraintId: program-name-prefix
+      private:
+        tranclass: DFHTCL00
+        status: ENABLED
+        twasize: 0
+        profile: DFHCICST
+        taskdataloc: ANY
+        taskdatakey: USER
+        runaway: SYSTEM
+        shutdown: DISABLED
+        isolate: YES
+        dynamic: NO
+        routable: NO
+        priority: 1
+        dtimout: NO
+        restart: NO
+        spurge: YES
+        tpurge: YES
+        dump: YES
+        trace: YES
+        confdata: NO
+        otstimeout: NO
+        action: BACKOUT
+        wait: YES
+        waittime: 0,0,0
+        ressec: NO
+        cmdsec: NO
+
+        
+        

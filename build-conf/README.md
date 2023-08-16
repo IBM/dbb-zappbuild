@@ -302,6 +302,18 @@ zCEE_shellEnvironment | Shell environment used to run the gradle command
 zCEE_gradlePath | Path to gradle executable
 zCEE_gradle_JAVA_OPTS | JAVA Options used with gradle
 
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+zAppBuild contains the CICS Resource Builder resource model YAML and the CICS Resource Builder application constraints YAML for the MortgageApplication sample in 
+**build-conf/cicsResourceBuilderConfigurations**
+
+Property | Description
+--- | ---
+crb_requiredBuildProperties | Comma separated list of required build properties for language/CRB.groovy
+crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS
+crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS
+crb_applicationConstraintsFile | (Optional) Absolute path to the CICS Resource Builder application constraints YAML file on z/OS
 
 ### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
