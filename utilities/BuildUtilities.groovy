@@ -838,29 +838,40 @@ def matches(String file, List<PathMatcher> pathMatchers) {
  *  https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-identify-statement
  * 
  */
-def generateIdentifyStatement(String buildFile) {
+def generateIdentifyStatement(String buildFile, String dsProperty) {
 
-	def String identifyStmt
+    def String identifyStmt
 
-	if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
-		
-		String member = CopyToPDS.createMemberName(buildFile)
-		String identifyString = props.application + "/" + getShortGitHash(buildFile)
-		//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
-		identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
-		
-		if (identifyString.length() > 40) {
-			println("*!* generateIdentifyStatement() - Identify string exceeds 40 chars: identifyStmt=$identifyStmt")
-			return null
-		} else {
-			return identifyStmt
-		}
-		
-		
-	} else {
-		return null
-	}
-}
+	int maxRecordLength = dsProperty.toLowerCase().contains("library") ? 80 : 40
+	
+    if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
+
+        String member = CopyToPDS.createMemberName(buildFile)
+        String shortGitHash = getShortGitHash(buildFile)
+
+        if (shortGitHash != null) {
+
+            String identifyString = props.application + "/" + shortGitHash
+            //   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
+            identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
+            if (identifyString.length() > maxRecordLength) {
+                String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
+                println(errorMsg)
+                props.error = "true"
+                updateBuildResult(errorMsg:errorMsg)
+                return null
+            } else {
+                return identifyStmt
+            }
+			} else {
+            println("*!* BuildUtilities.generateIdentifyStatement() - Could not obtain abbreviated git hash for $buildFile")
+            return null
+            }
+
+    } else {
+        return null
+        }
+    }
 
 /**
  * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 

@@ -317,8 +317,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// appending IDENTIFY statement to link phase for traceability of load modules
 	// this adds an IDRU record, which can be retrieved with amblist
 	def identifyLoad = props.getFileProperty('cobol_identifyLoad', buildFile)
+	
 	if (identifyLoad && identifyLoad.toBoolean()) {
-		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile)
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.cobol_loadOptions)
 		if (identifyStatement != null ) {
 			sysin_linkEditInstream += identifyStatement
 		}

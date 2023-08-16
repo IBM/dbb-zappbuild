@@ -414,7 +414,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// this adds an IDRU record, which can be retrieved with amblist
 	def identifyLoad = props.getFileProperty('assembler_identifyLoad', buildFile)
 	if (identifyLoad && identifyLoad.toBoolean()) {
-		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile)
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.assembler_loadOptions)
 		if (identifyStatement != null ) {
 			sysin_linkEditInstream += identifyStatement
 		}
