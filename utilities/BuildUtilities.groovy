@@ -900,3 +900,15 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 	
 }
 
+/**
+ * Validates if a buildFile is a zUnit generated test case program
+ * 
+ *  returns true / false
+ *  
+ */
+def isGeneratedzUnitTestCaseProgram(String buildFile) {
+	if (props.getFileProperty('cobol_testcase', buildFile).equals('true') || props.getFileProperty('pli_testcase', buildFile).equals('true')) {
+		return true
+	}
+	return false
+}

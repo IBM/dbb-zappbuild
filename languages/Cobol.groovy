@@ -37,7 +37,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = (props.getFileProperty('cobol_testcase', buildFile).equals('true')) ? true : false
+	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
 
 	// configure dependency resolution and create logical file	
 	String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)

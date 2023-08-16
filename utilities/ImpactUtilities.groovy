@@ -8,6 +8,7 @@ import java.nio.file.PathMatcher
 import groovy.json.JsonSlurper
 import groovy.transform.*
 import java.util.regex.*
+import com.ibm.dbb.dependency.internal.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -62,8 +63,13 @@ def createImpactBuildList() {
 		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
-				buildSet.add(changedFile)
-				if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+				// skip adding generated test cases, when the testing is disabled 
+				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
+				} else {
+					buildSet.add(changedFile)
+					if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+				}
 			}
 
 			// check if impact calculation should be performed, default true
@@ -531,7 +537,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
-		sortFileList(changedFiles);
+		changedFiles = sortFileList(changedFiles);
 		if (props.verbose) println "*** Sorted list of changed files: $changedFiles"
 	}
 
@@ -549,9 +555,15 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
 					logicalFile = scanner.scan(file, props.workspace)
 				} else {
+					// The below logic should be replaced with Registration Scanner when available
+					// See reported idea: https://ibm-z-software-portal.ideas.ibm.com/ideas/DBB-I-48
 					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
+					
 					// New logical file with Membername, buildfile, language set to file extension
 					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
+					
+					// Add logicalFile to LogicalFileCache
+					LogicalFileCache.add(props.workspace, logicalFile)
 				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
@@ -626,7 +638,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  */
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	if (metadataStore && !props.error) {
+	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
@@ -773,6 +785,12 @@ def boolean shouldCalculateImpacts(String changedFile){
 
 	// return false if changedFile found in skipImpactCalculationList
 	if (onskipImpactCalculationList) return false
+	
+	// return false if the changed file is a generated test case program but testing is disabled
+	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+		return false
+	}
+	
 	return true //default
 }
 
@@ -827,7 +845,7 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
  */
 def sortFileList(list) {
 	
-	list.sort{s1, s2 ->
+	return list.sort{s1, s2 ->
 		if (isMappedAsZUnitConfigFile(s1)) {
 			if (isMappedAsZUnitConfigFile(s2)) {
 				return 0;
