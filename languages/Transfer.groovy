@@ -94,7 +94,7 @@ buildList.each { buildFile ->
 			String deployType = buildUtils.getDeployType("transfer", buildFile, null)
 
 			try {
-				int rc = new CopyToPDS().file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
+				int rc = new CopyToPDS().key(buildFile).file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
 				if (props.verbose) println "** Copied $buildFile to $targetDataset with deployType $deployType (rc = $rc)"
 
 				if (rc!=0){
