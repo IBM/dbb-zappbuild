@@ -337,7 +337,7 @@ def populateBuildProperties(def opts) {
 	buildUtils.loadBuildProperties("${buildConf}/build.properties")
 
 	// load additional build property files
-	if (opts.v) println "** Loading build-conf settings"
+	if (opts.v) println "** Loading zAppBuild build properties"
 	if (props.buildPropFiles) {
 		String[] buildPropFiles = props.buildPropFiles.split(',')
 		buildPropFiles.each { propFile ->
@@ -350,7 +350,7 @@ def populateBuildProperties(def opts) {
 	}
 	
 	// load additional build property files
-	if (opts.v) println "** Loading default application settings"
+	if (opts.v) println "** Loading default application properties"
 	if (props.applicationDefaultPropFiles) {
 		String[] applicationDefaultPropFiles = props.applicationDefaultPropFiles.split(',')
 		applicationDefaultPropFiles.each { propFile ->
@@ -368,7 +368,7 @@ def populateBuildProperties(def opts) {
 	if (appConf.endsWith('/'))
 		appConf = appConf.substring(0, appConf.length() - 1)
 		
-	if (opts.v) println "** Loading application specific settings"
+	if (opts.v) println "** Loading application specific properties"
 	if (opts.v) println "** applicationConfDir = ${appConf}"
 	
 	applicationProperties = "${appConf}/application.properties"
