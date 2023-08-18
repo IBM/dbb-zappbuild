@@ -1,12 +1,12 @@
 # Application Configuration
 This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed.
 
-At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded into the [DBB BuildProperties class](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.4/scriptorg.html#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
+At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded based on the definition of `applicationConfDir` [property](../../build-conf/build.properties) into the [DBB BuildProperties class](https://www.ibm.com/docs/en/dbb/2.0?topic=apis-build-properties#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
 
-Properties can be overwritten on a per file basis through DBB Build Properties file properties. The tables below indicate which properties keys can be overwritten. It is recommended to manage these overwrites in file.properties.
+Properties can be overwritten on a per file basis through DBB Build Properties file properties. The tables below indicate which properties keys can be overwritten. It is recommended to manage these overwrites in `file.properties`.
 
 ## Property File Descriptions
-Since all properties will be loaded into a single static instance of BuildProperties, the organization and naming convention of the *property files* are somewhat arbitrary and targeted more for self documentation and understanding.
+Since all properties will be loaded into a single static instance of BuildProperties, the organization and naming convention of the *property files* are somewhat arbitrary and targeted more for self documentation and understanding. Properties related to a language script are prefixed with the name of the language script (i.e `cobol_compileParms`).
 
 ### application.properties
 This property file is loaded automatically at the beginning of the build and contains application specific properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts. Additional property files are loaded based on the content of the `applicationPropFiles` property.
