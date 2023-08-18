@@ -296,11 +296,10 @@ zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to d
 Application properties used by zAppBuild/language/zCEE3.groovy
 
 Property | Description
---- | --- | ---
-zCEE_alwaysRebuildWAR | Options to rebuild WAR file
-zCEE_shellEnvironment | Shell environment used to run the gradle command
-zCEE_gradlePath | Path to gradle executable
-zCEE_gradle_JAVA_OPTS | JAVA Options used with gradle
+--- | ---
+zcee3_shellEnvironment | Shell environment used to run the gradle command
+zcee3_gradlePath | Path to gradle executable
+zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy

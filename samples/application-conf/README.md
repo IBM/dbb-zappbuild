@@ -272,10 +272,9 @@ Application properties used by zAppBuild/language/zCEE3.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-zCEE_alwaysRebuildWAR | Options to rebuild WAR file | true 
-zCEE_shellEnvironment | Shell environment used to run the gradle command | true
-zCEE_gradlePath | Path to gradle executable | true
-zCEE_gradle_JAVA_OPTS | JAVA Options used with gradle | true
+zcee3_shellEnvironment | Shell environment used to run the gradle command | true
+zcee3_gradlePath | Path to gradle executable | true
+zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle | true
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
