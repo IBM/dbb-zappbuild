@@ -2,9 +2,9 @@
 title: Welcome to zAppbuild
 ---
 ## How zAppBuild works
-The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
+The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder (located in the [samples folder]({{config.repo_url}}/blob/main/samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication]({{config.repo_url}}/blob/main/samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
 
-**IMPORTANT** : The [datasets.properties](build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md](build-conf/README.md) for more information.
+**IMPORTANT** : The [datasets.properties]({{config.repo_url}}/blob/main/build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md]({{config.repo_url}}/blob/main/build-conf/README.md) for more information.
 
 ## Supported Languages
 The zAppBuild sample provides the following *language* build scripts by default:
@@ -41,7 +41,7 @@ zAppBuild supports a number of build scenarios:
 
 Links to additional documentation is provided in the table below.  Instructions on invoking a zAppBuild is included in [BUILD.md](BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console log.
 
-zAppBuild comes with a set of reporting features. It helps development teams to understand the impact of changed files across multiple applications. Another feature helps to identify conflicts due to concurrent development activities within their application. An overview of these features are documented in [REPORT.md](REPORT.md).
+zAppBuild comes with a set of reporting features. It helps development teams to understand the impact of changed files across multiple applications. Another feature helps to identify conflicts due to concurrent development activities within their application. An overview of these features are documented in [REPORTS.md](REPORTS.md).
 
 ## Repository Legend
 Folder/File | Description | Documentation Link

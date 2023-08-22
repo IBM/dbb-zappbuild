@@ -21,6 +21,7 @@ theme:
 # Plugins
 plugins:
   - search
+  - macros
   - minify:
       minify_html: true
 
