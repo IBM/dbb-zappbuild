@@ -3,6 +3,7 @@
 zAppBuild provides a set of reporting capabilities, which are part of the build framework itself to address some common demands of mainframe development teams.
 
 Developers are particularly interested if:
+
 * A change of an element impacts other application components which are managed in a different repository.
 * Their changes on an isolated feature branch potentially cause a conflict with some concurrent development done by others within the same repository.
 
@@ -37,7 +38,7 @@ It can operate in two modes: Simple and Deep.
 
 ### Configuration
 
-You can configure the feature through [application-conf/reports.properties](samples/application-conf/reports.properties). Please check out the description of the properties in [README.md](samples/application-conf/README.md#reportsproperties)
+You can configure the feature through [application-conf/reports.properties]({{config.repo_url}}/blob/main/samples/application-conf/reports.properties). Please check out the description of the properties in [README.md]({{config.repo_url}}/blob/main/samples/application-conf/README.md#reportsproperties)
 
 Use the build property in property file to activate the feature and further configure it like defining a filter to run the analysis only for a subset of files in your repository see `reportExternalImpactsAnalysisFileFilter` and to limit the scope of the external collections (see `reportExternalImpactsCollectionPatterns`), which should be queried.
 ### Sample invocation
@@ -100,6 +101,7 @@ App-EPSM/cobol/epsplist.cbl
 ```
 
 **Important considerations / notes**
+
 - This functionality works on the assumption, that files names are unique. If the assumption is met, the results will be accurate; if not, false positives being identified. 
 - It does not perform any type of dependency resolution against search path configurations.
 - In most cases it is sufficient to run with the **simple** mode.
@@ -128,7 +130,7 @@ It requires that the cloned repository in the build workspace contains the git r
 
 ### Configuration
 
-Please review the build properties defined in [application-conf/reports.properties](samples/application-conf/reports.properties) to configure the reporting of concurrent changes. 
+Please review the build properties defined in [application-conf/reports.properties]({{config.repo_url}}/blob/main/samples/application-conf/reports.properties) to configure the reporting of concurrent changes. 
 
 You can specify a list of regex patterns for those git references (branches) which should be considered in the analysis of potential conflicts. It also takes fully qualified names. Please note, that the implementation performs a `git branch -r` to dynamically obtain other branches based on the applicationSrcDirs . Limitation: It does not support the analysis across multiple git repositories configured in the build scope!
 
@@ -177,7 +179,7 @@ While the above build list intersects with the change on the branch main and the
 ** Total build time  : 11.836 seconds
 
 ** Build finished
-````
+```
 Contents of the report_concurrentChanges.txt file look like:
 ```
 ===============================================
@@ -185,7 +187,7 @@ Contents of the report_concurrentChanges.txt file look like:
 ========
 ** Changed Files
 * MortgageApplication/cobol/epscmort.cbl is changed and intersects with the current build list.                       
-````
+```
 
 In a mergeBuild scenario, where the build list does not intersect with the changes on the concurrent branch, the build passes as expected. The report for concurrent development activities is written to the build output directory.
 
@@ -217,4 +219,4 @@ Contents of the reported report_concurrentChanges_main.txt file look like:
 ** Changed Files
   MortgageApplication/cobol/epscmort.cbl
 
-````
+```
