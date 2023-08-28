@@ -97,7 +97,7 @@ buildList.each { buildFile ->
             // Create a new record of type AnyTypeRecord
             AnyTypeRecord CRBRecord = new AnyTypeRecord("USS_RECORD")
             CRBRecord.setAttribute("file", buildFile)
-            CRBRecord.setAttribute("label", "CSD file created wit CICS Resource Builder")
+            CRBRecord.setAttribute("label", "CSD file created with CICS Resource Builder")
             CRBRecord.setAttribute("outputs", "[${props.buildOutDir}, $outputFile, CSD]")
             CRBRecord.setAttribute("command", commandString);
 
