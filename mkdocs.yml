@@ -1,6 +1,6 @@
 site_name: zAppBuild
 site_url: https://pages.github.com/IBM/dbb-zappbuild
-repo_url: https://github.com/IBM/dbb-zappbuild
+repo_url: https://github.com/IBM/dbb-zappbuild/
 edit_uri: edit/main/docs/
 # Theme
 theme:
