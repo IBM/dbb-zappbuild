@@ -5,7 +5,7 @@ application:
   description: MortgageApplication constraints
   constraints:
   - id: program-name-prefix
-    prefix: EPSC
+    prefix: EPS
   - id: mapset-name-prefix
     prefix: EPSM
   - id: transaction-name-prefix
