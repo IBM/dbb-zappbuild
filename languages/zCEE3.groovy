@@ -88,8 +88,8 @@ sortedList.each { buildFile ->
             if (props.verbose)
                 println("** gradle output:\n${shellOutput}")
             if (WarFile.exists()) {
-                // Copy api.war to the outDir directory
-                File WarFileTarget = new File(props.outDir + '/' + WarLocation);
+                // Copy api.war to the buildOutDir directory
+                File WarFileTarget = new File(props.buildOutDir + '/zCEE3/' + WarLocation);
                 File WarTargetDir = WarFileTarget.getParentFile();
                 WarTargetDir.mkdirs();
                 Files.copy(WarFile.toPath(), WarFileTarget.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
@@ -97,7 +97,7 @@ sortedList.each { buildFile ->
                 AnyTypeRecord zCEEWARRecord = new AnyTypeRecord("USS_RECORD")
                 zCEEWARRecord.setAttribute("file", buildFile)
                 zCEEWARRecord.setAttribute("label", "z/OS Connect EE OpenAPI 3 YAML definition")
-                zCEEWARRecord.setAttribute("outputs", "[${props.outDir}, $WarLocation, zCEE3]")
+                zCEEWARRecord.setAttribute("outputs", "[${props.buildOutDir}, zCEE3/$WarLocation, zCEE3]")
                 zCEEWARRecord.setAttribute("command", commandString);
                 BuildReportFactory.getBuildReport().addRecord(zCEEWARRecord)
             } else {
