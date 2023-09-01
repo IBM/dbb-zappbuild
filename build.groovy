@@ -313,7 +313,7 @@ options:
 
 /*
  * populateBuildProperties - loads all build property files, creates properties for command line
- * arguments and sets calculated propertied for he build process
+ * arguments and sets calculated propertied for the build process
  */
 def populateBuildProperties(def opts) {
 
@@ -333,21 +333,24 @@ def populateBuildProperties(def opts) {
 
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
-	props.load(new File("${buildConf}/build.properties"))
+	if (opts.v) println "** Loading property file ${buildConf}/build.properties"
+	buildUtils.loadBuildProperties("${buildConf}/build.properties")
 
 	// load additional build property files
+	if (opts.v) println "** Loading zAppBuild build properties"
 	if (props.buildPropFiles) {
 		String[] buildPropFiles = props.buildPropFiles.split(',')
 		buildPropFiles.each { propFile ->
 			if (!propFile.startsWith('/'))
 				propFile = "${buildConf}/${propFile}"
-
+			
 			if (opts.v) println "** Loading property file ${propFile}"
-			props.load(new File(propFile))
+			buildUtils.loadBuildProperties(propFile)
 		}
 	}
 	
 	// load additional build property files
+	if (opts.v) println "** Loading default application properties"
 	if (props.applicationDefaultPropFiles) {
 		String[] applicationDefaultPropFiles = props.applicationDefaultPropFiles.split(',')
 		applicationDefaultPropFiles.each { propFile ->
@@ -355,30 +358,39 @@ def populateBuildProperties(def opts) {
 				propFile = "${buildConf}/${propFile}"
 
 			if (opts.v) println "** Loading property file ${propFile}"
-			props.load(new File(propFile))
+			buildUtils.loadBuildProperties(propFile)
 		}
 	}
 
 
 	// load application.properties
-	String appConfRootDir = props.applicationConfRootDir ?: props.workspace
-	if (!appConfRootDir.endsWith('/'))
-		appConfRootDir = "${appConfRootDir}/"
+	String appConf = props.applicationConfDir
+	if (appConf.endsWith('/'))
+		appConf = appConf.substring(0, appConf.length() - 1)
+		
+	if (opts.v) println "** Loading application specific properties"
+	if (opts.v) println "** applicationConfDir = ${appConf}"
+	
+	applicationProperties = "${appConf}/application.properties"
+	applicationPropertiesFile = new File(applicationProperties)
+	
+	if (applicationPropertiesFile.exists()) {
+		if (opts.v) println "** Loading property file ${applicationProperties}"
+		buildUtils.loadBuildProperties(applicationProperties)
 
-	String appConf = "${appConfRootDir}${props.application}/application-conf"
-	if (opts.v) println "** appConf = ${appConf}"
-	props.load(new File("${appConf}/application.properties"))
-
-	// load additional application property files
-	if (props.applicationPropFiles) {
-		String[] applicationPropFiles = props.applicationPropFiles.split(',')
-		applicationPropFiles.each { propFile ->
-			if (!propFile.startsWith('/'))
-				propFile = "${appConf}/${propFile}"
-
-			if (opts.v) println "** Loading property file ${propFile}"
-			props.load(new File(propFile))
+		// load additional application property files
+		if (props.applicationPropFiles) {
+			String[] applicationPropFiles = props.applicationPropFiles.split(',')
+			applicationPropFiles.each { propFile ->
+				if (!propFile.startsWith('/'))
+					propFile = "${appConf}/${propFile}"
+				
+				if (opts.v) println "** Loading property file ${propFile}"
+				buildUtils.loadBuildProperties(propFile)
+			}
 		}
+	} else {
+		if (opts.v) println "*! Properties file ${applicationProperties} was not found. Build continues."
 	}
 
 	// load property files from argument list
@@ -389,8 +401,8 @@ def populateBuildProperties(def opts) {
 			if (!propFile.startsWith('/'))
 				propFile = "${props.workspace}/${propFile}"
 
-			if (opts.v) println "** Loading property file ${propFile}"
-			props.load(new File(propFile))
+			if (opts.v) println "** Loading property file ${propFile}"	
+			buildUtils.loadBuildProperties(propFile)
 		}
 	}
 	

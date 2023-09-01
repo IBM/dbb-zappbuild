@@ -873,6 +873,23 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 }
 
 /**
+ * method to load build properties into the DBB Build properties.
+ * 
+ * takes the path to the property file, validates if the property file exist
+ *  
+ */
+
+def loadBuildProperties(String propertyFile) {
+	File propFile = new File("$propertyFile")
+	if (propFile.exists()) {
+		props.load(propFile)
+	} else {
+		println "*!* The specified $propertyFile does not exist. Build exits."
+		System.exit(1)
+	}
+}
+
+/**
  * Validates if a buildFile is a zUnit generated test case program
  * 
  *  returns true / false
@@ -884,3 +901,4 @@ def isGeneratedzUnitTestCaseProgram(String buildFile) {
 	}
 	return false
 }
+
