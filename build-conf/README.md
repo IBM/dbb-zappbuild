@@ -292,7 +292,7 @@ zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
-### zCEE3.Properties
+### zCEE3.properties
 Application properties used by zAppBuild/language/zCEE3.groovy
 
 Property | Description

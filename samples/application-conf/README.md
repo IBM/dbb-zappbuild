@@ -267,15 +267,6 @@ zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
-### zCEE3.Properties
-Application properties used by zAppBuild/language/zCEE3.groovy
-
-Property | Description | Overridable
---- | --- | ---
-zcee3_shellEnvironment | Shell environment used to run the gradle command | true
-zcee3_gradlePath | Path to gradle executable | true
-zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle | true
-
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
 
