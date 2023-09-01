@@ -88,23 +88,23 @@ CSECT:    EPSCMORT
 
 **The 3 properties for loading configuration files to configure the build framework**
 
-zAppBuild provides 3 properties `buildPropFiles`, `applicationDefaultPropFiles` and the `applicationPropFiles` that each reference a list of properties files, which contain important configuration parameters to configure the build process. The referenced properties files are loaded in the below order of precedence: 
+zAppBuild proposes 3 properties called `buildPropFiles`, `applicationDefaultPropFiles` and `applicationPropFiles`, each referencing a list of properties files that contain important parameters to configure the build process. The referenced properties files are loaded in the below order of precedence: 
 
-* `buildPropFiles` managed in [build-conf/build.properties](../build-conf/build.properties) references properties files in the [build-conf](../build-conf/) directory for core zAppBuild settings for the language scripts such as system datasets, naming conventions of build datasets, dataset characteristics and various core properties of the build framework as well, like the reporting features.
-* The property `applicationDefaultPropFiles` is managed in [build-conf/build.properties](../build-conf/build.properties) as well and allows the user to define default application (and also language script specific related) properties, that are centrally managed. 
-* `applicationPropFiles` is referencing properties files providing application-level settings. This property is managed in the applications' `application-conf/application.properties` file which is by default located in the applications' [application-conf](../samples/application-conf/) folder. These settings define compiler and link options, deploy types, script mappings and search path configurations for the DBB dependency and impact analysis. A sample is provided in [application-conf](../samples/application-conf/). The default location for zAppBuild to locate the `application.properties` file within the `application-conf` directory is defined via the `applicationConfDir` setting that is managed in [build-conf/build.properties](../build-conf/build.properties). The default mandates am `application-conf` folder including the `application.properties` file to be present in the applications' git repository.
+1. `buildPropFiles`, managed in [build-conf/build.properties](../build-conf/build.properties), references properties files in the [build-conf](../build-conf/) directory for core zAppBuild settings for the language scripts such as system datasets, naming conventions of build datasets, dataset characteristics and various core properties of the build framework, like the reporting features.
+2. `applicationDefaultPropFiles`, managed in [build-conf/build.properties](../build-conf/build.properties) as well, allows the user to define default application-related (and "language script"-related) properties, that are centrally managed and shared across applications.
+3. `applicationPropFiles` is referencing properties files providing application-level settings. This property is managed in the applications' `application-conf/application.properties` file which is by default located in the applications' [application-conf](../samples/application-conf/) folder. These settings define compiler and link options, deploy types, script mappings and search path configurations for the DBB dependency and impact analysis. A sample is provided in [application-conf](../samples/application-conf/). The location where zAppBuild searches for the `application.properties` file is defined via the `applicationConfDir` setting that is managed in [build-conf/build.properties](../build-conf/build.properties). The default location mandates an `application-conf` folder including the `application.properties` file to be present in the applications' git repository.
 
-The `buildPropFiles` and `applicationDefaultPropFiles` settings define enterprise-level, centrally controlled properties, that are used by all applications using the build framework. They are shared across all applications.
+The `buildPropFiles` and `applicationDefaultPropFiles` settings define enterprise-level, centrally-controlled properties, that are used by all applications using the build framework. They are shared across all applications.
 
-Historically, a lot of application-level properties are configured and provided via the `applicationPropFiles` within the `application-conf` directory. However, users have reported that zAppBuild is exposing far too many properties to the application team, which also makes it hard to control the update process for new or modified properties. For example, most customers prefer to manage compiler and binder options in the centrally controlled properties settings.
+Historically, a lot of application-level properties are configured and provided via the `applicationPropFiles` within the `application-conf` directory. However, users have reported that zAppBuild is exposing far too many properties to the application team, which also makes it hard to control the update process for new or modified properties. For example, most customers prefer to manage compiler and binder options in the centrally-controlled settings.
 
-This how-to outlines the changes to manage default application settings more centrally. 
+This how-to outlines the changes to centrally manage default application settings.
 
-**Centrally defining application related properties** 
+**Centrally defining application-related properties** 
 
 Return codes, deploy types, script mappings or search path configurations for the DBB dependency and impact analysis can be centrally configured especially when application teams follow the similar repository layout and have similar application architectures. It is desireable to avoid having multiple copies of files with the same definitions spread across multiple locations.
 
-Loading common properties files via the `applicationDefaultPropFiles` setting, helps to achieve this easily. For instance, the below configuration of `applicationDefaultPropFiles` is loading properties that define the search path configurations, script mappings, and various language settings (such as compiler or linker options) that can be applied to all applications using zAppBuild.
+Loading common properties files via the `applicationDefaultPropFiles` setting helps to achieve this easily. For instance, the below configuration of `applicationDefaultPropFiles` is loading properties that define the search path configurations, script mappings, and various language settings (such as compiler or linker options) that can be applied to all applications using zAppBuild.
 
 ```properties
 ..
@@ -121,14 +121,14 @@ default-application-conf/LinkEdit.properties,\
 default-application-conf/ZunitConfig.properties
 ..
 ```
-This allows to reduce the necessary definitions within the `application-conf` directory within the application repository, which now only contains the `application.properties` and `file.properties` files to define the application specific settings and exceptions, such as [file properties](../docs/FilePropertyManagement.md#dbb-file-properties) for particular build files:
+This allows to reduce the necessary definitions within the `application-conf` directory of the application repository. This `application-conf` directory now only contains the `application.properties` and `file.properties` files to define the application-specific settings and exceptions, such as [file properties](../docs/FilePropertyManagement.md#dbb-file-properties) for particular build files:
 
 ```properties
 # Reduced list of applicationPropFiles
 applicationPropFiles=file.properties
 ```
-You can go that far to merge the properties defined in `file.properties` into the `application.properties` file.
+Potentially, you could go farther and merge the properties defined in `file.properties` into the `application.properties` file.
 
-If the application does not need to specify any application specifics, zAppBuild executes the build even without finding an `application-conf/application.properties` at the `applicationConfDir` location.
+If an application doesn't need to specify any application-specific settings, there is no need to create an `application.properties` file and zAppBuild will execute the build, even without finding the `application.properties` file expected at the `applicationConfDir` location.
 
-Please note, that moving property files to the central build framework implementation, is excluding the defined properties in these files from the zAppBuild capability to perform impactBuilds on a property change - see `impactBuildOnBuildPropertyChanges` setting at [default](../build-conf/defaultzAppBuildConf.properties).
+Please note that moving property files to the central build framework implementation disables the capability to perform impactBuilds on a property change for these properties - see `impactBuildOnBuildPropertyChanges` setting at [default](../build-conf/defaultzAppBuildConf.properties).
