@@ -38,7 +38,7 @@ It can operate in two modes: Simple and Deep.
 
 ### Configuration
 
-You can configure the feature through [application-conf/reports.properties]({{config.repo_url}}/blob/main/samples/application-conf/reports.properties). Please check out the description of the properties in [README.md]({{config.repo_url}}/blob/main/samples/application-conf/README.md#reportsproperties)
+You can configure the feature through [application-conf/reports.properties]({{config.repo_url}}blob/main/samples/application-conf/reports.properties). Please check out the description of the properties in [README.md]({{config.repo_url}}blob/main/samples/application-conf/README.md#reportsproperties)
 
 Use the build property in property file to activate the feature and further configure it like defining a filter to run the analysis only for a subset of files in your repository see `reportExternalImpactsAnalysisFileFilter` and to limit the scope of the external collections (see `reportExternalImpactsCollectionPatterns`), which should be queried.
 ### Sample invocation
@@ -130,7 +130,7 @@ It requires that the cloned repository in the build workspace contains the git r
 
 ### Configuration
 
-Please review the build properties defined in [application-conf/reports.properties]({{config.repo_url}}/blob/main/samples/application-conf/reports.properties) to configure the reporting of concurrent changes. 
+Please review the build properties defined in [application-conf/reports.properties]({{config.repo_url}}blob/main/samples/application-conf/reports.properties) to configure the reporting of concurrent changes. 
 
 You can specify a list of regex patterns for those git references (branches) which should be considered in the analysis of potential conflicts. It also takes fully qualified names. Please note, that the implementation performs a `git branch -r` to dynamically obtain other branches based on the applicationSrcDirs . Limitation: It does not support the analysis across multiple git repositories configured in the build scope!
 
