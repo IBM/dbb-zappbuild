@@ -292,6 +292,15 @@ zunit_reportDatasets | Comma separated list of 'report' type data sets
 zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
+### zCEE3.properties
+Application properties used by zAppBuild/language/zCEE3.groovy
+
+Property | Description
+--- | ---
+zcee3_shellEnvironment | Shell environment used to run the gradle command
+zcee3_gradlePath | Path to gradle executable
+zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle
+
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
 
@@ -304,7 +313,6 @@ crb_requiredBuildProperties | Comma separated list of required build properties 
 crb_zrbLocation | Absolute path to the CICS Resource Builder utility (zrb) on z/OS
 crb_resourceModelFile | Absolute path to the CICS Resource Builder resource model YAML file on z/OS
 crb_applicationConstraintsFile | (Optional) Absolute path to the CICS Resource Builder application constraints YAML file on z/OS
-
 
 ### Transfer.properties
 Build properties used by zAppBuild/language/Transfer.groovy
