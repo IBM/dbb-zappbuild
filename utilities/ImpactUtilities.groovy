@@ -109,8 +109,12 @@ def createImpactBuildList() {
 							// impactedFile found, but on Exclude List
 							//   Possible reasons: Exclude of file was defined after building the collection.
 							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
 						}
+					} else {
+						String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+						buildUtils.updateBuildResult(warningMsg:warningMsg)
+						println(warningMsg)
 					}
 				}
 

@@ -506,42 +506,14 @@ def createDatasets(String[] datasets, String options) {
 }
 
 /*
- * returns languagePrefix for language script name or null if not defined.
+ * returns languagePrefix from the name of the language script
+ * 
+ *  that is assumed to be the base name of the script, 
+ *  respectively the name until the first '_'
+ *  
  */
 def getLangPrefix(String scriptName){
-	def langPrefix = null
-	switch(scriptName) {
-		case "Cobol.groovy":
-			langPrefix = 'cobol'
-			break;
-		case "LinkEdit.groovy" :
-			langPrefix = 'linkedit'
-			break;
-		case "PLI.groovy":
-			langPrefix = 'pli'
-			break;
-		case "Assembler.groovy":
-			langPrefix = 'assembler'
-			break;
-		case "BMS.groovy":
-			langPrefix = 'bms'
-			break;
-		case "DBDgen.groovy":
-			langPrefix = 'dbdgen'
-			break;
-		case "MFS.groovy":
-			langPrefix = 'mfs'
-			break;
-		case "PSBgen.groovy":
-			langPrefix = 'psbgen'
-			break;
-		case "Transfer.groovy":
-			langPrefix = 'transfer'
-			break;
-		default:
-			if (props.verbose) println ("*** ! No language prefix defined for $scriptName.")
-			break;
-	}
+	langPrefix = scriptName.takeWhile{it != '.' && it != '_'}.toLowerCase()
 	return langPrefix
 }
 
@@ -823,6 +795,57 @@ def matches(String file, List<PathMatcher> pathMatchers) {
 }
 
 /**
+ * generates the IdentifyStatement for the Binder
+ * 
+ * parameter:
+ *  buildFile
+ * 
+ * returns:  
+ *  - IDENTIFY string following the pattern:
+ *    <application>/<abbreviatedGitHash>
+ *  
+ *  - null if statement cannot be generated 
+ *   
+ * additional information:
+ *  https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-identify-statement
+ * 
+ */
+def generateIdentifyStatement(String buildFile, String dsProperty) {
+
+    def String identifyStmt
+
+	int maxRecordLength = dsProperty.toLowerCase().contains("library") ? 80 : 40
+	
+    if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
+
+        String member = CopyToPDS.createMemberName(buildFile)
+        String shortGitHash = getShortGitHash(buildFile)
+
+        if (shortGitHash != null) {
+
+            String identifyString = props.application + "/" + shortGitHash
+            //   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
+            identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
+            if (identifyString.length() > maxRecordLength) {
+                String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
+                println(errorMsg)
+                props.error = "true"
+                updateBuildResult(errorMsg:errorMsg)
+                return null
+            } else {
+                return identifyStmt
+            }
+			} else {
+            println("*!* BuildUtilities.generateIdentifyStatement() - Could not obtain abbreviated git hash for $buildFile")
+            return null
+            }
+
+    } else {
+        return null
+        }
+    }
+
+/**
  * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
  * and indicating if an attribute is overridden through a property definition.
  * 
@@ -850,6 +873,23 @@ def printLogicalFileAttributes(LogicalFile logicalFile) {
 }
 
 /**
+ * method to load build properties into the DBB Build properties.
+ * 
+ * takes the path to the property file, validates if the property file exist
+ *  
+ */
+
+def loadBuildProperties(String propertyFile) {
+	File propFile = new File("$propertyFile")
+	if (propFile.exists()) {
+		props.load(propFile)
+	} else {
+		println "*!* The specified $propertyFile does not exist. Build exits."
+		System.exit(1)
+	}
+}
+
+/**
  * Validates if a buildFile is a zUnit generated test case program
  * 
  *  returns true / false
@@ -861,3 +901,4 @@ def isGeneratedzUnitTestCaseProgram(String buildFile) {
 	}
 	return false
 }
+

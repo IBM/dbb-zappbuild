@@ -13,7 +13,7 @@ zAppBuild is a generic build solution for building z/OS applications using Apach
 For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
 
 ## How zAppBuild works
-The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. This is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
+The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. Global configuration properties are configured in the properties files in the [build-conf](build-conf/) directory. Specifying application-level properties is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
 
 **IMPORTANT** : The [datasets.properties](build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md](build-conf/README.md) for more information.
 
@@ -28,6 +28,7 @@ The zAppBuild sample provides the following *language* build scripts by default:
 * PSBgen.groovy
 * MFS.groovy
 * ZunitConfig.groovy
+* CRB.groovy
 * Transfer.groovy (for transport non-buildable files like JCL or PROC into build libraries and register them as build output)
 
 All language scripts both compile and optionally link-edit programs. The language build scripts are intended to be useful out of the box but depending on the complexity of your applications' build requirements, may require modifications to meet your development team's needs.  By following the examples used in the existing language build scripts of keeping all application specific references out of the build scripts and instead using configuration properties with strong default values, the zAppBuild sample can continue to be a generic build solution for all of your specific applications.
@@ -67,5 +68,5 @@ languages | This folder contains the language specific build scripts that are as
 samples/application-conf | The `application-conf` folder contains application specific configuration properties used by build.groovy and language build scripts.  It is intended to be copied as a high level folder to the application repository and configured to meet the build requirments of the application. Ex. `myAppRepository/application-conf` | [samples/application-conf/README.md](samples/application-conf/README.md)
 samples/MortgageApplication | This is an updated version of the original [MortgageApplication](https://github.com/IBM/dbb/tree/master/Build/MortgageApplication) sample designed to be built by zAppBuild. | [samples/MortgageApplication/README.md](samples/MortgageApplication/README.md)
 utilities | This folder contains utility scripts which provide common utility functions used by the various zAppBuild build scripts. | [utilities/README.md](utilities/README.md)
-build.groovy | This is the main build script that is called to start the build process. | [BUILD.md](BUILD.md)
+build.groovy | This is the main build script that is called to start the build process. | [docs/BUILD.md](docs/BUILD.md)
 test | This folder contains testing framework for ZAppBuild which includes test scripts and related test content.| [test/README.md](/test/README.md)
