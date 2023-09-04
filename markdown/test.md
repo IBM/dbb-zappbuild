@@ -58,7 +58,7 @@
 
 [3.4 Deployment to production](#deployment-to-production)
 
-[Conclusion [25](#_Toc144461971)](#_Toc144461971)
+[Conclusion](#conclusion)
 
 [4 Appendix](#appendix)
 
@@ -472,7 +472,7 @@ Deploying to production consists of two tasks:
 
     As an example, for using Git tags: zAppBuild also declares releases to identify stable versions: <https://github.com/IBM/dbb-zappbuild/releases/tag/3.2.0>
 
-# Conclusion {#conclusion .unnumbered}
+# Conclusion
 
 This document provides guidance for implementing a Git-based development process with IBM Dependency Based Build and zAppBuild for mainframe applications.
 
