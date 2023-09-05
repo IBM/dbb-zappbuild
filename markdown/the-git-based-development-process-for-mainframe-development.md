@@ -216,36 +216,34 @@ The development tasks for a development initiative are:
 
 
 
-[^1]: to track files <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>
+[^1]: To track files - <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>
 
-[^2]: to diverge from the main line <https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell>
+[^2]: To diverge from the main line - <https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell>
 
-[^3]: See Scaled Trunk-Based development <https://trunkbaseddevelopment.com>
+[^3]: See Scaled Trunk-Based development - <https://trunkbaseddevelopment.com>
 
-[^4]: What is an epic? <https://scaledagileframework.com/epic/>
+[^4]: What is an epic? - <https://scaledagileframework.com/epic/>
 
-[^5]: Adopt a branching strategy
-
-    <https://learn.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops>
+[^5]: Adopt a branching strategy - <https://learn.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops>
 
 [^6]: Please be aware, that feature branches can also be created locally and then be pushed to the central Git server.
 
-[^7]: See 3.2 The Build pipeline for main, epic and release branches
+[^7]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
 
-[^8]: See 3.3 The Release pipeline: Build, package and deploy
+[^8]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
 
-[^9]: See 3.4 Deployment to production
+[^9]: See [3.4 Deployment to production](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production)
 
-[^10]: See 3.1.3 Package and Deploy a feature for testing in controlled test environments
+[^10]: See [3.1.3 Package and Deploy a feature for testing in controlled test environments](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
 
-[^11]: See 3.2 The Build pipeline for main, epic and release branches
+[^11]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
 
-[^12]: See 3.3 The Release pipeline: Build, package and deploy
+[^12]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
 
-[^13]: See 3.4 Deployment to production
+[^13]: See [3.4 Deployment to production](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production)
 
-[^14]: See 3.1.3 Package and Deploy a feature for testing in controlled test environments
+[^14]: See [3.1.3 Package and Deploy a feature for testing in controlled test environments](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
 
-[^15]: See 3.2 The Build pipeline for main, epic and release branches
+[^15]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
 
-[^16]: See 3.3 The Release pipeline: Build, package and deploy
+[^16]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
