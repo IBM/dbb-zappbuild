@@ -9,24 +9,43 @@
 **Table of contents**
 
 [Introduction](introduction.md#introduction)
+
 [The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
+
 [Pipeline design and implementation supporting the workflows](#pipeline-design-and-implementation-supporting-the-workflows)
+
 1. [Configurations to support working with Feature branches](#configurations-to-support-working-with-feature-branches)
-  * [User Build setup](#user-build-setup)
-  * [Pipeline build of feature branches](#pipeline-build-of-feature-branches)
-  * [Package and Deploy a feature for testing in controlled test environments](#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
+
+    * [User Build setup](#user-build-setup)
+  
+    * [Pipeline build of feature branches](#pipeline-build-of-feature-branches)
+  
+    * [Package and Deploy a feature for testing in controlled test environments](#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
+  
 2. [House keeping recommendations](#house-keeping-recommendations)
+
 3. [The Build pipeline for main, epic and release branches](#the-build-pipeline-for-main-epic-and-release-branches)
-  * [Build pipeline: Build and Test step](#build-pipeline-build-and-test-step)
-  * [Build pipeline: Install outputs to a shared DEV-TEST runtime](#build-pipeline-install-outputs-to-a-shared-dev-test-runtime)
-  * [Build pipeline: Analyze step](#build-pipeline-analyze-step)
+
+    * [Build pipeline: Build and Test step](#build-pipeline-build-and-test-step)
+  
+    * [Build pipeline: Install outputs to a shared DEV-TEST runtime](#build-pipeline-install-outputs-to-a-shared-dev-test-runtime)
+  
+    * [Build pipeline: Analyze step](#build-pipeline-analyze-step)
+  
 4. [The Release pipeline: Build, package and deploy](#the-release-pipeline-build-package-and-deploy)
-  * [Release pipeline: Build stage](#release-pipeline-build-stage)
-  * [Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
-  * [Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
+
+    * [Release pipeline: Build stage](#release-pipeline-build-stage)
+  
+    * [Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
+  
+    * [Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
+  
 5. [Deployment to production](#deployment-to-production)
+
 [Conclusion](conclusion.md#conclusion)
+
 [Appendix](appendix.md#appendix)
+
 
 # Pipeline design and implementation supporting the workflows 
 

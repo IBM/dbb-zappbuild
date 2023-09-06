@@ -9,16 +9,27 @@
 **Table of contents**
 
 [Introduction](introduction.md#introduction)
+
 [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
+
 1. [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
-  * [Naming conventions](#naming-conventions)
-  * [Integration branches](#integration-branches)
+
+    * [Naming conventions](#naming-conventions)
+  
+    * [Integration branches](#integration-branches)
+  
 2. [Workflows in this development strategy](#workflows-in-this-development-strategy)
-  * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
-  * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
-  * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+
+    * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+  
+    * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+  
+    * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+  
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
+
 [Conclusion](conclusion.md#conclusion)
+
 [Appendix](appendix.md#appendix)
 
 
