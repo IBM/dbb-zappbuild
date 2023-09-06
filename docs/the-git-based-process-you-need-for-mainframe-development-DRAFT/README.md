@@ -2,19 +2,27 @@
 >
 >**The Git-based process you need for mainframe development**
 >
->**(Draft Document Sept 1,2023)**
+>**(Draft Document Sept 1,2023)**  
 
 
 
 **Table of contents**
 
-[1 Introduction](introduction.md#introduction)
+[Introduction](introduction.md#introduction)
 
-[2 The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
+[The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
 
-[3 Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
+[Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
 
-[4 Appendix](appendix.md#appendix)
+[Appendix](appendix.md#appendix)  
+
+
+**Authors**
+
+[Dennis Behm](https://www.github.com/dennis-behm)        
+[Ian J Mitchell](https://github.com/ijmitch)  
+[Lauren Li](https://github.com/lauren-li)  
+[Mathieu Dalbin](https://github.com/M-DLB)  
 

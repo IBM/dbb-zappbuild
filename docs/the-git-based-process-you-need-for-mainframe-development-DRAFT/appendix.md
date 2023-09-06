@@ -1,26 +1,27 @@
-**September 2023 - Release 1.0**
-
-**The Git-based process you need for mainframe development**
-
-**(Draft Document Sept 1,2023)**
+>**September 2023 - Release 1.0**
+>
+>**The Git-based process you need for mainframe development**
+>
+>**(Draft Document Sept 1,2023)**  
 
 
 
 **Table of contents**
 
-[1 Introduction](introduction.md#introduction)
+[Introduction](introduction.md#introduction)
+ 
+[The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
 
-[2 The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
-
-[3 Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
+[Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
 
-[4 Appendix](#appendix)
+[Appendix](#appendix)
 
-[4.1 Development Process variations](#development-process-variations)
+1. [Development Process variations](#development-process-variations)
 
-[4.1.1 Working with overlapping releases](#working-with-overlapping-releases)
+2. [Working with overlapping releases](#working-with-overlapping-releases)
+
 
 # Appendix 
 

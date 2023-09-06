@@ -1,43 +1,39 @@
-**September 2023 - Release 1.0**
-
-**The Git-based process you need for mainframe development**
-
-**(Draft Document Sept 1,2023)**
+>**September 2023 - Release 1.0**
+>
+>**The Git-based process you need for mainframe development**
+>
+>**(Draft Document Sept 1,2023)**  
 
 
 
 **Table of contents**
 
-[1 Introduction](introduction.md#introduction)
+[Introduction](introduction.md#introduction)
 
-[2 The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
+[The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
 
-[2.1 Introduction](#introduction-1)
+1. [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
 
-[2.2 Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
+    * [Naming conventions](#naming-conventions)
+  
+    * [Integration branches](#integration-branches)
+  
+2. [Workflows in this development strategy](#workflows-in-this-development-strategy)
 
-[2.2.1 Naming conventions](#naming-conventions)
-
-[2.2.2 Integration branches](#integration-branches)
-
-[2.3 Workflows in this development strategy](#workflows-in-this-development-strategy)
-
-[2.3.1 Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
-
-[2.3.2 Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
-
-[2.3.3 Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
-
-[3 Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
+    * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+  
+    * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+  
+    * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+  
+[Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
 
-[4 Appendix](appendix.md#appendix)
+[Appendix](appendix.md#appendix)
 
 
 # The Git-based development process for Mainframe development
-
-## Introduction
 
 As Git became the de-facto version control system in today's IT world, new terminologies such as *repositories*[^1], *branches*[^2], and *merges* arose. By agreeing upon a central Git server to integrate and consolidate changes, development teams were able to collaborate more efficiently and effectively. Building upon the open-source vanilla Git implementation, popular Git providers including GitHub, GitLab, and Bitbucket have implemented additional workflow features to facilitate a secure and stable development process. These include features such as *Pull Requests* (sometimes referred to as *Merge Requests*) to support coordination with Git in larger teams. The term *Pull Request* will be used throughout this document to designate the operation of reviewing and merging one branch into another.
 
