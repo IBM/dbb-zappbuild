@@ -2,9 +2,8 @@
 >
 >**The Git-based process you need for mainframe development**
 >
->**(Draft Document Sept 1,2023)**
-\
-\
+>**(Draft Document Sept 1,2023)**  
+
 
 
 **Table of contents**
@@ -22,8 +21,8 @@
 
 **Authors**
 
-[Dennis Behm](https://www.github.com/dennis-behm)  
+[Dennis Behm](https://www.github.com/dennis-behm)        
 [Ian J Mitchell](https://github.com/ijmitch)  
-[Lauren Li](https://github.com/lauren-li)
-[Mathieu Dalbin](https://github.com/M-DLB)
+[Lauren Li](https://github.com/lauren-li)  
+[Mathieu Dalbin](https://github.com/M-DLB)  
 

@@ -12,19 +12,19 @@
 
 [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
 
-    [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
+&nbsp;&nbsp;[Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
 
-        [Naming conventions](#naming-conventions)
+&nbsp;&nbsp;&nbsp;&nbsp;[Naming conventions](#naming-conventions)
 
-        [Integration branches](#integration-branches)
+&nbsp;&nbsp;&nbsp;&nbsp;[Integration branches](#integration-branches)
 
-    [Workflows in this development strategy](#workflows-in-this-development-strategy)
+&nbsp;[Workflows in this development strategy](#workflows-in-this-development-strategy)
 
-        [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+&nbsp;&nbsp;&nbsp;&nbsp;[Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
 
-        [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+&nbsp;&nbsp;&nbsp;&nbsp;[Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
 
-        [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+&nbsp;&nbsp;&nbsp;&nbsp;[Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
 
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
