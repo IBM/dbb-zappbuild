@@ -21,8 +21,9 @@
 
 
 **Authors**
-Dennis Behm - @dennis-behm  
-Ian J Mitchell - @ijmitch  
-Lauren K Li - @lauren-li  
-Mathieu Dalbin - @M-DLB
+
+[Dennis Behm](https://www.github.com/dennis-behm)  
+[Ian J Mitchell](https://github.com/ijmitch)  
+[Lauren Li](https://github.com/lauren-li)
+[Mathieu Dalbin](https://github.com/M-DLB)
 
