@@ -1,35 +1,24 @@
-**September 2023 - Release 1.0**
-
-**The Git-based process you need for mainframe development**
-
-**(Draft Document Sept 1,2023)**
+>**September 2023 - Release 1.0**
+>
+>**The Git-based process you need for mainframe development**
+>
+>**(Draft Document Sept 1,2023)**  
 
 
 
 **Table of contents**
 
 [Introduction](introduction.md#introduction)
-
 [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
-
-&nbsp;&nbsp;[Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
-
-&nbsp;&nbsp;&nbsp;&nbsp;[Naming conventions](#naming-conventions)
-
-&nbsp;&nbsp;&nbsp;&nbsp;[Integration branches](#integration-branches)
-
-&nbsp;[Workflows in this development strategy](#workflows-in-this-development-strategy)
-
-&nbsp;&nbsp;&nbsp;&nbsp;[Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
-
-&nbsp;&nbsp;&nbsp;&nbsp;[Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
-
-&nbsp;&nbsp;&nbsp;&nbsp;[Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
-
+1. [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
+  * [Naming conventions](#naming-conventions)
+  * [Integration branches](#integration-branches)
+2. [Workflows in this development strategy](#workflows-in-this-development-strategy)
+  * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+  * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+  * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
-
 [Conclusion](conclusion.md#conclusion)
-
 [Appendix](appendix.md#appendix)
 
 
