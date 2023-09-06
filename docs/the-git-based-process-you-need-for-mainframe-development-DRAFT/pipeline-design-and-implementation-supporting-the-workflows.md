@@ -8,43 +8,43 @@
 
 **Table of contents**
 
-[1 Introduction](introduction.md#introduction)
+[Introduction](introduction.md#introduction)
 
-[2 The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
+[The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
 
-[3 Pipeline design and implementation supporting the workflows](#pipeline-design-and-implementation-supporting-the-workflows)
+[Pipeline design and implementation supporting the workflows](#pipeline-design-and-implementation-supporting-the-workflows)
 
-[3.1 Configurations to support working with Feature branches](#configurations-to-support-working-with-feature-branches)
+    [Configurations to support working with Feature branches](#configurations-to-support-working-with-feature-branches)
 
-[3.1.1 User Build setup](#user-build-setup)
+        [User Build setup](#user-build-setup)
 
-[3.1.2 Pipeline build of feature branches](#pipeline-build-of-feature-branches)
+        [Pipeline build of feature branches](#pipeline-build-of-feature-branches)
 
-[3.1.3 Package and Deploy a feature for testing in controlled test environments](#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
+        [Package and Deploy a feature for testing in controlled test environments](#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
 
-[3.1.4 House keeping recommendations](#house-keeping-recommendations)
+        [House keeping recommendations](#house-keeping-recommendations)
 
-[3.2 The Build pipeline for main, epic and release branches](#the-build-pipeline-for-main-epic-and-release-branches)
+    [The Build pipeline for main, epic and release branches](#the-build-pipeline-for-main-epic-and-release-branches)
 
-[3.2.1 Build pipeline: Build and Test step](#build-pipeline-build-and-test-step)
+        [Build pipeline: Build and Test step](#build-pipeline-build-and-test-step)
 
-[3.2.2 Build pipeline: Install outputs to a shared DEV-TEST runtime](#build-pipeline-install-outputs-to-a-shared-dev-test-runtime)
+        [Build pipeline: Install outputs to a shared DEV-TEST runtime](#build-pipeline-install-outputs-to-a-shared-dev-test-runtime)
 
-[3.2.3 Build pipeline: Analyze step](#build-pipeline-analyze-step)
+        [Build pipeline: Analyze step](#build-pipeline-analyze-step)
 
-[3.3 The Release pipeline: Build, package and deploy](#the-release-pipeline-build-package-and-deploy)
+    [The Release pipeline: Build, package and deploy](#the-release-pipeline-build-package-and-deploy)
 
-[3.3.1 Release pipeline: Build stage](#release-pipeline-build-stage)
+        [Release pipeline: Build stage](#release-pipeline-build-stage)
 
-[3.3.2 Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
+        [Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
 
-[3.3.3 Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
+        [Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
 
-[3.4 Deployment to production](#deployment-to-production)
+    [Deployment to production](#deployment-to-production)
 
 [Conclusion](conclusion.md#conclusion)
 
-[4 Appendix](appendix.md#appendix)
+[Appendix](appendix.md#appendix)
 
 # Pipeline design and implementation supporting the workflows 
 

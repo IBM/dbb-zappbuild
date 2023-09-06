@@ -8,19 +8,19 @@
 
 **Table of contents**
 
-[1 Introduction](introduction.md#introduction)
+[Introduction](introduction.md#introduction)
 
-[2 The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
+[The Git-based development process for Mainframe development](the-git-based-development-process-for-mainframe-development.md#the-git-based-development-process-for-mainframe-development)
 
-[3 Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
+[Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
 
-[4 Appendix](#appendix)
+[Appendix](#appendix)
 
-[4.1 Development Process variations](#development-process-variations)
+    [Development Process variations](#development-process-variations)
 
-[4.1.1 Working with overlapping releases](#working-with-overlapping-releases)
+    [Working with overlapping releases](#working-with-overlapping-releases)
 
 # Appendix 
 
