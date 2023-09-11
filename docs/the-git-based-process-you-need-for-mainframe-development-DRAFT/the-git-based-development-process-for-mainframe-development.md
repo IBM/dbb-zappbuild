@@ -12,19 +12,14 @@
 
 [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
 
-1. [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
-
-    * [Naming conventions](#naming-conventions)
-  
-    * [Integration branches](#integration-branches)
-  
-2. [Workflows in this development strategy](#workflows-in-this-development-strategy)
-
-    * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
-  
-    * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
-  
-    * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+- [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
+  - [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
+    - [Naming conventions](#naming-conventions)
+    - [Integration branches](#integration-branches)
+  - [Workflows in this development strategy](#workflows-in-this-development-strategy)
+    - [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+    - [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+    - [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
   
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
@@ -117,9 +112,11 @@ Developers implement their changes by committing to short-living feature branche
 
 At a high level, the development team works through the following tasks:
 
-1.  ![](images/media/image5.png)New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
+1.  New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
 
 2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to have a copy of the codebase on which they can work in isolation from other concurrent development activities.
+
+![](images/media/image5.png)
 
 3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. To synchronize their local Git repository, with the central Git repository they fetch or pull updates into their local clone of the repository. With this process developers make the feature branch available in their local clone.[^6]
 
@@ -131,17 +128,23 @@ At a high level, the development team works through the following tasks:
 
 7.  When developers feel their code changes are ready to be integrated back into the shared main branch, they create a Pull Request to integrate the changes from their feature branch into the *main* branch. The changes must be buildable. The Pull Request process provides the capability to add peer review and approval steps before allowing the changes to be merged.
 
-8.  ![](images/media/image6.png) Once the Pull Request is merged into the *main* branch, the next pipeline execution of the *build pipeline* [^7]will build all the changes (and their impacts) of the iteration based on the *main* branch.
+![](images/media/image6.png)
+
+8.  Once the Pull Request is merged into the *main* branch, the next pipeline execution of the *build pipeline* [^7]will build all the changes (and their impacts) of the iteration based on the *main* branch.
 
     The pipeline can optionally include a step to deploy the built artifacts (load modules, DBRMs, etc.) into a shared test environment, as highlighted by the green *DEV-TEST* icon in the diagram. In this *DEV-TEST* environment, the development team can validate their combined changes. This first test environment helps support a shift-left testing strategy by providing a sandbox with the necessary setup and materials for developers to test their changes early. The installation happens through the packaging and deployment process of a preliminary package that cannot be installed to higher environments (because it is compiled with the TEST options), or alternatively through a simplified script solution performing a copy operation. In the latter, no inventory and no deployment history of the *DEV-TEST* system exist.
 
-9.  ![](images/media/image7.png)In the outline of this scenario, the development team decides after implementing feature 1 and feature 2 to progress further in the delivery process and build a release candidate package based on the current state of the *main* branch. This point in *main's* history is tagged to identify it as a release candidate.
+9.  In the outline of this scenario, the development team decides after implementing feature 1 and feature 2 to progress further in the delivery process and build a release candidate package based on the current state of the *main* branch. This point in *main's* history is tagged to identify it as a release candidate.
 
     With this decision, they manually run the *release pipeline*[^8]. This pipeline rebuilds the contributed changes for this iteration - with the compiler options to produce executables optimized for performance rather than for debug. The pipeline includes an additional step to package the build outputs to create a release candidate package, that is stored in a binary artifact repository.
 
+![](images/media/image7.png)
+
 10. The release candidate package is installed to the various test stages and takes a predefined route. The process can be assisted by the pipeline orchestrator itself, or the development team can use the interfaces of the deployment solution. In the event of a defect being found in the new code of the release candidate package, the developer creates a feature branch from the main branch, corrects the issue, and merges it back into the *[main]{.mark}* branch. It is expected that the new release candidate package with the fix is required to pass all the quality gates and to be tested again.
 
-11. ![](images/media/image8.png)In this sample walkthrough of an iteration, the development of the third work item (feature 3) is started later. The same steps as above apply for the developer of this work item. After merging the changes back into the *main* branch, the team is leveraging the *build pipeline* to validate the changes in the DEV-TEST environment. To create a release candidate package, they make again use of the *release pipeline*. This package now includes all the changes delivered for this iteration -- feature 1, feature 2 and feature 3.
+11. In this sample walkthrough of an iteration, the development of the third work item (feature 3) is started later. The same steps as above apply for the developer of this work item. After merging the changes back into the *main* branch, the team is leveraging the *build pipeline* to validate the changes in the DEV-TEST environment. To create a release candidate package, they make again use of the *release pipeline*. This package now includes all the changes delivered for this iteration -- feature 1, feature 2 and feature 3.
+
+![](images/media/image8.png)
 
 12. When the release is ready to be shipped after all quality gates have passed successfully and the required approvals have been issued by the appropriate reviewers, the deployment of the package from the binary repository to the production runtime is performed via the deployment manager or is initiated from the release pipeline[^9].
 
@@ -159,13 +162,17 @@ The development team works through the following tasks:
 
 1.  In the event of a required fix or urgent maintenance for the production runtime which is currently running the *rel-2.1.0* release, the development team creates a *release/rel-2.1.0* branch based on the existing Git tag in the central Git server. The release branch is a protected branch and does not allow developers to directly push commits to this branch.
 
-2.  ![](images/media/image10.png) For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
+![](images/media/image10.png)
+
+2.   For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
 
 3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *rel-2.1.0* branch.
 
-5.  ![](images/media/image11.png) A *build pipeline*[^11] for the release maintenance branch will build all the changes (and their impacts).
+![](images/media/image11.png) 
+
+5.  A *build pipeline*[^11] for the release maintenance branch will build all the changes (and their impacts).
 
 6.  The developer requests a *release pipeline*[^12] for the *release/rel-2.1.0* branch that builds the changes and includes the packaging process to create the fix package for the production runtime. The developer will test the package in the applicable test environments.
 
@@ -195,7 +202,9 @@ The development tasks for a development initiative are:
 
 2.  Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
 
-3.  ![](images/media/image13.png) The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
+![](images/media/image13.png) 
+
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
 
@@ -203,7 +212,9 @@ The development tasks for a development initiative are:
 
 6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
 
-7.  ![](images/media/image14.png) When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a *release pipeline*[^16] for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.
+![](images/media/image14.png)
+
+7.   When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a *release pipeline*[^16] for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.
 
 8.  The development team plans to integrate the changes of the *epic* branch into the main branch using the Pull Request process. This happens, when the changes should be released towards production with the next planned iteration. The below diagram depicts of the process of integrating the changes implemented for *epic1* in parallel of the main workflow after three releases.
 
