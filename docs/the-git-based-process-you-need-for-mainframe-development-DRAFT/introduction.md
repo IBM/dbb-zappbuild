@@ -28,11 +28,15 @@ The purpose of streamlining both the DevOps solutions and the delivery workflow 
 
 Some aims and assumptions which guided our recommendations include:
 
--   Planning and design activities as well as code development aim to align to a regular release cadence.
+- The workflow and branching scheme should both scale-up and scale-down.
+  - Small teams with simple and infrequent changes will be able to easily understand, adopt and have a good experience. 
+  - Large busy teams with many concurrent activities will be able to plan, track and execute with maximum agility using the same fundamental principles.
 
--   There is no magic answer to managing large numbers of 'in-flight' changes, so planning assumptions should aim as much as possible to complete changes quickly, ideally within one release cycle.
+- Planning and design activities as well as code development aim to align to a regular release cadence.
 
--   We know it is sometimes unavoidable for work to take longer than one release cycle and we accommodate that as a variant of the base workflow.
+- There is no magic answer to managing large numbers of 'in-flight' changes, so planning assumptions should aim as much as possible to complete changes quickly, ideally within one release cycle.
+
+- We know it is sometimes unavoidable for work to take longer than one release cycle and we accommodate that as a variant of the base workflow.
 
 The target audience of this document are Mainframe DevOps architects and SCM specialists interested in learning how to design and implement a CI/CD pipeline with a robust and state-of-the-art development workflow.
 

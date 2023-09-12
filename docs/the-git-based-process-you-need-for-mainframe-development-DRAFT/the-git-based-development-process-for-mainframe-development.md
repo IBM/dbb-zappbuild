@@ -14,6 +14,10 @@
 
 - [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
   - [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
+    - [Starting simple](#starting-simple)
+      - [All changes start on a dedicated branch](#all-changes-start-on-a-dedicated-branch)
+      - [Merging a branch](#merging-a-branch)
+    - [Scaling-up](#scaling-up)
     - [Naming conventions](#naming-conventions)
     - [Integration branches](#integration-branches)
   - [Workflows in this development strategy](#workflows-in-this-development-strategy)
@@ -35,14 +39,49 @@ As Git became the de-facto version control system in today's IT world, new termi
 Many mainframe development teams follow a release-based or iteration-based process to deliver incremental updates to a pre-defined production runtime.
 
 ## Characteristics of mainline-based development with feature branches 
+### Starting simple
 
 The mainline-based development approach[^3] with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
 
-Additional *epic*[^4] and *release maintenance* branches accommodate specific development workflows and allow the model to scale. The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
-
 This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in this publication is also documented by Microsoft without giving it a name[^5].
 
-Developers use feature branches to work on any type of change, including defect fixes. In the typical development workflow of this branching strategy, the changes are merged into the *main* branch. The implemented changes of the iteration are then delivered collectively as part of the next release. Each development team decides how long an iteration is: we advocate for working towards smaller, quicker release cycles, but this model can also be used with longer iterations. Due to business or technical reasons, the merging of features into the *main* branch can also be delayed. Although being a discouraged practice, the recommendation is to group such features in a specific epic branch, as described later.
+The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected* 
+branch - **all** changes originate on a branch created to hold them until they are ready to be merged. Using a branch-and-merge approach is
+natural in a git-based SCM and very light-weight both in terms of resource consumption and developer experience.
+
+#### All changes start on a dedicated branch
+
+Although all git-based Devops services provide direct access to the server copy of the repo, developers will typically use an IDE of their
+choice to work locally on a *clone* of the repo. Standard practices ensure developers' local clones are synchronized with the server copy
+(typically known as the *remote*) through actions known as `pull` and `push`.
+
+In a small team where there is almost never more than one change in progress at a time, using a branch enables the developer to make
+the changes in a series of commits rather than as one atomic change as they edit source and save files. Of course, the 'one-line' change
+might mean there genuinely is only one commit that needs merging, but the process is so natural and light-weight that it's not 
+worth making that a special case.
+
+Such branches are able to be built prior to merging - this can eliminate the possibility of the merge breaking the build of `main`
+so reducing risk in making changes.
+#### Merging a branch
+
+A branch holds all the commits for a change - be that a single commit for a one-liner or a sequences of commits as the developer refined
+the changes making them ready for review and merging into `main`.
+
+The request to merge a branch is made explicitly, but can be as formal or informal as needed by the team. Protection of `main` can mean that
+only certain people can perform the merge, or that a review of the changes has approved them, or both.
+
+The action of merging can either simply take all the commits from the branch and add them to `main` or the multiple commits in the
+branch can be *squashed* into one commit - the latter can keep the overall history on `main` 'cleaner' if that's important to the 
+team.
+
+`main` will always build - and the team can choose when to
+package and deploy.
+### Scaling-up
+
+The use of branches for concurrently planned activities scales extremely well for busier teams. Additionally, *epic*[^4] and *release maintenance* branches accommodate specific development workflows and allow the model to scale even further.
+The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
+
+The implemented changes of the iteration are then delivered collectively as part of the next release. Each development team decides how long an iteration is: we advocate for working towards smaller, quicker release cycles, but this model can also be used with longer iterations. Due to business or technical reasons, the merging of features into the *main* branch can also be delayed. Although being a discouraged practice, the recommendation is to group such features in a specific epic branch, as described later.
 
 The strategy leverages Git tags to identify the various configurations/versions of the application, such as a release candidate or the version of the application repository which is deployed to production.
 
