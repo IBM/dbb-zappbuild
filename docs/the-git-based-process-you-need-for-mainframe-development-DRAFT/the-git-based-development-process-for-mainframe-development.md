@@ -45,6 +45,11 @@ The mainline-based development approach[^3] with *feature* branches is a simple 
 
 This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in this publication is also documented by Microsoft without giving it a name[^5].
 
+<!-- this paragraph would make an ideal 'annotation', callout or sidebar if writing for an SSG like Mkdocs. -->
+(You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows). 
+Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type. 
+Both feature branches and bug-fix branches are expected to be relatively short-lived and ultimately to merge into a long-lived branch.)
+
 The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected* 
 branch - **all** changes originate on a branch created to hold them until they are ready to be merged. Using a branch-and-merge approach is
 natural in a git-based SCM and very light-weight both in terms of resource consumption and developer experience.
