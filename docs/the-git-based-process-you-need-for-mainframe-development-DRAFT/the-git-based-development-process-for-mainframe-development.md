@@ -38,7 +38,10 @@ As Git became the de-facto version control system in today's IT world, new termi
 
 Many mainframe development teams follow a release-based or iteration-based process to deliver incremental updates to a pre-defined production runtime.
 
-## Characteristics of mainline-based development with feature branches 
+## Characteristics of mainline-based development with feature branches
+
+As mentioned in the [Introduction](introduction.md) our recommended approach scales very well to support the needs of a range of
+team sizes, freqency and size of changes, and degrees of concurrent working.
 ### Starting simple
 
 The mainline-based development approach[^3] with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
