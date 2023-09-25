@@ -3,6 +3,8 @@ import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field MetadataStore metadataStore
@@ -174,9 +176,10 @@ def getFileCurrentGitHash(String gitDir, String filePath) {
  * Returns the current Git url
  *
  * @param  String gitDir  		Local Git repository directory
- * @return String gitUrl       The current Git url
+ * @return String gitUrl        The current masked Git url
  */
 def getCurrentGitUrl(String gitDir) {
+	String retVal = new String()
 	String cmd = "git -C $gitDir config --get remote.origin.url"
 	StringBuffer gitUrl = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
@@ -187,7 +190,17 @@ def getCurrentGitUrl(String gitDir) {
 	if (gitError) {
 		print("*! Error executing Git command: $cmd error: $gitError")
 	}
-	return gitUrl.toString().trim()
+
+	// Mask credentials that may be added by the pipeline orchestrator
+	// into the git remote.origin.url configuration
+	// applies only for http/https configs  	
+	String regex = "(?<=.\\/\\/)[^@]*(?=@)";
+	String subst = "***";
+	Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+	Matcher matcher = pattern.matcher(gitUrl.toString().trim());
+	retVal = matcher.replaceAll(subst);
+	
+	return retVal
 }
 
 
