@@ -165,7 +165,7 @@ At a high level, the development team works through the following tasks:
 
 ![](images/media/image5.png)
 
-3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. They then switch to the feature branch. If the developer already has a local copy of the Git repository, they can simply synchronize their local Git repository with the central Git repository by fetching or pulling updates into their local clone of the repository. This makes the feature branch available to switch to in their local clone.[^6]
+3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. They then switch to the feature branch. If the developer already has a local copy of the Git repository, they can simply synchronize their local Git repository with the central Git repository by fetching or pulling updates into their local clone of the repository. This makes the feature branch available in their local clone.[^6]
 
 4.  They use the Dependency Based Build (DBB) *User Build* facility of their integrated development environment (IDE) to validate the changes before committing the changes to their branch and pushing the updates to the central Git repository.
 
