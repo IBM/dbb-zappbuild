@@ -55,7 +55,7 @@ In this section, the technical implementation of the different composition of pi
 
 ![](images/media/image16.png) When the developers start working on a new task, they will first create a feature branch. Feature branches are created off the latest code state of the state of the source configuration -- the *main*, *epic* or *release* maintenance branch.
 
-If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They check out the feature branch in which the changes will be implemented.
+If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They switch to the feature branch in which the changes will be implemented.
 
 Integrated development environments (IDEs) supported by IBM allow developers to perform a DBB User Build to quickly gather feedback on the implemented changes. This feature is expected to be used before the changes are committed and pushed to the central Git server, where a pipeline can process changes automatically.
 
