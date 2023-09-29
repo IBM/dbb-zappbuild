@@ -257,7 +257,7 @@ The development tasks for a development initiative are:
 
 5.  A *build pipeline*[^15] for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
 
-6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
+6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions. More frequent integrations may lead to pulling intermediate versions of features, which may not be fully implemented from a business perspective; however, this should not deter developers since the main branch should always be in a buildable state.
 
 ![](images/media/image14.png)
 
