@@ -113,7 +113,7 @@ Feature branches also need to relate back to the change request (or issue) from 
 
 -   *hotfix/rel-2.0.1/fixMortgageCalculation* for a fix of the current production version that is running the *rel-2.0.1 release,*
 
--   *epic/aiFraudDetection/IntroduceAIModelToMortgageCalcuation* for a contribution to a development initiative for adopting AI technology for fraud detection.
+-   *aiFraudDetection/IntroduceAIModelToMortgageCalculation* for a contribution to the development initiative for adopting AI technology for fraud detection.
 
 A common, recommended practice is to squash the different commits created on the feature branch into a single new commit when merging, which keeps the Git history from becoming cluttered with intermediate work for the feature. This also helps to maintain a tidy history on the *main* branch with only the important commits.
 
@@ -161,11 +161,11 @@ At a high level, the development team works through the following tasks:
 
 1.  New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
 
-2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to have a copy of the codebase on which they can work in isolation from other concurrent development activities.
+2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to work in isolation from other concurrent development activities.
 
 ![](images/media/image5.png)
 
-3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. To synchronize their local Git repository, with the central Git repository they fetch or pull updates into their local clone of the repository. With this process developers make the feature branch available in their local clone.[^6]
+3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. They checkout or switch to the feature branch. To synchronize their local Git repository, with the central Git repository they fetch or pull updates into their local clone of the repository. With this process developers make the feature branch available in their local clone.[^6]
 
 4.  They use the Dependency Based Build (DBB) *User Build* facility of their integrated development environment (IDE) to validate the changes before committing the changes to their branch and pushing the updates to the central Git repository.
 
@@ -213,7 +213,7 @@ The development team works through the following tasks:
 
 2.   For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the branch to start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *rel-2.1.0* branch.
 
@@ -245,13 +245,13 @@ Note that the *epic* branch workflow described in this section is not meant to b
 
 The development tasks for a development initiative are:
 
-1.  The team branches off an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
+1.  The team creates an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
 
 2.  Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
 
 ![](images/media/image13.png) 
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the feature branch to start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
 

@@ -37,7 +37,7 @@
     * [Release pipeline: Build stage](#release-pipeline-build-stage)
   
     * [Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
-  
+
     * [Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
   
 5. [Deployment to production](#deployment-to-production)
@@ -55,7 +55,7 @@ In this section, the technical implementation of the different composition of pi
 
 ![](images/media/image16.png) When the developers start working on a new task, they will first create a feature branch. Feature branches are created off the latest code state of the state of the source configuration -- the *main*, *epic* or *release* maintenance branch.
 
-If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or fetch the new feature branch from the central Git repository down to their local working tree in which the changes will be implemented.
+If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They checkout the feature branch inw which the changes will be implemented.
 
 Integrated development environments (IDEs) supported by IBM allow developers to perform a DBB User Build to quickly gather feedback on the implemented changes. This feature is expected to be used before the changes are committed and pushed to the central Git server, where a pipeline can process changes automatically.
 
