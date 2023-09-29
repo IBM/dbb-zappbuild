@@ -2,7 +2,7 @@
 >
 >**The Git-based process you need for mainframe development**
 >
->**(Draft Document Sept 1,2023)**  
+>**(Draft Document Sept 1,2023)**
 
 
 
@@ -17,29 +17,29 @@
 1. [Configurations to support working with Feature branches](#configurations-to-support-working-with-feature-branches)
 
     * [User Build setup](#user-build-setup)
-  
+
     * [Pipeline build of feature branches](#pipeline-build-of-feature-branches)
-  
+
     * [Package and Deploy a feature for testing in controlled test environments](#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
-  
+
 2. [House keeping recommendations](#house-keeping-recommendations)
 
 3. [The Build pipeline for main, epic and release branches](#the-build-pipeline-for-main-epic-and-release-branches)
 
     * [Build pipeline: Build and Test step](#build-pipeline-build-and-test-step)
-  
+
     * [Build pipeline: Install outputs to a shared DEV-TEST runtime](#build-pipeline-install-outputs-to-a-shared-dev-test-runtime)
-  
+
     * [Build pipeline: Analyze step](#build-pipeline-analyze-step)
-  
+
 4. [The Release pipeline: Build, package and deploy](#the-release-pipeline-build-package-and-deploy)
 
     * [Release pipeline: Build stage](#release-pipeline-build-stage)
-  
+
     * [Release pipeline: Packaging stage](#release-pipeline-packaging-stage)
 
     * [Release pipeline: Deployment stage](#release-pipeline-deployment-stage)
-  
+
 5. [Deployment to production](#deployment-to-production)
 
 [Conclusion](conclusion.md#conclusion)
@@ -47,7 +47,7 @@
 [Appendix](appendix.md#appendix)
 
 
-# Pipeline design and implementation supporting the workflows 
+# Pipeline design and implementation supporting the workflows
 
 In this section, the technical implementation of the different composition of pipeline of the outlined development methodology will be detailed. If a workflow demands a specific configuration, it will be covered within the same section.
 
@@ -55,7 +55,7 @@ In this section, the technical implementation of the different composition of pi
 
 ![](images/media/image16.png) When the developers start working on a new task, they will first create a feature branch. Feature branches are created off the latest code state of the state of the source configuration -- the *main*, *epic* or *release* maintenance branch.
 
-If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They checkout the feature branch inw which the changes will be implemented.
+If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They check out the feature branch in which the changes will be implemented.
 
 Integrated development environments (IDEs) supported by IBM allow developers to perform a DBB User Build to quickly gather feedback on the implemented changes. This feature is expected to be used before the changes are committed and pushed to the central Git server, where a pipeline can process changes automatically.
 
@@ -123,7 +123,7 @@ Because preliminary packages are intended to be short living and temporary, they
 
 This strategy should be designed with the infrastructure engineering team to prepare the test environments to support this workflow.
 
-### House keeping recommendations 
+### House keeping recommendations
 
 A house-keeping strategy should be implemented when the feature branch is no longer needed and therefore removed from the central Git provider. Successful merging adds commits from one branch to the HEAD of another and once done, the branch being merged from can be safely deleted -- keeping old branches causes confusion and adds nothing to the traceability of the history. This includes the clean-up of the DBB collections as well as the build workspace on Unix System services and the build datasets.
 
@@ -240,7 +240,7 @@ IBM Wazi Deploy as a deployment manager comes with a command-line interface that
 
 With Jenkins as the CI/CD orchestrator, it is not common to keep a pipeline in progress over a long time. In this case, the pipeline engineering team might consider the approach of requesting the deployments through the user interface of the deployment solution or alternatively a *deployment pipeline* in Jenkins that can be designed and set up to combine the deployment with any automated tests or other automation tasks.
 
-## Deployment to production 
+## Deployment to production
 
 When the release candidate package has passed all quality gates and received all the necessary approvals, it is ready be deployed to the production environment.
 
