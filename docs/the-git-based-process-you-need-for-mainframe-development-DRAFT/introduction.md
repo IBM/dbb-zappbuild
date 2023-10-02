@@ -56,3 +56,57 @@ Aspects to consider include:
 
 Our recommended workflow and branching scheme is flexible enough to scale from small teams with an infrequent pattern of small changes to
 large and busier teams with many concurrent projects and projects spanning multiple cycles of a formal release cadence.
+
+## Summary... all of it in one diagram
+
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans', 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      %% 
+      branch release-2.1.0 order: 3
+      commit tag: "2.1.0"
+      checkout main
+      commit
+      checkout release-2.1.0
+      commit tag: "hotfix-2.1.0.1"
+      checkout main
+      branch feature-002 order: 5
+      commit
+      checkout main
+      branch feature-003 order: 6
+      commit
+      commit
+      checkout main
+      merge feature-002
+      branch hot-fix-2.1.0.1 order: 6
+      commit id:"hf-2.1.0.1"
+      checkout main
+      merge hot-fix-2.1.0.1
+      checkout release-2.1.0
+      cherry-pick id:"hf-2.1.0.1"
+      checkout main
+      merge feature-003
+      branch release-2.2.0 order: 2
+      commit tag: "2.2.0"
+      checkout main
+      commit
+      branch epic-004 order: 7
+      commit
+      branch feature-004-1 order: 8
+      commit
+      checkout main
+      branch release-2.3.0 order: 1
+      commit tag: "2.3.0"
+      checkout epic-004
+      merge feature-004-1
+      branch feature-004-2 order: 8
+      commit
+      checkout epic-004
+      merge feature-004-2
+      checkout main
+      merge epic-004
+      branch release-2.4.0 order: 0
+      commit tag:"2.4.0"
+```
+
