@@ -63,7 +63,6 @@ large and busier teams with many concurrent projects and projects spanning multi
 %%{init: { 'fontFamily': 'IBM Plex Sans', 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
       gitGraph
       commit
-      %% 
       branch release-2.1.0 order: 3
       commit tag: "2.1.0"
       checkout main
@@ -109,4 +108,139 @@ large and busier teams with many concurrent projects and projects spanning multi
       branch release-2.4.0 order: 0
       commit tag:"2.4.0"
 ```
+And then, of course, you can build it up incrementally too...
 
+- Everything starts with a branch:
+  
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans', 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+```
+- When on a branch, developers commit changes in isolation:
+  
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans', 'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+      commit
+```
+- Every branch can be built and tested.
+- When ready, the feature branch can be reviewed and approved to merge into `main`:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+      commit
+      checkout main
+      merge feature-001
+```
+- Multiple features can be developed concurrently:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+      commit
+      checkout main
+      branch feature-002 order: 6
+      commit
+      checkout main
+      merge feature-001
+      merge feature-002
+```
+- or serially:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+      commit
+      checkout main
+      branch feature-002 order: 6
+      commit
+      checkout main
+      merge feature-001
+      branch feature-003 order: 6
+      commit
+      commit
+      checkout main
+      merge feature-003
+      merge feature-002
+```
+- And then a release candidate can be created:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      commit
+      branch release-2.1.0 order: 2
+      commit id:"rel-2.1.0"
+      checkout main
+      commit
+ ```
+ *(note: commits to `main` here are, of course, merges of approved branches)*
+
+ - Fixes are handled as branches from `main`, which are tested, approved and *cherry-picked* to add to the release branch:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      commit
+      branch release-2.1.0 order: 2
+      commit id:"rel-2.1.0"
+      checkout main
+      branch hot-fix-2.1.0.1 order: 5
+      commit
+      commit id:"hf-2.1.0.1"
+      checkout main
+      merge hot-fix-2.1.0.1
+      checkout release-2.1.0
+      cherry-pick id:"hf-2.1.0.1"
+      checkout main
+      commit
+ ```
+- Features can run over release boundaries:
+```mermaid
+%%{init: { 'fontFamily': 'IBM Plex Sans',
+           'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
+      gitGraph
+      commit
+      commit
+      branch feature-001 order: 5
+      commit
+      commit
+      checkout main
+      branch feature-002 order: 6
+      commit
+      commit
+      checkout main
+      merge feature-001
+      branch release-2.1.0 order: 2
+      commit id:"rel-2.1.0"
+      checkout feature-002
+      commit
+      commit
+      checkout main
+      merge feature-002
+```
