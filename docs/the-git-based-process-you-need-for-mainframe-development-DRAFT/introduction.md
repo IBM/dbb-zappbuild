@@ -160,6 +160,9 @@ And then, of course, you can build it up incrementally too...
       commit
       checkout main
       merge feature-001
+      checkout feature-002
+      commit
+      checkout main
       merge feature-002
 ```
 - or serially:
@@ -182,6 +185,9 @@ And then, of course, you can build it up incrementally too...
       commit
       checkout main
       merge feature-003
+      checkout feature-002
+      commit
+      checkout main
       merge feature-002
 ```
 - And then a release candidate can be created:
@@ -200,7 +206,7 @@ And then, of course, you can build it up incrementally too...
  *(note: commits to `main` here are, of course, merges of approved branches)*
 
  - Fixes are handled as branches from `main`, which are tested, approved and *cherry-picked* to add to the release branch:
-```mermaid
+~~~mermaid
 %%{init: { 'fontFamily': 'IBM Plex Sans',
            'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
       gitGraph
@@ -219,7 +225,7 @@ And then, of course, you can build it up incrementally too...
       cherry-pick id:"hf-2.1.0.1"
       checkout main
       commit
- ```
+~~~
 - Features can run over release boundaries:
 ```mermaid
 %%{init: { 'fontFamily': 'IBM Plex Sans',
