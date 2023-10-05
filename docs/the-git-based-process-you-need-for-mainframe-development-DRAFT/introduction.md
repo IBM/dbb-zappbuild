@@ -84,6 +84,10 @@ large and busier teams with many concurrent projects and projects spanning multi
       merge hot-fix-2.1.0.1
       checkout release-2.1.0
       cherry-pick id:"hf-2.1.0.1"
+      %% there is an oddity in colour and routing of the line
+      %% if there is not a commit before the merge.
+      checkout feature-003
+      commit
       checkout main
       merge feature-003
       branch release-2.2.0 order: 2
@@ -205,7 +209,7 @@ And then, of course, you can build it up incrementally too...
  ```
  *(note: commits to `main` here are, of course, merges of approved branches)*
 
- - Fixes are handled as branches from `main`, which are tested, approved and *cherry-picked* to add to the release branch:
+ - Fixes are handled as branches from `main`, which are tested, approved, merged to `main` and *cherry-picked* to add to the release branch:
 ~~~mermaid
 %%{init: { 'fontFamily': 'IBM Plex Sans',
            'logLevel': 'debug', 'theme': 'base', 'gitGraph': {'showBranches': true, 'showCommitLabel':true,'mainBranchOrder': 4}} }%%
@@ -217,7 +221,6 @@ And then, of course, you can build it up incrementally too...
       commit id:"rel-2.1.0"
       checkout main
       branch hot-fix-2.1.0.1 order: 5
-      commit
       commit id:"hf-2.1.0.1"
       checkout main
       merge hot-fix-2.1.0.1
