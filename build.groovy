@@ -27,7 +27,7 @@ import groovy.cli.commons.*
 @Field startTime = new Date()
 
 // start time message
-props.startTime = startTime.format("yyyyMMdd.hhmmss.SSS")
+props.startTime = startTime.format("yyyyMMdd.HHmmss.SSS")
 println("\n** Build start at $props.startTime")
 
 // initialize build
@@ -490,7 +490,7 @@ def populateBuildProperties(def opts) {
 
 	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
 	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationBuildLabel = ("build." + ( (props.buildOutputTSformat) ? startTime.format("${props.buildOutputTSformat}") : "${props.startTime}" ) ) as String
+	props.applicationBuildLabel = ("build.${props.startTime}") as String
 	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
