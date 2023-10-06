@@ -27,7 +27,7 @@ import groovy.cli.commons.*
 @Field startTime = new Date()
 
 // start time message
-props.startTime = startTime.format("yyyyMMdd.hhmmss.mmm")
+props.startTime = startTime.format("yyyyMMdd.hhmmss.SSS")
 println("\n** Build start at $props.startTime")
 
 // initialize build
@@ -89,7 +89,7 @@ if (props.error)
 //********************************************************************
 
 def initializeBuildProcess(String[] args) {
-	if (props.verbose) println "** Initializing build process . . ."
+    println "**************** Initialization of the build process ****************"
 
 	def opts = parseArgs(args) // parse incoming options and arguments
 	populateBuildProperties(opts) // build properties initial set
@@ -294,8 +294,8 @@ options:
 		System.exit(1)
 	}
 
-	if(opts.v && args.size() > 1)
-		println "** Input args = ${args[1..-1].join(' ')}"
+	if(opts.v && args.size() > 0)
+		println "** Input args = ${args[0..-1].join(' ')}"
 
 	if( (!opts.cch && opts.ccp) || (opts.cch && !opts.ccp) ) {
 		println "** --cccHost and --cccPort options are mutual"
@@ -526,6 +526,7 @@ def populateBuildProperties(def opts) {
  *   - build text file: Contains a list of programs from a text file. Provide a *.txt build file argument.
  */
 def createBuildList() {
+    println "************* Creation and processing of the build list *************"
 
 	// using a set to create build list to eliminate duplicate files
 	Set<String> buildSet = new HashSet<String>()
@@ -671,7 +672,7 @@ def createBuildList() {
 
 
 def finalizeBuildProcess(Map args) {
-
+    println "***************** Finalization of the build process *****************"
 
 	def buildReport = BuildReportFactory.getBuildReport()
 	def buildResult = null
