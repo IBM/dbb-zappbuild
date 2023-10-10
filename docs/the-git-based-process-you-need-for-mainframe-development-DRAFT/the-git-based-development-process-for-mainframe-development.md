@@ -2,7 +2,7 @@
 >
 >**The Git-based process you need for mainframe development**
 >
->**(Draft Document Sept 1,2023)**  
+>**(Draft Document Sept 1,2023)**
 
 
 
@@ -24,7 +24,7 @@
     - [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
     - [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
     - [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
-  
+
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
@@ -49,11 +49,11 @@ The mainline-based development approach[^3] with *feature* branches is a simple 
 This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in this publication is also documented by Microsoft without giving it a name[^5].
 
 <!-- this paragraph would make an ideal 'annotation', callout or sidebar if writing for an SSG like Mkdocs. -->
-(You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows). 
-Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type. 
+(You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows).
+Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type.
 Both feature branches and bug-fix branches are expected to be relatively short-lived and ultimately to merge into a long-lived branch.)
 
-The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected* 
+The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected*
 branch - **all** changes originate on a branch created to hold them until they are ready to be merged. Using a branch-and-merge approach is
 natural in a git-based SCM and very light-weight both in terms of resource consumption and developer experience.
 
@@ -65,7 +65,7 @@ choice to work locally on a *clone* of the repo. Standard practices ensure devel
 
 In a small team where there is almost never more than one change in progress at a time, using a branch enables the developer to make
 the changes in a series of commits rather than as one atomic change as they edit source and save files. Of course, the 'one-line' change
-might mean there genuinely is only one commit that needs merging, but the process is so natural and light-weight that it's not 
+might mean there genuinely is only one commit that needs merging, but the process is so natural and light-weight that it's not
 worth making that a special case.
 
 Such branches are able to be built prior to merging - this can eliminate the possibility of the merge breaking the build of `main`
@@ -79,7 +79,7 @@ The request to merge a branch is made explicitly, but can be as formal or inform
 only certain people can perform the merge, or that a review of the changes has approved them, or both.
 
 The action of merging can either simply take all the commits from the branch and add them to `main` or the multiple commits in the
-branch can be *squashed* into one commit - the latter can keep the overall history on `main` 'cleaner' if that's important to the 
+branch can be *squashed* into one commit - the latter can keep the overall history on `main` 'cleaner' if that's important to the
 team.
 
 `main` will always build - and the team can choose when to
@@ -113,7 +113,7 @@ Feature branches also need to relate back to the change request (or issue) from 
 
 -   *hotfix/rel-2.0.1/fixMortgageCalculation* for a fix of the current production version that is running the *rel-2.0.1 release,*
 
--   *epic/aiFraudDetection/IntroduceAIModelToMortgageCalcuation* for a contribution to a development initiative for adopting AI technology for fraud detection.
+-   *aiFraudDetection/IntroduceAIModelToMortgageCalculation* for a contribution to the development initiative for adopting AI technology for fraud detection.
 
 A common, recommended practice is to squash the different commits created on the feature branch into a single new commit when merging, which keeps the Git history from becoming cluttered with intermediate work for the feature. This also helps to maintain a tidy history on the *main* branch with only the important commits.
 
@@ -149,7 +149,7 @@ Git tags are used throughout this process to indicate and label important commit
 
 The next sections outline the various tasks and activities performed by the development team in the context of the above three scenarios.
 
-### Deliver changes with the next planned release 
+### Deliver changes with the next planned release
 
 The below diagram depicts the typical workflow to deliver changes for the next planned release. In the default workflow, the development team commits changes to the head of the main branch. The changes of the next planned release are built, packaged, and released off the main branch.
 
@@ -161,11 +161,11 @@ At a high level, the development team works through the following tasks:
 
 1.  New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
 
-2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to have a copy of the codebase on which they can work in isolation from other concurrent development activities.
+2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to work in isolation from other concurrent development activities.
 
 ![](images/media/image5.png)
 
-3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. To synchronize their local Git repository, with the central Git repository they fetch or pull updates into their local clone of the repository. With this process developers make the feature branch available in their local clone.[^6]
+3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. They then switch to the feature branch. If the developer already has a local copy of the Git repository, they can simply synchronize their local Git repository with the central Git repository by fetching or pulling updates into their local clone of the repository. This makes the feature branch available in their local clone.[^6]
 
 4.  They use the Dependency Based Build (DBB) *User Build* facility of their integrated development environment (IDE) to validate the changes before committing the changes to their branch and pushing the updates to the central Git repository.
 
@@ -213,11 +213,11 @@ The development team works through the following tasks:
 
 2.   For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the branch to start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *rel-2.1.0* branch.
 
-![](images/media/image11.png) 
+![](images/media/image11.png)
 
 5.  A *build pipeline*[^11] for the release maintenance branch will build all the changes (and their impacts).
 
@@ -245,19 +245,19 @@ Note that the *epic* branch workflow described in this section is not meant to b
 
 The development tasks for a development initiative are:
 
-1.  The team branches off an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
+1.  The team creates an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
 
 2.  Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
 
-![](images/media/image13.png) 
+![](images/media/image13.png)
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the feature branch to start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
 
 5.  A *build pipeline*[^15] for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
 
-6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
+6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions. More frequent integrations may lead to pulling intermediate versions of features, which may not be fully implemented from a business perspective; however, this should not deter developers since the main branch should always be in a buildable state.
 
 ![](images/media/image14.png)
 
