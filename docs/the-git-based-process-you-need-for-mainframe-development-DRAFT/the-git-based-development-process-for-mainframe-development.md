@@ -193,7 +193,7 @@ Note that the *epic* branch workflow described in this section is not meant to b
 
 The development tasks for a development initiative are:
 
-<table border="0px" width="100%">
+<table border="0px">
 <tbody>
 	<tr>
         <td width="40px" valign="top" align="left">1</td>
