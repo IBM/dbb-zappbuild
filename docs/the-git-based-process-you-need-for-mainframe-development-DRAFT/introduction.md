@@ -26,13 +26,33 @@ A characteristic of this integration pattern is that developers are implementing
 
 The purpose of streamlining both the DevOps solutions and the delivery workflow is to simplify the process for development teams to deliver quality product releases on time. This enables agile development practices that allow the teams to respond more effectively to changes in the market and customer needs. The first part of the document introduces the model and outlines the development workflow from the developer's perspective. The details of the technical implementation with IBM Dependency Based Build and zAppBuild as well as packaging and deployment are discussed in the second part. All branching models are adaptable to the needs of specific teams and their applications. This document advocates for best practices and indicates where variations can be applied.
 
-Some aims and assumptions which guided our recommendations include:
-
--   Planning and design activities as well as code development aim to align to a regular release cadence.
-
--   There is no magic answer to managing large numbers of 'in-flight' changes, so planning assumptions should aim as much as possible to complete changes quickly, ideally within one release cycle.
-
--   We know it is sometimes unavoidable for work to take longer than one release cycle and we accommodate that as a variant of the base workflow.
-
 The target audience of this document are Mainframe DevOps architects and SCM specialists interested in learning how to design and implement a CI/CD pipeline with a robust and state-of-the-art development workflow.
 
+## Aims and Assumptions
+
+Some aims and assumptions which guided our recommendations include:
+
+- The workflow and branching scheme should both scale-up and scale-down.
+  - Small teams with simple and infrequent changes will be able to easily understand, adopt and have a good experience. 
+  - Large busy teams with many concurrent activities will be able to plan, track and execute with maximum agility using the same fundamental principles.
+
+- Planning and design activities as well as code development aim to align to a regular release cadence.
+
+- There is no magic answer to managing large numbers of 'in-flight' changes, so planning assumptions should aim as much as possible to complete changes quickly, ideally within one release cycle.
+
+- We know it is sometimes unavoidable for work to take longer than one release cycle and we accommodate that as a variant of the base workflow.
+
+## Choosing a workflow and branching scheme
+
+Your choice of workflow and the branching scheme which supports it need to take account of your team's needs and characteristics.
+
+Aspects to consider include:
+
+- Size of the team
+- Frequency of change
+- Granularity of change
+- Amount of parallel development
+- Formality of release process
+
+Our recommended workflow and branching scheme is flexible enough to scale from small teams with an infrequent pattern of small changes to
+large and busier teams with many concurrent projects and projects spanning multiple cycles of a formal release cadence.
