@@ -193,71 +193,24 @@ Note that the *epic* branch workflow described in this section is not meant to b
 
 The development tasks for a development initiative are:
 
-<table border="0px">
-<tbody>
-	<tr>
-        <td width="40px" valign="top">1</td>
-        <td valign="top">
-The team branches off an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">2</td>
-        <td valign="top">
-Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">3</td>
-        <td valign="top">
-            <table border="0px">
-            <tbody>
-                <tr>
-                    <td width="50%"><img src="images/media/image13.png"></td>
-                    <td>The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a [EPIC-1-FEATURE-TEST environment](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments).</td>
-                </tr>
-            </tbody>
-            </table>        
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">4</td>
-        <td valign="top">
-The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">5</td>
-        <td valign="top">
-A [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">6</td>
-        <td valign="top">
-It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">7</td>
-        <td valign="top">
-            <table border="0px">
-            <tbody>
-                <tr>
-                    <td>When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy) for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.</td>
-                    <td width="50%"><img src="images/media/image14.png"></td>
-                </tr>
-            </tbody>
-            </table>
-        </td>
-    </tr>
-	<tr>
-        <td width="40px" valign="top">8</td>
-        <td valign="top">
-The development team plans to integrate the changes of the *epic* branch into the main branch using the Pull Request process. This happens, when the changes should be released towards production with the next planned iteration. The below diagram depicts of the process of integrating the changes implemented for *epic1* in parallel of the main workflow after three releases.
+1.  The team branches off an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
 
-![Figure 14 Integrating changes of an epic branch as a planned deliverable of an upcoming release](images/media/image15.png)           
-        </td>
-    </tr>
-</tbody>
-</table>
+2.  Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
+
+3.  <img src="images/media/image13.png">
+
+    The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a [EPIC-1-FEATURE-TEST environment](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments).
+
+4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
+
+5.  A [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
+
+6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
+
+7.  When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy) for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.
+                    
+    <img src="images/media/image14.png">
+
+8.  The development team plans to integrate the changes of the *epic* branch into the main branch using the Pull Request process. This happens, when the changes should be released towards production with the next planned iteration. The below diagram depicts of the process of integrating the changes implemented for *epic1* in parallel of the main workflow after three releases.
+
+![Figure 14 Integrating changes of an epic branch as a planned deliverable of an upcoming release](images/media/image15.png)
