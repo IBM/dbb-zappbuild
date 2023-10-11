@@ -197,19 +197,19 @@ The development tasks for a development initiative are:
 <tbody>
 	<tr>
         <td width="40px" valign="top" align="left">1</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 The team branches off an *epic* branch, e.g. *epic/epic1234*, from the Git tag representing the current production version of the application, which is at this point the most stable configuration. This process provides them isolation of the codebase from any other ongoing changes for the next iteration(s).
         </td>
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">2</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
         </td>
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">3</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
             <table border="0px">
             <tbody>
                 <tr>
@@ -222,25 +222,25 @@ Based on how the work items are distributed between the developers, a feature br
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">4</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
         </td>
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">5</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 A [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
         </td>
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">6</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions, while more frequent integrations may lead to pull intermediate versions of features, which may contain defects.
         </td>
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">7</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
             <table border="0px">
             <tbody>
                 <tr>
@@ -253,7 +253,7 @@ It is mandatory, that the team is frequently incorporating updates which got imp
     </tr>
 	<tr>
         <td width="40px" valign="top" align="left">8</td>
-        <td width="*" valign="top" align="justify">
+        <td valign="top" align="justify">
 The development team plans to integrate the changes of the *epic* branch into the main branch using the Pull Request process. This happens, when the changes should be released towards production with the next planned iteration. The below diagram depicts of the process of integrating the changes implemented for *epic1* in parallel of the main workflow after three releases.
 
 ![Figure 14 Integrating changes of an epic branch as a planned deliverable of an upcoming release](images/media/image15.png)           
