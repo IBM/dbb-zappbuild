@@ -54,6 +54,7 @@ In this section, the technical implementation of the different composition of pi
 ## Configurations to support working with Feature branches
 
 ![](images/media/image16.png)  
+
 When the developers start working on a new task, they will first create a feature branch. Feature branches are created off the latest code state of the state of the source configuration -- the *main*, *epic* or *release* maintenance branch.
 
 If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or fetch the new feature branch from the central Git repository down to their local working tree in which the changes will be implemented.

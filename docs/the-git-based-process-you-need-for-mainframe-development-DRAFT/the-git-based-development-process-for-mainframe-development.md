@@ -118,6 +118,7 @@ Developers implement their changes by committing to short-living feature branche
 At a high level, the development team works through the following tasks:
 
 1.  New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
+
     ![](images/media/image5.png)
 
 
