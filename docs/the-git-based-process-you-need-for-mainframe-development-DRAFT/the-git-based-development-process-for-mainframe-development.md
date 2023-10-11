@@ -213,7 +213,7 @@ The development tasks for a development initiative are:
 <tbody>
 	<tr>
 		<td>When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy) for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.</td>
-		<td><img src="images/media/image14.png" width="505px" height="421px"></td>
+		<td><img src="images/media/image14.png" width="50%" ></td>
 	</tr>
 </tbody>
 </table>
