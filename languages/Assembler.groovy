@@ -213,8 +213,14 @@ def createAssemblerSQLTranslatorCommand(String buildFile, LogicalFile logicalFil
 	assembler_SQLtranslator.dd(new DDStatement().name("SYSCIN").dsn("&&SYSCIN").options('cyl space(5,5) unit(vio) new').pass(true))
 
 	// steplib
-	assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNLOAD).options("shr"))
+	if (props.SDSNEXIT) {
+		assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNEXIT).options("shr"))
+		assembler_SQLtranslator.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	} else {
+		assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNLOAD).options("shr"))
+	}
+	
 	assembler_SQLtranslator.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
 	// sysprint
