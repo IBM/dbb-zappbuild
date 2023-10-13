@@ -36,7 +36,7 @@ sortedList.each { buildFile ->
 		logFile.delete()
 		
 	// execution flags
-	phase2Execution = props.getFileProperty('mfs_phase2Execution', buildFile).toInteger()
+	phase2Execution = props.getFileProperty('mfs_phase2Execution', buildFile)
 	
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -60,7 +60,7 @@ sortedList.each { buildFile ->
 	}
 	else {
 		
-		if (phase1Execution && phase1Execution.toBoolean()) {
+		if (phase2Execution && phase2Execution.toBoolean()) {
 		
 		MVSExec phase2 = createPhase2Command(buildFile, member, logFile)
 
