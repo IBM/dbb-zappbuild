@@ -57,7 +57,7 @@ In this section, the technical implementation of the different composition of pi
 
 When the developers start working on a new task, they will first create a feature branch. Feature branches are created off the latest code state of the state of the source configuration -- the *main*, *epic* or *release* maintenance branch.
 
-If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or fetch the new feature branch from the central Git repository down to their local working tree in which the changes will be implemented.
+If the feature branch was created on the central Git repository, the developers can use the IDE, a terminal, or another Git interface on their local workstation to clone or pull the new feature branch from the central Git repository. They switch to the feature branch in which the changes will be implemented.
 
 Integrated development environments (IDEs) supported by IBM allow developers to perform a DBB User Build to quickly gather feedback on the implemented changes. This feature is expected to be used before the changes are committed and pushed to the central Git server, where a pipeline can process changes automatically.
 
@@ -192,7 +192,7 @@ This type of pipeline is leveraged by the development team when they want to cre
 
 The *release pipeline* includes additional steps and differs from the previously discussed pipelines: after the stages of building and code scans have successfully completed, the pipeline packages all the incorporated changes of all merged features for this deliverable to create a package.
 
-The package may be an intermediate release candidate version, as outlined in the high-level flow[^36], that can already be tested in the managed test environments. When the development team has implemented all the tasks planned for the iteration, this same pipeline is used to produce the package that will be deployed to production.
+The package may be an intermediate release candidate version, as outlined in the [high-level flow](the-git-based-development-process-for-mainframe-development.md#workflows-in-this-development-strategy), that can already be tested in the managed test environments. When the development team has implemented all the tasks planned for the iteration, this same pipeline is used to produce the package that will be deployed to production.
 
 The below diagram outlines the steps of a GitLab pipeline for the build, package and deploy pipeline.
 
@@ -265,7 +265,6 @@ Deploying to production consists of two tasks:
 
 
 [^1]: zAppBuild documentation - <https://github.com/IBM/dbb-zappbuild/blob/3.2.0/docs/BUILD.md#perform-impact-build-for-topic-branches>
-
 
 [^2]: zAppBuild implementation to set baselineRef - <https://github.com/IBM/dbb-zappbuild/blob/3.2.0/docs/BUILD.md#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files>
 
