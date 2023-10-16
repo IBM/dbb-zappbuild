@@ -67,7 +67,6 @@ buildList.each { buildFile ->
 		// evaluate the datasetmapping, which maps build files to targetDataset defintions
 		PropertyMappings dsMapping = new PropertyMappings("transfer_datasetMapping")
 		PropertyMappings dsOptionsMapping = new PropertyMappings("transfer_dsOptions")
-        PropertyMappings copyModeMapping = new PropertyMappings("transfer_copyMode")		
 
 		// obtain the target dataset based on the mapped dataset key
 		mappedDatesetDef = dsMapping.getValue(buildFile)
@@ -86,7 +85,8 @@ buildList.each { buildFile ->
 			} 
 
             // get copy mode value from Property Mappings
-            def copyMode = copyModeMapping.getValue(buildFile)
+			def copyMode = props.getFileProperty('transfer_copyMode', buildFile)
+
             DBBConstants.CopyMode transferCopyMode
             if (copyMode != null) {
                 transferCopyMode = DBBConstants.CopyMode.valueOf(copyMode)
