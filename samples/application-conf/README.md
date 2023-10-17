@@ -291,12 +291,13 @@ rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
-### nonBuildable.properties
+### Transfer.properties
 Application properties used by zAppBuild/language/Transfer.groovy
 
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+transfer_copyMode | Copy mode used during the copy to the target data set | true
 
 ### languageConfigurationMapping.properties
 Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.

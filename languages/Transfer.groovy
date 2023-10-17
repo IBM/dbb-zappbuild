@@ -83,6 +83,17 @@ buildList.each { buildFile ->
 				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg)
 			} 
+
+            // get copy mode value from Property Mappings
+			def copyMode = props.getFileProperty('transfer_copyMode', buildFile)
+
+            DBBConstants.CopyMode transferCopyMode
+            if (copyMode != null) {
+                transferCopyMode = DBBConstants.CopyMode.valueOf(copyMode)
+            } else {
+                transferCopyMode = DBBConstants.CopyMode.valueOf("TEXT")
+                if (props.verbose) println "** No CopyMode found for file '${buildFile}'. Using 'TEXT' as default."
+            }
 			
 			// allocate target dataset
 			if (!verifiedBuildDatasets.contains(targetDataset)) { // using a cache not to allocate all defined datasets
@@ -93,9 +104,16 @@ buildList.each { buildFile ->
 			// copy the file to the target dataset
 			String deployType = buildUtils.getDeployType("transfer", buildFile, null)
 
-			try {
-				int rc = new CopyToPDS().key(buildFile).file(new File(buildUtils.getAbsolutePath(buildFile))).dataset(targetDataset).member(member).output(true).deployType(deployType).execute()
-				if (props.verbose) println "** Copied $buildFile to $targetDataset with deployType $deployType (rc = $rc)"
+			try {				
+				int rc = new CopyToPDS().key(buildFile)
+                    .file(new File(buildUtils.getAbsolutePath(buildFile)))
+                    .copyMode(transferCopyMode)
+                    .dataset(targetDataset)
+                    .member(member)
+                    .output(true)
+                    .deployType(deployType)
+                    .execute()
+                if (props.verbose) println "** Copied $buildFile to $targetDataset with copyMode $transferCopyMode and deployType $deployType (rc = $rc)"				
 
 				if (rc!=0){
 					String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
