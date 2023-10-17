@@ -45,9 +45,9 @@ As mentioned in the [Introduction](introduction.md) our recommended approach sca
 
 ### Starting simple
 
-The mainline-based development approach[^3] with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
+The [mainline-based development approach](https://trunkbaseddevelopment.com/) with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
 
-This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in this publication is also documented by Microsoft without giving it a name[^5].
+This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in [this publication](https://learn.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops) is also documented by Microsoft without giving it a name.
 
 <!-- this paragraph would make an ideal 'annotation', callout or sidebar if writing for an SSG like Mkdocs. -->
 (You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows). Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type. Both feature branches and bug-fix branches are expected to be relatively short-lived and ultimately to merge into a long-lived branch.)
@@ -74,7 +74,7 @@ The action of merging can either simply take all the commits from the branch and
 
 ### Scaling-up
 
-The use of branches for concurrently planned activities scales extremely well for busier teams. Additionally, *epic*[^4] and *release maintenance* branches accommodate specific development workflows and allow the model to scale even further. The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
+The use of branches for concurrently planned activities scales extremely well for busier teams. Additionally, [*epic*](https://scaledagileframework.com/epic/) and *release maintenance* branches accommodate specific development workflows and allow the model to scale even further. The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
 
 The implemented changes of the iteration are then delivered collectively as part of the next release. Each development team decides how long an iteration is: we advocate for working towards smaller, quicker release cycles, but this model can also be used with longer iterations. Due to business or technical reasons, the merging of features into the *main* branch can also be delayed. Although being a discouraged practice, the recommendation is to group such features in a specific epic branch, as described later.
 
