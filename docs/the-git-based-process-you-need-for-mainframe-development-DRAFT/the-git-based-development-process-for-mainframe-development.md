@@ -2,7 +2,7 @@
 >
 >**The Git-based process you need for mainframe development**
 >
->**(Draft Document Sept 1,2023)**
+>**(Draft Document Sept 1,2023)**  
 
 
 
@@ -12,19 +12,20 @@
 
 [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
 
-- [The Git-based development process for Mainframe development](#the-git-based-development-process-for-mainframe-development)
-  - [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
-    - [Starting simple](#starting-simple)
-      - [All changes start on a dedicated branch](#all-changes-start-on-a-dedicated-branch)
-      - [Merging a branch](#merging-a-branch)
-    - [Scaling-up](#scaling-up)
-    - [Naming conventions](#naming-conventions)
-    - [Integration branches](#integration-branches)
-  - [Workflows in this development strategy](#workflows-in-this-development-strategy)
-    - [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
-    - [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
-    - [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+1. [Characteristics of mainline-based development with feature branches](#characteristics-of-mainline-based-development-with-feature-branches)
 
+    * [Naming conventions](#naming-conventions)
+  
+    * [Integration branches](#integration-branches)
+  
+2. [Workflows in this development strategy](#workflows-in-this-development-strategy)
+
+    * [Deliver changes with the next planned release](#deliver-changes-with-the-next-planned-release)
+  
+    * [Implement a fix of the current production state](#implement-a-fix-of-the-current-production-state)
+  
+    * [Use epic branches for significant development initiatives](#use-epic-branches-for-significant-development-initiatives)
+  
 [Pipeline design and implementation supporting the workflows](pipeline-design-and-implementation-supporting-the-workflows.md#pipeline-design-and-implementation-supporting-the-workflows)
 
 [Conclusion](conclusion.md#conclusion)
@@ -34,68 +35,54 @@
 
 # The Git-based development process for Mainframe development
 
-As Git became the de-facto version control system in today's IT world, new terminologies such as *repositories*[^1], *branches*[^2], and *merges* arose. By agreeing upon a central Git server to integrate and consolidate changes, development teams were able to collaborate more efficiently and effectively. Building upon the open-source vanilla Git implementation, popular Git providers including GitHub, GitLab, and Bitbucket have implemented additional workflow features to facilitate a secure and stable development process. These include features such as *Pull Requests* (sometimes referred to as *Merge Requests*) to support coordination with Git in larger teams. The term *Pull Request* will be used throughout this document to designate the operation of reviewing and merging one branch into another.
+As Git became the de-facto version control system in today's IT world, new terminologies such as [*repositories*](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository), [*branches*](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell), and *merges* arose. By agreeing upon a central Git server to integrate and consolidate changes, development teams were able to collaborate more efficiently and effectively. Building upon the open-source vanilla Git implementation, popular Git providers including GitHub, GitLab, and Bitbucket have implemented additional workflow features to facilitate a secure and stable development process. These include features such as *Pull Requests* (sometimes referred to as *Merge Requests*) to support coordination with Git in larger teams. The term *Pull Request* will be used throughout this document to designate the operation of reviewing and merging one branch into another.
 
 Many mainframe development teams follow a release-based or iteration-based process to deliver incremental updates to a pre-defined production runtime.
 
-## Characteristics of mainline-based development with feature branches
+## Characteristics of mainline-based development with feature branches 
 
-As mentioned in the [Introduction](introduction.md) our recommended approach scales very well to support the needs of a range of
-team sizes, freqency and size of changes, and degrees of concurrent working.
+As mentioned in the [Introduction](introduction.md) our recommended approach scales very well to support the needs of a range of team sizes, frequency and size of changes, and degrees of concurrent working.
+
 ### Starting simple
 
-The mainline-based development approach[^3] with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
+The [mainline-based development approach](https://trunkbaseddevelopment.com/) with *feature* branches is a simple and structured workflow to implement, integrate, and deliver changes with an early integration process flow using a single long-living branch: *main*. Developers work in isolation in *feature* branches to implement changes to the source code, and ideally test the changes in a specific environment.
 
-This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in this publication is also documented by Microsoft without giving it a name[^5].
+This approach can be compared to a trunk-based branching model that leverages feature branches. A similar workflow like outlined in [this publication](https://learn.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops) is also documented by Microsoft without giving it a name.
 
 <!-- this paragraph would make an ideal 'annotation', callout or sidebar if writing for an SSG like Mkdocs. -->
-(You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows).
-Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type.
-Both feature branches and bug-fix branches are expected to be relatively short-lived and ultimately to merge into a long-lived branch.)
+(You may also see reference to *topic* branches, for example [here](https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows). Feature branches can be considered as one sub-type of *topic* branches with branches for *bug-fixes* being another sub-type. Both feature branches and bug-fix branches are expected to be relatively short-lived and ultimately to merge into a long-lived branch.)
 
-The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected*
-branch - **all** changes originate on a branch created to hold them until they are ready to be merged. Using a branch-and-merge approach is
-natural in a git-based SCM and very light-weight both in terms of resource consumption and developer experience.
+The `main` branch is the point of reference for the entire history of the mainline changes to the code base. `main` should be a *protected* branch - **all** changes originate on a branch created to hold them until they are ready to be merged. Using a branch-and-merge approach is natural in a git-based SCM and very light-weight both in terms of resource consumption and developer experience.
 
 #### All changes start on a dedicated branch
 
-Although all git-based Devops services provide direct access to the server copy of the repo, developers will typically use an IDE of their
-choice to work locally on a *clone* of the repo. Standard practices ensure developers' local clones are synchronized with the server copy
-(typically known as the *remote*) through actions known as `pull` and `push`.
+Although all git-based Devops services provide direct access to the server copy of the repo, developers will typically use an IDE of their choice to work locally on a *clone* of the repo. Standard practices ensure developers' local clones are synchronized with the server copy (typically known as the *remote*) through actions known as `pull` and `push`.
 
-In a small team where there is almost never more than one change in progress at a time, using a branch enables the developer to make
-the changes in a series of commits rather than as one atomic change as they edit source and save files. Of course, the 'one-line' change
-might mean there genuinely is only one commit that needs merging, but the process is so natural and light-weight that it's not
-worth making that a special case.
+In a small team where there is almost never more than one change in progress at a time, using a branch enables the developer to make the changes in a series of commits rather than as one atomic change as they edit source and save files. Of course, the 'one-line' change might mean there genuinely is only one commit that needs merging, but the process is so natural and light-weight that it's not worth making that a special case.
 
-Such branches are able to be built prior to merging - this can eliminate the possibility of the merge breaking the build of `main`
-so reducing risk in making changes.
+Such branches are able to be built prior to merging - this can eliminate the possibility of the merge breaking the build of `main` so reducing risk in making changes.
+
 #### Merging a branch
 
-A branch holds all the commits for a change - be that a single commit for a one-liner or a sequences of commits as the developer refined
-the changes making them ready for review and merging into `main`.
+A branch holds all the commits for a change - be that a single commit for a one-liner or a sequences of commits as the developer refined the changes making them ready for review and merging into `main`.
 
-The request to merge a branch is made explicitly, but can be as formal or informal as needed by the team. Protection of `main` can mean that
-only certain people can perform the merge, or that a review of the changes has approved them, or both.
+The request to merge a branch is made explicitly, but can be as formal or informal as needed by the team. Protection of `main` can mean that only certain people can perform the merge, or that a review of the changes has approved them, or both.
 
-The action of merging can either simply take all the commits from the branch and add them to `main` or the multiple commits in the
-branch can be *squashed* into one commit - the latter can keep the overall history on `main` 'cleaner' if that's important to the
-team.
+The action of merging can either simply take all the commits from the branch and add them to `main` or the multiple commits in the branch can be *squashed* into one commit - the latter can keep the overall history on `main` 'cleaner' if that's important to the team.
 
-`main` will always build - and the team can choose when to
-package and deploy.
+`main` will always build - and the team can choose when to package and deploy.
+
 ### Scaling-up
 
-The use of branches for concurrently planned activities scales extremely well for busier teams. Additionally, *epic*[^4] and *release maintenance* branches accommodate specific development workflows and allow the model to scale even further.
-The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
+The use of branches for concurrently planned activities scales extremely well for busier teams. Additionally, [*epic*](https://scaledagileframework.com/epic/) and *release maintenance* branches accommodate specific development workflows and allow the model to scale even further. The latter two branches exist for the duration of the epic or release maintenance and are short living branches.
 
 The implemented changes of the iteration are then delivered collectively as part of the next release. Each development team decides how long an iteration is: we advocate for working towards smaller, quicker release cycles, but this model can also be used with longer iterations. Due to business or technical reasons, the merging of features into the *main* branch can also be delayed. Although being a discouraged practice, the recommendation is to group such features in a specific epic branch, as described later.
 
 The strategy leverages Git tags to identify the various configurations/versions of the application, such as a release candidate or the version of the application repository which is deployed to production.
 
-Depending on the type of change, the development workflow can vary. In the standard scenario, developers use the *main* branch to deliver changes for the next planned release, while the *release maintenance* branches allow fixing the current release running in the production runtime environment(s). Using *epic* branches is optional for development teams, but allow teams to increase the concurrency of working on multiple, larger development initiatives of the application and represent a grouping mechanism of multiples features that should be built and tested together. The epic branch also represent a way to manage the lifecycle of features that are not planned for the next planned release. So, it is a vehicle to delay merging the set of features into the main branch for a later time.
+Depending on the type of change, the development workflow can vary. In the standard scenario, developers use the *main* branch to deliver changes for the next planned release, while the *release maintenance* branches allow fixing the current release running in the production runtime environment(s). Using *epic* branches is optional for development teams, but allow teams to increase the concurrency of working on multiple, larger development initiatives of the application and represent a grouping mechanism of multiples features that should be built and tested together. The *epic* branch also represents a way to manage the lifecycle of features that are not planned for the next planned release. So, it is a vehicle to delay merging the set of features into the *main* branch for a later time.
 
-The *main*, *epic* and *release* branches are assumed to be protected branches, meaning that no developer can directly push changes to these configurations. It requires developers to make changes on a feature branch and go through the Pull Request process. Before merging the feature branch into the shared branch (whether it is the main branch or an epic branch), some evidence should be gathered to ensure quality and respect of the coding standards in the enterprise. Peer-reviewed code, a clean pipeline execution, and approvals are examples of such evidence, allowing the development team to confidently merge the feature branch into the target branch. In a Continuous Integration workflow, integrations are expected to happen early to avoid delaying merging conflicts or merges leading to an unstable build.
+The *main*, *epic* and *release* branches are assumed to be protected branches, meaning that no developer can directly push changes to these configurations. It requires developers to make changes on a feature branch and go through the Pull Request process. Before merging the feature branch into a shared branch (whether it is the *main* branch or an *epic* branch), some evidence should be gathered to ensure quality and respect of the coding standards in the enterprise. Peer-reviewed code, a clean pipeline execution, and approvals are examples of such evidence, allowing the development team to confidently merge the feature branch into the target branch. In a Continuous Integration workflow, integrations are expected to happen early to avoid delaying merging conflicts or merges leading to an unstable build.
 
 ### Naming conventions
 
@@ -149,7 +136,7 @@ Git tags are used throughout this process to indicate and label important commit
 
 The next sections outline the various tasks and activities performed by the development team in the context of the above three scenarios.
 
-### Deliver changes with the next planned release
+### Deliver changes with the next planned release 
 
 The below diagram depicts the typical workflow to deliver changes for the next planned release. In the default workflow, the development team commits changes to the head of the main branch. The changes of the next planned release are built, packaged, and released off the main branch.
 
@@ -161,11 +148,12 @@ At a high level, the development team works through the following tasks:
 
 1.  New work items are managed in the backlog. The team decides which work items will be implemented in the next iteration. Each application team can decide about the duration of the iteration (which can also be seen as the development cycle). In the above diagram, three work items were selected to be implemented for the next iteration. The development team is responsible for coordinating if features are demanding to be implemented in a specific order.
 
-2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to work in isolation from other concurrent development activities.
 
-![](images/media/image5.png)
+2.  For each work item, a feature branch is created according to pre-defined naming conventions, allowing the assigned developers to have a copy of the codebase on which they can work in isolation from other concurrent development activities.
 
-3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. They then switch to the feature branch. If the developer already has a local copy of the Git repository, they can simply synchronize their local Git repository with the central Git repository by fetching or pulling updates into their local clone of the repository. This makes the feature branch available in their local clone.[^6]
+    ![](images/media/image5.png)
+
+3.  To start making the necessary modifications for their development task, developers create a copy of the Git repository on their local workstations through the clone operation of Git. To synchronize their local Git repository with the central Git repository, they fetch or pull updates into their local clone of the repository. With this process, developers make the feature branch available in their local clone (feature branches created locally can then be pushed to the central Git server).
 
 4.  They use the Dependency Based Build (DBB) *User Build* facility of their integrated development environment (IDE) to validate the changes before committing the changes to their branch and pushing the updates to the central Git repository.
 
@@ -175,25 +163,25 @@ At a high level, the development team works through the following tasks:
 
 7.  When developers feel their code changes are ready to be integrated back into the shared main branch, they create a Pull Request to integrate the changes from their feature branch into the *main* branch. The changes must be buildable. The Pull Request process provides the capability to add peer review and approval steps before allowing the changes to be merged.
 
-![](images/media/image6.png)
+8.  Once the Pull Request is merged into the *main* branch, the next pipeline execution of the [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) will build all the changes (and their impacts) of the iteration based on the *main* branch.
 
-8.  Once the Pull Request is merged into the *main* branch, the next pipeline execution of the *build pipeline* [^7]will build all the changes (and their impacts) of the iteration based on the *main* branch.
+    ![](images/media/image6.png)  
 
     The pipeline can optionally include a step to deploy the built artifacts (load modules, DBRMs, etc.) into a shared test environment, as highlighted by the green *DEV-TEST* icon in the diagram. In this *DEV-TEST* environment, the development team can validate their combined changes. This first test environment helps support a shift-left testing strategy by providing a sandbox with the necessary setup and materials for developers to test their changes early. The installation happens through the packaging and deployment process of a preliminary package that cannot be installed to higher environments (because it is compiled with the TEST options), or alternatively through a simplified script solution performing a copy operation. In the latter, no inventory and no deployment history of the *DEV-TEST* system exist.
 
 9.  In the outline of this scenario, the development team decides after implementing feature 1 and feature 2 to progress further in the delivery process and build a release candidate package based on the current state of the *main* branch. This point in *main's* history is tagged to identify it as a release candidate.
 
-    With this decision, they manually run the *release pipeline*[^8]. This pipeline rebuilds the contributed changes for this iteration - with the compiler options to produce executables optimized for performance rather than for debug. The pipeline includes an additional step to package the build outputs to create a release candidate package, that is stored in a binary artifact repository.
+    ![](images/media/image7.png)
 
-![](images/media/image7.png)
+    With this decision, they manually run the [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy). This pipeline rebuilds the contributed changes for this iteration - with the compiler options to produce executables optimized for performance rather than for debug. The pipeline includes an additional step to package the build outputs to create a release candidate package, that is stored in a binary artifact repository.
 
-10. The release candidate package is installed to the various test stages and takes a predefined route. The process can be assisted by the pipeline orchestrator itself, or the development team can use the interfaces of the deployment solution. In the event of a defect being found in the new code of the release candidate package, the developer creates a feature branch from the main branch, corrects the issue, and merges it back into the *[main]{.mark}* branch. It is expected that the new release candidate package with the fix is required to pass all the quality gates and to be tested again.
+10. The release candidate package is installed to the various test stages and takes a predefined route. The process can be assisted by the pipeline orchestrator itself, or the development team can use the interfaces of the deployment solution. In the event of a defect being found in the new code of the release candidate package, the developer creates a feature branch from the *main* branch, corrects the issue, and merges it back into the *main* branch. It is expected that the new release candidate package with the fix is required to pass all the quality gates and to be tested again.
 
 11. In this sample walkthrough of an iteration, the development of the third work item (feature 3) is started later. The same steps as above apply for the developer of this work item. After merging the changes back into the *main* branch, the team is leveraging the *build pipeline* to validate the changes in the DEV-TEST environment. To create a release candidate package, they make again use of the *release pipeline*. This package now includes all the changes delivered for this iteration -- feature 1, feature 2 and feature 3.
 
-![](images/media/image8.png)
+    ![](images/media/image8.png)
 
-12. When the release is ready to be shipped after all quality gates have passed successfully and the required approvals have been issued by the appropriate reviewers, the deployment of the package from the binary repository to the production runtime is performed via the deployment manager or is initiated from the release pipeline[^9].
+12. When the release is ready to be shipped after all quality gates have passed successfully and the required approvals have been issued by the appropriate reviewers, the deployment of the package from the binary repository to the production runtime is performed via the deployment manager or is initiated from the [release pipeline](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production).
 
 13. Finally, during the release process to the production environment, the state of the repository (commit) from that the release candidate package was produced of is tagged following a semantic versioning strategy. This serves the purpose of identifying what is currently in production, and also serves as the baseline reference for the calculation of changes for the next release.
 
@@ -209,21 +197,21 @@ The development team works through the following tasks:
 
 1.  In the event of a required fix or urgent maintenance for the production runtime which is currently running the *rel-2.1.0* release, the development team creates a *release/rel-2.1.0* branch based on the existing Git tag in the central Git server. The release branch is a protected branch and does not allow developers to directly push commits to this branch.
 
-![](images/media/image10.png)
+2.  For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
 
-2.   For each necessary fix, a feature branch is created according to pre-defined naming conventions (for example, release/*rel-2.1.0/fix_1*, based on the *release/rel-2.1.0* branch). This allows the assigned developer to have a copy of the codebase on which they can work in isolation from other development activities.
+    ![](images/media/image10.png)  
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the branch to start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package[^10], which can be used for validating the fix in a controlled test environment.
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the branch to start making the necessary modifications. They leverage the user build facility of their IDE to vet out any syntax issues. They can use a *feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a [preliminary package](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments), which can be used for validating the fix in a controlled test environment.
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *rel-2.1.0* branch.
 
-![](images/media/image11.png)
+5.  A [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) for the release maintenance branch will build all the changes (and their impacts).
 
-5.  A *build pipeline*[^11] for the release maintenance branch will build all the changes (and their impacts).
+    ![](images/media/image11.png)  
 
-6.  The developer requests a *release pipeline*[^12] for the *release/rel-2.1.0* branch that builds the changes and includes the packaging process to create the fix package for the production runtime. The developer will test the package in the applicable test environments.
+6.  The developer requests a [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy) for the *release/rel-2.1.0* branch that builds the changes and includes the packaging process to create the fix package for the production runtime. The developer will test the package in the applicable test environments.
 
-7.  After collecting the necessary approvals, the fix package can be deployed to the production environment[^13]. To indicate the new state of the production runtime, the developer creates a Git tag *2.1.1* for the commit that was used to create the fix package to indicate the currently-deployed version of the application.
+7.  After collecting the necessary approvals, the fix package can be deployed to the [production environment](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production). To indicate the new state of the production runtime, the developer creates a Git tag *2.1.1* for the commit that was used to create the fix package to indicate the currently-deployed version of the application.
 
 8.  Finally, the developer is responsible to start the Pull request process to merge the changes from the *release/rel-2.1.0* branch back to the *main* branch to also include the fix into the next release.
 
@@ -249,55 +237,21 @@ The development tasks for a development initiative are:
 
 2.  Based on how the work items are distributed between the developers, a feature branch is created according to pre-defined naming conventions such as *epic/epic1234/feature4*, *epic/epic1234/feature5* based on the *epic/epic1234* branch.
 
-![](images/media/image13.png)
+3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a [EPIC-1-FEATURE-TEST environment](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments).
 
-3.  The developers fetch the feature branch from the central Git repository into their local clone of the repository and switch to the feature branch to start making the necessary modifications. They leverage the user build facility of their IDE for building and testing individual programs. They can also leverage *a feature branch pipeline* to build the changed and impacted files. Optionally, the developer can prepare a preliminary package, which can be used for validating the fix in a controlled test environment, such as a EPIC-1-FEATURE-TEST environment[^14].
+    ![](images/media/image13.png)  
 
 4.  The developer initiates the Pull Request process, which provides the ability to add peer review and approval steps before allowing the changes to be merged into the *epic* branch.
 
-5.  A *build pipeline*[^15] for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
+5.  A [*build pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches) for the epic branch will build all the merged features (changes and their impacts) from the point the epic branch was branched off.
 
 6.  It is mandatory, that the team is frequently incorporating updates which got implemented for the next release or got released to production via the standard development process via the *main* branch into the *epic* branch to avoid that the configurations diverge too much and make the planned merge hard. A common practice is to at least integrate changes after each completion of a release via the main workflow (See Figure 15) to merge the stable versions. More frequent integrations may lead to pulling intermediate versions of features, which may not be fully implemented from a business perspective; however, this should not deter developers since the main branch should always be in a buildable state.
 
-![](images/media/image14.png)
+7.  When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a [*release pipeline*](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy) for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.
+                    
+    ![](images/media/image14.png)  
 
-7.   When the development team feels that they are ready to prototype the changes for the initiative in the initiatives' test environment, they request a *release pipeline*[^16] for the *epic* branch that builds the changes and includes the packaging process to create a preliminary package that can be installed into the initiative test environment (for example the *EPIC-DEV-TEST* environment). The team will test the package in the assigned test environments for this initiative.
 
 8.  The development team plans to integrate the changes of the *epic* branch into the main branch using the Pull Request process. This happens, when the changes should be released towards production with the next planned iteration. The below diagram depicts of the process of integrating the changes implemented for *epic1* in parallel of the main workflow after three releases.
 
 ![Figure 14 Integrating changes of an epic branch as a planned deliverable of an upcoming release](images/media/image15.png)
-
-
-
-
-[^1]: To track files - <https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository>
-
-[^2]: To diverge from the main line - <https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell>
-
-[^3]: See Scaled Trunk-Based development - <https://trunkbaseddevelopment.com>
-
-[^4]: What is an epic? - <https://scaledagileframework.com/epic/>
-
-[^5]: Adopt a branching strategy - <https://learn.microsoft.com/en-us/azure/devops/repos/git/git-branching-guidance?view=azure-devops>
-
-[^6]: Please be aware, that feature branches can also be created locally and then be pushed to the central Git server.
-
-[^7]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
-
-[^8]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
-
-[^9]: See [3.4 Deployment to production](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production)
-
-[^10]: See [3.1.3 Package and Deploy a feature for testing in controlled test environments](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
-
-[^11]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
-
-[^12]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
-
-[^13]: See [3.4 Deployment to production](pipeline-design-and-implementation-supporting-the-workflows.md#deployment-to-production)
-
-[^14]: See [3.1.3 Package and Deploy a feature for testing in controlled test environments](pipeline-design-and-implementation-supporting-the-workflows.md#package-and-deploy-a-feature-for-testing-in-controlled-test-environments)
-
-[^15]: See [3.2 The Build pipeline for main, epic and release branches](pipeline-design-and-implementation-supporting-the-workflows.md#the-build-pipeline-for-main-epic-and-release-branches)
-
-[^16]: See [3.3 The Release pipeline: Build, package and deploy](pipeline-design-and-implementation-supporting-the-workflows.md#the-release-pipeline-build-package-and-deploy)
