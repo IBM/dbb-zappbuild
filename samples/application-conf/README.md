@@ -297,6 +297,7 @@ Application properties used by zAppBuild/language/Transfer.groovy
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+transfer_copyMode | Copy mode used during the copy to the target data set | true
 
 ### languageConfigurationMapping.properties
 Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
