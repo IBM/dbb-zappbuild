@@ -179,7 +179,7 @@ def getFileCurrentGitHash(String gitDir, String filePath) {
  * @return String gitUrl        The current masked Git url
  */
 def getCurrentGitUrl(String gitDir) {
-	String retVal = new String()
+	String maskedGitUrl = new String()
 	String cmd = "git -C $gitDir config --get remote.origin.url"
 	StringBuffer gitUrl = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
@@ -194,13 +194,15 @@ def getCurrentGitUrl(String gitDir) {
 	// Mask credentials that may be added by the pipeline orchestrator
 	// into the git remote.origin.url configuration
 	// applies only for http/https configs  	
+	// Find // and then take all until the @ char. This is where the PAT is
+	// stored
 	String regex = "(?<=.\\/\\/)[^@]*(?=@)";
 	String subst = "***";
 	Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
 	Matcher matcher = pattern.matcher(gitUrl.toString().trim());
-	retVal = matcher.replaceAll(subst);
+	maskedGitUrl = matcher.replaceAll(subst);
 	
-	return retVal
+	return maskedGitUrl
 }
 
 
