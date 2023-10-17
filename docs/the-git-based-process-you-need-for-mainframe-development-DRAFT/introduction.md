@@ -32,6 +32,11 @@ The target audience of this document are Mainframe DevOps architects and SCM spe
 
 Some aims and assumptions which guided our recommendations include:
 
+- We are focusing on recommending an effective branching strategy and workflow. Beyond relying on `git` and the facilities commonly
+provided by hosted `git` service providers, we make few assumptions about the tools chosen  - except, obviously IBM Dependency-Based Build 
+and IBM UrbanCode Deploy. 
+  - For instance, developers could choose VSCode, Eclipse/IDz or another modern IDE as their editor and use their integrated support for `git`. Alternatively, any editor might be combined with the use of `git`'s command line interface (CLI).
+
 - The workflow and branching scheme should both scale-up and scale-down.
   - Small teams with simple and infrequent changes will be able to easily understand, adopt and have a good experience. 
   - Large busy teams with many concurrent activities will be able to plan, track and execute with maximum agility using the same fundamental principles.
