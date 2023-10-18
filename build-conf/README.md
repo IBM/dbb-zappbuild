@@ -300,6 +300,16 @@ zcee3_shellEnvironment | Shell environment used to run the gradle command
 zcee3_gradlePath | Path to gradle executable
 zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle
 
+### zCEE2.properties
+Application properties used by zAppBuild/language/zCEE2.groovy
+
+Property | Description
+--- | ---
+zcee2_zconbtPath | Absolute path to zconbt executable on z/OS UNIX System Services
+zcee2_JAVA_HOME | Java installation used by the zconbt utility
+zcee2_inputType | Mapping of input files with types of files
+zcee2_ARA_PackageArtifacts | Flag to indicate if artifacts produced for the ARA processing should be packaged
+
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
 
