@@ -42,12 +42,9 @@ sortedList.each { buildFile ->
 	MVSJob job = new MVSJob()
 	job.start()
 
-	// preprocess mfs map
-	
-
-	// generate commands
+	// generate phase1 command
 	MVSExec phase1 = createPhase1Command(buildFile, member, logFile)
-	
+
 	int rc = phase1.execute()
 	int maxRC = props.getFileProperty('mfs_phase1MaxRC', buildFile).toInteger()
 
@@ -59,24 +56,23 @@ sortedList.each { buildFile ->
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
-		
+		// generate phase2 command
 		if (phase2Execution && phase2Execution.toBoolean()) {
-		
-		MVSExec phase2 = createPhase2Command(buildFile, member, logFile)
 
-		rc = phase2.execute()
-		maxRC = props.getFileProperty('mfs_phase2MaxRC', buildFile).toInteger()
+			MVSExec phase2 = createPhase2Command(buildFile, member, logFile)
 
-		if (rc > maxRC) {
-			String errorMsg = "*! The phase 2 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
-		}
-		
+			rc = phase2.execute()
+			maxRC = props.getFileProperty('mfs_phase2MaxRC', buildFile).toInteger()
+
+			if (rc > maxRC) {
+				String errorMsg = "*! The phase 2 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			}
+
 		}
 	}
-	
 	
 	// clean up passed DD statements
 	job.stop()
