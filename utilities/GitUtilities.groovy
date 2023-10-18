@@ -73,20 +73,20 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	}
 
 	String gitBranchString = gitBranch.toString()
-	String[] gitBranchesArr = gitBranchString.split(',')
+	String[] gitBranchesArray = gitBranchString.split(',')
 	def solution = ""
 	// expecting references with "origin" as segment
 	def origin = "origin/"
-	if (gitBranchesArr.count {it.contains(origin)}  > 1 ) {
+	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
 		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
 		println(warningMsg)
 		updateBuildResult(warningMsg:warningMsg)
 	}
 
 	// substring the branch name
-	for (i = 0; i < gitBranchesArr.length; i++) {
-		if (gitBranchesArr[i].contains(origin)) {
-			solution = gitBranchesArr[i].replaceAll(".*?${origin}", "").trim()
+	for (i = 0; i < gitBranchesArray.length; i++) {
+		if (gitBranchesArray[i].contains(origin)) {
+			solution = gitBranchesArray[i].replaceAll(".*?${origin}", "").trim()
 		}
 	}
 
