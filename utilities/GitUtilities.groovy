@@ -78,7 +78,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	// expecting references with "origin" as segment
 	def origin = "origin/"
 	if (gitBranchArr.count {it.contains(origin)}  > 1 ) {
-		String warningMsg = "*? (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
 		println(warningMsg)
 		updateBuildResult(warningMsg:warningMsg)
 	}
@@ -93,7 +93,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	if (solution != "") { // return branch name
 		return solution
 	} else {
-		String errorMsg = "*! Error parsing branch name: $gitBranch"
+		String errorMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Error extracting current branch name: $gitBranch. Expects a origin/ segment."
 		println(errorMsg)
 		props.error = "true"
 		updateBuildResult(errorMsg:errorMsg)
