@@ -73,15 +73,31 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	}
 
 	String gitBranchString = gitBranch.toString()
-	def gitBranchArr = gitBranchString.split(',')
+	String[] gitBranchesArray = gitBranchString.split(',')
 	def solution = ""
-	for (i = 0; i < gitBranchArr.length; i++) {
-		if (gitBranchArr[i].contains("origin/")) {
-			solution = gitBranchArr[i].replaceAll(".*?/", "").trim()
+	// expecting references with "origin" as segment
+	def origin = "origin/"
+	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
+		println(warningMsg)
+		updateBuildResult(warningMsg:warningMsg)
+	}
+
+	// substring the branch name
+	for (i = 0; i < gitBranchesArray.length; i++) {
+		if (gitBranchesArray[i].contains(origin)) {
+			solution = gitBranchesArray[i].replaceAll(".*?${origin}", "").trim()
 		}
 	}
 
-	return (solution != "") ? solution : println("*! Error parsing branch name: $gitBranch")
+	if (solution != "") { // return branch name
+		return solution
+	} else {
+		String errorMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Error extracting current branch name: $gitBranch. Expects a origin/ segment."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
+	}
 }
 
 /*
