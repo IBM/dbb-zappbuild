@@ -28,6 +28,7 @@ SCSQCOBC | MQ COBOL Library. Example: CSQ.V9R1M0.SCSQCOBC
 SCSQPLIC | MQ PLI Library. Example: CSQ.V9R1M0.SCSQPLIC
 SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
+SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
 SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
 
