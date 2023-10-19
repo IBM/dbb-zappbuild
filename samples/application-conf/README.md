@@ -208,6 +208,7 @@ Property | Description | Overridable
 mfs_fileBuildRank | Default MFS program build rank. Used to sort MFS build file sub-list. Leave empty. | true
 mfs_phase1MaxRC | Default MFS Phase 1 maximum RC allowed. | true
 mfs_phase2MaxRC | Default MFS Phase 2 maximum RC allowed. | true
+mfs_phase2Execution | Flag if MFS Phase 2 process should be executed. Default: false | true
 mfs_phase1Parms | Default parameters for the phase 1 step. | true
 mfs_phase2Parms | Default parameters for the phase 2 step. | true
 mfs_impactPropertyList | List of build properties causing programs to rebuild when changed | false
