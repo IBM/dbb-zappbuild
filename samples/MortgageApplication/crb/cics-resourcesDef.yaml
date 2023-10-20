@@ -2,6 +2,9 @@ resourceDefinitions:
 - mapset:
     name: EPSMORT
     group: EPSMTM
+- mapset:
+    name: EPSMLIS
+    group: EPSMTM
 - program:
     name: EPSCMORT
     group: EPSMTM

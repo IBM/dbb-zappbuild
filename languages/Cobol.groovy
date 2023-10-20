@@ -261,8 +261,10 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."SIGYCOMP_$compilerVer").options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-	if (buildUtils.isSQL(logicalFile))
+	if (buildUtils.isSQL(logicalFile)) {
+		if (props.SDSNEXIT) compile.dd(new DDStatement().dsn(props.SDSNEXIT).options("shr"))
 		compile.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+	}
 	
 	if (props.SFELLOAD)
 		compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))

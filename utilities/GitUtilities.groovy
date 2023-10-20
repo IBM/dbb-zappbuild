@@ -3,6 +3,8 @@ import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field MetadataStore metadataStore
@@ -71,15 +73,31 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	}
 
 	String gitBranchString = gitBranch.toString()
-	def gitBranchArr = gitBranchString.split(',')
+	String[] gitBranchesArray = gitBranchString.split(',')
 	def solution = ""
-	for (i = 0; i < gitBranchArr.length; i++) {
-		if (gitBranchArr[i].contains("origin/")) {
-			solution = gitBranchArr[i].replaceAll(".*?/", "").trim()
+	// expecting references with "origin" as segment
+	def origin = "origin/"
+	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
+		println(warningMsg)
+		updateBuildResult(warningMsg:warningMsg)
+	}
+
+	// substring the branch name
+	for (i = 0; i < gitBranchesArray.length; i++) {
+		if (gitBranchesArray[i].contains(origin)) {
+			solution = gitBranchesArray[i].replaceAll(".*?${origin}", "").trim()
 		}
 	}
 
-	return (solution != "") ? solution : println("*! Error parsing branch name: $gitBranch")
+	if (solution != "") { // return branch name
+		return solution
+	} else {
+		String errorMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Error extracting current branch name: $gitBranch. Expects a origin/ segment."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
+	}
 }
 
 /*
@@ -174,9 +192,10 @@ def getFileCurrentGitHash(String gitDir, String filePath) {
  * Returns the current Git url
  *
  * @param  String gitDir  		Local Git repository directory
- * @return String gitUrl       The current Git url
+ * @return String gitUrl        The current masked Git url
  */
 def getCurrentGitUrl(String gitDir) {
+	String maskedGitUrl = new String()
 	String cmd = "git -C $gitDir config --get remote.origin.url"
 	StringBuffer gitUrl = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
@@ -187,7 +206,19 @@ def getCurrentGitUrl(String gitDir) {
 	if (gitError) {
 		print("*! Error executing Git command: $cmd error: $gitError")
 	}
-	return gitUrl.toString().trim()
+
+	// Mask credentials that may be added by the pipeline orchestrator
+	// into the git remote.origin.url configuration
+	// applies only for http/https configs  	
+	// Find // and then take all until the @ char. This is where the PAT is
+	// stored
+	String regex = "(?<=.\\/\\/)[^@]*(?=@)";
+	String subst = "***";
+	Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+	Matcher matcher = pattern.matcher(gitUrl.toString().trim());
+	maskedGitUrl = matcher.replaceAll(subst);
+	
+	return maskedGitUrl
 }
 
 

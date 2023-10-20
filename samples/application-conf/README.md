@@ -208,6 +208,7 @@ Property | Description | Overridable
 mfs_fileBuildRank | Default MFS program build rank. Used to sort MFS build file sub-list. Leave empty. | true
 mfs_phase1MaxRC | Default MFS Phase 1 maximum RC allowed. | true
 mfs_phase2MaxRC | Default MFS Phase 2 maximum RC allowed. | true
+mfs_phase2Execution | Flag if MFS Phase 2 process should be executed. Default: false | true
 mfs_phase1Parms | Default parameters for the phase 1 step. | true
 mfs_phase2Parms | Default parameters for the phase 2 step. | true
 mfs_impactPropertyList | List of build properties causing programs to rebuild when changed | false
@@ -291,12 +292,13 @@ rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
-### nonBuildable.properties
+### Transfer.properties
 Application properties used by zAppBuild/language/Transfer.groovy
 
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+transfer_copyMode | Copy mode used during the copy to the target data set | true
 
 ### languageConfigurationMapping.properties
 Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
