@@ -34,7 +34,7 @@ Some aims and assumptions which guided our recommendations include:
 
 - We are focusing on recommending an effective branching strategy and workflow. Beyond relying on `git` and the facilities commonly
 provided by hosted `git` service providers, we make few assumptions about the tools chosen  - except, obviously 
-[IBM Dependency-Based Build](https://www.ibm.com/products/dependency-based-build),
+[IBM Dependency Based Build](https://www.ibm.com/products/dependency-based-build),
 [IBM UrbanCode Deploy](https://www.ibm.com/products/urbancode/deploy) and 
 [IBM Wazi Deploy](https://www.ibm.com/docs/en/developer-for-zos/16.0?topic=deploying-zos-wazi-deploy).
   - For instance, developers could choose VSCode, Eclipse/IDz or another modern IDE as their editor and use their integrated support for `git`. Alternatively, any editor might be combined with the use of `git`'s command line interface (CLI).
