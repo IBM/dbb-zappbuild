@@ -245,7 +245,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 			}
 		}
 	}
-	return 0 
 }
 
 /*
