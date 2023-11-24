@@ -98,8 +98,14 @@ def initializeBuildProcess(String[] args) {
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
 	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
-	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
 	
+	File versionFile = new File("${props.zAppBuildDir}/version.properties")
+	if (versionFile.exists()) {
+		props.load(versionFile)
+		if (props.zappbuild_version) println "** Running zAppBuild Version ${props.zappbuild_version} "
+	}
+	if (props.verbose) println "** Running DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+
 	// verify required dbb toolkit
 	buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, props.requiredDBBToolkitVersion)
 
