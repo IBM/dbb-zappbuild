@@ -57,13 +57,21 @@ else {
 			scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
 			def buildFiles = ScriptMappings.getMappedList(script, buildList)
-			if (buildFiles.size() > 0) {
-				if (scriptPath.startsWith('/'))
-					runScript(new File("${scriptPath}"), ['buildList':buildFiles])
-				else
-					runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+			try {
+				if (buildFiles.size() > 0) {
+					if (scriptPath.startsWith('/'))
+						runScript(new File("${scriptPath}"), ['buildList':buildFiles])
+					else
+						runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+				}
+				processCounter = processCounter + buildFiles.size()
+			} catch (BuildException e) {
+				String errorMsg = e.getMessage()
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				finalizeBuildProcess(start:startTime, count:processCounter)
 			}
-			processCounter = processCounter + buildFiles.size()
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
@@ -76,10 +84,6 @@ if (processCounter == 0)
 	processCounter = buildList.size()
 
 finalizeBuildProcess(start:startTime, count:processCounter)
-
-// if error occurred signal process error
-if (props.error)
-	System.exit(1)
 
 // end script
 
@@ -670,7 +674,6 @@ def createBuildList() {
 	return buildList
 }
 
-
 def finalizeBuildProcess(Map args) {
     println "***************** Finalization of the build process *****************"
 
@@ -769,6 +772,10 @@ def finalizeBuildProcess(Map args) {
 	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
+	
+	// if error occurred signal process error
+	if (props.error)
+		System.exit(1)
 }
 
 
