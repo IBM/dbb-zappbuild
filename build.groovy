@@ -96,8 +96,9 @@ def initializeBuildProcess(String[] args) {
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
-	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
+	props.dbbToolkitVersion = dbbToolkitVersion
+	props.dbbToolkitBuildDate = dbbToolkitBuildDate
 	
 	File versionFile = new File("${props.zAppBuildDir}/version.properties")
 	if (versionFile.exists()) {
@@ -728,7 +729,10 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
 		buildResult.setState(buildResult.COMPLETE)
 
-
+		// add zAppBuild and DBB toolkit version info
+		if (props.zappbuild_version) buildResult.setProperty("zAppBuildVersion", props.zappbuild_version)
+		buildResult.setProperty("DBBToolkitVersion" , "${props.dbbToolkitVersion} ${props.dbbToolkitBuildDate}")
+		
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
 		def buildResultProps = buildResult.getPropertyNames()
