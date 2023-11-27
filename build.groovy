@@ -263,7 +263,10 @@ options:
 	cli.sl(longOpt:'scanLoad', 'Flag indicating to only scan load modules for application without building anything')
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
-	// web application credentials (overrides properties in build.properties)
+	// application configuration
+	cli.ac(longOpt:'applicationConfiguration', args:1, 'State of the application repository that is built typically the branch name, which is used to uniquely name the DBB metadata artifacts collection and build group.')
+		
+	// dbb db2 metadatastore connection credentials (overrides properties in build.properties)
 	cli.url(longOpt:'url', args:1, 'Db2 JDBC URL for the MetadataStore. Example: jdbc:db2:<Db2 server location>')
 	cli.id(longOpt:'id', args:1, 'Db2 user id for the MetadataStore')
 	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
@@ -442,6 +445,7 @@ def populateBuildProperties(def opts) {
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
+	if (opts.ac) props.applicationConfiguration = opts.ac
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -487,20 +491,30 @@ def populateBuildProperties(def opts) {
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
 
 	// set calculated properties
-	if (!props.userBuild) {
-		def gitDir = buildUtils.getAbsolutePath(props.application)
-		if ( gitUtils.isGitDetachedHEAD(gitDir) )
-			props.applicationCurrentBranch = gitUtils.getCurrentGitDetachedBranch(gitDir)
-		else
-			props.applicationCurrentBranch = gitUtils.getCurrentGitBranch(gitDir)
-	}
-
-	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
-	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationBuildLabel = ("build.${props.startTime}") as String
-	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
+		
+		
+	if (!props.userBuild) {
 
+		// if no applicationConfiguration is passed in, compute application configuration based on git repo
+		if (!props.applicationConfiguration) { 
+			def gitDir = buildUtils.getAbsolutePath(props.application)
+			
+			if ( gitUtils.isGitDetachedHEAD(gitDir) )
+				props.applicationConfiguration = gitUtils.getCurrentGitDetachedBranch(gitDir)
+			else
+				props.applicationConfiguration = gitUtils.getCurrentGitBranch(gitDir)
+		}
+
+		// topic branch flag
+		props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
+
+		// dbb metadatastore objects
+		props.applicationBuildGroup = "${props.application}-${props.applicationCurrentBranch}"
+		props.applicationCollectionName = "${props.application}-${props.applicationCurrentBranch}"
+		props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs"
+	}
+	
 	if (props.userBuild) {	// do not create a subfolder for user builds
 		props.buildOutDir = "${props.outDir}" as String }
 	else {// validate createBuildOutputSubfolder build property

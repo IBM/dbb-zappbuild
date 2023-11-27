@@ -34,6 +34,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       /u/usr1/buildList.txt
@@ -43,6 +44,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --fullBuild
@@ -52,6 +54,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --impactBuild
@@ -61,6 +64,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --mergeBuild
@@ -70,6 +74,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --fullBuild \
@@ -80,6 +85,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --fullBuild \
@@ -90,6 +96,7 @@ $DBB_HOME/bin/groovyz build.groovy \
 $DBB_HOME/bin/groovyz build.groovy  \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --debug \
@@ -100,6 +107,7 @@ $DBB_HOME/bin/groovyz build.groovy  \
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
+                      --applicationConfiguration main \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --fullBuild \
@@ -179,83 +187,90 @@ If buildFile is a text file (*.txt), then it is assumed to be a build list file.
 Options:
 
 required options:
- -w,--workspace <arg>         Absolute path to workspace (root) directory
-                              containing all required source directories
- -a,--application <arg>       Application directory name (relative to workspace)
- -o,--outDir <arg>            Absolute path to the build output root directory
- -h,--hlq <arg>               High level qualifier for partition data sets
+ -w,--workspace <arg>             Absolute path to workspace (root) directory
+                                  containing all required source directories
+ -a,--application <arg>           Application directory name (relative to workspace)
+ -o,--outDir <arg>                Absolute path to the build output root directory
+ -h,--hlq <arg>                   High level qualifier for partition data sets
 
 build options:
 
- -f,--fullBuild               Flag indicating to build all programs for
-                              the application
- -i,--impactBuild             Flag indicating to build only programs impacted
-                              by changed files since last successful build.
- -b,--baselineRef             Comma seperated list of git references to overwrite
-                              the baselineHash hash in an impactBuild scenario.
- -m,--mergeBuild              Flag indicating to build only source code changes which will be
-                              merged back to the mainBuildBranch.
+ -f,--fullBuild                   Flag indicating to build all programs for
+                                  the application
+ -i,--impactBuild                 Flag indicating to build only programs impacted
+                                  by changed files since last successful build.
+ -b,--baselineRef                 Comma seperated list of git references to overwrite
+                                  the baselineHash hash in an impactBuild scenario.
+ -m,--mergeBuild                  Flag indicating to build only source code changes which will be
+                                  merged back to the mainBuildBranch.
 
- -s,--scanOnly                Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
- -ss,--scanSource             Flag indicating to only scan source files for application without building anything
- -sl,--scanLoad               Flag indicating to only scan load modules for application without building anything
- -sa,--scanAll                Flag indicating to scan both source files and load modules for application without building anything
- -pv,--preview                Supplemental flag indicating to run build in preview mode without processing the execute commands
+ -s,--scanOnly                    Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
+ -ss,--scanSource                 Flag indicating to only scan source files for application without building anything
+ -sl,--scanLoad                   Flag indicating to only scan load modules for application without building anything
+ -sa,--scanAll                    Flag indicating to scan both source files and load modules for application without building anything
+ -pv,--preview                    Supplemental flag indicating to run build in preview mode without processing the execute commands
 
+ -ac,--applicationConfiguration   State of the application repository that is built, typically the branch name, 
+                                  which is used to uniquely name the DBB metadata artifacts collection and build group.
 
- -r,--reset                   Deletes the application's dependency collections
-                              and build result group from the DBB repository
- -v,--verbose                 Flag to turn on script trace
- -d,--debug                   Flag to build modules for debugging with
-                              IBM Debug for z/OS
- -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC
-                              directory for user build
- -zTest,--runzTests           Specify if zUnit Tests should be run
+ -r,--reset                       Deletes the application's dependency collections
+                                  and build result group from the DBB repository
+ -v,--verbose                     Flag to turn on script trace
+ -d,--debug                       Flag to build modules for debugging with
+                                  IBM Debug for z/OS
+ -l,--logEncoding <arg>           Encoding of output logs. Default is EBCDIC
+                                  directory for user build
+ -zTest,--runzTests               Specify if zUnit Tests should be run
 
- -p,--propFiles               Comma separated list of additional property files
-                              to load. Absolute paths or relative to workspace
- -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties
+ -p,--propFiles                   Comma separated list of additional property files
+                                  to load. Absolute paths or relative to workspace
+ -po,--propOverwrites             Comma separated list of key=value pairs for set and overwrite build properties
 
- -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
- -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
- -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
- -cco,--cccOptions            Headless Code Coverage Collector Options
+ -cc,--ccczUnit                   Flag to indicate to collect code coverage reports during zUnit step
+ -cch,--cccHost                   Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
+ -ccp,--cccPort                   Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ -cco,--cccOptions                Headless Code Coverage Collector Options
 
- -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
+ -re,--reportExternalImpacts      Flag to activate analysis and report of external impacted files within DBB collections
 
 
 Db2 MetadataStore configuration options
- -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
-                              Example: jdbc:db2:<Db2 server location>
- -id,--id <arg>               Db2 user id for the MetadataStore
- -pw,--pw <arg>               Db2 password (encrypted with DBB Password Utility) for the MetadataStore
- -pf,--pwFile <arg>           Absolute or relative (from workspace) path to file containing Db2 password
+ -url,--url <arg>                 Db2 JDBC URL for the MetadataStore.
+                                  Example: jdbc:db2:<Db2 server location>
+ -id,--id <arg>                   Db2 user id for the MetadataStore
+ -pw,--pw <arg>                   Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+ -pf,--pwFile <arg>               Absolute or relative (from workspace) path to file containing Db2 password
 
 IDz/ZOD User Build options
- -u,--userBuild               Flag indicating running a user build
- -dz,--debugzUnitTestcase     Flag indicating to start a debug session for zUnit Test configurations as part of user build
- -e,--errPrefix <arg>         Unique id used for IDz error message datasets
- -df,--dependencyFile <arg>   Absolute or relative path (from workspace) to user build JSON file containing dependency information.
+ -u,--userBuild                   Flag indicating running a user build
+ -dz,--debugzUnitTestcase         Flag indicating to start a debug session for zUnit Test configurations as part of user build
+ -e,--errPrefix <arg>             Unique id used for IDz error message datasets
+ -df,--dependencyFile <arg>       Absolute or relative path (from workspace) to user build JSON file containing dependency information.
 
 utility options
- -help,--help                 Prints this message
+ -help,--help                     Prints this message
 ```
 
 ## Invocation Samples including console log
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Build a Single Program](#build-a-single-program)
-- [Build a List of Programs](#build-a-list-of-programs)
-- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-- [Perform Impact Build](#perform-impact-build)
-- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform a Merge build](#perform-a-merge-build)
-- [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
-- [Perform a Scan Source build](#perform-a-scan-source-build)
-- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
+  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
+  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
+  - [Command Line Options Summary](#command-line-options-summary)
+  - [Invocation Samples including console log](#invocation-samples-including-console-log)
+    - [Build a Single Program](#build-a-single-program)
+    - [Build a List of Programs](#build-a-list-of-programs)
+    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+    - [Perform Impact Build](#perform-impact-build)
+    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+    - [Perform a Merge build](#perform-a-merge-build)
+    - [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
+    - [Perform a Scan Source build](#perform-a-scan-source-build)
+    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
 
 <!-- /TOC -->
 ### Build a Single Program
