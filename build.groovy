@@ -65,7 +65,7 @@ else {
 						runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
 				}
 				processCounter = processCounter + buildFiles.size()
-			} catch (BuildException e) {
+			} catch (BuildException | AssertionError e ) {
 				String errorMsg = e.getMessage()
 				println(errorMsg)
 				props.error = "true"
