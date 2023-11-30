@@ -31,7 +31,15 @@ props.startTime = startTime.format("yyyyMMdd.HHmmss.SSS")
 println("\n** Build start at $props.startTime")
 
 // initialize build
-initializeBuildProcess(args)
+try {
+	initializeBuildProcess(args)
+} catch ( AssertionError e ) {
+	String errorMsg = e.getMessage()
+	println(errorMsg)
+	props.error = "true"
+	buildUtils.updateBuildResult(errorMsg:errorMsg)
+	finalizeBuildProcess(start:startTime, 0)
+}
 
 // create build list
 List<String> buildList = new ArrayList() 
@@ -333,6 +341,8 @@ def populateBuildProperties(def opts) {
 	// need to support IDz user build parameters
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
+
+	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
 	// load build.properties
