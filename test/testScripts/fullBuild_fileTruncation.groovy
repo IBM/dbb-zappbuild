@@ -47,7 +47,7 @@ try {
 		println "\n** Running build test for changed file $changedFile"
 		
 		// update changed file in Git repo test branch
-		testUtils.copyAndCommit(props.appLocation, changedFile)
+		testUtils.copyAndCommit(changedFile)
 		
 		// run build
 		println "** Executing ${fullBuildCommand.join(" ")}"
@@ -101,7 +101,7 @@ def validateBuild(String changedFile, PropertyMappings fullBuild_truncation_erro
 	// Validate that Finalization process is executed
 	assert outputStream.contains("********* Finalization of the build process *****") : "*! FULL BUILD TRUNCATION ERROR FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
-		println "**"
+	println "**"
 	println "** FULL BUILD TRUNCATION ERROR TEST : PASSED FOR $changedFile **"
 	println "**"
     }
