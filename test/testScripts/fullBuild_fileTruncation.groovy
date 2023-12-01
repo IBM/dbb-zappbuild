@@ -33,7 +33,7 @@ fullBuildCommand << "--fullBuild"
 
 @Field def assertionList = []
 
-def changedFiles = props.fullBuild_truncation_changedFiles
+def changedFiles = props.fullBuild_truncation_changedFiles.split(',')
 PropertyMappings fullBuild_truncation_errorMsgs = new PropertyMappings('fullBuild_truncation_errorMsg')
 
 try {
