@@ -56,7 +56,7 @@ try {
 		process.waitForProcessOutput(outputStream, System.err)
 		
 		// validate build results
-		validateBuild(changedFile, fullBuild_truncation_errorMsg, outputStream)
+		validateBuild(changedFile, fullBuild_truncation_errorMsgs, outputStream)
 	}
 }
 catch(AssertionError e) {
