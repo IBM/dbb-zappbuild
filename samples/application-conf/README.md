@@ -40,11 +40,19 @@ Property | Description
 --- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
 dbb.scannerMapping | zAppBuild configuration override/expansion to map files extensions to DBB dependency scanner configurations
-isSQL | File property overwrite to indicate that a file requires to include SQL parameters
-isCICS | File property overwrite to indicate that a file requires to include CICS parameters
-isMQ | File property overwrite to indicate that a file requires to include MQ parameters
-isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
+
+General file level overwrites to control the allocations of system datasets for compile and link steps or activation of preprocessing
+
+Property | Description
+--- | ---
+isSQL | File property overwrite to indicate that a file requires to include SQL preprocessing, and allocation of Db2 libraries for compile and link phase.
+isCICS | File property overwrite to indicate that a file requires to include CICS preprocessing, and allocation of CICS libraries for compile and link phase. Also used to indicate if a *batch* module is executed under CICS for pulling appropriate language interface modules for Db2 or MQ. 
+isMQ | File property overwrite to indicate that a file requires to include MQ libraries for compile and link phase.
+isDLI | File property overwrite to indicate that a file requires to include DLI 
+isIMS | File property flag to indicate IMS batch and online programs to allocate the IMS RESLIB library during link phase (Compared to the other 4 above flags, the isIMS flag is a pure file property, and not computed by the DBB scanners). 
+
+Please note that the above file property settings `isCICS` and `isIMS` are also used to control the allocations when processing link cards with `LinkEdit.groovy` to include the appropriate runtime specific language interfaces.
 
 ### reports.properties
 Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
