@@ -42,10 +42,10 @@ def assertBuildProperties(String requiredProps) {
  */
 def createFullBuildList() {
 	Set<String> buildSet = new HashSet<String>()
-	
+
 	// PropertyMappings
 	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-	
+
 	// create the list of build directories
 	List<String> srcDirs = []
 	if (props.applicationSrcDirs)
@@ -55,13 +55,13 @@ def createFullBuildList() {
 		dir = getAbsolutePath(dir)
 		Set<String> fileSet =getFileSet(dir, true, '**/*.*', props.excludeFileList)
 		buildSet.addAll(fileSet)
-		
+
 		// capture abbreviated gitHash for all buildable files
 		String abbrevHash = gitUtils.getCurrentGitHash(dir, true)
 		buildSet.forEach { buildableFile ->
 			githashBuildableFilesMap.addFilePattern(abbrevHash, buildableFile)
 		}
-		
+
 	}
 
 	return buildSet
@@ -100,19 +100,24 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
-		new CopyToPDS().file(new File(getAbsolutePath(buildFile)))
-				.dataset(srcPDS)
-				.member(CopyToPDS.createMemberName(buildFile))
-				.execute()
+		try {
+			new CopyToPDS().file(new File(getAbsolutePath(buildFile)))
+					.dataset(srcPDS)
+					.member(CopyToPDS.createMemberName(buildFile))
+					.execute()
+		} catch (BuildException e) { // Catch potential exceptions like file truncation
+			String errorMsg = "*! (BuildUtilities.copySourceFiles)  CopyToPDS of buildFile ${buildFile} failed with an exception \n ${e.getMessage()}."
+			throw new BuildException(errorMsg)
+		}
 	}
-	
+
 	if (dependencyDatasetMapping && props.userBuildDependencyFile && props.userBuild) {
 		if (props.verbose) println "*** User Build Dependency File Detected. Skipping DBB Dependency Resolution."
 		// userBuildDependencyFile present (passed from the IDE)
 		// Skip dependency resolution, extract dependencies from userBuildDependencyFile, and copy directly dataset
 		// Load property mapping containing the map of targetPDS and dependencyfile
 		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
-		
+
 		// parse JSON and validate fields of userBuildDependencyFile
 		def depFileData = validateDependencyFile(buildFile, props.userBuildDependencyFile)
 
@@ -145,26 +150,31 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependencyLoc.lastIndexOf('.')
-				if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
-					new CopyToPDS().file(new File(dependencyLoc))
-							.copyMode(CopyMode.BINARY)
-							.dataset(dependencyPDS)
-							.member(memberName)
-							.execute()
-				}
-				else
-				{
-					new CopyToPDS().file(new File(dependencyLoc))
-							.dataset(dependencyPDS)
-							.member(memberName)
-							.execute()
+				try {
+					if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
+						new CopyToPDS().file(new File(dependencyLoc))
+								.copyMode(CopyMode.BINARY)
+								.dataset(dependencyPDS)
+								.member(memberName)
+								.execute()
+					}
+					else
+					{
+						new CopyToPDS().file(new File(dependencyLoc))
+								.dataset(dependencyPDS)
+								.member(memberName)
+								.execute()
+					}
+				} catch (BuildException e) { // Catch potential exceptions like file truncation
+					String errorMsg = "*! (BuildUtilities.copySourceFiles)  CopyToPDS of dependency ${dependencyLoc} failed with an exception ${e.getMessage()}."
+					throw new BuildException(errorMsg)
 				}
 			}
 		}
 	}
 	else if (dependencyDatasetMapping && dependencyResolver) {
 		// resolve the logical dependencies to physical files to copy to data sets
-		
+
 		List<PhysicalDependency> physicalDependencies = resolveDependencies(dependencyResolver, buildFile)
 
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
@@ -177,18 +187,18 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				printPhysicalDependencies(physicalDependencies)
 			}
 		}
-		
+
 		physicalDependencies.each { physicalDependency ->
 			// Write Physical Dependency details to log on verbose, not on formatConsoleOutput
 			if (props.verbose && !(props.formatConsoleOutput && props.formatConsoleOutput.toBoolean())) 	println physicalDependency
-			
+
 			if (physicalDependency.isResolved()) {
 
 				// obtain target dataset based on Mappings
 				// Order :
 				//    1. langprefix_dependenciesAlternativeLibraryNameMapping based on the library setting recognized by DBB (COBOL and PLI)
-				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation 
-				String dependencyPDS 
+				//    2. langprefix_dependenciesDatasetMapping as a manual overwrite to determine an alternative library used in the default dd concatentation
+				String dependencyPDS
 				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
 					dependencyPDS = props.getProperty(parseJSONStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
@@ -207,19 +217,23 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
 						//retrieve zUnitFileExtension plbck
 						zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
-
-						if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
-							new CopyToPDS().file(new File(physicalDependencyLoc))
-									.copyMode(CopyMode.BINARY)
-									.dataset(dependencyPDS)
-									.member(memberName)
-									.execute()
-						} else
-						{
-							new CopyToPDS().file(new File(physicalDependencyLoc))
-									.dataset(dependencyPDS)
-									.member(memberName)
-									.execute()
+						try {
+							if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
+								new CopyToPDS().file(new File(physicalDependencyLoc))
+										.copyMode(CopyMode.BINARY)
+										.dataset(dependencyPDS)
+										.member(memberName)
+										.execute()
+							} else
+							{
+								new CopyToPDS().file(new File(physicalDependencyLoc))
+										.dataset(dependencyPDS)
+										.member(memberName)
+										.execute()
+							}
+						} catch (BuildException e) { // Catch potential exceptions like file truncation
+							String errorMsg = "*! (BuildUtilities.copySourceFiles)  CopyToPDS of dependency ${physicalDependencyLoc} failed with an exception \n ${e.getMessage()}."
+							throw new BuildException(errorMsg)
 						}
 					}
 				} else {
@@ -321,9 +335,9 @@ def updateBuildResult(Map args) {
  */
 
 def createLogicalFile(SearchPathDependencyResolver spDependencyResolver, String buildFile) {
-	
+
 	LogicalFile logicalFile
-	
+
 	if (props.resolveSubsystems && props.resolveSubsystems.toBoolean()) {
 		// include resolved dependencies to define file flags of logicalFile
 		logicalFile = spDependencyResolver.resolveSubsystems(buildFile,props.workspace)
@@ -416,7 +430,7 @@ def isMQ(LogicalFile logicalFile) {
  */
 def getMqStubInstruction(LogicalFile logicalFile) {
 	String mqStubInstruction
-	
+
 	if (isMQ(logicalFile)) {
 		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
 		if (isCICS(logicalFile)) {
@@ -427,9 +441,9 @@ def getMqStubInstruction(LogicalFile logicalFile) {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"
 		}
 	} else {
-		println("*! (BuildUtilities.getMqStubInstruction) MQ file attribute for ${logicalFile.getFile()} is false.")	
+		println("*! (BuildUtilities.getMqStubInstruction) MQ file attribute for ${logicalFile.getFile()} is false.")
 	}
-	
+
 	return mqStubInstruction
 }
 
@@ -570,10 +584,10 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
  * Creates a Generic PropertyRecord with the provided db2 information in bind.properties
  */
 def generateDb2InfoRecord(String buildFile){
-	
+
 	// New Generic Property Record
 	PropertiesRecord db2BindInfo = new PropertiesRecord("db2BindInfo:${buildFile}")
-	
+
 	// Link to buildFile
 	db2BindInfo.addProperty("file", buildFile)
 
@@ -586,8 +600,8 @@ def generateDb2InfoRecord(String buildFile){
 			if (bindPropertyValue != null ) db2BindInfo.addProperty("${db2Prop}",bindPropertyValue)
 		}
 	}
-		
-	return db2BindInfo		
+
+	return db2BindInfo
 }
 
 /*
@@ -596,12 +610,20 @@ def generateDb2InfoRecord(String buildFile){
  */
 def validateDependencyFile(String buildFile, String depFilePath) {
 	String[] allowedEncodings = ["UTF-8", "IBM-1047"]
-	String[] reqDepFileProps = ["fileName", "isCICS", "isSQL", "isDLI", "isMQ", "dependencies", "schemaVersion"]
+	String[] reqDepFileProps = [
+		"fileName",
+		"isCICS",
+		"isSQL",
+		"isDLI",
+		"isMQ",
+		"dependencies",
+		"schemaVersion"
+	]
 	depFilePath = getAbsolutePath(depFilePath)
 	// Load dependency file and verify existance
 	File depFile = new File(depFilePath)
 	assert depFile.exists() : "*! Dependency file not found: ${depFile.getAbsolutePath()}"
-	
+
 	// Parse the JSON file
 	String encoding = retrieveHFSFileEncoding(depFile) // Determine the encoding from filetag
 	JsonSlurper slurper = new JsonSlurper().setType(JsonParserType.INDEX_OVERLAY) // Use INDEX_OVERLAY, fastest parser
@@ -616,7 +638,7 @@ def validateDependencyFile(String buildFile, String depFilePath) {
 		depFileData = slurper.parse(depFile) // Assume default encoding for system
 	}
 	if (props.verbose) println new JsonBuilder(depFileData).toPrettyString() // Pretty print if verbose
-	
+
 	// Validate JSON structure
 	reqDepFileProps.each { depFileProp ->
 		assert depFileData."${depFileProp}" != null : "*! Missing required dependency file field '$depFileProp'"
@@ -650,8 +672,8 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
 				assert (label as int) >= ((requiredVersionList[i]) as int) : "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
 				if (label > requiredVersionList[i]) foundValidVersion = true
 			}
-		
-	}
+
+		}
 
 	} catch(AssertionError e) {
 		println "Current DBB Toolkit Version $currentVersion does not meet the minimum required version $requiredVersion. EXIT."
@@ -666,12 +688,12 @@ def assertDbbBuildToolkitVersion(String currentVersion, String requiredVersion){
  */
 def retrieveHFSFileEncoding(File file) {
 	FileAttribute.Stat stat = FileAttribute.getStat(file.getAbsolutePath())
-    FileAttribute.Tag tag = stat.getTag()
+	FileAttribute.Tag tag = stat.getTag()
 	int i = 0
 	if (tag != null)
 	{
-  		char x = tag.getCodeCharacterSetID()
-  		i = (int) x
+		char x = tag.getCodeCharacterSetID()
+		i = (int) x
 	}
 
 	switch(i) {
@@ -679,7 +701,7 @@ def retrieveHFSFileEncoding(File file) {
 		case 1208: return "UTF-8"
 		default: return "IBM-${i}"
 	}
-	
+
 }
 
 /*
@@ -689,7 +711,7 @@ def retrieveHFSFileEncoding(File file) {
 // def printResolutionRules(List<ResolutionRule> rules) {
 
 // 	println("*** Configured resulution rules:")
-	
+
 // 	// Print header of table
 // 	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
 // 	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
@@ -812,38 +834,38 @@ def matches(String file, List<PathMatcher> pathMatchers) {
  */
 def generateIdentifyStatement(String buildFile, String dsProperty) {
 
-    def String identifyStmt
+	def String identifyStmt
 
 	int maxRecordLength = dsProperty.toLowerCase().contains("library") ? 80 : 40
-	
-    if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
 
-        String member = CopyToPDS.createMemberName(buildFile)
-        String shortGitHash = getShortGitHash(buildFile)
+	if((props.mergeBuild || props.impactBuild || props.fullBuild) && MetadataStoreFactory.getMetadataStore() != null) {
 
-        if (shortGitHash != null) {
+		String member = CopyToPDS.createMemberName(buildFile)
+		String shortGitHash = getShortGitHash(buildFile)
 
-            String identifyString = props.application + "/" + shortGitHash
-            //   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
-            identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
-            if (identifyString.length() > maxRecordLength) {
-                String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
-                println(errorMsg)
-                props.error = "true"
-                updateBuildResult(errorMsg:errorMsg)
-                return null
-            } else {
-                return identifyStmt
-            }
+		if (shortGitHash != null) {
+
+			String identifyString = props.application + "/" + shortGitHash
+			//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
+			identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
+			if (identifyString.length() > maxRecordLength) {
+				String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
+				println(errorMsg)
+				props.error = "true"
+				updateBuildResult(errorMsg:errorMsg)
+				return null
 			} else {
-            println("*!* BuildUtilities.generateIdentifyStatement() - Could not obtain abbreviated git hash for $buildFile")
-            return null
-            }
+				return identifyStmt
+			}
+		} else {
+			println("*!* BuildUtilities.generateIdentifyStatement() - Could not obtain abbreviated git hash for $buildFile")
+			return null
+		}
 
-    } else {
-        return null
-        }
-    }
+	} else {
+		return null
+	}
+}
 
 /**
  * method to print the logicalFile attributes (CICS, SQL, DLI, MQ) of a scanned file 
@@ -860,16 +882,16 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
  * This is implementing 
  * https://github.com/IBM/dbb-zappbuild/issues/339
  *  
-*/
+ */
 
 def printLogicalFileAttributes(LogicalFile logicalFile) {
 	String cicsFlag = (logicalFile.isCICS() == isCICS(logicalFile)) ? "${logicalFile.isCICS()}" : "${isCICS(logicalFile)}*"
 	String sqlFlag = (logicalFile.isSQL() == isSQL(logicalFile)) ? "${logicalFile.isSQL()}" : "${isSQL(logicalFile)}*"
 	String dliFlag = (logicalFile.isDLI() == isDLI(logicalFile)) ? "${logicalFile.isDLI()}" : "${isDLI(logicalFile)}*"
 	String mqFlag = (logicalFile.isMQ() == isMQ(logicalFile)) ? "${logicalFile.isMQ()}" : "${isMQ(logicalFile)}*"
-	
+
 	println "Program attributes: CICS=$cicsFlag, SQL=$sqlFlag, DLI=$dliFlag, MQ=$mqFlag"
-	
+
 }
 
 /**
@@ -901,4 +923,5 @@ def isGeneratedzUnitTestCaseProgram(String buildFile) {
 	}
 	return false
 }
+
 
