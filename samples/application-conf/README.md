@@ -176,6 +176,7 @@ pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
+pli_compileIMSParms | Default IMS compile parameters. Appended to parms for file with `isIMS` flag turned on. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
