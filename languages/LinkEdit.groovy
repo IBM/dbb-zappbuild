@@ -109,13 +109,16 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
-
+	
 	if (props.debug && props.SEQAMOD)
 		linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
 
-	if (props.SDFHLOAD)
+	if (buildUtils.isCICS(logicalFile)
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-	
+
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+			
 	if (props.SDSNLOAD)
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

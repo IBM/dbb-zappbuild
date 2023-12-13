@@ -425,6 +425,18 @@ def isMQ(LogicalFile logicalFile) {
 }
 
 /*
+ * isIMS - tests to see if the program is a DL/I program. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isIMS(LogicalFile logicalFile) {
+	isIMS = false
+	String imsFlag = props.getFileProperty('isIMS', logicalFile.getFile())
+	if (imsFlag)
+		isIMS = imsFlag.toBoolean()
+	return isIMS
+}
+
+/*
  * getMqStubInstruction -
  *  returns include defintion for mq sub program for link edit
  */
@@ -435,7 +447,7 @@ def getMqStubInstruction(LogicalFile logicalFile) {
 		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
 		if (isCICS(logicalFile)) {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQCSTUB)\n"
-		} else if (isDLI(logicalFile)) {
+		} else if (isDLI(logicalFile) || isIMS(logicalFile)) {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQQSTUB)\n"
 		} else {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"
@@ -556,7 +568,8 @@ def retrieveLastBuildResult(){
 }
 
 /*
- * returns the deployType for a logicalFile depending on the isCICS, isDLI setting
+ * returns the deployType for a logicalFile depending on the
+ * isCICS, isIMS and isDLI setting
  */
 def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFile){
 	// getDefault
@@ -569,6 +582,9 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 			if(isCICS(logicalFile)){ // if CICS
 				String cicsDeployType = props.getFileProperty("${langQualifier}_deployTypeCICS", buildFile)
 				if (cicsDeployType != null) deployType = cicsDeployType
+			} else if (isIMS(logicalFile)){
+				String imsDeployType = props.getFileProperty("${langQualifier}_deployTypeIMS", buildFile)
+				if (imsDeployType != null) deployType = imsDeployType
 			} else if (isDLI(logicalFile)){
 				String dliDeployType = props.getFileProperty("${langQualifier}_deployTypeDLI", buildFile)
 				if (dliDeployType != null) deployType = dliDeployType

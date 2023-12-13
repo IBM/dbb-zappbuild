@@ -129,6 +129,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	def parms = props.getFileProperty('pli_compileParms', buildFile) ?: ""
 	def cics = props.getFileProperty('pli_compileCICSParms', buildFile) ?: ""
 	def sql = props.getFileProperty('pli_compileSQLParms', buildFile) ?: ""
+	def ims = props.getFileProperty('pli_compileIMSParms', buildFile) ?: ""
 	def errPrefixOptions = props.getFileProperty('pli_compileErrorPrefixParms', buildFile) ?: ""
 	def compileDebugParms = props.getFileProperty('pli_compileDebugParms', buildFile)
 
@@ -142,6 +143,9 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	if (props.errPrefix)
 		parms = "$parms,$errPrefixOptions"
 
+	if (buildUtils.isIMS(logicalFile))	
+		parms = "$parms,$ims"
+		
 	// add debug options
 	if (props.debug)  {
 		parms = "$parms,$compileDebugParms"
@@ -355,6 +359,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+		
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
