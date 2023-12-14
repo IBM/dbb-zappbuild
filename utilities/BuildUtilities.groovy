@@ -447,7 +447,7 @@ def getMqStubInstruction(LogicalFile logicalFile) {
 		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
 		if (isCICS(logicalFile)) {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQCSTUB)\n"
-		} else if (isDLI(logicalFile) || isIMS(logicalFile)) {
+		} else if (isDLI(logicalFile) || isIMS(logicalFile)) {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQQSTUB)\n"
 		} else {
 			mqStubInstruction = "   INCLUDE SYSLIB(CSQBSTUB)\n"

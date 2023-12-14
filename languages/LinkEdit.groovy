@@ -112,10 +112,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	
 	if (props.debug && props.SEQAMOD)
 		linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
-
-	if (buildUtils.isCICS(logicalFile)
+		
+	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-
+		
 	if (buildUtils.isIMS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
 			
