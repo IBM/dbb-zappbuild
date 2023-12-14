@@ -662,7 +662,8 @@ def createBuildList() {
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+	// Prereq: Metadatastore Connection
+	if (metadataStore && props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
@@ -674,7 +675,8 @@ def createBuildList() {
 	}
 	
 	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+	// Prereq: Workspace containing git repos. Skipped for --userBuild build type
+	if (!props.userBuild && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
 		reportingUtils.calculateConcurrentChanges(buildSet)
 	}
