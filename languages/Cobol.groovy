@@ -197,7 +197,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.cobol_printTempOptions))
 	compile.dd(new DDStatement().name("SYSMDECK").options(props.cobol_tempOptions))
-	(1..17).toList().each { num ->
+	(1..15).toList().each { num ->
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.cobol_tempOptions))
 	}
 
@@ -384,6 +384,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 	
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+			
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

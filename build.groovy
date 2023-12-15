@@ -31,7 +31,15 @@ props.startTime = startTime.format("yyyyMMdd.HHmmss.SSS")
 println("\n** Build start at $props.startTime")
 
 // initialize build
-initializeBuildProcess(args)
+try {
+	initializeBuildProcess(args)
+} catch ( AssertionError e ) {
+	String errorMsg = e.getMessage()
+	println(errorMsg)
+	props.error = "true"
+	buildUtils.updateBuildResult(errorMsg:errorMsg)
+	finalizeBuildProcess(start:startTime, 0)
+}
 
 // create build list
 List<String> buildList = new ArrayList() 
@@ -57,13 +65,21 @@ else {
 			scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
 			def buildFiles = ScriptMappings.getMappedList(script, buildList)
-			if (buildFiles.size() > 0) {
-				if (scriptPath.startsWith('/'))
-					runScript(new File("${scriptPath}"), ['buildList':buildFiles])
-				else
-					runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+			try {
+				if (buildFiles.size() > 0) {
+					if (scriptPath.startsWith('/'))
+						runScript(new File("${scriptPath}"), ['buildList':buildFiles])
+					else
+						runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+				}
+				processCounter = processCounter + buildFiles.size()
+			} catch (BuildException | AssertionError e ) {
+				String errorMsg = e.getMessage()
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				finalizeBuildProcess(start:startTime, count:processCounter)
 			}
-			processCounter = processCounter + buildFiles.size()
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
@@ -76,10 +92,6 @@ if (processCounter == 0)
 	processCounter = buildList.size()
 
 finalizeBuildProcess(start:startTime, count:processCounter)
-
-// if error occurred signal process error
-if (props.error)
-	System.exit(1)
 
 // end script
 
@@ -96,10 +108,17 @@ def initializeBuildProcess(String[] args) {
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
-	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
-	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+	props.dbbToolkitVersion = dbbToolkitVersion
+	props.dbbToolkitBuildDate = dbbToolkitBuildDate
 	
+	File versionFile = new File("${props.zAppBuildDir}/version.properties")
+	if (versionFile.exists()) {
+		props.load(versionFile)
+		if (props.zappbuild_version) println "** Running zAppBuild Version ${props.zappbuild_version} "
+	}
+	if (props.verbose) println "** Running DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+
 	// verify required dbb toolkit
 	buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, props.requiredDBBToolkitVersion)
 
@@ -329,6 +348,8 @@ def populateBuildProperties(def opts) {
 	// need to support IDz user build parameters
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
+
+	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
 	// load build.properties
@@ -641,7 +662,8 @@ def createBuildList() {
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+	// Prereq: Metadatastore Connection
+	if (metadataStore && props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
@@ -653,7 +675,8 @@ def createBuildList() {
 	}
 	
 	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+	// Prereq: Workspace containing git repos. Skipped for --userBuild build type
+	if (!props.userBuild && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
 		reportingUtils.calculateConcurrentChanges(buildSet)
 	}
@@ -669,7 +692,6 @@ def createBuildList() {
 
 	return buildList
 }
-
 
 def finalizeBuildProcess(Map args) {
     println "***************** Finalization of the build process *****************"
@@ -722,7 +744,10 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
 		buildResult.setState(buildResult.COMPLETE)
 
-
+		// add zAppBuild and DBB toolkit version info
+		if (props.zappbuild_version) buildResult.setProperty("zAppBuildVersion", props.zappbuild_version)
+		buildResult.setProperty("DBBToolkitVersion" , "${props.dbbToolkitVersion} ${props.dbbToolkitBuildDate}")
+		
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
 		def buildResultProps = buildResult.getPropertyNames()
@@ -769,6 +794,10 @@ def finalizeBuildProcess(Map args) {
 	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
+	
+	// if error occurred signal process error
+	if (props.error)
+		System.exit(1)
 }
 
 
