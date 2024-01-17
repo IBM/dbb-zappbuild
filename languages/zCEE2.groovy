@@ -15,7 +15,7 @@ import java.nio.file.*;
 buildUtils.assertBuildProperties(props.zcee2_requiredBuildProperties)
 
 // create updated build map, removing duplicates in case of PROJECT input Type
-HashMap<String, String> updatedBuildMap = new HashMap<String, String>()
+HashMap<String, String> updatedBuildList = new HashMap<String, String>()
 
 println("** Streamlining the build list to remove duplicates")
 argMap.buildList.each { buildFile ->
@@ -36,27 +36,27 @@ argMap.buildList.each { buildFile ->
                 }
             }
             if (projectDirFound) {
-                updatedBuildMap.put(projectDir.getPath(), "PROJECT")
+                updatedBuildList.putIfAbsent(projectDir.getPath(), "PROJECT")
             } else {
                 if (props.verbose) println("!* No project directory found for file '${buildFile}'. Skipping...")
             }
         } else {
-            updatedBuildMap.put(buildFile, inputType);
+            updatedBuildList.put(buildFile, inputType);
         }
     } else {
         println("!* No Input Type mapping for file ${buildFile}, skipping it...")
     }
 }
 
-println("** Building ${updatedBuildMap.size()} API ${updatedBuildMap.size() == 1 ? 'definition' : 'definitions'} mapped to ${this.class.getName()}.groovy script")
+println("** Building ${updatedBuildList.size()} API ${updatedBuildList.size() == 1 ? 'definition' : 'definitions'} mapped to ${this.class.getName()}.groovy script")
 // sort the build list based on build file rank if provided
-HashMap<String, String> sortedMap = buildUtils.sortBuildMap(updatedBuildMap, 'zcee2_fileBuildRank')
+HashMap<String, String> sortedList = buildUtils.sortBuildListAsMap(updatedBuildList, 'zcee2_fileBuildRank')
 
 int currentBuildFileNumber = 1
 
 // iterate through build list
-sortedMap.each { buildFile, inputType ->
-    println "*** (${currentBuildFileNumber++}/${sortedMap.size()}) Building ${inputType == "PROJECT" ? 'project' : 'properties file'} $buildFile"
+sortedList.each { buildFile, inputType ->
+    println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building ${inputType == "PROJECT" ? 'project' : 'properties file'} $buildFile"
 
     String parameters = ""
     String outputDir = ""

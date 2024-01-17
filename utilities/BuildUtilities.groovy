@@ -286,9 +286,9 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
- * sortBuildMap - sorts a build Map by rank property values
+ * sortBuildListAsMap - sorts a build List stored as Map by rank property values
  */
-def sortBuildMap(HashMap<String, String> buildMap, String rankPropertyName) {
+def sortBuildListAsMap(HashMap<String, String> buildMap, String rankPropertyName) {
 	HashMap<String, String> sortedMap = [:]
 	TreeMap<Integer,HashMap<String, String>> rankings = new TreeMap<Integer,HashMap<String, String>>()
 	HashMap<String, String> unranked = new HashMap<String, String>()
