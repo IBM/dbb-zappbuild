@@ -122,15 +122,15 @@ sortedList.each { buildFile, inputType ->
         StringBuffer shellOutput = new StringBuffer()
         StringBuffer shellError = new StringBuffer()
 
-        String JAVA_HOME = props.getFileProperty('zcee2_JAVA_HOME', buildFile)
-        if (!JAVA_HOME) {
-            JAVA_HOME = System.getenv("JAVA_HOME")
+        String javaHome = props.getFileProperty('zcee2_JAVA_HOME', buildFile)
+        if (!javaHome) {
+            javaHome = System.getenv("JAVA_HOME")
         }
 
         ProcessBuilder cmd = new ProcessBuilder(zconbtPath, parameters);
         Map<String, String> env = cmd.environment();
-        env.put("JAVA_HOME", JAVA_HOME);
-        env.put("PATH", JAVA_HOME + "/bin" + ":" + env.get("PATH"))
+        env.put("JAVA_HOME", javaHome);
+        env.put("PATH", javaHome + "/bin" + ":" + env.get("PATH"))
         Process process = cmd.start()
         process.consumeProcessOutput(shellOutput, shellError)
         process.waitFor()
