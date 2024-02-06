@@ -286,6 +286,43 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
+ * sortBuildListAsMap - sorts a build List stored as Map by rank property values
+ */
+def sortBuildListAsMap(HashMap<String, String> buildMap, String rankPropertyName) {
+	HashMap<String, String> sortedMap = [:]
+	TreeMap<Integer,HashMap<String, String>> rankings = new TreeMap<Integer,HashMap<String, String>>()
+	HashMap<String, String> unranked = new HashMap<String, String>()
+
+	// sort buildFiles by rank
+	buildMap.each { buildFile, inputType ->
+		String rank = props.getFileProperty(rankPropertyName, buildFile)
+		if (rank) {
+			Integer rankNum = rank.toInteger()
+			HashMap<String, String> ranking = rankings.get(rankNum)
+			if (!ranking) {
+				ranking = new HashMap<String, String>()
+				rankings.put(rankNum, ranking)
+			}
+			ranking.put(buildFile, inputType)
+		} else {
+			unranked.put(buildFile, inputType)
+		}
+	}
+
+	// loop through rank keys adding sub lists (TreeMap automatically sorts keySet)
+	rankings.keySet().each { key ->
+		HashMap<String, String> ranking = rankings.get(key)
+		if (ranking)
+			sortedMap.putAll(ranking)
+	}
+
+	// finally add unranked buildFiles
+	sortedMap.putAll(unranked)
+
+	return sortedMap
+}
+
+/*
  * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
