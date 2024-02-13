@@ -222,7 +222,7 @@ build options:
  -cco,--cccOptions            Headless Code Coverage Collector Options
 
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
- -cds,--checkSystemDatasets   Flag to enable validation of the defined system dataset definitions.
+ -cd,--checkDatasets          Flag to enable validation of the defined system dataset definitions.
 
 Db2 MetadataStore configuration options
  -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
@@ -2099,7 +2099,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 During the initialization phase of the build, a validation of the defined system datasets can be performed. The system datasets are configured with the build property `systemDatasets` in [build-conf/build.properties](../build-conf/build.properties), which contains one or multiple references to build property files defining key-value pairs listing the system datasets. In zAppBuild the default file is called [datasets.properties](../build-conf/datasets.properties) managed in the `build-conf` folder.
 
-To enable validation of system datasets specify the option `--checkSystemDatasets`. It is available in any build scenario. Be aware that this functionality is also available as a stand-alone script and find the instructions [here](../utilities/README.md#dataset-validation-utilities)
+To enable validation of system datasets specify the option `--checkDatasets`. It is available in any build scenario. Be aware that this functionality is also available as a stand-alone script and find the instructions [here](../utilities/README.md#dataset-validation-utilities)
 
 ```
 groovyz dbb-zappbuild/build.groovy \
@@ -2110,7 +2110,7 @@ groovyz dbb-zappbuild/build.groovy \
                       --logEncoding UTF-8 \
                       --impactBuild \
                       --verbose \
-                      --checkSystemDatasets
+                      --checkDatasets
 ```
 <details>
   <summary>Build log</summary>

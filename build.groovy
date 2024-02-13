@@ -269,7 +269,7 @@ options:
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
-	cli.cds(longOpt:'checkSystemDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
+	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
@@ -458,7 +458,7 @@ def populateBuildProperties(def opts) {
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
-	if (opts.cds) props.checkSystemDatasets = 'true'
+	if (opts.cd) props.checkDatasets = 'true'
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -532,7 +532,7 @@ def populateBuildProperties(def opts) {
 	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
 	
 	// Validate system datasets
-	if (props.checkSystemDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
+	if (props.checkDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
 	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
