@@ -794,6 +794,11 @@ def finalizeBuildProcess(Map args) {
 	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
 	println("** Total build time  : $duration\n")
+
+	if (props.errorSummary) {
+		println("** Summary of error messages")
+		println("${props.errorSummary}")
+	}
 	
 	// if error occurred signal process error
 	if (props.error)

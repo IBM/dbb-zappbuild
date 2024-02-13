@@ -340,7 +340,7 @@ def updateBuildResult(Map args) {
 		if (args.errorMsg) {
 			buildResult.setStatus(buildResult.ERROR)
 			buildResult.addProperty("error", args.errorMsg)
-
+			props.errorSummary="${props.errorSummary}   ${args.errorMsg}\n"
 		}
 
 		// add warning message, but keep result status
