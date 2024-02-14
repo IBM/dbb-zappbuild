@@ -352,6 +352,20 @@ def populateBuildProperties(def opts) {
 	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
+	// validate tht workspace and outDir folders exist
+	('workspace,outDir').split(",").each { folder ->
+		workDirectory = props."$folder"
+		if (!(new File (workDirectory).exists())) {
+			println "!! The specified folder $workDirectory does not exist. Build exits."
+			System.exit(1)
+		}
+	}
+	
+	if (!(new File(props.outDir).canWrite())) {
+		println "!! User does not have WRITE permission to work output directory ${props.outDir}. Build exits."
+		System.exit(1)
+	}
+	
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
 	if (opts.v) println "** Loading property file ${buildConf}/build.properties"
