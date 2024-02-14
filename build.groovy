@@ -353,8 +353,7 @@ def populateBuildProperties(def opts) {
 	buildUtils.assertBuildProperties('workspace,outDir')
 
 	// validate tht workspace and outDir folders exist
-	('workspace,outDir').split(",").each { folder ->
-		workDirectory = props."$folder"
+	[props.workspace, props.outDir].each { workDirectory ->
 		if (!(new File (workDirectory).exists())) {
 			println "!! The specified folder $workDirectory does not exist. Build exits."
 			System.exit(1)
