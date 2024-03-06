@@ -16,7 +16,6 @@ import com.ibm.dbb.dependency.internal.*
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
-@Field def resolverUtils
 
 
 def createImpactBuildList() {
