@@ -898,7 +898,6 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 		String shortGitHash = getShortGitHash(buildFile)
 
 		if (shortGitHash != null) {
-
 			String identifyString = props.application + "/" + shortGitHash
 			//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
 			identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
@@ -909,6 +908,12 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 				updateBuildResult(errorMsg:errorMsg)
 				return null
 			} else {
+				// Split IDENTIFY after col 71
+				// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
+				identifyString = " IDENTIFY EPSCSMRT('MortgageApplicationMortgageApplicationMortgageApp/abcabcabc')"
+				if (identifyString.length() > 71) {
+					identifyString = identifyString.substring(0,71) + "\n " + identifyString.substring(71,identifyString.length())
+				}
 				return identifyStmt
 			}
 		} else {
