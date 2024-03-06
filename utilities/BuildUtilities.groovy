@@ -910,9 +910,9 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 			} else {
 				// Split IDENTIFY after col 71
 				// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
-				identifyString = " IDENTIFY EPSCSMRT('MortgageApplicationMortgageApplicationMortgageApp/abcabcabc')"
-				if (identifyString.length() > 71) {
-					identifyString = identifyString.substring(0,71) + "\n " + identifyString.substring(71,identifyString.length())
+				identifyStmt = " IDENTIFY EPSCSMRT('MortgageApplicationMortgageApplicationMortgageApp/abcabcabc')"
+				if (identifyStmt.length() > 71) {
+					identifyStmt = identifyStmt.substring(0,71) + "\n " + identifyStmt.substring(71,identifyStmt.length())
 				}
 				return identifyStmt
 			}
