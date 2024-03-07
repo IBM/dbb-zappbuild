@@ -20,6 +20,7 @@ import groovy.cli.commons.*
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
+@Field def validationUtils= loadScript(new File("utilities/DatasetValidationUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -268,6 +269,7 @@ options:
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
+	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
@@ -275,7 +277,7 @@ options:
 	cli.sl(longOpt:'scanLoad', 'Flag indicating to only scan load modules for application without building anything')
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
-	// web application credentials (overrides properties in build.properties)
+	// DBB metadatastore credentials (overrides properties in build.properties)
 	cli.url(longOpt:'url', args:1, 'Db2 JDBC URL for the MetadataStore. Example: jdbc:db2:<Db2 server location>')
 	cli.id(longOpt:'id', args:1, 'Db2 user id for the MetadataStore')
 	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
@@ -352,6 +354,18 @@ def populateBuildProperties(def opts) {
 	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
+	// Validate that workspace exists 
+	if (!(new File (props.workspace).exists())) {
+		println "!! The specified workspace folder ${props.workspace} does not exist. Build exits."
+		System.exit(1)
+	}
+	
+	// Check read/write permission of specified out/log dir if already existing 
+	if (new File (props.outDir).exists() && !(new File(props.outDir).canWrite())) {
+		println "!! User does not have WRITE permission to work output directory ${props.outDir}. Build exits."
+		System.exit(1)
+	}
+	
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
 	if (opts.v) println "** Loading property file ${buildConf}/build.properties"
@@ -456,6 +470,7 @@ def populateBuildProperties(def opts) {
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
+	if (opts.cd) props.checkDatasets = 'true'
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -527,6 +542,9 @@ def populateBuildProperties(def opts) {
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
 	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
+	
+	// Validate system datasets
+	if (props.checkDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
 	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
@@ -793,7 +811,13 @@ def finalizeBuildProcess(Map args) {
 	println("** Build State : $state")
 	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
+	if (props.errorSummary) {
+		println("** Summary of error messages")
+		println("${props.errorSummary}")
+	}
 	println("** Total build time  : $duration\n")
+
+
 	
 	// if error occurred signal process error
 	if (props.error)

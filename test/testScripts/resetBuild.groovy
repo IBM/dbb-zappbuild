@@ -4,6 +4,7 @@ import com.ibm.dbb.*
 import com.ibm.dbb.build.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
+@Field def assertionList = []
 
 println "\n**************************************************************"
 println "** Executing test script ${this.class.getName()}.groovy"

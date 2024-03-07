@@ -286,6 +286,43 @@ def sortBuildList(List<String> buildList, String rankPropertyName) {
 }
 
 /*
+ * sortBuildListAsMap - sorts a build List stored as Map by rank property values
+ */
+def sortBuildListAsMap(HashMap<String, String> buildMap, String rankPropertyName) {
+	HashMap<String, String> sortedMap = [:]
+	TreeMap<Integer,HashMap<String, String>> rankings = new TreeMap<Integer,HashMap<String, String>>()
+	HashMap<String, String> unranked = new HashMap<String, String>()
+
+	// sort buildFiles by rank
+	buildMap.each { buildFile, inputType ->
+		String rank = props.getFileProperty(rankPropertyName, buildFile)
+		if (rank) {
+			Integer rankNum = rank.toInteger()
+			HashMap<String, String> ranking = rankings.get(rankNum)
+			if (!ranking) {
+				ranking = new HashMap<String, String>()
+				rankings.put(rankNum, ranking)
+			}
+			ranking.put(buildFile, inputType)
+		} else {
+			unranked.put(buildFile, inputType)
+		}
+	}
+
+	// loop through rank keys adding sub lists (TreeMap automatically sorts keySet)
+	rankings.keySet().each { key ->
+		HashMap<String, String> ranking = rankings.get(key)
+		if (ranking)
+			sortedMap.putAll(ranking)
+	}
+
+	// finally add unranked buildFiles
+	sortedMap.putAll(unranked)
+
+	return sortedMap
+}
+
+/*
  * updateBuildResult - used by language scripts to update the build result after a build step
  */
 def updateBuildResult(Map args) {
@@ -303,7 +340,8 @@ def updateBuildResult(Map args) {
 		if (args.errorMsg) {
 			buildResult.setStatus(buildResult.ERROR)
 			buildResult.addProperty("error", args.errorMsg)
-
+			errorSummary = (props.errorSummary) ?  "${props.errorSummary}   ${args.errorMsg}\n" : "   ${args.errorMsg}\n"
+			props.put("errorSummary", "$errorSummary")
 		}
 
 		// add warning message, but keep result status
@@ -860,17 +898,21 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 		String shortGitHash = getShortGitHash(buildFile)
 
 		if (shortGitHash != null) {
-
 			String identifyString = props.application + "/" + shortGitHash
 			//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
-			identifyStmt = "  " + "IDENTIFY ${member}(\'$identifyString\')"
+			identifyStmt = " " + "IDENTIFY ${member}(\'$identifyString\')"
 			if (identifyString.length() > maxRecordLength) {
 				String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
 				println(errorMsg)
 				props.error = "true"
 				updateBuildResult(errorMsg:errorMsg)
 				return null
-			} else {
+			} else { 
+				if (identifyStmt.length() > 71) { // Split IDENTIFY after col 71
+					// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
+					identifyStmt = identifyStmt.substring(0,71) + "\n " + identifyStmt.substring(71,identifyStmt.length())
+				}
+				// return generated IDENTIFY statement
 				return identifyStmt
 			}
 		} else {
