@@ -37,6 +37,8 @@ import groovy.transform.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 // Set to keep information about which datasets where already checked/created
 @Field HashSet<String> verifiedBuildDatasets = new HashSet<String>()
 
@@ -61,7 +63,7 @@ buildList.each { buildFile ->
 		errorMsg = "*! Warning. Member name (${member}) exceeds length of 8 characters. "
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	} else {
 
 		// evaluate the datasetmapping, which maps build files to targetDataset defintions
@@ -81,7 +83,7 @@ buildList.each { buildFile ->
 				String errorMsg =  "*! Dataset options for $buildFile could not be obtained PropertyMappings <transfer_dsOptions>. "
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				metadataUtils.updateBuildResult(errorMsg:errorMsg)
 			} 
 
             // get copy mode value from Property Mappings
@@ -119,7 +121,7 @@ buildList.each { buildFile ->
 					String errorMsg = "*! The CopyToPDS return code ($rc) for $buildFile exceeded the maximum return code allowed (0)."
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg)
+					metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				}
 			} catch (BuildException e) { // Catch potential exceptions like file truncation
 				String errorMsg = "*! (Transfer.groovy)  CopyToPDS of file ${buildFile} failed with an exception \n ${e.getMessage()}."
@@ -129,7 +131,7 @@ buildList.each { buildFile ->
 			String errorMsg =  "*! Target dataset for $buildFile could not be obtained from file properties. "
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg)
+			metadataUtils.updateBuildResult(errorMsg:errorMsg)
 		}
 	}
 }

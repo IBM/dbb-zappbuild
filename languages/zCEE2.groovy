@@ -10,6 +10,7 @@ import java.nio.file.*;
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.zcee2_requiredBuildProperties)
@@ -110,7 +111,7 @@ sortedList.each { buildFile, inputType ->
         def errorMsg = "*! zconbt wasn't find at location '$zconbtPath'" 
         println(errorMsg)
         props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        metadataUtils.updateBuildResult(errorMsg:errorMsg)
     } else {
         String[] command;
 
@@ -150,7 +151,7 @@ sortedList.each { buildFile, inputType ->
             if (props.verbose)
                 println("*! zconbt error message:\n${shellError}")
             props.error = "true"
-            buildUtils.updateBuildResult(errorMsg:errorMsg)
+            metadataUtils.updateBuildResult(errorMsg:errorMsg)
         } else {
             if (props.verbose)
                 println("** zconbt output:\n${shellOutput}")

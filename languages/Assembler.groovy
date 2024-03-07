@@ -11,6 +11,8 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
+
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -84,7 +86,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
 			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
@@ -105,7 +107,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
@@ -119,7 +121,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 	
@@ -133,7 +135,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
@@ -148,7 +150,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 		else {
 			// only scan the load module if load module scanning turned on for file
@@ -156,7 +158,7 @@ sortedList.each { buildFile ->
 				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
 				if (scanLoadModule && scanLoadModule.toBoolean()) {
 					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
+					metadataUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 				}
 			}
 		}

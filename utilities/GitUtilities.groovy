@@ -27,7 +27,7 @@ def isGitDir(String dir) {
 	if (gitError) {
 		String warningMsg = "*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError"
 		println(warningMsg)
-		updateBuildResult(warningMsg:warningMsg)
+		metadataUtils.updateBuildResult(warningMsg:warningMsg)
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
@@ -80,7 +80,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
 		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($dir). Multiple references point to the same commit. ($gitBranchArr)"
 		println(warningMsg)
-		updateBuildResult(warningMsg:warningMsg)
+		metadataUtils.updateBuildResult(warningMsg:warningMsg)
 	}
 
 	// substring the branch name
@@ -96,7 +96,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 		String errorMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Error extracting current branch name: $gitBranch. Expects a origin/ segment."
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	}
 }
 
@@ -163,7 +163,7 @@ def getCurrentGitHash(String gitDir, boolean abbrev) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $gitError"
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	}
 	return gitHash.toString().trim()
 }
@@ -291,7 +291,7 @@ def getChangedFiles(String cmd) {
 		String errorMsg = "*! Error executing Git command: $cmd error: $git_error \n *! Attempting to parse unstable git command for changed files..."
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	}
 
 	for (line in git_diff.toString().split("\n")) {
@@ -423,7 +423,7 @@ def getMetadataStore() {
 /*
  * updateBuildResult - for git cmd related issues
  */
-def updateBuildResult(Map args) {
+def metadataUtils.updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 

@@ -10,7 +10,8 @@ import java.nio.file.*;
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-    
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -49,7 +50,7 @@ sortedList.each { buildFile ->
         def errorMsg = "*! gradle wasn't find at location '$gradlePath'" 
         println(errorMsg)
         props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        metadataUtils.updateBuildResult(errorMsg:errorMsg)
     } else {
         String shellEnvironment = props.getFileProperty('zcee3_shellEnvironment', buildFile)
 
@@ -83,7 +84,7 @@ sortedList.each { buildFile ->
             if (props.verbose)
                 println("*! gradle error message:\n${shellError}")
             props.error = "true"
-            buildUtils.updateBuildResult(errorMsg:errorMsg)
+            metadataUtils.updateBuildResult(errorMsg:errorMsg)
         } else {
             if (props.verbose)
                 println("** gradle output:\n${shellOutput}")
@@ -104,7 +105,7 @@ sortedList.each { buildFile ->
                 def errorMsg = "*! Error when searching for the 'api.war' file at location '${WarLocation}'"
                 println(errorMsg)
                 props.error = "true"
-                buildUtils.updateBuildResult(errorMsg:errorMsg)
+                metadataUtils.updateBuildResult(errorMsg:errorMsg)
             }   
         }
     }

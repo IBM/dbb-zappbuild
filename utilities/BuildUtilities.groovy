@@ -240,7 +240,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in either in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping"
 					println(errorMsg)
 					props.error = "true"
-					updateBuildResult(errorMsg:errorMsg)
+					metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				}
 			}
 		}
@@ -320,46 +320,6 @@ def sortBuildListAsMap(HashMap<String, String> buildMap, String rankPropertyName
 	sortedMap.putAll(unranked)
 
 	return sortedMap
-}
-
-/*
- * updateBuildResult - used by language scripts to update the build result after a build step
- */
-def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, logs[logName:logFile]
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	// update build results only in non-userbuild scenarios
-	if (metadataStore && !props.userBuild) {
-		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-		if (!buildResult) {
-			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
-			return
-		}
-
-		// add error message
-		if (args.errorMsg) {
-			buildResult.setStatus(buildResult.ERROR)
-			buildResult.addProperty("error", args.errorMsg)
-			errorSummary = (props.errorSummary) ?  "${props.errorSummary}   ${args.errorMsg}\n" : "   ${args.errorMsg}\n"
-			props.put("errorSummary", "$errorSummary")
-		}
-
-		// add warning message, but keep result status
-		if (args.warningMsg) {
-			// buildResult.setStatus(buildResult.WARNING)
-			buildResult.addProperty("warning", args.warningMsg)
-
-		}
-
-		// add logs
-		if (args.logs) {
-			args.logs.each { logName, logFile ->
-				if (logFile)
-					buildResult.addAttachment(logName, new FileInputStream(logFile))
-			}
-		}
-
-	}
 }
 
 /**
@@ -789,7 +749,7 @@ def parseJSONStringToMap(String buildProperty) {
 		String errorMsg = "*! BuildUtils.parseJSONStringToMap - Failed to parse build property $buildProperty from JSON String into a map object. Marking build as in error."
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	}
 	return map
 }
@@ -878,7 +838,7 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 				String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
 				println(errorMsg)
 				props.error = "true"
-				updateBuildResult(errorMsg:errorMsg)
+				metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				return null
 			} else {
 				return identifyStmt

@@ -212,5 +212,5 @@ def addFilePropWarningRecord(String buildFile, Map noChangeFilePattern, String e
 	def warning = warningMsg3 + " Check log or build report for more details."
 	
 	BuildReportFactory.getBuildReport().addRecord(filePropWarningInfo)
-	buildUtils.updateBuildResult(warningMsg:warning)
+	metadataUtils.updateBuildResult(warningMsg:warning)
 }

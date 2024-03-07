@@ -17,6 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
@@ -37,7 +38,7 @@ try {
 	String errorMsg = e.getMessage()
 	println(errorMsg)
 	props.error = "true"
-	buildUtils.updateBuildResult(errorMsg:errorMsg)
+	metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	finalizeBuildProcess(start:startTime, 0)
 }
 
@@ -77,7 +78,7 @@ else {
 				String errorMsg = e.getMessage()
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				finalizeBuildProcess(start:startTime, count:processCounter)
 			}
 		}
@@ -649,7 +650,7 @@ def createBuildList() {
 	// we do not need to scan them again
 	if (!props.impactBuild && !props.userBuild && !props.mergeBuild) {
 		println "** Scanning source code."
-		impactUtils.updateCollection(buildList, null, null)
+		metadataUtils.updateCollection(buildList, null, null)
 	}
 	
 	// Loading file/member level properties from member specific properties files

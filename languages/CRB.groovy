@@ -17,6 +17,8 @@ import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.crb_requiredBuildProperties)
@@ -89,7 +91,7 @@ buildList.each { buildFile ->
             String errorMsg = "*! Error executing zrb: $returnCode"
             println(errorMsg)
             props.error = "true"
-            buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.zrb.log":logFile])
+            metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.zrb.log":logFile])
         } else {
             if (props.verbose) println("*** zrb return code: $returnCode")
             println("*** Output file is ${props.buildOutDir}/$outputFile.")
@@ -115,7 +117,7 @@ def fileExists(String fileLoc){
         String errorMsg = "*! CICS Resource Builder process - $fileLoc not found."
         println(errorMsg)
         props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        metadataUtils.updateBuildResult(errorMsg:errorMsg)
         return false
     } else {
         return true

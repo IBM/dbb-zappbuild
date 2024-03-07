@@ -12,6 +12,8 @@ import java.net.URLEncoder
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 
 /**
  * This utilities script is a collection of methods for the reporting 
@@ -258,9 +260,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg)
+							metadataUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg)
+							metadataUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else
@@ -280,9 +282,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg)
+							metadataUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg)
+							metadataUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else
@@ -302,9 +304,9 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 						// update build result
 						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
 							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg)
+							metadataUtils.updateBuildResult(errorMsg:msg)
 						} else {
-							buildUtils.updateBuildResult(warningMsg:msg)
+							metadataUtils.updateBuildResult(warningMsg:msg)
 						}
 					}
 					else

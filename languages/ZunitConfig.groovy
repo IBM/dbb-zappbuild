@@ -10,6 +10,7 @@ import groovy.xml.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -196,12 +197,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 				// print warning and report
 				println warningMsg
 				printReport(reportLogFile)
-				buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile])
+				metadataUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile])
 			} else { // rc > props.zunit_maxWarnRC.toInteger()
 				props.error = "true"
 				String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 				println(errorMsg)
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
+				metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
 			}
 		}
 		else {
@@ -209,7 +210,7 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 			props.error = "true"
 			String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
 			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
 		}
 	} else { // skip evaluating Unit tests result
 		if (props.verbose) println "*** Evaluation of zUnit test result skipped, because running in preview mode."
