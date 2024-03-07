@@ -222,7 +222,7 @@ build options:
  -cco,--cccOptions            Headless Code Coverage Collector Options
 
  -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
-
+ -cd,--checkDatasets          Flag to enable validation of the defined system dataset definitions.
 
 Db2 MetadataStore configuration options
  -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
@@ -256,6 +256,7 @@ utility options
 - [Perform a Scan Source build](#perform-a-scan-source-build)
 - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
 - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Validate System Datasets](#validate-system-datasets)
 
 <!-- /TOC -->
 ### Build a Single Program
@@ -2089,6 +2090,78 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Build State : CLEAN
 ** Total files processed : 4
 ** Total build time  : 17.239 seconds
+```
+
+</details>
+
+
+### Validate System Datasets
+
+During the initialization phase of the build, a validation of the defined system datasets can be performed. The system datasets are configured with the build property `systemDatasets` in [build-conf/build.properties](../build-conf/build.properties), which contains one or multiple references to build property files defining key-value pairs listing the system datasets. In zAppBuild the default file is called [datasets.properties](../build-conf/datasets.properties) managed in the `build-conf` folder.
+
+To enable validation of system datasets specify the option `--checkDatasets`. It is available in any build scenario. Be aware that this functionality is also available as a stand-alone script and find the instructions [here](../utilities/README.md#dataset-validation-utilities)
+
+```
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose \
+                      --checkDatasets
+```
+<details>
+  <summary>Build log</summary>
+
+```
+** Build start at 20210622.082942.029
+** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Assembler.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/BMS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/MFS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PSBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/DBDgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ACBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/LinkEdit.properties
+** Overwriting build property mainBuildBranch from cli argument --propOverwrite with value develop
+** The dataset PLI.V5R2.SIBMZCMP referenced for property IBMZPLI_V52 was found.
+*! No dataset defined for property IBMZPLI_V51 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset WMQ.V9R2M4.SCSQPLIC referenced for property SCSQPLIC was found.
+** The dataset COBOL.V6R1.SIGYCOMP referenced for property SIGYCOMP_V6 was found.
+** The dataset CICSTS.V5R4.CICS.SDFHCOB referenced for property SDFHCOB was found.
+*! No dataset defined for property SIGYCOMP_V4 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset HLASM.SASMMOD1 referenced for property SASMMOD1 was found.
+** The dataset SYS1.MACLIB referenced for property MACLIB was found.
+** The dataset PDTCC.V1R8.SIPVMODA referenced for property PDTCCMOD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHLOAD referenced for property SDFHLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHMAC referenced for property SDFHMAC was found.
+** The dataset CEE.SCEEMAC referenced for property SCEEMAC was found.
+** The dataset WMQ.V9R2M4.SCSQCOBC referenced for property SCSQCOBC was found.
+** The dataset IMS.V15R1.SDFSMAC referenced for property SDFSMAC was found.
+** The dataset RDZ.V14R1.SFELLOAD referenced for property SFELLOAD was found.
+** The dataset DBC0CFG.DB2.V12.SDSNLOAD referenced for property SDSNLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHPL1 referenced for property SDFHPL1 was found.
+** The dataset WMQ.V9R2M4.SCSQLOAD referenced for property SCSQLOAD was found.
+** The dataset IMSCFG.IMSC.REFERAL referenced for property REFERAL was found.
+** The dataset DEBUG.V14R1.SEQAMOD referenced for property SEQAMOD was found.
+** The dataset DBC0CFG.SDSNEXIT referenced for property SDSNEXIT was found.
+** The dataset IMS.V15R1.SDFSRESL referenced for property SDFSRESL was found.
+** The dataset RATCFG.ZUNIT.SBZUSAMP referenced for property SBZUSAMP was found.
+** The dataset CEE.SCEELKED referenced for property SCEELKED was found.
+..... // lists of all build properties
+...
+...
 ```
 
 </details>
