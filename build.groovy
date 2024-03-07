@@ -354,15 +354,14 @@ def populateBuildProperties(def opts) {
 	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
-	// validate tht workspace and outDir folders exist
-	[props.workspace, props.outDir].each { workDirectory ->
-		if (!(new File (workDirectory).exists())) {
-			println "!! The specified folder $workDirectory does not exist. Build exits."
-			System.exit(1)
-		}
+	// Validate that workspace exists 
+	if (!(new File (props.workspace).exists())) {
+		println "!! The specified workspace folder ${props.workspace} does not exist. Build exits."
+		System.exit(1)
 	}
 	
-	if (!(new File(props.outDir).canWrite())) {
+	// Check read/write permission of specified out/log dir if already existing 
+	if (new File (props.outDir).exists() && !(new File(props.outDir).canWrite())) {
 		println "!! User does not have WRITE permission to work output directory ${props.outDir}. Build exits."
 		System.exit(1)
 	}
