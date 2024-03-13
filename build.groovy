@@ -251,7 +251,7 @@ If buildFile is a text file (*.txt) then it is assumed to be a build list file.
 options:
 	'''
 
-	def cli = new CliBuilder(usage:usage,header:header)
+	def cli = new CliBuilder(usage:usage,header:header,stopAtNonOption: false)
 	// required sandbox options
 	cli.w(longOpt:'workspace', args:1, 'Absolute path to workspace (root) directory containing all required source directories')
 	cli.a(longOpt:'application', args:1, required:true, 'Application directory name (relative to workspace)')
