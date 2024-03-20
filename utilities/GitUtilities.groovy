@@ -7,7 +7,8 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 @Field BuildProperties props = BuildProperties.getInstance()
-@Field MetadataStore metadataStore
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 
 /*
  * Tests if directory is in a local git repository
@@ -410,39 +411,4 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 	}
 
 	return changedProperties.propertyNames()
-}
-
-/** helper methods **/
-
-def getMetadataStore() {
-	if (!metadataStore)
-		metadataStore = MetadataStoreFactory.getMetadataStore()
-	return metadataStore
-}
-
-/*
- * updateBuildResult - for git cmd related issues
- */
-def metadataUtils.updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-
-	// update build results only in non-userbuild scenarios
-	if (metadataStore && !props.userBuild) {
-		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-		if (!buildResult) {
-			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
-			return
-		}
-		// add error message
-		if (args.errorMsg) {
-			buildResult.setStatus(buildResult.ERROR)
-			buildResult.addProperty("error", args.errorMsg)
-		}
-		// add warning message, but keep result status
-		if (args.warningMsg) {
-			// buildResult.setStatus(buildResult.WARNING)
-			buildResult.addProperty("warning", args.warningMsg)
-		}
-	}
 }
