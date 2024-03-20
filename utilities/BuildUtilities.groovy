@@ -9,9 +9,6 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
@@ -19,6 +16,8 @@ import groovy.ant.*
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
 
 
 /*
@@ -767,40 +766,6 @@ def getShortGitHash(String buildFile) {
 	return null
 }
 
-
-/**
- * createPathMatcherPattern
- * Generic method to build PathMatcher from a build property
- */
-
-def createPathMatcherPattern(String property) {
-	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
-	if (property) {
-		property.split(',').each{ filePattern ->
-			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
-				filePattern = "glob:$filePattern"
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
-			pathMatchers.add(matcher)
-		}
-	}
-	return pathMatchers
-}
-
-/**
- * matches
- * Generic method to validate if a file is matching any pathmatchers  
- * 
- */
-def matches(String file, List<PathMatcher> pathMatchers) {
-	def result = pathMatchers.any { matcher ->
-		Path path = FileSystems.getDefault().getPath(file);
-		if ( matcher.matches(path) )
-		{
-			return true
-		}
-	}
-	return result
-}
 
 /**
  * generates the IdentifyStatement for the Binder

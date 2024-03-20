@@ -1,6 +1,9 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
+import java.nio.file.PathMatcher
+
+@Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
 
 // Utilities to interact with the DBB Metadatastore
 //
@@ -26,7 +29,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	if (props.verbose) println "** Updating collections ${props.applicationCollectionName} and ${props.applicationOutputsCollectionName}"
 	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
-	List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
+	List<PathMatcher> excludeMatchers = matcherUtils.createPathMatcherPattern(props.excludeFileList)
 
 	verifyCollections()
 
@@ -57,7 +60,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	changedFiles.each { file ->
 
 		// make sure file is not an excluded file
-		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
+		if ( new File("${props.workspace}/${file}").exists() && !matcherUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 
 			def scanner = dependencyScannerUtils.getScanner(file)

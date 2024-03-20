@@ -13,6 +13,7 @@ import java.net.URLEncoder
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("ImpactUtilities.groovy"))
 @Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
 
 
 /**
@@ -54,10 +55,10 @@ def reportExternalImpacts(Set<String> changedFiles){
 			// collect list changes files for which the analysis should be performed
 			changedFiles.each{ changedFile ->
 
-				List<PathMatcher> fileMatchers = buildUtils.createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
+				List<PathMatcher> fileMatchers = matcherUtils.createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
 
 				// check that file is on reportExternalImpactsAnalysisFileFilter
-				if(buildUtils.matches(changedFile, fileMatchers)){
+				if(matcherUtils.matches(changedFile, fileMatchers)){
 
 					// get directly impacted candidates first
 					if (props.verbose) println("     $changedFile ")
@@ -114,7 +115,7 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	// local matchers to inspect files and collections
-	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
+	List<Pattern> collectionMatcherPatterns = matcherUtils.createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
 
 	// local variables
 	List<LogicalDependency> logicalDependencies = new ArrayList()
@@ -141,7 +142,7 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 		List<String> selectedCollections = new ArrayList()
 		metadataStore.getCollections().each{ it ->
 			cName = it.getName()
-			if (matchesPattern(cName,collectionMatcherPatterns)) selectedCollections.add(cName)
+			if (matcherUtils.matchesPattern(cName,collectionMatcherPatterns)) selectedCollections.add(cName)
 		}
 		
 		// run query
@@ -195,7 +196,7 @@ def writeExternalImpactReports(List<Collection> logicalImpactedFilesCollections,
 def calculateConcurrentChanges(Set<String> buildSet) {
 	
 		// initialize patterns
-		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
+		List<Pattern> gitRefMatcherPatterns = matcherUtils.createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
 		
 		// obtain all current remote branches
 		// TODO: Handle / Exclude branches from other repositories
@@ -210,7 +211,7 @@ def calculateConcurrentChanges(Set<String> buildSet) {
 		// Run analysis for each remoteBranch, which matches the configured criteria
 		remoteBranches.each { gitReference ->
 	
-			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
+			if (matcherUtils.matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
 	
 				Set<String> concurrentChangedFiles = new HashSet<String>()
 				Set<String> concurrentRenamedFiles = new HashSet<String>()
@@ -317,32 +318,3 @@ def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurre
 	}
 }
 
-// Internal matcher methods
-
-/**
- * create List of Regex Patterns
- */
-
-def createMatcherPatterns(String property) {
-	List<Pattern> patterns = new ArrayList<Pattern>()
-	if (property) {
-		property.split(',').each{ patternString ->
-			Pattern pattern = Pattern.compile(patternString);
-			patterns.add(pattern)
-		}
-	}
-	return patterns
-}
-
-/**
-* match a String against a list of patterns
-*/
-def matchesPattern(String name, List<Pattern> patterns) {
-   def result = patterns.any { pattern ->
-	   if (pattern.matcher(name).matches())
-	   {
-		   return true
-	   }
-   }
-   return result
-}
