@@ -109,7 +109,7 @@ def createImpactBuildList() {
 							// impactedFile found, but on Exclude List
 							//   Possible reasons: Exclude of file was defined after building the collection.
 							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
+							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
 						}
 					} else {
 						String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
@@ -421,10 +421,13 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
+				// filter excluded files
 				if ( !buildUtils.matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
+				} else {
+					if (props.verbose) println "**** $file is changed, but is excluded from build scope. See excludeFileList configuration."
 				}
 				//retrieving changed build properties
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
@@ -442,6 +445,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
+			} else {
+				if (props.verbose) println "**** $file is deleted, but not in build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
@@ -451,6 +456,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
+			} else {
+				if (props.verbose) println "**** $file is renamed, but not in build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
