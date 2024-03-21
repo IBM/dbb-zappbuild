@@ -592,34 +592,6 @@ def boolean shouldCalculateImpacts(String changedFile){
 	return true //default
 }
 
-/**
- * createPropertyDependency
- * method to add a dependency to a property key
- */
-def createPropertyDependency(String buildFile, LogicalFile logicalFile){
-	if (props.verbose) println "*** Adding LogicalDependencies for Build Properties for $buildFile"
-	// get language prefix
-	def scriptMapping = ScriptMappings.getScriptName(buildFile)
-	if(scriptMapping != null){
-		def langPrefix = buildUtils.getLangPrefix(scriptMapping)
-		// language COB
-		if (langPrefix != null ){
-			// generic properties
-			if (props."${langPrefix}_impactPropertyList"){
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
-			}
-			// cics properties
-			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
-			}
-			// sql properties
-			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
-				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
-			}
-		}
-
-	}
-}
 
 /**
  * addBuildPropertyDependencies
