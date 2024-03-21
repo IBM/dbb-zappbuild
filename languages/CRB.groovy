@@ -17,7 +17,7 @@ import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
 
 
 // verify required build properties

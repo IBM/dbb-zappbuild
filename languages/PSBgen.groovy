@@ -7,7 +7,7 @@ import groovy.transform.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
-@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
