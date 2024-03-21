@@ -234,7 +234,7 @@ def initializeBuildProcess(String[] args) {
 	}
 
 	// verify/create/clone the collections for this build
-	impactUtils.verifyCollections()
+	metadataUtils.verifyCollections()
 	
 	// loading the scanner mapping to fill the DependencyScannerRegistry  
 	dependencyScannerUtils.populateDependencyScannerRegistry()
