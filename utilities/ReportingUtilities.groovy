@@ -107,7 +107,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 /**
  * Used to inspect dbb collections for potential impacts, sub-method to reportExternalImpacts
  * 
- * Returns a collection of the identified potential impacts
+ * Returns a list of DBB collections containing the identified potential impacted logical files
  * 
  */
 
@@ -163,20 +163,23 @@ def writeExternalImpactReports(List<Collection> logicalImpactedFilesCollections,
 	logicalImpactedFilesCollections.each{ collectionImpacts ->
 
 		def List<LogicalFile> logicalImpactedFiles = collectionImpacts.getLogicalFiles()
-		def collectionName = collectionImpacts.getName()
 
-		String encodedFileName = URLEncoder.encode("externalImpacts_${collectionName}.log", "UTF-8")
-		String impactListFileLoc = "${props.buildOutDir}/${encodedFileName}"
-		if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-		File impactListFile = new File(impactListFileLoc)
-		String enc = props.logEncoding ?: 'IBM-1047'
-		impactListFile.withWriter(enc) { writer ->
+		// write reports for collections containing impact information
+		if (logicalImpactedFiles.size() > 0) {
+			def collectionName = collectionImpacts.getName()
+			String encodedFileName = URLEncoder.encode("externalImpacts_${collectionName}.log", "UTF-8")
+			String impactListFileLoc = "${props.buildOutDir}/${encodedFileName}"
+			if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
+			File impactListFile = new File(impactListFileLoc)
+			String enc = props.logEncoding ?: 'IBM-1047'
+			impactListFile.withWriter(enc) { writer ->
 
-			// write message for each file
-			logicalImpactedFiles.each{ logicalFile ->
-				if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${collectionName} ")
-				def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${collectionName}"
-				writer.write("$impactRecord\n")
+				// write message for each file
+				logicalImpactedFiles.each{ logicalFile ->
+					if (props.verbose) println("$indentationMsg Potential external impact found ${logicalFile.getLname()} (${logicalFile.getFile()}) in collection ${collectionName} ")
+					def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${collectionName}"
+					writer.write("$impactRecord\n")
+				}
 			}
 		}
 	}
@@ -203,9 +206,7 @@ def calculateConcurrentChanges(Set<String> buildSet) {
 		Set<String> remoteBranches = new HashSet<String>()
 		props.applicationSrcDirs.split(",").each { dir ->
 			dir = buildUtils.getAbsolutePath(dir)
-			if (gitUtils.isGitDir(dir)) {
-				remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-			}
+			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
 		}
 		
 		// Run analysis for each remoteBranch, which matches the configured criteria
