@@ -5,10 +5,8 @@ import com.ibm.dbb.build.*
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.PathMatcher
-import groovy.json.JsonSlurper
 import groovy.transform.*
 import java.util.regex.*
-import com.ibm.dbb.dependency.internal.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()

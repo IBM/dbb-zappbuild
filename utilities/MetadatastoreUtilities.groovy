@@ -4,6 +4,7 @@ import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import java.nio.file.PathMatcher
 import groovy.transform.*
+import com.ibm.dbb.dependency.internal.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
