@@ -276,7 +276,7 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 	// get language prefix
 	def scriptMapping = ScriptMappings.getScriptName(buildFile)
 	if(scriptMapping != null){
-		def langPrefix = buildUtils.getLangPrefix(scriptMapping)
+		def langPrefix = scriptName.takeWhile{it != '.' && it != '_'}.toLowerCase()
 		// language COB
 		if (langPrefix != null ){
 			// generic properties
