@@ -4,6 +4,7 @@ import com.ibm.dbb.dependency.*
 import java.nio.file.PathMatcher
 import groovy.transform.*
 
+@Field BuildProperties props = BuildProperties.getInstance()
 @Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
 
 // Utilities to interact with the DBB Metadatastore
