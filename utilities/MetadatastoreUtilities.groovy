@@ -42,18 +42,16 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	deletedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
-		logicalFile = buildUtils.relativizePath(file)
-		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
-		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(file)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(file)
 	}
 
 	// remove renamed files from collection
 	renamedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
-		logicalFile = buildUtils.relativizePath(file)
-		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
-		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(file)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(file)
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
@@ -161,7 +159,7 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
 	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
-		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
+		LogicalFile scannerLogicalFile = scanner.scan(buildFile, loadPDS)
 		if (props.verbose) println "*** Logical file = \n$scannerLogicalFile"
 
 		// overwrite original logicalDependencies with load module dependencies
