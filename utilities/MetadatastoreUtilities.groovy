@@ -7,6 +7,7 @@ import groovy.transform.*
 
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 
 // Utilities to interact with the DBB Metadatastore
 //
