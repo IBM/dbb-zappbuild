@@ -1,6 +1,7 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
+import com.ibm.dbb.build.*
 import java.nio.file.PathMatcher
 import groovy.transform.*
 
