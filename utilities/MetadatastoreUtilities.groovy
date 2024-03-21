@@ -263,3 +263,37 @@ def updateBuildResult(Map args) {
 
 	}
 }
+
+
+// Internal methods
+
+/**
+ * sortFileList
+ * sort a list, putting the lines that defines files mapped as zUnit CFG files to the end
+ */
+def sortFileList(list) {
+	
+	return list.sort{s1, s2 ->
+		if (isMappedAsZUnitConfigFile(s1)) {
+			if (isMappedAsZUnitConfigFile(s2)) {
+				return 0;
+			} else {
+				return 1;
+			}
+		} else {
+			if (isMappedAsZUnitConfigFile(s2)) {
+				return -1;
+			} else {
+				return 0;
+			}
+		}
+	}
+}
+
+/**
+ * isMappedAsZUnitConfigFile
+ * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
+ */
+def isMappedAsZUnitConfigFile(String file) {
+	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+}
