@@ -17,7 +17,7 @@ import groovy.cli.commons.*
 @Field def gitUtils= loadScript(new File("utilities/GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("utilities/ImpactUtilities.groovy"))
-@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("utilities/MetadatastoreUtilities.groovy"))
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
