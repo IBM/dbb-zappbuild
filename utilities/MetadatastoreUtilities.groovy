@@ -284,16 +284,48 @@ def createPropertyDependency(String buildFile, LogicalFile logicalFile){
 				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyList", logicalFile)
 			}
 			// cics properties
-			if (buildUtils.isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
+			if (isCICS(logicalFile) && props."${langPrefix}_impactPropertyListCICS") {
 				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListCICS", logicalFile)
 			}
 			// sql properties
-			if (buildUtils.isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
+			if (isSQL(logicalFile) && props."${langPrefix}_impactPropertyListSQL") {
 				addBuildPropertyDependencies(props."${langPrefix}_impactPropertyListSQL", logicalFile)
 			}
 		}
 
 	}
+}
+
+// Internal methods
+
+/*
+ * isCICS - tests to see if the program is a CICS program. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isCICS(LogicalFile logicalFile) {
+	boolean isCICS = logicalFile.isCICS()
+	if (!isCICS) {
+		String cicsFlag = props.getFileProperty('isCICS', logicalFile.getFile())
+		if (cicsFlag)
+			isCICS = cicsFlag.toBoolean()
+	}
+
+	return isCICS
+}
+
+/*
+ * isSQL - tests to see if the program is an SQL program. If the logical file is false, then
+ * check to see if there is a file property.
+ */
+def isSQL(LogicalFile logicalFile) {
+	boolean isSQL = logicalFile.isSQL()
+	if (!isSQL) {
+		String sqlFlag = props.getFileProperty('isSQL', logicalFile.getFile())
+		if (sqlFlag)
+			isSQL = sqlFlag.toBoolean()
+	}
+
+	return isSQL
 }
 
 /**
@@ -325,4 +357,18 @@ def sortFileList(list) {
  */
 def isMappedAsZUnitConfigFile(String file) {
 	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+}
+
+/**
+ * addBuildPropertyDependencies
+ * method to logical dependencies records to a logical file for a DBB build property
+ */
+def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile){
+	String[] buildProps = buildProperties.split(',')
+
+	buildProps.each { buildProp ->
+		buildProp = buildProp.trim()
+		if (props.verbose) println "*** Adding LogicalDependency for build prop $buildProp for $logicalFile.file"
+		logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","BUILDPROPERTIES","PROPERTY"))
+	}
 }

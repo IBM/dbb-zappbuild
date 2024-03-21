@@ -591,18 +591,3 @@ def boolean shouldCalculateImpacts(String changedFile){
 	
 	return true //default
 }
-
-
-/**
- * addBuildPropertyDependencies
- * method to logical dependencies records to a logical file for a DBB build property
- */
-def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile){
-	String[] buildProps = buildProperties.split(',')
-
-	buildProps.each { buildProp ->
-		buildProp = buildProp.trim()
-		if (props.verbose) println "*** Adding LogicalDependency for build prop $buildProp for $logicalFile.file"
-		logicalFile.addLogicalDependency(new LogicalDependency("$buildProp","BUILDPROPERTIES","PROPERTY"))
-	}
-}
