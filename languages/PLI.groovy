@@ -12,6 +12,8 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
+
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -79,7 +81,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -99,14 +101,14 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+				metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
+						metadataUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -249,7 +251,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				metadataUtils.updateBuildResult(errorMsg:errorMsg)
 			}
 		}
 	}

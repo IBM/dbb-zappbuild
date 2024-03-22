@@ -9,9 +9,6 @@ import groovy.json.JsonSlurper
 import com.ibm.dbb.build.DBBConstants.CopyMode
 import com.ibm.dbb.build.report.records.*
 import com.ibm.jzos.FileAttribute
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.PathMatcher
 import groovy.ant.*
 
 // define script properties
@@ -19,6 +16,8 @@ import groovy.ant.*
 @Field HashSet<String> copiedFileCache = new HashSet<String>()
 @Field def gitUtils = loadScript(new File("GitUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+@Field def matcherUtils= loadScript(new File("MatcherUtilities.groovy"))
 
 
 /*
@@ -240,7 +239,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in either in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping"
 					println(errorMsg)
 					props.error = "true"
-					updateBuildResult(errorMsg:errorMsg)
+					metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				}
 			}
 		}
@@ -320,46 +319,6 @@ def sortBuildListAsMap(HashMap<String, String> buildMap, String rankPropertyName
 	sortedMap.putAll(unranked)
 
 	return sortedMap
-}
-
-/*
- * updateBuildResult - used by language scripts to update the build result after a build step
- */
-def updateBuildResult(Map args) {
-	// args : errorMsg / warningMsg, logs[logName:logFile]
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	// update build results only in non-userbuild scenarios
-	if (metadataStore && !props.userBuild) {
-		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-		if (!buildResult) {
-			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
-			return
-		}
-
-		// add error message
-		if (args.errorMsg) {
-			buildResult.setStatus(buildResult.ERROR)
-			buildResult.addProperty("error", args.errorMsg)
-			errorSummary = (props.errorSummary) ?  "${props.errorSummary}   ${args.errorMsg}\n" : "   ${args.errorMsg}\n"
-			props.put("errorSummary", "$errorSummary")
-		}
-
-		// add warning message, but keep result status
-		if (args.warningMsg) {
-			// buildResult.setStatus(buildResult.WARNING)
-			buildResult.addProperty("warning", args.warningMsg)
-
-		}
-
-		// add logs
-		if (args.logs) {
-			args.logs.each { logName, logFile ->
-				if (logFile)
-					buildResult.addAttachment(logName, new FileInputStream(logFile))
-			}
-		}
-
-	}
 }
 
 /**
@@ -759,34 +718,6 @@ def retrieveHFSFileEncoding(File file) {
 }
 
 /*
- * Logs the resolution rules of the DependencyResolver in a table format
- * 
- */
-// def printResolutionRules(List<ResolutionRule> rules) {
-
-// 	println("*** Configured resulution rules:")
-
-// 	// Print header of table
-// 	println("    " + "Library".padRight(10) + "Category".padRight(12) + "SourceDir/File".padRight(50) + "Directory".padRight(36) + "Collection".padRight(24) + "Archive".padRight(20))
-// 	println("    " + " ".padLeft(10,"-") + " ".padLeft(12,"-") + " ".padLeft(50,"-") + " ".padLeft(36,"-") + " ".padLeft(24,"-") + " ".padLeft(20,"-"))
-
-// 	// iterate over rules configured for the dependencyResolver
-// 	rules.each{ rule ->
-// 		searchPaths = rule.getSearchPath()
-// 		searchPaths.each { DependencyPath searchPath ->
-// 			def libraryName = (rule.getLibrary() != null) ? rule.getLibrary().padRight(10) : "N/A".padRight(10)
-// 			def categoryName = (rule.getCategory() != null) ? rule.getCategory().padRight(12) : "N/A".padRight(12)
-// 			def srcDir = (searchPath.getSourceDir() != null) ? searchPath.getSourceDir().padRight(50) : "N/A".padRight(50)
-// 			def directory = (searchPath.getDirectory() != null) ? searchPath.getDirectory().padRight(36) : "N/A".padRight(36)
-// 			def collection = (searchPath.getCollection() != null) ? searchPath.getCollection().padRight(24) : "N/A".padRight(24)
-// 			def archiveFile = (searchPath.getArchive() != null) ? searchPath.getArchive().padRight(20) : "N/A".padRight(20)
-// 			println("    " + libraryName + categoryName + srcDir + directory + collection + archiveFile)
-
-// 		}
-// 	}
-// }
-
-/*
  * Logs information about the physical dependencies in a table format
  */
 def printPhysicalDependencies(List<PhysicalDependency> physicalDependencies) {
@@ -817,7 +748,7 @@ def parseJSONStringToMap(String buildProperty) {
 		String errorMsg = "*! BuildUtils.parseJSONStringToMap - Failed to parse build property $buildProperty from JSON String into a map object. Marking build as in error."
 		println(errorMsg)
 		props.error = "true"
-		updateBuildResult(errorMsg:errorMsg)
+		metadataUtils.updateBuildResult(errorMsg:errorMsg)
 	}
 	return map
 }
@@ -835,40 +766,6 @@ def getShortGitHash(String buildFile) {
 	return null
 }
 
-
-/**
- * createPathMatcherPattern
- * Generic method to build PathMatcher from a build property
- */
-
-def createPathMatcherPattern(String property) {
-	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
-	if (property) {
-		property.split(',').each{ filePattern ->
-			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
-				filePattern = "glob:$filePattern"
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
-			pathMatchers.add(matcher)
-		}
-	}
-	return pathMatchers
-}
-
-/**
- * matches
- * Generic method to validate if a file is matching any pathmatchers  
- * 
- */
-def matches(String file, List<PathMatcher> pathMatchers) {
-	def result = pathMatchers.any { matcher ->
-		Path path = FileSystems.getDefault().getPath(file);
-		if ( matcher.matches(path) )
-		{
-			return true
-		}
-	}
-	return result
-}
 
 /**
  * generates the IdentifyStatement for the Binder
@@ -905,7 +802,7 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 				String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
 				println(errorMsg)
 				props.error = "true"
-				updateBuildResult(errorMsg:errorMsg)
+				metadataUtils.updateBuildResult(errorMsg:errorMsg)
 				return null
 			} else { 
 				if (identifyStmt.length() > 71) { // Split IDENTIFY after col 71

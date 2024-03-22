@@ -11,6 +11,8 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
+
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -58,10 +60,10 @@ sortedList.each { buildFile ->
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.asm.log")
 	if (logFile.exists())
 		logFile.delete()
-	MVSExec assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
-	MVSExec assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
-	MVSExec assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
-	MVSExec debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
+	MVSExec assembler_SQLTranslator
+	MVSExec assembler_CICSTranslator
+	MVSExec assembler
+	MVSExec debugSideFile
 	MVSExec linkEdit 
 	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
@@ -76,6 +78,7 @@ sortedList.each { buildFile ->
 
 	// SQL preprocessor
 	if (buildUtils.isSQL(logicalFile)){
+		assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
 		rc = assembler_SQLTranslator.execute()
 		maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
 		
@@ -83,7 +86,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
 			String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
@@ -96,6 +99,7 @@ sortedList.each { buildFile ->
 
 	// CICS preprocessor
 	if (rc <= maxRC && buildUtils.isCICS(logicalFile)){
+		assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
 		rc = assembler_CICSTranslator.execute()
 		maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
 		
@@ -103,12 +107,13 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
 	// Assembler
 	if (rc <= maxRC) {
+		assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
 		rc = assembler.execute()
 		maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
@@ -116,12 +121,13 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 	
 	// create sidefile
 	if (rc <= maxRC && props.debug) {
+		debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
 		rc = debugSideFile.execute()
 		maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
 		
@@ -129,7 +135,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
@@ -144,7 +150,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 		else {
 			// only scan the load module if load module scanning turned on for file
@@ -152,7 +158,7 @@ sortedList.each { buildFile ->
 				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
 				if (scanLoadModule && scanLoadModule.toBoolean()) {
 					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
+					metadataUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -194,12 +200,9 @@ sortedList.each { buildFile ->
 
 def createAssemblerSQLTranslatorCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 
-	// TODO -> build-conf/assembler.properties: Externalise pgm 
-	// TODO: Externalise parm
 	String assembler_db2precompiler = props.getFileProperty('assembler_db2precompiler', buildFile)
 	String assembler_db2precompilerParms = props.getFileProperty('assembler_db2precompilerParms', buildFile)
 	
-			
 	MVSExec assembler_SQLtranslator = new MVSExec().file(buildFile).pgm(assembler_db2precompiler).parm(assembler_db2precompilerParms)
 
 	// add DD statements to the compile command
@@ -248,7 +251,6 @@ def createAssemblerSQLTranslatorCommand(String buildFile, LogicalFile logicalFil
 
 def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 
-	// TODO: Externalise DFH pgm
 	String assember_cicsprecompiler = props.getFileProperty('assember_cicsprecompiler', buildFile)
 	String assember_cicsprecompilerParms = props.getFileProperty('assember_cicsprecompilerParms', buildFile)
 	

@@ -7,6 +7,8 @@ import com.ibm.dbb.build.report.*
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("MetadatastoreUtilities.groovy"))
+
 
 /*
  * Loading file level properties for all files on the buildList or list which is passed to this method.
@@ -212,5 +214,5 @@ def addFilePropWarningRecord(String buildFile, Map noChangeFilePattern, String e
 	def warning = warningMsg3 + " Check log or build report for more details."
 	
 	BuildReportFactory.getBuildReport().addRecord(filePropWarningInfo)
-	buildUtils.updateBuildResult(warningMsg:warning)
+	metadataUtils.updateBuildResult(warningMsg:warning)
 }

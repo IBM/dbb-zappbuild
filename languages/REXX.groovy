@@ -9,6 +9,8 @@ import groovy.transform.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
+@Field def metadataUtils= loadScript(new File("${props.zAppBuildDir}/utilities/MetadatastoreUtilities.groovy"))
+
 
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
@@ -66,7 +68,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -79,14 +81,14 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+				metadataUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				if (!props.userBuild){
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('rexx_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.rexx_loadPDS, logicalFile)
+						metadataUtils.saveStaticLinkDependencies(buildFile, props.rexx_loadPDS, logicalFile)
 				}
 			}
 		}
