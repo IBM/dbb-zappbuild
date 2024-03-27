@@ -446,7 +446,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
 			} else {
-				if (props.verbose) println "**** $file is deleted, but not in build scope. See excludeFileList configuration. No follow-up processing."
+				if (props.verbose) println "**** $file is deleted, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
@@ -457,7 +457,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
 			} else {
-				if (props.verbose) println "**** $file is renamed, but not in build scope. See excludeFileList configuration. No follow-up processing."
+				if (props.verbose) println "**** $file is renamed, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
