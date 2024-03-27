@@ -22,28 +22,34 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	     String member = new File(buildFile).getName()
 	     def filePropMap = [:]
 	        
-	     // check for language configuration group level overwrite
-	     loadLanguageConfigurationProperties = props.getFileProperty('loadLanguageConfigurationProperties', buildFile)
-	     if (loadLanguageConfigurationProperties && loadLanguageConfigurationProperties.toBoolean()) {
-	         String languageConfigurationPropertyFileName = props."$member"
-	         if (languageConfigurationPropertyFileName != null) {
-	                    
-	             // String languageConfigurationPropertyFilePath = buildUtils.getAbsolutePath(props.application) + "/${propertyFilePath}/${languageConfigurationPropertyFileName}.${propertyExtention}"                    
-	             String languageConfigurationPropertyFilePath = "${props.zAppBuildDir}/build-conf/language-conf/${languageConfigurationPropertyFileName}.${propertyExtention}"
+		// check for language configuration group level overwrite
+		loadLanguageConfigurationProperties = props.getFileProperty('loadLanguageConfigurationProperties', buildFile)
+		if (loadLanguageConfigurationProperties && loadLanguageConfigurationProperties.toBoolean()) {
 
-	             File languageConfigurationPropertyFile = new File(languageConfigurationPropertyFilePath)
+			// obtain the language configuration file name
+			String languageConfigurationPropertyFileName;
+			PropertyMappings languageConfigurationPropertyMapping = new PropertyMappings("languageConfiguration")
+			 // take language configuration from file property first
+			if (languageConfigurationPropertyMapping != null) languageConfigurationPropertyFileName = languageConfigurationPropertyMapping.getValue(buildFile)
+			// if not specified, check with settings in languageConfigurationMapping.properties
+			if (languageConfigurationPropertyFileName == null) languageConfigurationPropertyFileName = props."$member" 
 
-	             if (languageConfigurationPropertyFile.exists()) {
-	                 filePropMap = loadProgramTypeProperties(languageConfigurationPropertyFileName, languageConfigurationPropertyFilePath, buildFile)                            
-	             } else {
-	                 if (props.verbose) println "***! No language configuration properties file found for ${languageConfigurationPropertyFileName}.${propertyExtention}. Defaults or already defined file properties mapped to $buildFile."
-	             }
-	                   
-	         } else {
-	             if (props.verbose) println "***! No language configuration properties file defined for $buildFile"
-	         }                    
-	            
-	     }
+			if (languageConfigurationPropertyFileName != null) {
+
+				String languageConfigurationPropertyFilePath = "${props.zAppBuildDir}/build-conf/language-conf/${languageConfigurationPropertyFileName}.${propertyExtention}"
+
+				File languageConfigurationPropertyFile = new File(languageConfigurationPropertyFilePath)
+				if (languageConfigurationPropertyFile.exists()) {
+					filePropMap = loadProgramTypeProperties(languageConfigurationPropertyFileName, languageConfigurationPropertyFilePath, buildFile)
+				} else {
+					if (props.verbose) println "***! No language configuration properties file found for ${languageConfigurationPropertyFileName}.${propertyExtention}. Defaults or already defined file properties mapped to $buildFile."
+				}
+
+			} else {
+				if (props.verbose) println "***! No language configuration properties file defined for $buildFile"
+			}
+
+		}
 	    
 	     // check for file level overwrite
 	     loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
