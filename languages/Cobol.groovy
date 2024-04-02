@@ -348,7 +348,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr'))
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
-			
+    linkedit.dd(new DDStatement().dsn("DBEHM.DBB.UB.LINK(LNKOPT)").options('shr'))
+					
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
 	if(isZUnitTestCase){
