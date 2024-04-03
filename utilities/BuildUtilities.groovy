@@ -664,11 +664,11 @@ def lookupBinderControlCard(String langQualifier, String buildFile) {
 				new CopyToPDS().file(binderControlCardFile).dataset(binderControlCardLibrary).member(member).execute()
 				retval = binderControlCardLibrary
 			} else {
-				if (props.verbose) println "***! Binder Control Card Library name ($binderControlCardLibrary) or library options ($libraryOptions) not specified."
+				if (props.verbose) println "***! Binder control card library name ($binderControlCardLibrary) or library options ($libraryOptions) not specified."
 			}
 
 		} else {
-			if (props.verbose) println "***! Binder Control Card ($binderControlCardFile) for build file $buildFile not found."
+			if (props.verbose) println "*** No binder control card ($binderControlCardFile) found for build file $buildFile."
 		}
 
 	} else {
