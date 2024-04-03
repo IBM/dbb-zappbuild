@@ -675,8 +675,7 @@ def createBuildList() {
 	    || props.filePropertyValueKeySet().getAt("loadLanguageConfigurationProperties") 
 	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
 		|| (props.loadLanguageConfigurationProperties && props.loadLanguageConfigurationProperties.toBoolean())) {
-		println "** Populating file level properties from individual artifact properties files."
-		filePropUtils.loadFileLevelPropertiesFromFile(buildList)
+		filePropUtils.loadFileLevelPropertiesFromConfigFiles(buildList)
 	}
 	
 	// Perform analysis and build report of external impacts

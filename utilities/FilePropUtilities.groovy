@@ -10,13 +10,14 @@ import com.ibm.dbb.build.report.*
 
 /*
  * Loading file level properties for all files on the buildList or list which is passed to this method.
+ * Either from language configuration configs or individual artifact properties file
  */
-def loadFileLevelPropertiesFromFile(List<String> buildList) {
+def loadFileLevelPropertiesFromConfigFiles(List<String> buildList) {
      
-	 if (props.verbose) println "* Populating file level properties overrides."
+	 println "** Loading file level properties overrides."
 
 	 buildList.each { String buildFile ->
-	     if (props.verbose) println "** Checking file property overrides for $buildFile "
+	     if (props.verbose) println "*** Loading build property overrides for $buildFile "
 	     String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
 	     String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
 	     String member = new File(buildFile).getName()
@@ -28,12 +29,13 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 
 			// obtain the language configuration file name
 			String languageConfigurationPropertyFileName;
+			// retrieve language configuration name from file property first 
 			PropertyMappings languageConfigurationPropertyMapping = new PropertyMappings("languageConfiguration")
-			 // take language configuration from file property first
 			if (languageConfigurationPropertyMapping != null) languageConfigurationPropertyFileName = languageConfigurationPropertyMapping.getValue(buildFile)
-			// if not specified, check with settings in languageConfigurationMapping.properties
+			// if not defined check language configuration name from languageConfigurationMapping.properties, which is loaded as build properties
 			if (languageConfigurationPropertyFileName == null) languageConfigurationPropertyFileName = props."$member" 
 
+			// Load properties from language configuration 
 			if (languageConfigurationPropertyFileName != null) {
 
 				String languageConfigurationPropertyFilePath = "${props.zAppBuildDir}/build-conf/language-conf/${languageConfigurationPropertyFileName}.${propertyExtention}"
@@ -42,16 +44,16 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 				if (languageConfigurationPropertyFile.exists()) {
 					filePropMap = loadProgramTypeProperties(languageConfigurationPropertyFileName, languageConfigurationPropertyFilePath, buildFile)
 				} else {
-					if (props.verbose) println "***! No language configuration properties file found for ${languageConfigurationPropertyFileName}.${propertyExtention}. Defaults or already defined file properties mapped to $buildFile."
+					if (props.verbose) println "***! Language configuration properties file (${languageConfigurationPropertyFilePath}) not found."
 				}
 
 			} else {
-				if (props.verbose) println "***! No language configuration properties file defined for $buildFile"
+				if (props.verbose) println "*** No language configuration properties file defined for $buildFile"
 			}
 
 		}
 	    
-	     // check for file level overwrite
+	     // load individual artifact properties file
 	     loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
 	     if (loadFileLevelProperties && loadFileLevelProperties.toBoolean()) {
 
@@ -59,22 +61,22 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
              File fileLevelPropFile = new File(propertyFile)
 
 	         if (fileLevelPropFile.exists()) {
-	             if (props.verbose) println "*** $buildFile has an individual artifact properties file defined in ${propertyFilePath}/${member}.${propertyExtention}"
+	             if (props.verbose) println "*** Loading build properties from individual artifact properties file ${propertyFilePath}/${member}.${propertyExtention} for ${buildFile}"
 	             InputStream propertyFileIS = new FileInputStream(propertyFile)
 	             Properties fileLevelProps = new Properties()
 	             fileLevelProps.load(propertyFileIS)
 
 	             fileLevelProps.entrySet().each { entry ->
-	                 if (props.verbose) println "    Found file property ${entry.key} = ${entry.value}"
+	                 if (props.verbose) println "    ${entry.key} = ${entry.value}"
 	                 filePropMap[entry.key] = entry.value 
 	             }
 	         } else {
-	             if (props.verbose) println "***! No property file found for $buildFile. Build will take the defaults or already defined file properties."
+	             if (props.verbose) println "***! No individual artifact properties file found for $buildFile."
 	         }
 	     }
 	        
 	     // Add the file patterns from file property map after checking the existence of the file patterns
-	     if (props.verbose) println "*** Checking for existing file property overrides"
+	     if (props.verbose && filePropMap.size() > 0) println "*** Validating file property overrides"
 	     filePropMap.each { entry ->
 	         // Check if the file property definition already exists
 	         (filePatternIsMapped, filePatternIsMappedAtFileName, noChangeFilePattern, currValue) = checkExistingFilesPropertyDefinition(buildFile, member, entry.key)
@@ -84,7 +86,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	            if (filePatternIsMappedAtFileName) {
 	                props.removeFileProperty(entry.key)
 	                noChangeFilePattern.each { noChangeFile ->
-	                    if (props.verbose) println "       Retaining file property override ${entry.key} = ${noChangeFile.value} for ${noChangeFile.key}"
+	                    if (props.verbose) println "    Retaining existing file property override ${entry.key} = ${noChangeFile.value} for ${noChangeFile.key}"
 	                    props.addFilePattern(entry.key, noChangeFile.value, noChangeFile.key)
 	                 }
 	                 // Add the buildFile file pattern with new value    
@@ -104,7 +106,7 @@ def loadFileLevelPropertiesFromFile(List<String> buildList) {
 	            }
 	         } else {
 	             // Add the buildFile file pattern with new value    
-	             if (props.verbose) println "    Adding file property override ${entry.key} = ${entry.value} for ${buildFile}"
+	             if (props.verbose) println "    Setting file property override ${entry.key} = ${entry.value} for ${buildFile}"
 	             props.addFilePattern(entry.key, entry.value, buildFile)
 	         }
 	     }
@@ -119,14 +121,14 @@ def loadProgramTypeProperties(String languageConfigurationPropertyFileName, Stri
     def filePropMap = [:]
     String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
 	    
-    if (props.verbose) println "*** $buildFile is mapped to ${languageConfigurationPropertyFileName}.${propertyExtention}"
+    if (props.verbose) println "*** Loading build properties defined in language configuration ${languageConfigurationPropertyFileName}.${propertyExtention} for ${buildFile}"
 	    
     InputStream languageConfigurationPropertyFileIS = new FileInputStream(languageConfigurationPropertyFile)
     Properties languageConfigProps = new Properties()
     languageConfigProps.load(languageConfigurationPropertyFileIS)
 	    
     languageConfigProps.entrySet().each { entry ->
-       if (props.verbose) println "    Found language configuration property ${entry.key} = ${entry.value}"
+       if (props.verbose) println "    ${entry.key} = ${entry.value}"
        filePropMap[entry.key] = entry.value
     }
     return filePropMap
@@ -138,7 +140,6 @@ def loadProgramTypeProperties(String languageConfigurationPropertyFileName, Stri
  */
 def checkExistingFilesPropertyDefinition(String buildFile, String member, String entryKey){
 	    
-    if (props.verbose) println "    Checking build property ${entryKey}"
     PropertyMappings propertyMapping = new PropertyMappings(entryKey)
     def propertyMappingValues = propertyMapping.getValues()
     String expValue = ""
