@@ -353,7 +353,10 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (binderControlCardLookup && binderControlCardLookup.toBoolean()) {
 		// lookup binder control member and upload it
 		binderControlLibrary = buildUtils.lookupBinderControlCard(langQualifier, buildFile)
-		if (binderControlLibrary != null) linkedit.dd(new DDStatement().dsn("${binderControlLibrary}(${member})").options('shr'))
+		if (binderControlLibrary != null) {
+			if (props.verbose) println "*** Appending binder control card ${binderControlLibrary}(${member})"
+			linkedit.dd(new DDStatement().dsn("${binderControlLibrary}(${member})").options('shr'))
+		}
 	}
 					
 	// add DD statements to the linkedit command
