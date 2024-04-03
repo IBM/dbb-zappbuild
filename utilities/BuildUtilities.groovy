@@ -653,7 +653,7 @@ def lookupBinderControlCard(String langQualifier, String buildFile) {
 		File binderControlCardFile = new File(getAbsolutePath(binderControlCard))
 		if (binderControlCardFile.exists()) {
 
-			binderControlCardLibrary = props."${lang}_bndPDS"
+			binderControlCardLibrary = props."${langQualifier}_bndPDS"
 			libraryOptions = props."${langQualifier}_srcOptions"
 			if (binderControlCardLibrary && libraryOptions)	{
 				// create library
