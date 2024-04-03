@@ -295,6 +295,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linker = props.getFileProperty('cobol_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
+	String binderControlCardLookup = props.getFileProperty('cobol_binderControlCardLookup', buildFile)
 
 	// obtain githash for buildfile
 	String cobol_storeSSI = props.getFileProperty('cobol_storeSSI', buildFile)
@@ -348,7 +349,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr'))
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
-    linkedit.dd(new DDStatement().dsn("DBEHM.DBB.UB.LINK(LNKOPT)").options('shr'))
+    
+	if (binderControlCardLookup && binderControlCardLookup.toBoolean()) {
+		
+		binderControlLibrary = buildUtils.lookupBinderControlCard(langQualifier, buildFile)
+		if (binderControlLibrary != null) linkedit.dd(new DDStatement().dsn("${binderControlLibrary}(${member})").options('shr'))
+	}
 					
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
