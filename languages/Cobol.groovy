@@ -20,7 +20,7 @@ println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ?
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
 // create language datasets
-def langQualifier = "cobol"
+@Field def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
@@ -351,7 +351,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
     
 	if (binderControlCardLookup && binderControlCardLookup.toBoolean()) {
-		
+		// lookup binder control member and upload it
 		binderControlLibrary = buildUtils.lookupBinderControlCard(langQualifier, buildFile)
 		if (binderControlLibrary != null) linkedit.dd(new DDStatement().dsn("${binderControlLibrary}(${member})").options('shr'))
 	}
