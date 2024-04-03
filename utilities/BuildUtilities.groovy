@@ -647,7 +647,7 @@ def lookupBinderControlCard(String langQualifier, String buildFile) {
 
 	// Locate binder control card
 	if (binderControlCardPath) {
-		fileName = buildFile.substring(buildFile.lastIndexOf("/") + 1).substring(buildFile.lastIndexOf('.'))
+		fileName = buildFile.substring(buildFile.lastIndexOf("/") + 1, buildFile.lastIndexOf('.'))
 		def binderControlCard = replace("\\n","\n").replace('@{member}', fileName)
 		
 		File binderControlCardFile = new File(getAbsolutePath(binderControlCard))
