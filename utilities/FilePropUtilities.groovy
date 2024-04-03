@@ -17,14 +17,19 @@ def loadFileLevelPropertiesFromConfigFiles(List<String> buildList) {
 	 println "** Loading file level properties overrides."
 
 	 buildList.each { String buildFile ->
-	     if (props.verbose) println "*** Loading build property overrides for $buildFile "
-	     String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
-	     String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
-	     String member = new File(buildFile).getName()
-	     def filePropMap = [:]
+
+		loadLanguageConfigurationProperties = props.getFileProperty('loadLanguageConfigurationProperties', buildFile)
+	    loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
+
+	    if (props.verbose && (( loadLanguageConfigurationProperties && loadLanguageConfigurationProperties.toBoolean()) || (loadFileLevelProperties && loadFileLevelProperties.toBoolean())) ) {
+			println "*** Loading build property overrides for $buildFile "
+		}
+	    String propertyFilePath = props.getFileProperty('propertyFilePath', buildFile)
+	    String propertyExtention = props.getFileProperty('propertyFileExtension', buildFile)
+	    String member = new File(buildFile).getName()
+	    def filePropMap = [:] // temporary map of build properties that is used to validate for existing file property overrides
 	        
 		// check for language configuration group level overwrite
-		loadLanguageConfigurationProperties = props.getFileProperty('loadLanguageConfigurationProperties', buildFile)
 		if (loadLanguageConfigurationProperties && loadLanguageConfigurationProperties.toBoolean()) {
 
 			// obtain the language configuration file name
@@ -54,7 +59,6 @@ def loadFileLevelPropertiesFromConfigFiles(List<String> buildList) {
 		}
 	    
 	     // load individual artifact properties file
-	     loadFileLevelProperties = props.getFileProperty('loadFileLevelProperties', buildFile)
 	     if (loadFileLevelProperties && loadFileLevelProperties.toBoolean()) {
 
              String propertyFile = buildUtils.getAbsolutePath(props.application) + "/${propertyFilePath}/${member}.${propertyExtention}"
