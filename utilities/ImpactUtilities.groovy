@@ -324,28 +324,15 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		// get the baseline hash for all build directories
 		directories.each { dir ->
 			dir = buildUtils.getAbsolutePath(dir)
+
 			if (props.verbose) println "** Getting baseline hash for directory $dir"
 			String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-			String relDir = buildUtils.relativizePath(dir)
+
 			String hash
 			// retrieve baseline reference overwrite if set
 			if (props.baselineRef){
-				String[] baselineMap = (props.baselineRef).split(",")
-				baselineMap.each{
-					// case: baselineRef (gitref)
-					if(it.split(":").size()==1 && relDir.equals(props.application)){
-						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-						hash = it
-					}
-					// case: baselineRef (folder:gitref)
-					else if(it.split(":").size()>1){
-						(appSrcDir, gitReference) = it.split(":")
-						if (appSrcDir.equals(relDir)){
-							if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-							hash = gitReference
-						}
-					}
-				}
+				// get user-provided baseline configuration from cli config 
+				hash = buildUtils.getUserProvidedBaselineRef(dir)
 				// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
 				if (hash == null && lastBuildResult) {
 					hash = lastBuildResult.getProperty(key)
