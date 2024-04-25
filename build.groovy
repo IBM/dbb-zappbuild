@@ -587,7 +587,7 @@ def createBuildList() {
 	// check if impact build
 	else if (props.impactBuild) {
 		if (props.baselineRef) {
-			println "** --impactBuild --baselineRef ${props.baselienRef} option selected. $action impacted programs for application ${props.application} "
+			println "** --impactBuild --baselineRef ${props.baselineRef} option selected. $action impacted programs for application ${props.application} "
 		} else {
 			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		}
