@@ -611,28 +611,34 @@ def retrieveLastBuildResult(){
  */
 
 def getUserProvidedBaselineRef(String dir) {
-	
+
 	String hash
 	String relDir = relativizePath(dir)
-	
-	String[] baselineMap = (props.baselineRef).split(",")
-	baselineMap.each{
-		// case: baselineRef (gitref)
-		if(it.split(":").size()==1 && relDir.equals(props.application)){
-			if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-			hash = it
-		}
-		// case: baselineRef (folder:gitref)
-		else if(it.split(":").size()>1){
-			(appSrcDir, gitReference) = it.split(":")
-			if (appSrcDir.equals(relDir)){
+
+	if (props.baselineRef) {
+
+		String[] baselineMap = (props.baselineRef).split(",")
+		baselineMap.each{
+			// case: baselineRef (gitref)
+			if(it.split(":").size()==1 && relDir.equals(props.application)){
 				if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-				hash = gitReference
+				hash = it
 			}
-		} else {
-			// No user-provided baseline ref found for dir
+			// case: baselineRef (folder:gitref)
+			else if(it.split(":").size()>1){
+				(appSrcDir, gitReference) = it.split(":")
+				if (appSrcDir.equals(relDir)){
+					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+					hash = gitReference
+				}
+			} else {
+				// No user-provided baseline ref found for dir
+			}
 		}
+	} else {
+		// No baseline ref defined
 	}
+
 	return hash
 }
 
