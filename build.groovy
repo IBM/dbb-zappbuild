@@ -586,7 +586,11 @@ def createBuildList() {
 	}
 	// check if impact build
 	else if (props.impactBuild) {
-		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		if (props.baselineRef) {
+			println "** --impactBuild --baselineRef ${props.baselienRef} option selected. $action impacted programs for application ${props.application} "
+		} else {
+			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		}
 		if (metadataStore) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
