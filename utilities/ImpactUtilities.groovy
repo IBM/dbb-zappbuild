@@ -327,7 +327,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 			if (props.verbose) println "** Getting baseline hash for directory $dir"
 			String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
-			String relDir = relativizePath(dir)
+			String relDir = buildUtils.relativizePath(dir)
 			
 			String hash
 			// retrieve baseline reference overwrite if set
