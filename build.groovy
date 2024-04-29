@@ -586,7 +586,11 @@ def createBuildList() {
 	}
 	// check if impact build
 	else if (props.impactBuild) {
-		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		if (props.baselineRef) {
+			println "** --impactBuild --baselineRef ${props.baselineRef} option selected. $action impacted programs for application ${props.application} "
+		} else {
+			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		}
 		if (metadataStore) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
@@ -744,8 +748,9 @@ def finalizeBuildProcess(Map args) {
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
-						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
+						String userBaselineRef = (props.baselineRef) ? buildUtils.getUserProvidedBaselineRef(dir).replaceAll("origin/","") : null
+						String baselineHash = (userBaselineRef) ? userBaselineRef : lastBuildResult.getProperty(key)
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << "..." << currenthash
 						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
 						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLinkUrl"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
