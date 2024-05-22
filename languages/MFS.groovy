@@ -1,18 +1,16 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
 
-// docs: https://www.ibm.com/support/knowledgecenter/en/SSEPH2_13.1.0/com.ibm.ims13.doc.sur/ims_mfslangbatchmd.htm
+// docs: https://www.ibm.com/docs/en/ims/14.1.0?topic=dfsupaa0-running-utility-in-standard-mode
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 
-@Field RepositoryClient repositoryClient
-
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.mfs_requiredBuildProperties)
@@ -21,11 +19,12 @@ def langQualifier = "mfs"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'mfs_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'mfs_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.mfs_srcPDS, null, null, null)
@@ -35,14 +34,17 @@ sortedList.each { buildFile ->
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.mfs.log")
 	if (logFile.exists())
 		logFile.delete()
-	MVSExec phase1 = createPhase1Command(buildFile, member, logFile)
-	MVSExec phase2 = createPhase2Command(buildFile, member, logFile)
-
+		
+	// execution flags
+	phase2Execution = props.getFileProperty('mfs_phase2Execution', buildFile)
+	
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
 	job.start()
 
-	// preprocess mfs map
+	// generate phase1 command
+	MVSExec phase1 = createPhase1Command(buildFile, member, logFile)
+
 	int rc = phase1.execute()
 	int maxRC = props.getFileProperty('mfs_phase1MaxRC', buildFile).toInteger()
 
@@ -51,21 +53,26 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The phase1 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
+		// generate phase2 command
+		if (phase2Execution && phase2Execution.toBoolean()) {
 
-		rc = phase2.execute()
-		maxRC = props.getFileProperty('mfs_phase2MaxRC', buildFile).toInteger()
+			MVSExec phase2 = createPhase2Command(buildFile, member, logFile)
 
-		if (rc > maxRC) {
-			String errorMsg = "*! The phase 2 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			rc = phase2.execute()
+			maxRC = props.getFileProperty('mfs_phase2MaxRC', buildFile).toInteger()
+
+			if (rc > maxRC) {
+				String errorMsg = "*! The phase 2 return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+			}
+
 		}
 	}
-	
 	
 	// clean up passed DD statements
 	job.stop()
@@ -82,6 +89,9 @@ sortedList.each { buildFile ->
 
 /*
  * createPhase1Command - creates a MVSExec command for preprocessing the MFS Map (buildFile)
+ * 
+ * defines the MFS map as output.
+ * 
  */
 def createPhase1Command(String buildFile, String member, File logFile) {
 	
@@ -92,11 +102,15 @@ def createPhase1Command(String buildFile, String member, File logFile) {
 	// define the MVSExec command to compile the mfs map
 	MVSExec mfsPhase1 = new MVSExec().file(buildFile).pgm(props.mfs_phase1processor).parm(parameters)
 
-	mfsPhase1.dd(new DDStatement().name("SYSIN").dsn("${props.mfs_srcPDS}($member)").options("shr").report(true))
+	// add DD statements to the mfsPhase2 command
+	String deployType = buildUtils.getDeployType("mfs", buildFile, null)
 	
-	mfsPhase1.dd(new DDStatement().name("REFIN").dsn(props.REFERAL).options("shr"))
+	mfsPhase1.dd(new DDStatement().name("SYSIN").dsn("${props.mfs_srcPDS}($member)").options("shr").report(true).output(true).deployType(deployType))
+	
+	mfsPhase1.dd(new DDStatement().name("REFIN").dsn("&&REFERAL").options("${props.mfs_tempOptions} dir(10) lrecl(80) blksize(800) recfm(f,b)"))
 	mfsPhase1.dd(new DDStatement().name("REFOUT").dsn("&&TEMPPDS").options("${props.mfs_tempOptions} dir(5) lrecl(80) recfm(f,b)"))
-	mfsPhase1.dd(new DDStatement().name("REFRD").dsn(props.REFERAL).options("shr"))
+	mfsPhase1.dd(new DDStatement().name("REFRD").dsn("&&TEMPPDS").options("cyl space(5,5) unit(vio) old"))
+	mfsPhase1.dd(new DDStatement().dsn("&&REFERAL").options("cyl space(5,5) unit(vio) old"))
 	
 	mfsPhase1.dd(new DDStatement().name("SYSPRINT").options(props.mfs_tempOptions))
 	mfsPhase1.dd(new DDStatement().name("SEQBLKS").dsn("&&SEQBLK").options(props.mfs_tempOptions).pass(true))
@@ -129,10 +143,7 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 	// define the MVSExec command for MFS Language Utility - Phase 2
 	MVSExec mfsPhase2 = new MVSExec().file(buildFile).pgm(props.mfs_phase2processor).parm(parameters)
 	
-	// add DD statements to the mfsPhase2 command
-	String deployType = buildUtils.getDeployType("mfs", buildFile, null)
-	
-	mfsPhase2.dd(new DDStatement().name("FORMAT").dsn(props.mfs_tformatPDS).options("shr").output(true).deployType(deployType))
+	mfsPhase2.dd(new DDStatement().name("FORMAT").dsn(props.mfs_tformatPDS).options("shr"))
 	// mfsPhase2.dd(new DDStatement().name("DUMMY").dsn("${props.PROCLIB}(FMTCPY)").options("shr"))
 	mfsPhase2.dd(new DDStatement().name("TASKLIB").dsn(props.SDFSRESL).options("shr"))
 	
@@ -146,13 +157,3 @@ def createPhase2Command(String buildFile, String member, File logFile) {
 	
 	return mfsPhase2
 }
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
-
-
-

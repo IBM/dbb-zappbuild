@@ -3,10 +3,13 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -21,9 +24,10 @@ impactBuildCommand << "--application ${props.app}"
 impactBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
-impactBuildCommand << "--url ${props.url}"
-impactBuildCommand << "--id ${props.id}"
-impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+impactBuildCommand << (props.url ? "--url ${props.url}" : "")
+impactBuildCommand << (props.id ? "--id ${props.id}" : "")
+impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 impactBuildCommand << (props.verbose ? "--verbose" : "")
 impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 impactBuildCommand << "--impactBuild"
@@ -34,16 +38,22 @@ PropertyMappings filesBuiltMappings = new PropertyMappings('impactBuild_expected
 def changedFiles = props.impactBuild_changedFiles.split(',')
 println("** Processing changed files from impactBuild_changedFiles property : ${props.impactBuild_changedFiles}")
 try {
+	
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
+	
+	// test setup
 	changedFiles.each { changedFile ->
 		println "\n** Running impact build test for changed file $changedFile"
 		
 		// update changed file in Git repo test branch
-		copyAndCommit(changedFile)
+		testUtils.updateFileAndCommit(props.appLocation, changedFile)
+
 		
 		// run impact build
 		println "** Executing ${impactBuildCommand.join(" ")}"
-		def outputStream = new StringBuffer()
-		def process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
+		outputStream = new StringBuffer()
+		process = ['bash', '-c', impactBuildCommand.join(" ")].execute()
 		process.waitForProcessOutput(outputStream, System.err)
 		
 		// validate build results
@@ -51,7 +61,7 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	// report failures
 	if (assertionList.size()>0) {
         println "\n***"
 	println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -59,25 +69,15 @@ finally {
 	println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
 	println "***"
   }
+  
+  // cleanup datasets
+  testUtils.cleanUpDatasets(props.impactBuild_datasetsToCleanUp)
 }
 // script end  
 
 //*************************************************************
 // Method Definitions
 //*************************************************************
-
-def copyAndCommit(String changedFile) {
-	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
-	def commands = """
-    cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
-    cd ${props.appLocation}/
-    git add .
-    git commit . -m "edited program file"
-"""
-	def task = ['bash', '-c', commands].execute()
-	def outputStream = new StringBuffer();
-	task.waitForProcessOutput(outputStream, System.err)
-}
 
 def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
@@ -102,17 +102,6 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
     catch(AssertionError e) {
         def result = e.getMessage()
         assertionList << result;
+		props.testsSucceeded = 'false'
  }
-}
-def cleanUpDatasets() {
-	def segments = props.impactBuild_datasetsToCleanUp.split(',')
-	
-	println "Deleting impact build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
 }

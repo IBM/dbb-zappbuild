@@ -1,8 +1,13 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
+@Field BuildProperties props = BuildProperties.getInstance()
+@Field MetadataStore metadataStore
 
 /*
  * Tests if directory is in a local git repository
@@ -20,7 +25,9 @@ def isGitDir(String dir) {
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitResponse, gitError)
 	if (gitError) {
-		println("*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError")
+		String warningMsg = "*? Warning executing isGitDir($dir). Git command: $cmd error: $gitError"
+		println(warningMsg)
+		updateBuildResult(warningMsg:warningMsg)
 	}
 	else if (gitResponse) {
 		isGit = gitResponse.toString().trim().toBoolean()
@@ -66,15 +73,31 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	}
 
 	String gitBranchString = gitBranch.toString()
-	def gitBranchArr = gitBranchString.split(',')
+	String[] gitBranchesArray = gitBranchString.split(',')
 	def solution = ""
-	for (i = 0; i < gitBranchArr.length; i++) {
-		if (gitBranchArr[i].contains("origin/")) {
-			solution = gitBranchArr[i].replaceAll(".*?/", "").trim()
+	// expecting references with "origin" as segment
+	def origin = "origin/"
+	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($gitDir). Multiple references point to the same commit. ($gitBranchString)"
+		println(warningMsg)
+		updateBuildResult(warningMsg:warningMsg)
+	}
+
+	// substring the branch name
+	for (i = 0; i < gitBranchesArray.length; i++) {
+		if (gitBranchesArray[i].contains(origin)) {
+			solution = gitBranchesArray[i].replaceAll(".*?${origin}", "").trim()
 		}
 	}
 
-	return (solution != "") ? solution : println("*! Error parsing branch name: $gitBranch")
+	if (solution != "") { // return branch name
+		return solution
+	} else {
+		String errorMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Error extracting current branch name: $gitBranch. Expects a origin/ segment."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
+	}
 }
 
 /*
@@ -137,7 +160,10 @@ def getCurrentGitHash(String gitDir, boolean abbrev) {
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitHash, gitError)
 	if (gitError) {
-		print("*! Error executing Git command: $cmd error: $gitError")
+		String errorMsg = "*! Error executing Git command: $cmd error: $gitError"
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
 	}
 	return gitHash.toString().trim()
 }
@@ -166,9 +192,10 @@ def getFileCurrentGitHash(String gitDir, String filePath) {
  * Returns the current Git url
  *
  * @param  String gitDir  		Local Git repository directory
- * @return String gitUrl       The current Git url
+ * @return String gitUrl        The current masked Git url
  */
 def getCurrentGitUrl(String gitDir) {
+	String maskedGitUrl = new String()
 	String cmd = "git -C $gitDir config --get remote.origin.url"
 	StringBuffer gitUrl = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
@@ -179,7 +206,19 @@ def getCurrentGitUrl(String gitDir) {
 	if (gitError) {
 		print("*! Error executing Git command: $cmd error: $gitError")
 	}
-	return gitUrl.toString().trim()
+
+	// Mask credentials that may be added by the pipeline orchestrator
+	// into the git remote.origin.url configuration
+	// applies only for http/https configs  	
+	// Find // and then take all until the @ char. This is where the PAT is
+	// stored
+	String regex = "(?<=.\\/\\/)[^@]*(?=@)";
+	String subst = "***";
+	Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+	Matcher matcher = pattern.matcher(gitUrl.toString().trim());
+	maskedGitUrl = matcher.replaceAll(subst);
+	
+	return maskedGitUrl
 }
 
 
@@ -249,8 +288,10 @@ def getChangedFiles(String cmd) {
 
 	// handle command error
 	if (git_error.size() > 0) {
-		println("*! Error executing Git command: $cmd error: $git_error")
-		println ("*! Attempting to parse unstable git command for changed files...")
+		String errorMsg = "*! Error executing Git command: $cmd error: $git_error \n *! Attempting to parse unstable git command for changed files..."
+		println(errorMsg)
+		props.error = "true"
+		updateBuildResult(errorMsg:errorMsg)
 	}
 
 	for (line in git_diff.toString().split("\n")) {
@@ -369,4 +410,39 @@ def getChangedProperties(String gitDir, String baseline, String currentHash, Str
 	}
 
 	return changedProperties.propertyNames()
+}
+
+/** helper methods **/
+
+def getMetadataStore() {
+	if (!metadataStore)
+		metadataStore = MetadataStoreFactory.getMetadataStore()
+	return metadataStore
+}
+
+/*
+ * updateBuildResult - for git cmd related issues
+ */
+def updateBuildResult(Map args) {
+	// args : errorMsg / warningMsg
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+
+	// update build results only in non-userbuild scenarios
+	if (metadataStore && !props.userBuild) {
+		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+		if (!buildResult) {
+			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
+			return
+		}
+		// add error message
+		if (args.errorMsg) {
+			buildResult.setStatus(buildResult.ERROR)
+			buildResult.addProperty("error", args.errorMsg)
+		}
+		// add warning message, but keep result status
+		if (args.warningMsg) {
+			// buildResult.setStatus(buildResult.WARNING)
+			buildResult.addProperty("warning", args.warningMsg)
+		}
+	}
 }

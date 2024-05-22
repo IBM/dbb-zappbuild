@@ -3,10 +3,13 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script impactBuild_renaming.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -21,11 +24,12 @@ impactBuildCommand << "--application ${props.app}"
 impactBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 impactBuildCommand << "--hlq ${props.hlq}"
 impactBuildCommand << "--logEncoding UTF-8"
-impactBuildCommand << "--url ${props.url}"
-impactBuildCommand << "--id ${props.id}"
-impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+impactBuildCommand << (props.url ? "--url ${props.url}" : "")
+impactBuildCommand << (props.id ? "--id ${props.id}" : "")
+impactBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+impactBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 impactBuildCommand << "--verbose"
-impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
+impactBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles},${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_rename_buildPropSetting}" : "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.impactBuild_rename_buildPropSetting}")
 impactBuildCommand << "--impactBuild"
 
 // iterate through change files to test impact build
@@ -36,6 +40,11 @@ PropertyMappings renamedFilesMapping = new PropertyMappings('impactBuild_rename_
 
 def renameFiles = props.impactBuild_rename_renameFiles.split(',')
 try {
+	
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
+	
+	// run through tests
 	renameFiles.each{ renameFile ->
 		
 		newFilename=renamedFilesMapping.getValue(renameFile)
@@ -60,7 +69,7 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	// report failures	
 	if (assertionList.size()>0) {
 		println "\n***"
 		println "**START OF FAILED IMPACT BUILD TEST RESULTS**\n"
@@ -68,6 +77,12 @@ finally {
 		println "\n**END OF FAILED IMPACT BUILD TEST RESULTS**"
 		println "***"
 	}
+	
+	// reset test branch
+	testUtils.resetTestBranch()
+	
+	// cleanup datasets
+	testUtils.cleanUpDatasets(props.impactBuild_rename_datasetsToCleanUp)
 }
 // script end
 
@@ -113,17 +128,7 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 	catch(AssertionError e) {
 		def result = e.getMessage()
 		assertionList << result;
+		props.testsSucceeded = 'false'
 	}
 }
-def cleanUpDatasets() {
-	def segments = props.impactBuild_rename_datasetsToCleanUp.split(',')
 
-	println "Deleting impact build PDSEs ${segments}"
-	segments.each { segment ->
-		def pds = "'${props.hlq}.${segment}'"
-		if (ZFile.dsExists(pds)) {
-			if (props.verbose) println "** Deleting ${pds}"
-			ZFile.remove("//$pds")
-		}
-	}
-}

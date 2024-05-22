@@ -1,12 +1,12 @@
 # Application Configuration
 This folder contains application specific configuration properties used by the zAppBuild Groovy build and utility scripts. It is intended to be copied as a high level folder in the application repository or main application repository if the application source files are distributed across multiple repositories. Once copied to the application repository, users should review the default property files and modify any values as needed.
 
-At the beginning of the build, the `application-conf/application.properties` file will automatically be loaded into the [DBB BuildProperties class](https://www.ibm.com/support/knowledgecenter/SS6T76_1.0.4/scriptorg.html#build-properties-class). Use the `applicationPropFiles` property (see table below) to load additional application property files.
+At the beginning of the build, the `application.properties` file will automatically be searched and loaded if it exists into the [DBB BuildProperties class](https://www.ibm.com/docs/en/dbb/2.0?topic=apis-build-properties#build-properties-class). The `application.properties` file is by default searched in the `application-conf` folder of the application, but this can be configured through the `applicationConfDir` property in [build-conf/build.properties](../../build-conf/build.properties). Use the `applicationPropFiles` property (see table below) to load additional application property files.
 
-Properties can be overwritten on a per file basis through DBB Build Properties file properties. The tables below indicate which properties keys can be overwritten. It is recommended to manage these overwrites in file.properties.
+Properties can be overwritten on a per file basis through DBB Build Properties file properties. The tables below indicate which properties keys can be overwritten. It is recommended to manage these overwrites in `file.properties`.
 
 ## Property File Descriptions
-Since all properties will be loaded into a single static instance of BuildProperties, the organization and naming convention of the *property files* are somewhat arbitrary and targeted more for self documentation and understanding.
+Since all properties will be loaded into a single static instance of BuildProperties, the organization and naming convention of the *property files* are somewhat arbitrary and targeted more for self documentation and understanding. Properties related to a language script are prefixed with the name of the language script (i.e `cobol_compileParms`).
 
 ### application.properties
 This property file is loaded automatically at the beginning of the build and contains application specific properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts. Additional property files are loaded based on the content of the `applicationPropFiles` property.
@@ -23,23 +23,45 @@ gitRepositoryURL | git repository URL of the application repository to establis
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 jobCard | JOBCARD for JCL execs | false
-useSearchConfiguration | Flag to define which DBB API is used for dependency and impact analysis. `false` uses DependencyResolver and ImpactResolver APIs, while `true` leverages the DBB SearchPathDependencyResolver and SearchParthImpactFinder APIs introduced with DBB 1.1.2 | false
+**Build Property management** | | 
+loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties for build files mapped in languageConfigurationMapping.properties | true
+propertyFilePath | relative path to folder containing individual artifact properties files | true
+propertyFileExtension | file extension for individual artifact properties files | true
+**Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
 impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
 
 ### file.properties
-Location of file properties, script mappings and file level property overrides.  All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for column 'Overridable' in the tables below for build properties that can have file level property overrides.
+
+Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Please also read the section [Build properties](https://www.ibm.com/docs/en/dbb/2.0?topic=apis-build-properties) in the official DBB documentation.
+
+Additional file-level properties can be defined through **individual artifact properties files** in a separate directory of the repository or through **language configuration** files to configure the language scripts. For more details, see [File Property Management](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md).
 
 Property | Description
 --- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
-dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
-isSQL | File property overwrite to indicate that a file requires to include SQL parameters
-isCICS | File property overwrite to indicate that a file requires to include CICS parameters
-isMQ | File property overwrite to indicate that a file requires to include MQ parameters
-isDLI | File property overwrite to indicate that a file requires to include DLI parameters
+dbb.scannerMapping | zAppBuild configuration override/expansion to map files extensions to DBB dependency scanner configurations
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
+
+Property | Description
+--- | ---
+loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for source files. See default configuration in [application.properties](#application.properties)
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties files for source files. See default configuration in [application.properties](#application.properties)
+languageConfiguration | Properties mapping for assigning build files to language configuration to define the build configuration
+
+General file level overwrites to control the allocations of system datasets for compile and link steps or activation of preprocessing
+
+Property | Description
+--- | ---
+isSQL | File property overwrite to indicate that a file requires to include SQL preprocessing, and allocation of Db2 libraries for compile and link phase.
+isCICS | File property overwrite to indicate that a file requires to include CICS preprocessing, and allocation of CICS libraries for compile and link phase. Also used to indicate if a *batch* module is executed under CICS for pulling appropriate language interface modules for Db2 or MQ. 
+isMQ | File property overwrite to indicate that a file requires to include MQ libraries for compile and link phase.
+isDLI | File property overwrite to indicate that a file requires to include DLI 
+isIMS | File property flag to indicate IMS batch and online programs to allocate the IMS RESLIB library during link phase (Compared to the other 4 above flags, the isIMS flag is a pure file property, and not computed by the DBB scanners). 
+
+Please note that the above file property settings `isCICS` and `isIMS` are also used to control the allocations when processing link cards with `LinkEdit.groovy` to include the appropriate runtime specific language interfaces.
 
 ### reports.properties
 Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
@@ -62,14 +84,22 @@ Property | Description | Overridable
 assembler_fileBuildRank | Default Assemble program build rank. Used to sort Assembler build file sub-list. Leave empty. | true
 assembler_pgmParms | Default Assembler parameters. | true
 assembler_linkEditParms | Default parameters for the link edit step. | true
+assembler_debugParms | Assembler options when the debug flag is set. | true
 assembler_compileErrorPrefixParms | Default parameters to support remote error feedback in user build scenarios | true
+assembler_eqalangxParms | Default parameters for eqalangx utility to produce debug sidefile. | true
+assembler_db2precompilerParms | Default Assembler parameters for Db2 precompiler step. | true
+assembler_cicsprecompilerParms | Default Assembler parameters for CICS precompiler step. | true
+assembler_asmaOptFile | Optional ASMAOPT file - dataset(member). | true
 assembler_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-assembler_maxRC | Default Assembler maximum RC allowed. | true
-assembler_linkEditMaxRC | Default link edit maximum RC allowed. | true
+assembler_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
+assembler_maxSQLTranslatorRC | Default maximum return code for the sql translator step. | true
+assembler_maxCICSTranslatorRC | Default maximum return code for the cics translator step. | true
+assembler_maxRC | Default maximum return code for the Assembler step. | true
+assembler_maxIDILANGX_RC | Default maximum return code for the debug IDILANGX sidefile generation step. | true
+assembler_linkEditMaxRC | Default maximum return code for the linkEdit step. | true
 assembler_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 assembler_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
-assembler_resolutionRules | Assembler dependency resolution rules used to create a Assmebler dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 assembler_dependencySearch | Assembler dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 assembler_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 assembler_deployType | default deployType for build output | true
@@ -101,7 +131,6 @@ Application properties used by zAppBuild/language/Cobol.groovy
 Property | Description | Overridable
 --- | --- | ---
 cobol_fileBuildRank | Default Cobol program build rank. Used to sort Cobol build file sub-list. Leave empty. | true
-cobol_resolutionRules | Cobol dependency resolution rules used to create a Cobol dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 cobol_dependencySearch | Cobol dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 cobol_compilerVersion | Default Cobol compiler version. | true
 cobol_compileMaxRC | Default compile maximum RC allowed. | true
@@ -117,7 +146,8 @@ cobol_impactPropertyList | List of build properties causing programs to rebuild 
 cobol_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 cobol_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 cobol_linkEdit | Flag indicating to execute the link edit step to produce a load module for the source file.  If false then a object deck will be created instead for later linking. | true
-cobol_isMQ | Flag indicating that the program contains MQ calls | true
+cobol_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
+cobol_linkDebugExit | linkEditStream to append a debug exit via SYSIN dd | true
 cobol_deployType | default deployType for build output | true
 cobol_deployTypeCICS | deployType for build output for build files where isCICS=true | true
 cobol_deployTypeDLI | deployType for build output for build files with isDLI=true | true
@@ -147,7 +177,6 @@ Application properties used by zAppBuild/language/LinkEdit.groovy
 Property | Description | Overridable
 --- | --- | ---
 pli_fileBuildRank | Default PLI program build rank. Used to sort PLI program sub-list. Leave empty. | true
-pli_resolutionRules | PLI dependency resolution rules used to create a PLI dependency resolver.  Format is a JSON array of resolution rule property keys.  Resolution rule properties are defined in `application-conf/application.properties`. ** deprecated ** | true
 pli_dependencySearch | PLI dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`. | true
 pli_compilerVersion | Default PLI compiler version. | true
 pli_compileMaxRC | Default compile maximum RC allowed. | true
@@ -156,11 +185,14 @@ pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
+pli_compileIMSParms | Default IMS compile parameters. Appended to parms for file with `isIMS` flag turned on. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
 pli_impactPropertyListSQL | List of SQL build properties causing programs to rebuild when changed | false
 pli_linkEditParms | Default link edit parameters. | true
+pli_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd | true
+pli_linkDebugExit | linkEditStream to append a debug exit via SYSIN dd | true
 pli_storeSSI | Flag to store abbrev git hash in ssi field in link step | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
@@ -194,6 +226,7 @@ Property | Description | Overridable
 mfs_fileBuildRank | Default MFS program build rank. Used to sort MFS build file sub-list. Leave empty. | true
 mfs_phase1MaxRC | Default MFS Phase 1 maximum RC allowed. | true
 mfs_phase2MaxRC | Default MFS Phase 2 maximum RC allowed. | true
+mfs_phase2Execution | Flag if MFS Phase 2 process should be executed. Default: false | true
 mfs_phase1Parms | Default parameters for the phase 1 step. | true
 mfs_phase2Parms | Default parameters for the phase 2 step. | true
 mfs_impactPropertyList | List of build properties causing programs to rebuild when changed | false
@@ -246,13 +279,19 @@ Property | Description | Overridable
 zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
 zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
 zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
 zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
 zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
 zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
+
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified) | true
 
 ### REXX.properties
 Application properties used by zAppBuild/language/REXX.groovy
@@ -261,7 +300,6 @@ Property | Description | Overridable
 --- | --- | ---
 rexx_compileMaxRC | Default compile maximum RC allowed. | true
 rexx_linkEditMaxRC | Default link edit maximum RC allowed. | true
-rexx_resolutionRules | Default resolution rules for zUnit. ** deprecated ** | true
 rexx_dependencySearch | Default REXX dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 rexx_compileParms | Default base compile parameters. | true
 rexx_compiler | Default REXX compiler | true
@@ -294,3 +332,13 @@ Application properties used by zAppBuild/language/Transfer.groovy
 Property | Description | Overridable
 --- | --- | ---
 transfer_deployType | deployType | true
+transfer_copyMode | Copy mode used during the copy to the target data set | true
+
+### languageConfigurationMapping.properties
+Sample language configuration mapping properties used by dbb-zappbuild/utilities/BuildUtilities.groovy.
+
+This contains the mapping of the files and their corresponding Language Configuration properties files residing in `zAppBuild/build-conf/language-conf` to override the default file properties.
+
+Example: The entry - `epsnbrvl.cbl=languageConfigProps01`, means the file properties of file `epsnbrvl.cbl` will be overridden by the properties mentioned in `zAppBuild/build-conf/language-conf/languageConfigProps01.properties`
+
+See the [language configuration mapping documentation](../../docs/FilePropertyManagement.md#language-configuration-mapping) for more details on how to enable and use language configuration mapping.

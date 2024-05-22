@@ -1,23 +1,17 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import groovy.xml.*
 
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field RepositoryClient repositoryClient
 
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
-
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
@@ -25,35 +19,29 @@ buildUtils.assertBuildProperties(props.zunit_requiredBuildProperties)
 
 def langQualifier = "zunit"
 buildUtils.createLanguageDatasets(langQualifier)
-
+int currentBuildFileNumber = 1
 
 // iterate through build list
-(argMap.buildList).each { buildFile ->
-	println "*** Building file $buildFile"
+(argMap.buildList.sort()).each { buildFile ->
+	println "*** (${currentBuildFileNumber++}/${argMap.buildList.size()}) Building file $buildFile"
 
 	String member = CopyToPDS.createMemberName(buildFile)
 
 	File logFile = new File("${props.buildOutDir}/${member}.zunit.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.zunit.report.log")
 
-	// configure dependency resolution
-	def dependencyResolver
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.zunit_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('zunit_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-	}
+	String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildUtils.getAbsolutePath(buildFile), props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
 
-	// Parse the playback from the bzucfg file
-	Boolean hasPlayback = false
-	String playback
-	(hasPlayback, playback) = getPlaybackFile(buildFile);
+	// get logical file
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
+		
+	// get playback dependency for bzucfg file from logicalFile
+ 	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
 	
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
@@ -76,10 +64,10 @@ zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
 jcl += """\
 //  PARM=('$zunitParms')
 """
-	if (hasPlayback) { // bzucfg contains reference to a playback file
+	if (playbackFile != null) { // bzucfg contains reference to a playback file
 		jcl +=
 		"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
-		"// DSN=${props.zunit_bzuplayPDS}(${playback}) \n"
+		"// DSN=${props.zunit_bzuplayPDS}(${playbackFile.getLname()}) \n"
 	} else { // no playbackfile referenced
 		jcl +=
 		"//REPLAY.BZUPLAY DD DUMMY   \n"
@@ -183,42 +171,48 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 	 *
 	 */
 
-	// Splitting the String into a StringArray using CC as the seperator
-	def jobRcStringArray = zUnitRunJCL.maxRC.split("CC")
+	// Evaluate if running in preview build mode
+	if (!props.preview) {
 
-	// This evals the number of items in the ARRAY! Dont get confused with the returnCode itself
-	if ( jobRcStringArray.length > 1 ){
-		// Ok, the string can be splitted because it contains the keyword CC : Splitting by CC the second record contains the actual RC
-		rc = zUnitRunJCL.maxRC.split("CC")[1].toInteger()
+		// Splitting the String into a StringArray using CC as the seperator
+		def jobRcStringArray = zUnitRunJCL.maxRC.split("CC")
 
-		// manage processing the RC, up to your logic. You might want to flag the build as failed.
-		if (rc <= props.zunit_maxPassRC.toInteger()){
-			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
-			// Store Report in Workspace
-			new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
-			// printReport
-			printReport(reportLogFile)
-		} else if (rc <= props.zunit_maxWarnRC.toInteger()){
-			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
-			// Store Report in Workspace
-			new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
-			// print warning and report
-			println warningMsg
-			printReport(reportLogFile)
-			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
-		} else { // rc > props.zunit_maxWarnRC.toInteger()
-			props.error = "true"
-			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
-			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+		// This evals the number of items in the ARRAY! Dont get confused with the returnCode itself
+		if ( jobRcStringArray.length > 1 ){
+			// Ok, the string can be splitted because it contains the keyword CC : Splitting by CC the second record contains the actual RC
+			rc = zUnitRunJCL.maxRC.split("CC")[1].toInteger()
+
+			// manage processing the RC, up to your logic. You might want to flag the build as failed.
+			if (rc <= props.zunit_maxPassRC.toInteger()){
+				println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
+				// Store Report in Workspace
+				new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
+				// printReport
+				printReport(reportLogFile)
+			} else if (rc <= props.zunit_maxWarnRC.toInteger()){
+				String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
+				// Store Report in Workspace
+				new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
+				// print warning and report
+				println warningMsg
+				printReport(reportLogFile)
+				buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile])
+			} else { // rc > props.zunit_maxWarnRC.toInteger()
+				props.error = "true"
+				String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
+				println(errorMsg)
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
+			}
 		}
-	}
-	else {
-		// We don't see the CC, assume an exception
-		props.error = "true"
-		String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
-		println(errorMsg)
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile],client:getRepositoryClient())
+		else {
+			// We don't see the CC, assume an exception
+			props.error = "true"
+			String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
+			println(errorMsg)
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
+		}
+	} else { // skip evaluating Unit tests result
+		if (props.verbose) println "*** Evaluation of zUnit test result skipped, because running in preview mode."
 	}
 
 }
@@ -227,25 +221,16 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
  * Methods
  */
 
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
-
 /*
- * returns containsPlayback, 
+ * returns the LogicalDependency of the playbackfile
  */
-def getPlaybackFile(String xmlFile) {
-	String xml = new File(buildUtils.getAbsolutePath(xmlFile)).getText("IBM-1047")
-	def parser = new XmlParser().parseText(xml)
-	if (parser.'runner:playback'.playbackFile.size()==0) return [false, null]
-	else {
-		String playbackFileName = parser.'runner:playback'.@moduleName[0]
-		return [true, playbackFileName]
-	}
-}
+def getPlaybackFile(LogicalFile logicalFile) {
+ 	// find playback file dependency
+ 	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
+ 		it.getLibrary() == "SYSPLAY"
+ 	}
+	return playbackDependency
+ }
 
 /**
  *  Parsing the result file and prints summary of the result

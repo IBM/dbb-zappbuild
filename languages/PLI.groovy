@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -12,14 +12,8 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field RepositoryClient repositoryClient
 
-@Field def resolverUtils
-// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-	resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))}
-
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.pli_requiredBuildProperties)
@@ -28,7 +22,8 @@ def langQualifier = "pli"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'pli_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'pli_fileBuildRank')
+int currentBuildFileNumber = 1
 
 if (buildListContainsTests(sortedList)) {
 	langQualifier = "pli_test"
@@ -37,24 +32,15 @@ if (buildListContainsTests(sortedList)) {
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
+	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
 
-	// configure dependency resolution and create logical file 	
-	def dependencyResolver
-	LogicalFile logicalFile
+	// configure SearchPathDependencyResolver
+	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.pli_dependencySearch && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
-		dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('pli_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
@@ -63,13 +49,23 @@ sortedList.each { buildFile ->
 		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 	}
 
+	// Get logical file
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
+
+	// print logicalFile details and overrides
+	if (props.verbose) buildUtils.printLogicalFileAttributes(logicalFile)
+	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
 	if (logFile.exists())
 		logFile.delete()
+		
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit 
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -83,7 +79,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
@@ -95,7 +91,6 @@ sortedList.each { buildFile ->
 			BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
 		}
 
-		String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			maxRC = props.getFileProperty('pli_linkEditMaxRC', buildFile).toInteger()
@@ -104,14 +99,14 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
-					if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
+					if (scanLoadModule && scanLoadModule.toBoolean())
+						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -134,6 +129,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	def parms = props.getFileProperty('pli_compileParms', buildFile) ?: ""
 	def cics = props.getFileProperty('pli_compileCICSParms', buildFile) ?: ""
 	def sql = props.getFileProperty('pli_compileSQLParms', buildFile) ?: ""
+	def ims = props.getFileProperty('pli_compileIMSParms', buildFile) ?: ""
 	def errPrefixOptions = props.getFileProperty('pli_compileErrorPrefixParms', buildFile) ?: ""
 	def compileDebugParms = props.getFileProperty('pli_compileDebugParms', buildFile)
 
@@ -147,6 +143,9 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	if (props.errPrefix)
 		parms = "$parms,$errPrefixOptions"
 
+	if (buildUtils.isIMS(logicalFile))	
+		parms = "$parms,$ims"
+		
 	// add debug options
 	if (props.debug)  {
 		parms = "$parms,$compileDebugParms"
@@ -155,7 +154,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
     if (parms.startsWith(','))
 		parms = parms.drop(1)
 
-	if (props.verbose) println "PLI compiler parms for $buildFile = $parms"
+	if (props.verbose) println "*** PLI compiler parms for $buildFile = $parms"
 	return parms
 }
 
@@ -184,13 +183,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.pli_tempOptions))
 	}
 
-	// Write SYSLIN to temporary dataset if performing link edit
-	String doLinkEdit = props.getFileProperty('pli_linkEdit', buildFile)
-	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
-	if (linkEditStream == null && doLinkEdit && doLinkEdit.toBoolean())
-		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.pli_tempOptions).pass(true))
-	else
-		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	// define object dataset allocation
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -203,7 +197,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
 	PropertyMappings dsMapping = new PropertyMappings('pli_dependenciesDatasetMapping')
 	dsMapping.getValues().each { targetDataset ->
-		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
+		// exclude the defaults pli_cpyPDS and any overwrite in the alternativeLibraryNameMap
 		if (targetDataset != 'pli_incPDS')
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
@@ -216,9 +210,13 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	
+	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
-		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SDFHPL1).options("shr"))
 	
+	if (buildUtils.isMQ(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SCSQPLIC).options("shr"))
+		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
 		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
@@ -228,8 +226,10 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."IBMZPLI_$compilerVer").options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-	if (buildUtils.isSQL(logicalFile))
+	if (buildUtils.isSQL(logicalFile)) {
+		if (props.SDSNEXIT) compile.dd(new DDStatement().dsn(props.SDSNEXIT).options("shr"))
 		compile.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+	}
 	if (props.SFELLOAD)
 		compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))
 
@@ -238,11 +238,19 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.pli_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
 	// adding alternate library definitions
-	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
-		alternateLibraryNameAllocations = evaluate(props.pli_dependenciesAlternativeLibraryNameMapping)
-		alternateLibraryNameAllocations.each { libraryName, datasetDSN ->
-			datasetDSN = props.getProperty(datasetDSN)
-			if (datasetDSN) compile.dd(new DDStatement().name(libraryName).dsn(datasetDSN).options("shr"))
+	if (props.pli_dependenciesAlternativeLibraryNameMapping) {
+		alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.pli_dependenciesAlternativeLibraryNameMapping)
+		alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
+			datasetName = props.getProperty(datasetDefinition)
+			if (datasetName) {
+				compile.dd(new DDStatement().name(libraryName).dsn(datasetName).options("shr"))
+			}
+			else {
+				String errorMsg = "*! PLI.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
+			}
 		}
 	}
 		
@@ -250,7 +258,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (props.errPrefix) {
 		compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
-		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.cobol_compileErrorFeedbackXmlOptions))
+		compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.pli_compileErrorFeedbackXmlOptions))
 	}
 
 	// add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
@@ -267,6 +275,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String parms = props.getFileProperty('pli_linkEditParms', buildFile)
 	String linker = props.getFileProperty('pli_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('pli_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('pli_linkDebugExit', buildFile)
+	
 
 	// obtain githash for buildfile
 	String pli_storeSSI = props.getFileProperty('pli_storeSSI', buildFile)
@@ -275,21 +285,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
-	// Create the link stream if needed
-	if ( linkEditStream != null ) {
-		def langQualifier = "linkedit"
-		buildUtils.createLanguageDatasets(langQualifier)
-		def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
-		if (lnkFile.exists())
-			lnkFile.delete()
-
-		lnkFile << "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-		if (props.verbose)
-			println("Copying ${props.buildOutDir}/linkCard.lnk to ${props.linkedit_srcPDS}($member)")
-		new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
-
-	}
-
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parms"
+	
+	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
 	// add DD statements to the linkedit command
@@ -303,11 +301,46 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.pli_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.pli_tempOptions))
 
-	// add the link source code
-	if ( linkEditStream != null ) {
-		linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
+	// Assemble linkEditInstream to define SYSIN as instreamData
+	String sysin_linkEditInstream = ''
+	
+	// appending configured linkEdit stream if specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('pli_identifyLoad', buildFile)
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.pli_loadOptions)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
 	}
 
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
+	}
+
+	// appending debug exit to link instructions
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
+
+	// Define SYSIN dd
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr'))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+	
 	// add RESLIB
 	if ( props.RESLIB )
 		linkedit.dd(new DDStatement().name("RESLIB").dsn(props.RESLIB).options("shr"))
@@ -322,12 +355,19 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
 	}
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
+	
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+		
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
+		
 	// add dummy SYSDEFSD to avoid IEW2689W 4C40 DEFINITION SIDE FILE IS NOT DEFINED message from program binder
 	if (isZUnitTestCase)
 		linkedit.dd(new DDStatement().name("SYSDEFSD").options("DUMMY"))
@@ -338,13 +378,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	return linkedit
 }
 
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
 
 boolean buildListContainsTests(List<String> buildList) {
 	boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('pli_testcase', buildFile).equals('true')}

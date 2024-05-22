@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import java.nio.file.FileSystems
@@ -8,29 +8,31 @@ import java.nio.file.PathMatcher
 import groovy.json.JsonSlurper
 import groovy.transform.*
 import java.util.regex.*
+import com.ibm.dbb.dependency.internal.*
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def gitUtils= loadScript(new File("GitUtilities.groovy"))
 @Field def buildUtils= loadScript(new File("BuildUtilities.groovy"))
+@Field def dependencyScannerUtils= loadScript(new File("DependencyScannerUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field def resolverUtils
 
 
-def createImpactBuildList(RepositoryClient repositoryClient) {
-	
-	// Conditionally load the ResolverUtilities.groovy which require at least DBB 1.1.2
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) {
-		resolverUtils = loadScript(new File("ResolverUtilities.groovy")) }
+def createImpactBuildList() {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
+	Set<String> buildSet = new HashSet<String>()
+	
+	boolean calculatedChanges = true 
 
 	// get the last build result to get the baseline hashes
-	def lastBuildResult = buildUtils.retrieveLastBuildResult(repositoryClient)
+	def lastBuildResult = buildUtils.retrieveLastBuildResult()
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
@@ -38,159 +40,137 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
 	}
 	else {
 		// else create a fullBuild list
-		println "*! No prior build result located.  Building all programs"
+		println "*! No prior build result located.  Creating a full build list."
 		changedFiles = buildUtils.createFullBuildList()
+		buildSet = changedFiles
+		
+		// skip impact calculation and return the generated build list
+		calculatedChanges = false
 	}
 
 	// scan files and update source collection for impact analysis
-	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
+	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
 
+	if (calculatedChanges) {
 
-	// create build list using impact analysis
-	if (props.verbose) println "*** Perform impacted analysis for changed files."
+		// create build list using impact analysis
+		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
-	Set<String> buildSet = new HashSet<String>()
-	Set<String> changedBuildPropertyFiles = new HashSet<String>()
-	
-	PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
-	
-	
-	changedFiles.each { changedFile ->
-		// if the changed file has a build script then add to build list
-		if (ScriptMappings.getScriptName(changedFile)) {
-			buildSet.add(changedFile)
-			if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
-		}
+		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
-		// check if impact calculation should be performed, default true
-		if (shouldCalculateImpacts(changedFile)){
 
-			// perform impact analysis on changed file
-			if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
+		changedFiles.each { changedFile ->
+			// if the changed file has a build script then add to build list
+			if (ScriptMappings.getScriptName(changedFile)) {
+				// skip adding generated test cases, when the testing is disabled 
+				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
+				} else {
+					buildSet.add(changedFile)
+					if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
+				}
+			}
 
-			// get exclude list
-			List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
-			
-			// list of impacts
-			def impacts
+			// check if impact calculation should be performed, default true
+			if (shouldCalculateImpacts(changedFile)){
 
-			if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && props.impactSearch  && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-				
+				// perform impact analysis on changed file
+				if (props.verbose) println "** Performing impact analysis on changed file $changedFile"
+
+				// get exclude list
+				List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
+
+				// list of impacts
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
-				impacts = resolverUtils.findImpactedFiles(impactSearch, changedFile, repositoryClient)
-			}
-			else {
-				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-				ImpactResolver impactResolver = createImpactResolver(changedFile, impactResolutionRules, repositoryClient)
+				def impacts = findImpactedFiles(impactSearch, changedFile)
+				
 
-				// Print impactResolverConfiguration
-				if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
-					// print collection information
-					println("    " + "Collection".padRight(20) )
-					println("    " + " ".padLeft(20,"-"))
-					impactResolver.getCollections().each{ collectionName ->
-						println("    " + collectionName)
-					}
-					// print impact resolution rule in table format
-					buildUtils.printResolutionRules(impactResolver.getResolutionRules())
-				}
-
-				// resolving impacts
-				impacts = impactResolver.resolve()
-			}
-			
-			impacts.each { impact ->
-				def impactFile = impact.getFile()
-				if (props.verbose) println "** Found impacted file $impactFile"
-				// only add impacted files that have a build script mapped to it
-				if (ScriptMappings.getScriptName(impactFile)) {
-					// only add impacted files, that are in scope of the build.
-					if (!matches(impactFile, excludeMatchers)){
-						
-						// calculate abbreviated gitHash for impactFile
-						filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-						if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-							abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-							githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
-						}
-						
-						// add file to buildset
-						buildSet.add(impactFile)
-						if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
-					}
-					else {
-						// impactedFile found, but on Exclude List
-						//   Possible reasons: Exclude of file was defined after building the collection.
-						//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-						if (props.verbose) println "!! $impactFile is impacted by changed file $changedFile, but is on Exlude List. Not added to build list."
-					}
-				}
-			}
-
-		}else {
-			if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
-		}
-	}
-
-	// Perform impact analysis for property changes
-	if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-		if (props.verbose) println "*** Perform impacted analysis for property changes."
-
-		changedBuildProperties.each { changedProp ->
-
-			if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
-
-				// perform impact analysis on changed property
-				if (props.verbose) println "** Performing impact analysis on property $changedProp"
-
-				// create logical dependency and query collections for logical files with this dependency
-				LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-				logicalFileList = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, lDependency)
-
-
-				// get excludeListe
-				List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
-
-				logicalFileList.each { logicalFile ->
-					def impactFile = logicalFile.getFile()
+				impacts.each { impact ->
+					def impactFile = impact.getFile()
 					if (props.verbose) println "** Found impacted file $impactFile"
 					// only add impacted files that have a build script mapped to it
 					if (ScriptMappings.getScriptName(impactFile)) {
 						// only add impacted files, that are in scope of the build.
-						if (!matches(impactFile, excludeMatchers)){
+						if (!buildUtils.matches(impactFile, excludeMatchers)){
+
+							// calculate abbreviated gitHash for impactFile
+							filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+							if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+								abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+								githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+							}
+
+							// add file to buildset
 							buildSet.add(impactFile)
-							if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+							if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 						}
 						else {
 							// impactedFile found, but on Exclude List
 							//   Possible reasons: Exclude of file was defined after building the collection.
 							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
 						}
+					} else {
+						String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+						buildUtils.updateBuildResult(warningMsg:warningMsg)
+						println(warningMsg)
 					}
 				}
+
 			}else {
-				if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
+				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-	}else {
-		if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
+	
+		// Perform impact analysis for property changes
+		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+			if (props.verbose) println "*** Perform impacted analysis for property changes."
+
+			changedBuildProperties.each { changedProp ->
+
+				if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
+
+					// perform impact analysis on changed property
+					if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+					// create logical dependency and query collections for logical files with this dependency
+					LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
+					logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
+
+
+					// get excludeListe
+					List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
+
+					logicalFileList.each { logicalFile ->
+						def impactFile = logicalFile.getFile()
+						if (props.verbose) println "** Found impacted file $impactFile"
+						// only add impacted files that have a build script mapped to it
+						if (ScriptMappings.getScriptName(impactFile)) {
+							// only add impacted files, that are in scope of the build.
+							if (!buildUtils.matches(impactFile, excludeMatchers)){
+								buildSet.add(impactFile)
+								if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+							}
+							else {
+								// impactedFile found, but on Exclude List
+								//   Possible reasons: Exclude of file was defined after building the collection.
+								//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+								if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+							}
+						}
+					}
+				}else {
+					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
+				}
+			}
+		}else {
+			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
+		}
+
 	}
 
-	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
-		if (props.verbose) println "*** Analyze and report external impacted files."
-		reportExternalImpacts(repositoryClient, changedFiles)
-	}
-
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
-	}
-
-	return [buildSet, deletedFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
 
@@ -200,7 +180,7 @@ def createImpactBuildList(RepositoryClient repositoryClient) {
  *
  */
 
-def createMergeBuildList(RepositoryClient repositoryClient){
+def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
@@ -209,7 +189,7 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
 
 	// scan files and update source collection
-	updateCollection(changedFiles, deletedFiles, renamedFiles, repositoryClient)
+	updateCollection(changedFiles, deletedFiles, renamedFiles)
 
 	// iterate over changed file and add them to the buildSet
 
@@ -224,40 +204,57 @@ def createMergeBuildList(RepositoryClient repositoryClient){
 		}
 	}
 
-	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
-		if (props.verbose) println "*** Calculate and document concurrent changes."
-		calculateConcurrentChanges(repositoryClient, buildSet)
-	}
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+}
 
-	return [buildSet, deletedFiles]
+/*
+ * findImpactedFiles -
+ *  method to configure and invoke SearchPathImpactFinder
+ *
+ *  @return list of impacted files
+ *
+ */
+def findImpactedFiles(String impactSearch, String changedFile) {
+	
+	List<String> collections = new ArrayList<String>()
+	collections.add(props.applicationCollectionName)
+	collections.add(props.applicationOutputsCollectionName)
+	
+	if (props.verbose)
+		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
+	
+	def finder = new SearchPathImpactFinder(impactSearch, collections)
+	
+	// Find all files impacted by the changed file
+	impacts = finder.findImpactedFiles(changedFile, props.workspace)
+	return impacts
 }
 
 
 /*
  * calculateChangedFiles - method to caluclate the the changed files
- * 
+ *
  */
 
 def calculateChangedFiles(BuildResult lastBuildResult) {
 	return calculateChangedFiles(lastBuildResult, false, null)
 }
 
-/* 
- * calculateChangedFiles - 
- *   this method is used for zAppBuild built modes to 
- * 	  calculate changed files and 
+/*
+ * calculateChangedFiles -
+ *   this method is used for zAppBuild built modes to
+ * 	  calculate changed files and
  *    return a list of identified changed, renamed, deleted and modified build properties
- *  
- *  High-Level flow for 
- *   - impactBuild 
+ *
+ *  High-Level flow for
+ *   - impactBuild
  *  	parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
  *      	   obtains the baseline hash/es for the different referenced directories
  *             performs a git diff between current and baseline
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - impactBuild with baselineReference
  *      parms: requires to pass the lastBuildResult
  *      flow:  obtains current hash for directories
@@ -265,7 +262,7 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and baselineReference
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - mergeBuild
  *      parms: no build result is passed to the method
  *      flow:  obtains current hash for directories
@@ -273,13 +270,13 @@ def calculateChangedFiles(BuildResult lastBuildResult) {
  *             performs a git diff between current and mainBuildBranch
  *             calculates the correct offset from the git diff
  *             stores the abbreviated hash for changed files in PropertyMapping
- *             
+ *
  *   - concurrentChangesAnalysis
  *      parms: no build result is passed to the method, calculateConcurrentChanges=true, gitReference containing the git configuration
  *      flow:  no calculation of baseline hash for the directories
  *             performs a git diff between HEAD and the passed gitReference
  *             calculates the correct offset from the git diff
- *    
+ *
  *   @return the set for changed, renamed, deleted and modified build properties to caller
  */
 
@@ -418,16 +415,19 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		def mode = null
 
 		// make sure file is not an excluded file
-		List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+		List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
 		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, null)
 			if ( file != null ) {
-				if ( !matches(file, excludeMatchers)) {
+				// filter excluded files
+				if ( !buildUtils.matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
+				} else {
+					if (props.verbose) println "**** $file is changed, but is excluded from build scope. See excludeFileList configuration."
 				}
 				//retrieving changed build properties
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
@@ -441,19 +441,23 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
 		deleted.each { file ->
-			if ( !matches(file, excludeMatchers)) {
+			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				deletedFiles << file
 				if (props.verbose) println "**** $file"
+			} else {
+				if (props.verbose) println "**** $file is deleted, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
 		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
 		renamed.each { file ->
-			if ( !matches(file, excludeMatchers)) {
+			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
 				renamedFiles << file
 				if (props.verbose) println "**** $file"
+			} else {
+				if (props.verbose) println "**** $file is renamed, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
@@ -467,57 +471,12 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	]
 }
 
-/**
- * Method to calculate and report the changes between the current configuration and concurrent configurations;
- * leverages the existing infrastructure to calculateChangedFiles - in this case for concurrent configs.
- * 
- * Invokes method generateConcurrentChangesReports to produce the reports
- * 
- * @param repositoryClient
- * @param buildSet
- * 
- */
-def calculateConcurrentChanges(RepositoryClient repositoryClient, Set<String> buildSet) {
-	
-		// initialize patterns
-		List<Pattern> gitRefMatcherPatterns = createMatcherPatterns(props.reportConcurrentChangesGitBranchReferencePatterns)
-	
-		// obtain all current remote branches
-		// TODO: Handle / Exclude branches from other repositories
-		Set<String> remoteBranches = new HashSet<String>()
-		props.applicationSrcDirs.split(",").each { dir ->
-			dir = buildUtils.getAbsolutePath(dir)
-			remoteBranches.addAll(gitUtils.getRemoteGitBranches(dir))
-		}
-		
-		// Run analysis for each remoteBranch, which matches the configured criteria
-		remoteBranches.each { gitReference ->
-	
-			if (matchesPattern(gitReference,gitRefMatcherPatterns) && !gitReference.equals(props.applicationCurrentBranch)){
-	
-				Set<String> concurrentChangedFiles = new HashSet<String>()
-				Set<String> concurrentRenamedFiles = new HashSet<String>()
-				Set<String> concurrentDeletedFiles = new HashSet<String>()
-				Set<String> concurrentBuildProperties = new HashSet<String>()
-	
-				if (props.verbose) println "***  Analysing and validating changes for branch $gitReference ."
-	
-				(concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, concurrentBuildProperties) = calculateChangedFiles(null, true, gitReference)
-	
-				// generate reports and verify for intersects
-				generateConcurrentChangesReports(buildSet, concurrentChangedFiles, concurrentRenamedFiles, concurrentDeletedFiles, gitReference, repositoryClient)
-	
-			}
-		}
-	
-	}
-
 /*
  * Method to populate the output collection in a scanOnly + scanLoadmodules build scenario.
  * Scenario: Migrate Source to Git and scan against existing set of loadmodules.
  * Limitation: Sample for cobol
  */
-def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient){
+def scanOnlyStaticDependencies(List buildList){
 	buildList.each { buildFile ->
 		def scriptMapping = ScriptMappings.getScriptName(buildFile)
 		if(scriptMapping != null){
@@ -525,7 +484,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 			if(langPrefix != null){
 				String isLinkEdited = props.getFileProperty("${langPrefix}_linkEdit", buildFile)
 
-				def scanner = buildUtils.getScanner(buildFile)
+				def scanner = dependencyScannerUtils.getScanner(buildFile)
 				LogicalFile logicalFile = scanner.scan(buildFile, props.workspace)
 
 				String member = CopyToPDS.createMemberName(buildFile)
@@ -534,7 +493,7 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 				if ((isLinkEdited && isLinkEdited.toBoolean()) || scriptMapping == "LinkEdit.groovy"){
 					try{
 						if (props.verbose) println ("*** Scanning load module $loadPDSMember of $buildFile")
-						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile, repositoryClient)
+						saveStaticLinkDependencies(buildFile, props."${langPrefix}_loadPDS", logicalFile)
 					}
 					catch (com.ibm.dbb.build.ValidationException e){
 						println ("!* Error scanning output file for $buildFile  : $loadPDSMember")
@@ -551,233 +510,32 @@ def scanOnlyStaticDependencies(List buildList, RepositoryClient repositoryClient
 	}
 }
 
-/*
- * Method to query the DBB collections with a list of changed files  
- * Configured through reportExternalImpacts* build properties
- */
 
-def reportExternalImpacts(RepositoryClient repositoryClient, Set<String> changedFiles){
-	// query external collections to produce externalImpactList
 
-	Map<String,HashSet> collectionImpactsSetMap = new HashMap<String,HashSet>() // <collection><List impactRecords>
-	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
 
-	// caluclated and collect external impacts
-	changedFiles.each{ changedFile ->
 
-		List<PathMatcher> fileMatchers = createPathMatcherPattern(props.reportExternalImpactsAnalysisFileFilter)
+def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
-		if(matches(changedFile, fileMatchers)){
-
-			if (props.reportExternalImpactsAnalysisDepths == "simple"){
-				// Simple resolution without recursive resolution
-				String memberName = CopyToPDS.createMemberName(changedFile)
-
-				def ldepFile = new LogicalDependency(memberName, null, null);
-				repositoryClient.getAllCollections().each{ collection ->
-					String cName = collection.getName()
-					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-							def Set<String> externalImpactList = collectionImpactsSetMap.get(cName) ?: new HashSet<String>()
-							def logicalFiles = repositoryClient.getAllLogicalFiles(cName, ldepFile);
-							logicalFiles.each{ logicalFile ->
-								def impactRecord = "${logicalFile.getLname()} \t ${logicalFile.getFile()} \t ${cName}"
-								// if (props.verbose) println("*** $impactRecord")
-								externalImpactList.add(impactRecord)
-							}
-							collectionImpactsSetMap.put(cName, externalImpactList)
-						}
-					}
-					else{
-						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-					}
-				}
-			}
-			else if(props.reportExternalImpactsAnalysisDepths == "deep"){
-				// Recursive analysis to support nested scenarios
-
-				// Configure impact resolver
-				ImpactResolver impactResolver = new ImpactResolver().file(changedFile).repositoryClient(repositoryClient)
-
-				String impactResolutionRules = props.getFileProperty('impactResolutionRules', changedFile)
-				impactResolver.setResolutionRules(buildUtils.parseResolutionRules(impactResolutionRules))
-
-				repositoryClient.getAllCollections().each{ collection ->
-					String cName = collection.getName()
-					if(matchesPattern(cName,collectionMatcherPatterns)){ // find matching collection names
-						if (cName != props.applicationCollectionName && cName != props.applicationOutputsCollectionName){
-							impactResolver.addCollection(cName) // add collection of foreign application
-						}
-					}
-					else{
-						//if (props.verbose) println("$cName does not match pattern: $collectionMatcherPatterns")
-					}
-				}
-				// resolve external impacted files
-				def externalImpactedFiles = impactResolver.resolve()
-
-				// report scanning results
-				if (externalImpactedFiles.size()!=0) if (props.verbose) println("*** Identified external impacted files for changed file $changedFile")
-				externalImpactedFiles.each{ externalImpact ->
-					def Set<String> externalImpactList = collectionImpactsSetMap.get(externalImpact.getCollection()) ?: new HashSet<String>()
-					def impactRecord = "${externalImpact.getLname()} \t ${externalImpact.getFile()} \t ${externalImpact.getCollection()}"
-					// if (props.verbose) println("*** $impactRecord")
-					externalImpactList.add(impactRecord)
-					collectionImpactsSetMap.put(externalImpact.getCollection(), externalImpactList) // <collection,list of impacted files>
-				}
-			}
-			else {
-				println("*! build property reportExternalImpactsAnalysisDepths has in invalid value : ${props.reportExternalImpactsAnaylsisDepths} , valid: simple | deep")
-			}
-		}
-		else {
-			if (props.verbose) println("*** Analysis and reporting has been skipped for changed file $changedFile due to build framework configuration (see configuration of build property reportExternalImpactsAnalysisFileFilter)")
-		}
-	}
-
-	// generate reports by collection / application
-	collectionImpactsSetMap.each{ entry ->
-		externalImpactList = entry.value
-		if (externalImpactList.size()!=0){
-			// write impactedFiles per application to build workspace
-			String impactListFileLoc = "${props.buildOutDir}/externalImpacts_${entry.key}.${props.buildListFileExt}"
-			if (props.verbose) println("*** Writing report of external impacts to file $impactListFileLoc")
-			File impactListFile = new File(impactListFileLoc)
-			String enc = props.logEncoding ?: 'IBM-1047'
-			impactListFile.withWriter(enc) { writer ->
-				externalImpactList.each { file ->
-					// if (props.verbose) println file
-					writer.write("$file\n")
-				}
-			}
-		}
-	}
-
-}
-
-/*
- * Method to generate the Concurrent Changes reports and validate if the current build list intersects with concurrent changes
- */
-
-def generateConcurrentChangesReports(Set<String> buildList, Set<String> concurrentChangedFiles, Set<String> concurrentRenamedFiles, Set<String> concurrentDeletedFiles, String gitReference, RepositoryClient repositoryClient){
-	String concurrentChangesReportLoc = "${props.buildOutDir}/report_concurrentChanges.txt"
-
-	File concurrentChangesReportFile = new File(concurrentChangesReportLoc)
-	String enc = props.logEncoding ?: 'IBM-1047'
-	concurrentChangesReportFile.withWriterAppend(enc) { writer ->
-
-		if (!(concurrentChangedFiles.size() == 0 &&  concurrentRenamedFiles.size() == 0 && concurrentDeletedFiles.size() == 0)) {
-
-			if (props.verbose) println("** Writing report of concurrent changes to $concurrentChangesReportLoc for configuration $gitReference")
-
-			writer.write("\n=============================================== \n")
-			writer.write("** Report for configuration: $gitReference \n")
-			writer.write("========\n")
-
-			if (concurrentChangedFiles.size() != 0) {
-				writer.write("** Changed Files \n")
-				concurrentChangedFiles.each { file ->
-					if (props.verbose) println " Changed: ${file}"
-					if (buildList.contains(file)) {
-						writer.write("* $file is changed and intersects with the current build list.\n")
-						String msg = "*!! $file is changed on branch $gitReference and intersects with the current build list."
-						println msg
-						
-						// update build result
-						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
-							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
-						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
-						}
-					}
-					else
-						writer.write("  $file\n")
-				}
-			}
-
-			if (concurrentRenamedFiles.size() != 0) {
-				writer.write("** Renamed Files \n")
-				concurrentRenamedFiles.each { file ->
-					if (props.verbose) println " Renamed: ${file}"
-					if (buildList.contains(file)) {
-						writer.write("* $file got renamed and intersects with the current build list.\n")
-						String msg = "*!! $file is renamed on branch $gitReference and intersects with the current build list."
-						println msg
-						
-						// update build result
-						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
-							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
-						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
-						}
-					}
-					else
-						writer.write("  $file\n")
-				}
-			}
-
-			if (concurrentDeletedFiles.size() != 0) {
-				writer.write("** Deleted Files \n")
-				concurrentDeletedFiles.each { file ->
-					if (props.verbose) println " Deleted: ${file}"
-					if (buildList.contains(file)) {
-						writer.write("* $file is deleted and intersects with the current build list.\n")
-						String msg = "*!! $file is deleted on branch $gitReference and intersects with the current build list."
-						println msg
-						
-						// update build result
-						if (props.reportConcurrentChangesIntersectionFailsBuild && props.reportConcurrentChangesIntersectionFailsBuild.toBoolean()) {
-							props.error = "true"
-							buildUtils.updateBuildResult(errorMsg:msg,client:repositoryClient)
-						} else {
-							buildUtils.updateBuildResult(warningMsg:msg,client:repositoryClient)
-						}
-					}
-					else
-						writer.write("  $file\n")
-				}
-			}
-		}
-	}
-}
-
-def createImpactResolver(String changedFile, String rules, RepositoryClient repositoryClient) {
-	if (props.verbose) println "*** Creating impact resolver for $changedFile with $rules rules"
-
-	// create an impact resolver for the changed file
-	ImpactResolver resolver = new ImpactResolver().file(changedFile)
-			.collection(props.applicationCollectionName)
-			.collection(props.applicationOutputsCollectionName)
-			.repositoryClient(repositoryClient)
-	// add resolution rules
-	if (rules)
-		resolver.setResolutionRules(buildUtils.parseResolutionRules(rules))
-
-	return resolver
-}
-
-def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient repositoryClient) {
-	if (!repositoryClient) {
-		if (props.verbose) println "** Unable to update collections. No repository client."
+	if (!MetadataStoreFactory.metadataStoreExists()) {
+		if (props.verbose) println "** Unable to update collections. No Metadata Store."
 		return
 	}
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	if (props.verbose) println "** Updating collections ${props.applicationCollectionName} and ${props.applicationOutputsCollectionName}"
 	//def scanner = new DependencyScanner()
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
-	List<PathMatcher> excludeMatchers = createPathMatcherPattern(props.excludeFileList)
+	List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
-	verifyCollections(repositoryClient)
+	verifyCollections()
 
 	// remove deleted files from collection
 	deletedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		repositoryClient.deleteLogicalFile(props.applicationCollectionName, logicalFile)
-		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
 	}
 
 	// remove renamed files from collection
@@ -785,12 +543,12 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		repositoryClient.deleteLogicalFile(props.applicationCollectionName, logicalFile)
-		repositoryClient.deleteLogicalFile(props.applicationOutputsCollectionName, logicalFile)
+		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
+		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
-		sortFileList(changedFiles);
+		changedFiles = sortFileList(changedFiles);
 		if (props.verbose) println "*** Sorted list of changed files: $changedFiles"
 	}
 
@@ -798,13 +556,26 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 	changedFiles.each { file ->
 
 		// make sure file is not an excluded file
-		if ( new File("${props.workspace}/${file}").exists() && !matches(file, excludeMatchers)) {
+		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
-			if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file})"
 
-			def scanner = buildUtils.getScanner(file)
+			def scanner = dependencyScannerUtils.getScanner(file)
 			try {
-				def logicalFile = scanner.scan(file, props.workspace)
+				def logicalFile
+				if (scanner != null) {
+					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
+					logicalFile = scanner.scan(file, props.workspace)
+				} else {
+					// The below logic should be replaced with Registration Scanner when available
+					// See reported idea: https://ibm-z-software-portal.ideas.ibm.com/ideas/DBB-I-48
+					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
+					
+					// New logical file with Membername, buildfile, language set to file extension
+					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
+					
+					// Add logicalFile to LogicalFileCache
+					LogicalFileCache.add(props.workspace, logicalFile)
+				}
 				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
 
 				// Update logical file with dependencies to build properties
@@ -815,7 +586,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 				// If configured, update test case program dependencies
 				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
 					// If the file is a zUnit configuration file (BZUCFG)
-					if (scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+					if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 
 						def logicalDependencies = logicalFile.getLogicalDependencies()
 
@@ -826,7 +597,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 							// find in local list of logical files first (batch processing)
 							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
 							if (!testCaseFiles){ // alternate retrieve it from the collection
-								testCaseFiles = repositoryClient.getAllLogicalFiles(props.applicationCollectionName, sysTestDependency.getLname()).find{
+								testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
 									it.getLanguage().equals("COB")
 								}
 							}
@@ -844,7 +615,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			} catch (Exception e) {
 
 				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
-				buildUtils.updateBuildResult(warningMsg:warningMsg,client:getRepositoryClient())
+				buildUtils.updateBuildResult(warningMsg:warningMsg)
 				println(warningMsg)
 				e.printStackTrace()
 
@@ -858,9 +629,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 			// save logical files in batches of 500 to avoid running out of heap space
 			if (logicalFiles.size() == 500) {
 				if (props.verbose)
-					println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
-				repositoryClient.saveLogicalFiles(props.applicationCollectionName, logicalFiles);
-				if (props.verbose) println(repositoryClient.getLastStatus())
+					println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
+				metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 				logicalFiles.clear()
 			}
 		}
@@ -868,17 +638,18 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, RepositoryClient 
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in repository collection '$props.applicationCollectionName'"
-	repositoryClient.saveLogicalFiles(props.applicationCollectionName, logicalFiles);
-	if (props.verbose) println(repositoryClient.getLastStatus())
+		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
+	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
+	
 }
 
 /*
  * saveStaticLinkDependencies - Scan the load module to determine LINK dependencies. Impact resolver can use
  * these to determine that this file gets rebuilt if a LINK dependency changes.
  */
-def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile, RepositoryClient repositoryClient) {
-	if (repositoryClient) {
+def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
@@ -888,7 +659,7 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
 		logicalFile.setLogicalDependencies(scannerLogicalFile.getLogicalDependencies())
 
 		// Store logical file and indirect dependencies to the outputs collection
-		repositoryClient.saveLogicalFile("${props.applicationOutputsCollectionName}", logicalFile );
+		metadataStore.getCollection("${props.applicationOutputsCollectionName}").addLogicalFile( logicalFile );
 	}
 }
 
@@ -897,9 +668,10 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
  * create or clone the collections.
  * Uses build properties
  */
-def verifyCollections(RepositoryClient repositoryClient) {
-	if (!repositoryClient) {
-		if (props.verbose) println "** Unable to verify collections. No repository client."
+def verifyCollections() {
+	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+	if (!metadataStore) {
+		if (props.verbose) println "** Unable to verify collections. No metadata store."
 		return
 	}
 
@@ -907,49 +679,49 @@ def verifyCollections(RepositoryClient repositoryClient) {
 	String mainOutputsCollectionName = "${props.application}-${props.mainBuildBranch}-outputs"
 
 	// check source collection
-	if (!repositoryClient.collectionExists(props.applicationCollectionName)) {
+	if (!metadataStore.collectionExists(props.applicationCollectionName)) {
 		if (props.topicBranchBuild) {
-			if (repositoryClient.collectionExists(mainCollectionName)) {
-				repositoryClient.copyCollection(mainCollectionName, props.applicationCollectionName)
+			if (metadataStore.collectionExists(mainCollectionName)) {
+				metadataStore.copyCollection(mainCollectionName, props.applicationCollectionName)
 				if (props.verbose) println "** Cloned collection ${props.applicationCollectionName} from $mainCollectionName"
 			}
 			else {
-				repositoryClient.createCollection(props.applicationCollectionName)
+				metadataStore.createCollection(props.applicationCollectionName)
 				if (props.verbose) println "** Created collection ${props.applicationCollectionName}"
 			}
 		}
 		else {
-			repositoryClient.createCollection(props.applicationCollectionName)
+			metadataStore.createCollection(props.applicationCollectionName)
 			if (props.verbose) println "** Created collection ${props.applicationCollectionName}"
 		}
 	}
 
 	// check outputs collection
-	if (!repositoryClient.collectionExists(props.applicationOutputsCollectionName)) {
+	if (!metadataStore.collectionExists(props.applicationOutputsCollectionName)) {
 		if (props.topicBranchBuild) {
-			if (repositoryClient.collectionExists(mainOutputsCollectionName)) {
-				repositoryClient.copyCollection("${mainOutputsCollectionName}", props.applicationOutputsCollectionName)
+			if (metadataStore.collectionExists(mainOutputsCollectionName)) {
+				metadataStore.copyCollection("${mainOutputsCollectionName}", props.applicationOutputsCollectionName)
 				if (props.verbose) println "** Cloned collection ${props.applicationOutputsCollectionName} from $mainOutputsCollectionName"
 			}
 			else {
-				repositoryClient.createCollection(props.applicationOutputsCollectionName)
+				metadataStore.createCollection(props.applicationOutputsCollectionName)
 				if (props.verbose) println "** Created collection ${props.applicationOutputsCollectionName}"
 			}
 		}
 		else {
-			repositoryClient.createCollection(props.applicationOutputsCollectionName)
+			metadataStore.createCollection(props.applicationOutputsCollectionName)
 			if (props.verbose) println "** Created collection ${props.applicationOutputsCollectionName}"
 		}
 	}
 
 }
 
-/* 
+/*
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
- *  
+ *
  *  returns null if file not found + mustExist
- *  
+ *
  *  scenarios / mode
  *  1 - Application projects are nested (e.q Mortgage in zAppBuild), Projects on Rootlevel
  *  2 - Repository name is used as Application Root dir
@@ -993,7 +765,7 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
 
 	// Scenario 4:
-	//    Repository name is used as application root directory and 
+	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
@@ -1011,77 +783,26 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	return [defaultValue, null]
 }
 
-def matches(String file, List<PathMatcher> pathMatchers) {
-	def result = pathMatchers.any { matcher ->
-		Path path = FileSystems.getDefault().getPath(file);
-		if ( matcher.matches(path) )
-		{
-			return true
-		}
-	}
-	return result
-}
-
 /**
  *  shouldCalculateImpacts
- *  
+ *
  *  Method to calculate if impact analysis should be performed for a changedFile in an impactBuild scenario
  *   returns a boolean - default true
  */
 def boolean shouldCalculateImpacts(String changedFile){
 	// retrieve Pathmaters from property and check
-	List<PathMatcher> nonImpactingFiles = createPathMatcherPattern(props.skipImpactCalculationList)
-	onskipImpactCalculationList = matches(changedFile, nonImpactingFiles)
+	List<PathMatcher> nonImpactingFiles = buildUtils.createPathMatcherPattern(props.skipImpactCalculationList)
+	onskipImpactCalculationList = buildUtils.matches(changedFile, nonImpactingFiles)
 
 	// return false if changedFile found in skipImpactCalculationList
 	if (onskipImpactCalculationList) return false
+	
+	// return false if the changed file is a generated test case program but testing is disabled
+	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+		return false
+	}
+	
 	return true //default
-}
-
-/**
- * createPathMatcherPattern
- * Generic method to build PathMatcher from a build property
- */
-
-def createPathMatcherPattern(String property) {
-	List<PathMatcher> pathMatchers = new ArrayList<PathMatcher>()
-	if (property) {
-		property.split(',').each{ filePattern ->
-			if (!filePattern.startsWith('glob:') || !filePattern.startsWith('regex:'))
-				filePattern = "glob:$filePattern"
-			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(filePattern)
-			pathMatchers.add(matcher)
-		}
-	}
-	return pathMatchers
-}
-
-/**
- * create List of Regex Patterns
- */
-
-def createMatcherPatterns(String property) {
-	List<Pattern> patterns = new ArrayList<Pattern>()
-	if (property) {
-		property.split(',').each{ patternString ->
-			Pattern pattern = Pattern.compile(patternString);
-			patterns.add(pattern)
-		}
-	}
-	return patterns
-}
-
-/**
- * match a String against a list of patterns
- */
-def matchesPattern(String name, List<Pattern> patterns) {
-	def result = patterns.any { pattern ->
-		if (pattern.matcher(name).matches())
-		{
-			return true
-		}
-	}
-	return result
 }
 
 /**
@@ -1127,33 +848,35 @@ def addBuildPropertyDependencies(String buildProperties, LogicalFile logicalFile
 	}
 }
 
-/**
- * isMappedAsZUnitConfigFile
- * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
- */
-def isMappedAsZUnitConfigFile(mapping, file) {
-	return (mapping.isMapped("ZUnitConfigScanner", file))
-}
+
 
 /**
  * sortFileList
  * sort a list, putting the lines that defines files mapped as zUnit CFG files to the end
  */
 def sortFileList(list) {
-	def mapping = new PropertyMappings("dbb.scannerMapping")
-	list.sort{s1, s2 ->
-		if (isMappedAsZUnitConfigFile(mapping, s1)) {
-			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+	
+	return list.sort{s1, s2 ->
+		if (isMappedAsZUnitConfigFile(s1)) {
+			if (isMappedAsZUnitConfigFile(s2)) {
 				return 0;
 			} else {
 				return 1;
 			}
 		} else {
-			if (isMappedAsZUnitConfigFile(mapping, s2)) {
+			if (isMappedAsZUnitConfigFile(s2)) {
 				return -1;
 			} else {
 				return 0;
 			}
 		}
 	}
+}
+
+/**
+ * isMappedAsZUnitConfigFile
+ * method to check if a file is mapped with the zUnitConfigScanner, indicating it's a zUnit CFG file
+ */
+def isMappedAsZUnitConfigFile(String file) {
+	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
 }

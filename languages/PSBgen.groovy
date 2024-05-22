@@ -1,5 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
+import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -8,9 +8,7 @@ import groovy.transform.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 
-@Field RepositoryClient repositoryClient
-
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.psbgen_requiredBuildProperties)
@@ -22,11 +20,12 @@ def acbgenLangQualifier = "acbgen"
 buildUtils.createLanguageDatasets(acbgenLangQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'psbgen_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'psbgen_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// copy build file to input data set
 	buildUtils.copySourceFiles(buildFile, props.psbgen_srcPDS, null, null, null)
@@ -53,7 +52,7 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The assembly return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 
@@ -64,7 +63,7 @@ sortedList.each { buildFile ->
 			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 
 		else{
@@ -76,7 +75,7 @@ sortedList.each { buildFile ->
 					String errorMsg = "*! The acbgen return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 					println(errorMsg)
 					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 				}
 			}
 		}
@@ -221,7 +220,7 @@ def createACBgenCommand(String buildFile, String member, File logFile) {
 
 	// retrieve target pds and deploytype
 	String acbgen_loadPDS = props.getFileProperty('acbgen_loadPDS', buildFile)
-	String deployType = buildUtils.getDeployType("acbgen", buildFile, logicalFile)
+	String deployType = buildUtils.getDeployType("acbgen", buildFile, null)
 	acbgen.dd(new DDStatement().name("IMSACB").dsn("${acbgen_loadPDS}").options('shr').output(true).deployType(deployType))
 
 	// addional allocations
@@ -234,13 +233,4 @@ def createACBgenCommand(String buildFile, String member, File logFile) {
 
 	return acbgen
 }
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-
-	return repositoryClient
-}
-
-
 
