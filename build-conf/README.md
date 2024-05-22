@@ -31,6 +31,7 @@ SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
 SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
+EZETLOAD | Easytrieve Load Library. Example for IBM Migration Utility: SYS1.SFSYLOAD
 
 ### build.properties
 General properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts.
@@ -335,6 +336,26 @@ transfer_jclPDS | Sample dataset for JCL members
 transfer_xmlPDS | Sample dataset for xml members
 transfer_dsOptions | BPXWDYN creation options for creating 'source' type data sets
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets
+
+### Easytrieve.properties
+Build properties used by zAppBuild/language/Easytrieve.groovy
+
+Property | Description
+--- | ---
+easytrieve_requiredBuildProperties | Comma separated list of required build properties for language/Cobol.groovy
+easytrieve_srcPDS | Dataset to move Easytrieve source files to from USS
+easytrieve_cpyPDS | Dataset to move Easytrieve macros to from USS
+easytrieve_objPDS | Dataset to create object decks in from compile step
+easytrieve_dbrmPDS | Dataset to create DB2 DBRM modules in from compile step
+easytrieve_loadPDS | Dataset to create load modules in from link edit step
+easytrieve_srcDataSets | Comma separated list of 'source' type data sets
+easytrieve_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+easytrieve_loadDatasets | Comma separated list of 'load module' type data sets
+easytrieve_loadOptions | BPXWDYN creation options for 'load module' type data sets
+easytrieve_tempOptions | BPXWDYN creation options for temporary data sets
+easytrieve_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
+easytrieve_compiler | MVS program name of the COBOL compiler
+easytrieve_linkEditor | MVS program name of the link editor
 
 ### language-conf/languageConfigProps01.properties
 Sample language configuration properties file used by dbb-zappbuild/utilities/BuildUtilities.groovy.

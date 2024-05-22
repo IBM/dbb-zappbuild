@@ -1,5 +1,4 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
-import com.ibm.dbb.repository.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
@@ -9,7 +8,6 @@ import groovy.transform.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
-@Field RepositoryClient repositoryClient
 
 
 /***
@@ -20,7 +18,7 @@ import groovy.transform.*
  *  
  */
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 //verify required build properties
 buildUtils.assertBuildProperties(props.easytrieve_requiredBuildProperties)
@@ -32,33 +30,36 @@ buildUtils.createLanguageDatasets(langQualifier)
 
 //sort the build list based on build file rank if provided
 List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'easytrieve_fileBuildRank')
+int currentBuildFileNumber = 1
 
 //iterate through build list
 
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 	
 	// configure dependency resolution and create logical file
-	def dependencyResolver
-	LogicalFile logicalFile
 
-	if (props.useSearchConfiguration && props.useSearchConfiguration.toBoolean() && buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, "1.1.2")) { // use new SearchPathDependencyResolver
-		String dependencySearch = props.getFileProperty('easytrieve_dependencySearch', buildFile)
-		logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
-	} else { // use deprecated DependencyResolver
-		String rules = props.getFileProperty('easytrieve_resolutionRules', buildFile)
-		dependencyResolver = buildUtils.createDependencyResolver(buildFile, rules)
-		logicalFile = dependencyResolver.getLogicalFile()
-	}
+	String dependencySearch = props.getFileProperty('easytrieve_dependencySearch', buildFile)
+	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 
+	// copy source files and dependency files to data sets	
 	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, 'easytrieve_dependenciesDatasetMapping', null, dependencyResolver)
+
+	// Get logical file
+	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
-	File logFile = new File("${props.buildOutDir}/${member}.log")
+	String needsLinking = props.getFileProperty('easytrieve_linkEdit', buildFile)
+	
+	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.ezt.log")
+	if (logFile.exists())
+		logFile.delete()
+		
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 	
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -73,11 +74,11 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 	// if this program needs to be link edited . . .
-		String needsLinking = props.getFileProperty('easytrieve_linkEdit', buildFile)
+		
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			//rc = 0
@@ -87,13 +88,13 @@ sortedList.each { buildFile ->
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile],client:getRepositoryClient())
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
 				// only scan the load module if load module scanning turned on for file
 				String scanLoadModule = props.getFileProperty('easytrieve_scanLoadModule', buildFile)
-				if (scanLoadModule && scanLoadModule.toBoolean() && getRepositoryClient())
-					impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile, repositoryClient)
+				if (scanLoadModule && scanLoadModule.toBoolean())
+					impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
 			}
 		}
 			
@@ -141,12 +142,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().name("SYSUT$num").options(props.easytrieve_tempOptions))
 	}
 	
-	// Write SYSLIN to temporary dataset if performing link edit
-	String doLinkEdit = props.getFileProperty('easytrieve_linkEdit', buildFile)
-	if (doLinkEdit && doLinkEdit.toBoolean())
-		compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.easytrieve_tempOptions).pass(true))
-	else
-		compile.dd(new DDStatement().name("SYSLIN").dsn("${props.easytrieve_objPDS}($member)").options('shr').output(true))
+	// define object dataset allocation
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.easytrieve_objPDS}($member)").options('shr').output(true))
 		
 	// add a syslib to the compile command
 	compile.dd(new DDStatement().name("PANDD").dsn(props.easytrieve_cpyPDS).options("shr"))
@@ -179,9 +176,60 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 	String parms = props.getFileProperty('easytrieve_linkEditParms', buildFile)
 	String linker = props.getFileProperty('easytrieve_linkEditor', buildFile)
+	String linkEditStream = props.getFileProperty('easytrieve_linkEditStream', buildFile)
+	
+	// obtain githash for buildfile
+	String easytrieve_storeSSI = props.getFileProperty('easytrieve_storeSSI', buildFile)
+	if (easytrieve_storeSSI && easytrieve_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parms = parms + ",SSI=$ssi"
+	}
+	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parms"
 	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
+	
+	// Assemble linkEditInstream to define SYSIN as instreamData
+	String sysin_linkEditInstream = ''
+	
+	// appending configured linkEdit stream if specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('easytrieve_identifyLoad', buildFile)
+	
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.easytrieve_loadOptions)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
+	
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
+	}
+
+	// appending debug exit to link instructions
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
+
+	// Define SYSIN dd as instream data
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+	}
+
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.easytrieve_objPDS}($member)").options('shr'))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
 	
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("easytrieve", buildFile, logicalFile)
@@ -201,18 +249,25 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	}
 
 	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
+	
+	// Add Debug Dataset to find the debug exit to SYSLIB
+	if (props.debug && props.SEQAMOD)
+		linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
+
+	if (buildUtils.isCICS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+			
+	if (buildUtils.isSQL(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
 
 	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
 	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 	
 	return linkedit
 }
-
-
-def getRepositoryClient() {
-	if (!repositoryClient && props."dbb.RepositoryClient.url")
-		repositoryClient = new RepositoryClient().forceSSLTrusted(true)
-	
-	return repositoryClient
-}
-

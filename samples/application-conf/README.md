@@ -317,9 +317,8 @@ Property | Description | Overridable
 --- | --- | ---
 easytrieve_compileMaxRC | Default compile maximum RC allowed. | true
 easytrieve_linkEditMaxRC | Default link edit maximum RC allowed. | true
-easytrieve_resolutionRules | Default resolution rules for zUnit. | true
+easytrieve_dependencySearch | Default dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 easytrieve_compileParms | Default base compile parameters. | true
-easytrieve_compiler | Default easytrieve compiler | true
 easytrieve_linkEdit | Flag indicating to execute the link edit step to produce a compiled easytrieve for the source file. | true
 easytrieve_linkEditParms | Default link edit parameters. | true
 easytrieve_deployType | default deployType | true
