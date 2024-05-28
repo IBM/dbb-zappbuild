@@ -239,7 +239,7 @@ def runBaselineBuild(String testScriptPropFiles) {
 
 	println "\n** Running full build to set baseline"
 
-	def dbbHome = EnvVars.getHome()
+	def dbbHome = EnvVars.getDBBHome()
 				
 	def fullBuildCommand = []
 	fullBuildCommand << "${dbbHome}/bin/groovyz"

@@ -12,7 +12,7 @@ println "** Executing test script ${this.class.getName()}.groovy"
 println "**************************************************************"
 
 // Get the DBB_HOME location
-def dbbHome = EnvVars.getHome()
+def dbbHome = EnvVars.getDBBHome()
 if (props.verbose) println "** DBB_HOME = ${dbbHome}"
 
 // create impact build command for preview
