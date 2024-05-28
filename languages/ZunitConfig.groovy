@@ -1,4 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
+import com.ibm.dbb.EnvVars
 import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
@@ -129,7 +130,7 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 """
 	if (props.verbose) println(jcl)
 
-	def dbbConf = System.getenv("DBB_CONF")
+	def dbbConf = EnvVars.getDBBConf()
 
 	// Create jclExec
 	def zUnitRunJCL = new JCLExec().text(jcl)

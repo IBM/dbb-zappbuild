@@ -1,4 +1,5 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
+import com.ibm.dbb.EnvVars
 import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
@@ -121,7 +122,7 @@ sortedList.each { buildFile ->
 		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
 
 		// if no  owner is set, use the user.name as package owner
-		def owner = ( !props.bind_packageOwner ) ? System.getProperty("user.name") : props.bind_packageOwner
+		def owner = ( !props.bind_packageOwner ) ? EnvVars.getUserName() : props.bind_packageOwner
 
 		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS, props.buildOutDir, props.bind_runIspfConfDir,
 				props.bind_db2Location, props.bind_collectionID, owner, props.bind_qualifier, props.verbose && props.verbose.toBoolean());
