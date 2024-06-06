@@ -136,6 +136,21 @@ sortedList.each { buildFile ->
 
 	// clean up passed DD statements
 	job.stop()
+
+	// create build map for each build file upon success
+	if (props.buildMapsEnabled && MetadataStoreFactory.metadataStoreExists() && bindFlag && !isZUnitTestCase && !props.topicBranchBuild) {
+		BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
+		// populate outputs with IExecutes
+		List<IExecute> execs = new ArrayList<IExecute>()
+		if (compile != null) execs.add(compile)
+		if (linkEdit != null) execs.add(linkEdit)
+		buildMap.populateOutputs(execs)
+
+		// populate sources and inputs with git metadata
+		//buildMap.populateInputsFromGit()
+
+		// if link != null 
+	}
 }
 
 // end script

@@ -25,7 +25,6 @@ import groovy.cli.commons.*
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
-@Field MetadataStore metadataStore
 @Field startTime = new Date()
 
 // start time message
@@ -136,7 +135,7 @@ def initializeBuildProcess(String[] args) {
 	// create metadata store for this script
 	if (!props.userBuild) {
 		if (props.metadataStoreType == 'file')
-			metadataStore = MetadataStoreFactory.createFileMetadataStore(props.metadataStoreFileLocation)
+			MetadataStoreFactory.createFileMetadataStore(props.metadataStoreFileLocation)
 		else if (props.metadataStoreType == 'db2') {
 			// Get ID
 			String id
@@ -165,9 +164,9 @@ def initializeBuildProcess(String[] args) {
 				
 				// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(id, passwordFile, db2ConnectionProps)
+					MetadataStoreFactory.createDb2MetadataStore(id, passwordFile, db2ConnectionProps)
 				else
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(id, password as String, db2ConnectionProps)
+					MetadataStoreFactory.createDb2MetadataStore(id, password as String, db2ConnectionProps)
 			}
 			else { // Not using Db2 Config Properties file
 				
@@ -179,9 +178,9 @@ def initializeBuildProcess(String[] args) {
 				
 				/// Call correct Db2 MetadataStore constructor
 				if (passwordFile)
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, passwordFile)
+					MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, passwordFile)
 				else 
-					metadataStore = MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, password as String)
+					MetadataStoreFactory.createDb2MetadataStore(props.metadataStoreDb2Url, id, password as String)
 			}
 			
 		}
@@ -197,15 +196,13 @@ def initializeBuildProcess(String[] args) {
 	if (props.reset && props.reset.toBoolean())  {
 		println("** Reset option selected")
 
-		println("* Deleting collection ${props.applicationCollectionName}")
-		metadataStore.deleteCollection(props.applicationCollectionName)
-
-		println("* Deleting collection ${props.applicationOutputsCollectionName}")
-		metadataStore.deleteCollection(props.applicationOutputsCollectionName)
-
-		println("* Deleting build result group ${props.applicationBuildGroup}")
-		metadataStore.deleteBuildResults(props.applicationBuildGroup)
-	
+		if (MetadataStoreFactory.metadataStoreExists()) {
+			MetadataStore mds = MetadataStoreFactory.getMetadataStore()
+			if (mds.buildGroupExists(props.applicationBuildGroup)) {
+				println("** Deleting build group ${props.applicationBuildGroup}")
+				metadataStore.deleteBuildGroup(props.applicationBuildGroup)
+			}
+		}
 		System.exit(0)
 	}
 
@@ -216,26 +213,7 @@ def initializeBuildProcess(String[] args) {
 	// initialize build report
 	BuildReportFactory.createDefaultReport()
 
-	// initialize build result (requires MetadataStore)
-	if (metadataStore) {
-		def buildResult = metadataStore.createBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
-		// set build state and status
-		buildResult.setState(buildResult.PROCESSING)
-		if (props.preview) buildResult.setStatus(4)
-		
-		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
-		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
-		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
-		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
-		if (props.preview) buildResult.setProperty('preview', 'true')
-		
-		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
-				
-		println("** Build result created for BuildGroup:${props.applicationBuildGroup} BuildLabel:${props.applicationBuildLabel}")
-	}
-
-	// verify/create/clone the collections for this build
-	impactUtils.verifyCollections()
+	initMetadataArtifacts()
 	
 	// loading the scanner mapping to fill the DependencyScannerRegistry  
 	dependencyScannerUtils.populateDependencyScannerRegistry()
@@ -528,8 +506,6 @@ def populateBuildProperties(def opts) {
 	props.topicBranchBuild = (props.applicationCurrentBranch.equals(props.mainBuildBranch)) ? null : 'true'
 	props.applicationBuildGroup = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
 	props.applicationBuildLabel = ("build.${props.startTime}") as String
-	props.applicationCollectionName = ((props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}") as String
-	props.applicationOutputsCollectionName = "${props.applicationCollectionName}-outputs" as String
 
 	if (props.userBuild) {	// do not create a subfolder for user builds
 		props.buildOutDir = "${props.outDir}" as String }
@@ -553,6 +529,84 @@ def populateBuildProperties(def opts) {
 		println("java.home="+System.getProperty("java.home"))
 		println("user.dir="+EnvVars.getUserDir())
 		println ("** Build properties at start up:\n${props.list()}")
+	}
+
+}
+
+/*
+ * initMetadataArtifacts - initializes all metadata artifacts (Build group, build result, collections)
+ * required for the build. 
+ */
+def initMetadataArtifacts() {	
+	if (MetadataStoreFactory.metadataStoreExists()) {
+		MetadataStore mds = MetadataStoreFactory.getMetadataStore()
+
+		/* Get or create build group */
+		BuildGroup buildGroup = mds.getBuildGroup(props.applicationBuildGroup)
+		
+		if (buildGroup == null) { // Need to create build group 
+			String mainBuildGroupName = "${props.application}-${props.mainBuildBranch}"
+			if (props.topicBranchBuild && mds.buildGroupExists(mainBuildGroupName)) {
+				// create a topic branch build group (copy collections and last successful build result from mainBuildGroup)
+				buildGroup = mds.createTopicBranchBuildGroup(mainBuildGroupName, props.applicationBuildGroup) 
+				if (props.verbose) println "** Created topic branch build group ${props.applicationBuildGroup} from $mainBuildGroupName"
+			}
+			else { 
+				buildGroup = mds.createBuildGroup(props.applicationBuildGroup)
+				if (props.verbose) println "** Created build group ${props.applicationBuildGroup}"
+			}
+		}
+
+		/* Verify collections - supports initial migration from legacy collections */
+		String legacySourceCollectionName = (props.applicationCurrentBranch) ? "${props.application}-${props.applicationCurrentBranch}" : "${props.application}"
+		String legacyMainSourcesCollectionName = "${props.application}-${props.mainBuildBranch}"
+		String legacyOutputsCollectionName = "${legacySourceCollectionName}-outputs"
+		String legacyMainOutputsCollectionName = "${legacyMainSourcesCollectionName}-outputs"
+
+		// Verify sources collection
+		if (!buildGroup.collectionExists("sources")) {
+			if (props.verbose) println "** Creating sources collection."
+			// check for legacy collection and copy to sources if it exists
+			if (mds.collectionExists(legacySourceCollectionName)) {
+				buildGroup.copyCollection(mds.getCollection(legacySourceCollectionName), "sources")
+				println "** Migrated legacy sources collection ${legacySourceCollectionName}"
+			} else if (props.topicBranchBuild && mds.collectionExists(legacyMainSourcesCollectionName)) {
+				buildGroup.copyCollection(mds.getCollection(legacyMainSourcesCollectionName), "sources")
+				println "** Migrated legacy main branch sources collection ${legacyMainSourcesCollectionName}"
+			} else { // no legacy collection to copy from, so create new collection within the build group
+				buildGroup.createCollection("sources") 
+			}
+		}
+		// Verify outputs collection
+		if (!buildGroup.collectionExists("outputs")) {
+			if (props.verbose) println "** Creating outputs collection."
+			// check for legacy collection and copy to sources if it exists
+			if (mds.collectionExists(legacyOutputsCollectionName)) {
+				buildGroup.copyCollection(mds.getCollection(legacyOutputsCollectionName), "outputs")
+				println "** Migrated legacy outputs collection ${legacySourceCollectionName}"
+			} else if (props.topicBranchBuild && mds.collectionExists(legacyMainOutputsCollectionName)) {
+				buildGroup.copyCollection(mds.getCollection(legacyMainOutputsCollectionName), "outputs")
+				println "** Migrated legacy main branch outputs collection ${legacySourceCollectionName}"
+			} else {
+				buildGroup.createCollection("outputs") 
+			}
+		}
+
+		// Initialize build result
+		BuildResult buildResult = buildGroup.createBuildResult(props.applicationBuildLabel) 
+		// set build state and status
+		buildResult.setState(buildResult.PROCESSING)
+		if (props.preview) buildResult.setStatus(4)
+		
+		if (props.scanOnly) buildResult.setProperty('scanOnly', 'true')
+		if (props.fullBuild) buildResult.setProperty('fullBuild', 'true')
+		if (props.impactBuild) buildResult.setProperty('impactBuild', 'true')
+		if (props.topicBranchBuild) buildResult.setProperty('topicBranchBuild', 'true')
+		if (props.preview) buildResult.setProperty('preview', 'true')
+		
+		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
+		println("** Build result created for BuildGroup:${buildGroup.getName()} BuildLabel:${props.applicationBuildLabel}")
+
 	}
 
 }
@@ -592,7 +646,7 @@ def createBuildList() {
 		} else {
 			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
 		}
-		if (metadataStore) {
+		if (MetadataStoreFactory.metadataStoreExists()) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
 			println "*! Impact build requires a Filesystem or Db2 MetadataStore"
@@ -600,7 +654,7 @@ def createBuildList() {
 	}
 	else if (props.mergeBuild){
 		println "** --mergeBuild option selected. $action changed programs for application ${props.application} flowing back to ${props.mainBuildBranch}"
-		if (metadataStore) {
+		if (MetadataStoreFactory.metadataStoreExists()) {
 			assert (props.topicBranchBuild) : "*! Build type --mergeBuild can only be run on for topic branch builds."
 				(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createMergeBuildList()		}
 		else {
@@ -685,7 +739,7 @@ def createBuildList() {
 	
 	// Perform analysis and build report of external impacts
 	// Prereq: Metadatastore Connection
-	if (metadataStore && props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+	if (MetadataStoreFactory.metadataStoreExists() && props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
@@ -722,8 +776,9 @@ def finalizeBuildProcess(Map args) {
 	def buildResult = null
 
 	// update repository artifacts
-	if (metadataStore) {
-		buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (MetadataStoreFactory.metadataStoreExists()) {
+		MetadataStore mds = MetadataStoreFactory.getMetadataStore()
+		buildResult = mds.getBuildGroup(props.applicationBuildGroup).getBuildResult(props.applicationBuildLabel)
 
 		// add git hashes for each build directory
 		List<String> srcDirs = []
@@ -799,7 +854,7 @@ def finalizeBuildProcess(Map args) {
 
 
 	// attach build report & result
-	if (metadataStore) {
+	if (MetadataStoreFactory.metadataStoreExists()) {
 		buildReport.save(jsonOutputFile, buildReportEncoding)
 		// Save build report & build report data
 		buildResult.setBuildReport(new FileInputStream(htmlOutputFile))

@@ -425,11 +425,10 @@ def getMetadataStore() {
  */
 def updateBuildResult(Map args) {
 	// args : errorMsg / warningMsg
-	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
 	// update build results only in non-userbuild scenarios
-	if (metadataStore && !props.userBuild) {
-		def buildResult = metadataStore.getBuildResult(props.applicationBuildGroup, props.applicationBuildLabel)
+	if (MetadataStoreFactory.metadataStoreExists() && !props.userBuild) {
+		def buildResult = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).getBuildResult(props.applicationBuildLabel)
 		if (!buildResult) {
 			println "*! No build result found for BuildGroup '${props.applicationBuildGroup}' and BuildLabel '${props.applicationBuildLabel}'"
 			return

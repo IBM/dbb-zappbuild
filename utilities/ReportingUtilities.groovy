@@ -137,13 +137,13 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 
 		// get all collections which match pattern
 		List<String> selectedCollections = new ArrayList()
-		metadataStore.getCollections().each{ it ->
+		metadataStore.getBuildGroup(props.applicationBuildGroup).getCollections().each{ it ->
 			cName = it.getName()
 			if (matchesPattern(cName,collectionMatcherPatterns)) selectedCollections.add(cName)
 		}
 		
 		// run query
-		logicalImpactedFilesCollections = metadataStore.getImpactedFiles(selectedCollections, logicalDependencies);
+		logicalImpactedFilesCollections = metadataStore.getBuildGroup(props.applicationBuildGroup).getImpactedFiles(selectedCollections, logicalDependencies);
 	}
 	return logicalImpactedFilesCollections
 }
