@@ -650,7 +650,7 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
 
 		// Store logical file and indirect dependencies to the outputs collection
 		MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
-												.getCollection("${props.applicationOutputsCollectionName}")
+												.getCollection("outputs")
 												.addLogicalFile( logicalFile );
 	}
 }
