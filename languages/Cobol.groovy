@@ -77,13 +77,12 @@ sortedList.each { buildFile ->
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('cobol_compileMaxRC', buildFile).toInteger()
 
-	boolean bindFlag = true
+	boolean error = false
 
 	if (rc > maxRC) {
-		bindFlag = false
+		error = true
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
-		props.error = "true"
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else { // if this program needs to be link edited . . .
@@ -100,10 +99,9 @@ sortedList.each { buildFile ->
 			maxRC = props.getFileProperty('cobol_linkEditMaxRC', buildFile).toInteger()
 
 			if (rc > maxRC) {
-				bindFlag = false
+				error = true
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
-				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
@@ -118,7 +116,7 @@ sortedList.each { buildFile ->
 	}
 
 	//perform Db2 Bind only on User Build and perfromBindPackage property
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && props.bind_performBindPackage && props.bind_performBindPackage.toBoolean() ) {
+	if (props.userBuild && !error && logicalFile.isSQL() && props.bind_performBindPackage && props.bind_performBindPackage.toBoolean() ) {
 		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
 
 		// if no  owner is set, use the user.name as package owner
@@ -127,9 +125,9 @@ sortedList.each { buildFile ->
 		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS, props.buildOutDir, props.bind_runIspfConfDir,
 				props.bind_db2Location, props.bind_collectionID, owner, props.bind_qualifier, props.verbose && props.verbose.toBoolean());
 		if ( bindRc > bindMaxRC) {
+			error = true
 			String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind.log":bindLogFile])
 		}
 	}
@@ -137,9 +135,13 @@ sortedList.each { buildFile ->
 	// clean up passed DD statements
 	job.stop()
 
+	if (error) 
+		props.error = "true"
+
 	// create build map for each build file upon success
-	if (props.buildMapsEnabled && MetadataStoreFactory.metadataStoreExists() && bindFlag && !isZUnitTestCase && !props.topicBranchBuild) {
+	if (props.buildMapsEnabled && MetadataStoreFactory.metadataStoreExists() && !error && !isZUnitTestCase && !props.topicBranchBuild) {
 		BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
+		
 		// populate outputs with IExecutes
 		List<IExecute> execs = new ArrayList<IExecute>()
 		if (compile != null) execs.add(compile)
@@ -147,9 +149,10 @@ sortedList.each { buildFile ->
 		buildMap.populateOutputs(execs)
 
 		// populate sources and inputs with git metadata
-		//buildMap.populateInputsFromGit()
+		buildMap.populateInputsFromGit(props.workspace, dependencySearch)
 
-		// if link != null 
+		if (linkEdit != null) // populate binary inputs if program was linked
+			buildMap.populateBinaryInputsFromGit(props.cobol_loadPDS, member)
 	}
 }
 
