@@ -41,6 +41,8 @@ sortedList.each { buildFile ->
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('rexx_linkEdit', buildFile)
+
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.REXX.log")
 	if (logFile.exists())
 		logFile.delete()
@@ -48,7 +50,8 @@ sortedList.each { buildFile ->
 	File linkEditLogFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.LinkEdit.log" : "${props.buildOutDir}/${member}.REXX.LinkEdit.log")
 	if (linkEditLogFile.exists())
 		linkEditLogFile.delete()
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, linkEditLogFile)
+	MVSExec linkEdit
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, linkEditLogFile)
 
 
 	// execute mvs commands in a mvs job
@@ -59,26 +62,25 @@ sortedList.each { buildFile ->
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('rexx_compileMaxRC', buildFile).toInteger()
 
-	boolean bindFlag = true
+	boolean error = false
 
 	if (rc > maxRC) {
-		bindFlag = false
+		error = true
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
-		props.error = "true"
+		
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 		// if this program needs to be link edited . . .
-		String needsLinking = props.getFileProperty('rexx_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
 
 			if (rc > maxRC) {
+				error = true
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
-				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
@@ -94,6 +96,25 @@ sortedList.each { buildFile ->
 
 	// clean up passed DD statements
 	job.stop()
+
+	if (error)
+		props.error = "true"
+	else if (props.buildMapsEnabled && MetadataStoreFactory.metadataStoreExists() && !isZUnitTestCase && !props.topicBranchBuild) {
+		// create build map for each build file upon success
+		BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
+		
+		// populate outputs with IExecutes
+		List<IExecute> execs = new ArrayList<IExecute>()
+		if (compile != null) execs.add(compile)
+		if (linkEdit != null) execs.add(linkEdit)
+		buildMap.populateOutputs(execs)
+
+		// populate sources and inputs with git metadata
+		buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+
+		if (linkEdit != null) // populate binary inputs if program was linked
+			buildMap.populateBinaryInputsFromGit(props.rexx_loadPDS, member)
+	}
 }
 
 // end script
