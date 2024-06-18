@@ -217,13 +217,13 @@ def createMergeBuildList(){
 def findImpactedFiles(String impactSearch, String changedFile) {
 	
 	List<String> collections = new ArrayList<String>()
-	collections.add(props.applicationCollectionName)
-	collections.add(props.applicationOutputsCollectionName)
+	collections.add("sources")
+	collections.add("outputs")
 	
 	if (props.verbose)
 		println ("*** Creating SearchPathImpactFinder with collections " + collections + " and impactSearch configuration " + impactSearch)
 	
-	def finder = new SearchPathImpactFinder(impactSearch, collections)
+	def finder = new SearchPathImpactFinder(impactSearch, props.applicationBuildGroup, collections)
 	
 	// Find all files impacted by the changed file
 	impacts = finder.findImpactedFiles(changedFile, props.workspace)
