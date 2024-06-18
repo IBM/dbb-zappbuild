@@ -515,8 +515,6 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	List<LogicalFile> logicalFiles = new ArrayList<LogicalFile>()
 	List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
-	verifyCollections()
-
 	// remove deleted files from collection
 	deletedFiles.each { file ->
 		// files in a collection are stored as relative paths from a source directory
