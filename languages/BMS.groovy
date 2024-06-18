@@ -38,18 +38,34 @@ sortedList.each { buildFile ->
 	
 	// execute mvs commands in a mvs job
 	def maxRC = props.getFileProperty('bms_maxRC', buildFile).toInteger()
-        def rc = new MVSJob().executable(copyGen)
-	                     .executable(compile)
-			     .executable(linkEdit)
-			     .maxRC(maxRC)
-			     .execute()
-	
-    if (rc > maxRC) {
+	MVSJob mvsJob = new MVSJob().executable(copyGen)
+								.executable(compile)
+								.executable(linkEdit)
+								.maxRC(maxRC)
+    
+	int rc = mvsJob.execute()
+    
+	if (rc > maxRC) {
 	    String errorMsg = "*! The build return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
-	 }
+	}
+	else { // success
+		if (props.buildMapsEnabled && MetadataStoreFactory.metadataStoreExists() && !isZUnitTestCase && !props.topicBranchBuild) {
+			// create build map for each build file upon success
+			BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
+			
+			// populate outputs with IExecutes
+			buildMap.populateOutputs(mvsJob.getExecutables())
+
+			// populate sources and inputs with git metadata
+			buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+			// scan load module to populate binary inputs
+			buildMap.populateBinaryInputsFromGit(props.bms_loadPDS, member)
+		}
+	}
+
 	
 }
 

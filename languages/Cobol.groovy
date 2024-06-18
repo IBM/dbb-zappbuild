@@ -147,10 +147,10 @@ sortedList.each { buildFile ->
 		if (linkEdit != null) execs.add(linkEdit)
 		buildMap.populateOutputs(execs)
 
-		// populate sources and inputs with git metadata
+		// dependency resolution to populate sources and inputs with git metadata
 		buildMap.populateInputsFromGit(props.workspace, dependencySearch)
 
-		if (linkEdit != null) // populate binary inputs if program was linked
+		if (linkEdit != null) // scan load module to populate binary inputs
 			buildMap.populateBinaryInputsFromGit(props.cobol_loadPDS, member)
 	}
 }
