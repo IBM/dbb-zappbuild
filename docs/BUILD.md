@@ -311,7 +311,7 @@ user.dir=/ZT01/var/dbb
 MortgageApplication/cobol/epsnbrvl.cbl
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
@@ -407,7 +407,7 @@ required props = bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
 *** Building file MortgageApplication/bms/epsmort.bms
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
@@ -576,7 +576,7 @@ required props = bms_srcPDS,bms_cpyPDS,bms_loadPDS, bms_assembler,bms_linkEditor
 *** Building file MortgageApplication/bms/epsmort.bms
 *** Building file MortgageApplication/bms/epsmlis.bms
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
@@ -657,7 +657,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscsmrd.cbl = LIB,CICS
 *** Logical file =
 {"dli":false,"lname":"EPSCSMRD","file":"MortgageApplication\/cobol\/epscsmrd.cbl","mq":false,"cics":false,"language":"ZBND","sql":false}
 ** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,  SDFHLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LINK
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
@@ -765,7 +765,7 @@ MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
@@ -817,7 +817,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 *** Logical file =
 {"dli":false,"lname":"EPSCMORT","file":"MortgageApplication\/cobol\/epscmort.cbl","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSNBRVL","library":"DBB.ZAPP.CLEAN.MASTER.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
 ** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,  SDFHLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LINK
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
@@ -916,7 +916,7 @@ MortgageApplication/cobol/epsnbrvl.cbl
 MortgageApplication/cobol/epscmort.cbl
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.FEAT.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.FEAT.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.FEAT.OBJ
@@ -1066,7 +1066,7 @@ MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.REL.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.REL.COPY
 ** Creating / verifying build dataset DBB.ZAPP.REL.OBJ
@@ -1101,7 +1101,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 *** Logical file =
 {"dli":false,"lname":"EPSCMORT","file":"MortgageApplication\/cobol\/epscmort.cbl","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSNBRVL","library":"DBB.ZAPP.REL.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
 ** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,  SDFHLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.REL.LINK
 ** Creating / verifying build dataset DBB.ZAPP.REL.OBJ
 ** Creating / verifying build dataset DBB.ZAPP.REL.LOAD
@@ -1220,7 +1220,7 @@ MortgageApplication/cobol/epsmlist.cbl
 HTTP/1.1 200 OK
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.MERGE.BUILD.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.MERGE.BUILD.COPY
 ** Creating / verifying build dataset DBB.ZAPP.MERGE.BUILD.OBJ
@@ -1472,7 +1472,7 @@ MortgageApplication/jcl/MYSAMP.jcl
 *!! MortgageApplication/cobol/epscmort.cbl is changed on branch main and intersects with the current build list.
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy,Transfer.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED,   cobol_dependencySearch
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED,   cobol_dependencySearch
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.COBOL
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.COPY
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.OBJ
@@ -1559,7 +1559,7 @@ Link-Edit parms for MortgageApplication/cobol/epscmort.cbl = MAP,RENT,COMPAT(PM5
    "sql": false
 }
 ** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,  SDFHLOAD,SCEELKED
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.LINK
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.OBJ
 ** Creating / verifying build dataset DBEHM.DBB.BUILD.LOAD
@@ -2018,7 +2018,7 @@ MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/link/epsmlist.lnk
 ** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy
 ** Building files mapped to Cobol.groovy script
-required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,  SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COBOL
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.COPY
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
@@ -2070,7 +2070,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 *** Logical file =
 {"dli":false,"lname":"EPSCMORT","file":"MortgageApplication\/cobol\/epscmort.cbl","mq":false,"cics":false,"logicalDependencies":[{"lname":"EPSNBRVL","library":"DBB.ZAPP.CLEAN.MASTER.OBJ","category":"LINK"}],"language":"ZBND","sql":false}
 ** Building files mapped to LinkEdit.groovy script
-required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,  SDFHLOAD,SCEELKED
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LINK
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.OBJ
 ** Creating / verifying build dataset DBB.ZAPP.CLEAN.MASTER.LOAD
