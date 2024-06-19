@@ -52,7 +52,7 @@ sortedList.each { buildFile ->
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else { // success
-		if (props.createBuildMaps && MetadataStoreFactory.metadataStoreExists() && !isZUnitTestCase) {
+		if (props.createBuildMaps && MetadataStoreFactory.metadataStoreExists()) {
 			// create build map for each build file upon success
 			BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
 			

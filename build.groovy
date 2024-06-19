@@ -551,11 +551,11 @@ def initMetadataArtifacts() {
 			if (props.topicBranchBuild && mds.buildGroupExists(mainBuildGroupName)) {
 				// create a topic branch build group (copy collections and last successful build result from mainBuildGroup)
 				buildGroup = mds.createTopicBuildGroup(mainBuildGroupName, props.applicationBuildGroup) 
-				if (props.verbose) println "** Created topic branch build group ${props.applicationBuildGroup} from $mainBuildGroupName"
+				println "** Created topic branch build group ${props.applicationBuildGroup} from $mainBuildGroupName"
 			}
 			else { 
 				buildGroup = mds.createBuildGroup(props.applicationBuildGroup)
-				if (props.verbose) println "** Created build group ${props.applicationBuildGroup}"
+				println "** Created build group ${props.applicationBuildGroup}"
 			}
 		}
 
