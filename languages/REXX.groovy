@@ -101,7 +101,13 @@ sortedList.each { buildFile ->
 		props.error = "true"
 	else if (props.createBuildMaps && MetadataStoreFactory.metadataStoreExists() && !isZUnitTestCase) {
 		// create build map for each build file upon success
-		BuildMap buildMap = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup).createBuildMap(buildFile) // build map creation
+		BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+		if (group.buildMapExists(buildFile)) {
+			if (props.verbose) println("* Deleting build map for $buildFile as it already exists.")
+			group.deleteBuildMap(buildFile)
+		}
+
+		BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
 		
 		// populate outputs with IExecutes
 		List<IExecute> execs = new ArrayList<IExecute>()
