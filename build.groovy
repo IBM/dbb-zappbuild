@@ -522,6 +522,8 @@ def populateBuildProperties(def opts) {
 	
 	// Validate system datasets
 	if (props.checkDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
+
+	props.createBuildMaps = 'true'
 	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
