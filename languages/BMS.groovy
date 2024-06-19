@@ -56,7 +56,7 @@ sortedList.each { buildFile ->
 			// create build map for each build file upon success
 			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
 			if (group.buildMapExists(buildFile)) {
-				if (props.verbose) println("* Deleting build map for $buildFile as it already exists.")
+				if (props.verbose) println("* Replacing existing build map for $buildFile")
 				group.deleteBuildMap(buildFile)
 			}
 
