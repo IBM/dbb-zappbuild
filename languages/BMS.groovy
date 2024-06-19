@@ -60,7 +60,7 @@ sortedList.each { buildFile ->
 			buildMap.populateOutputs(mvsJob.getExecutables())
 
 			// populate sources and inputs with git metadata
-			buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+			//buildMap.populateInputsFromGit(props.workspace, dependencySearch)
 			// scan load module to populate binary inputs
 			buildMap.populateBinaryInputsFromGit(props.bms_loadPDS, member)
 		}
