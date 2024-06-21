@@ -13,6 +13,7 @@ println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ?
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.bms_requiredBuildProperties)
+if (props.createBuildMaps) assert props.bmsSearch : "*! Missing required build property for build map creation 'bmsSearch'" // verify required prop for build map generation
 
 def langQualifier = "bms"
 buildUtils.createLanguageDatasets(langQualifier)
@@ -52,21 +53,19 @@ sortedList.each { buildFile ->
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else { // success
-		if (props.createBuildMaps && MetadataStoreFactory.metadataStoreExists()) {
+		if (props.createBuildMaps) {
 			// create build map for each build file upon success
 			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
 			if (group.buildMapExists(buildFile)) {
 				if (props.verbose) println("* Replacing existing build map for $buildFile")
 				group.deleteBuildMap(buildFile)
 			}
-
-			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
 			
+			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
 			// populate outputs with IExecutes
 			buildMap.populateOutputs(mvsJob.getExecutables())
-
 			// populate sources and inputs with git metadata
-			//buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+			buildMap.populateInputsFromGit(props.workspace, props.bmsSearch)
 			// scan load module to populate binary inputs
 			buildMap.populateBinaryInputsFromGit(props.bms_loadPDS, member)
 		}

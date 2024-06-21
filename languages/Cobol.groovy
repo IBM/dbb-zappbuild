@@ -137,7 +137,7 @@ sortedList.each { buildFile ->
 
 	if (error) 
 		props.error = "true"
-	else if (props.createBuildMaps && MetadataStoreFactory.metadataStoreExists() && !isZUnitTestCase) {
+	else if (props.createBuildMaps && !isZUnitTestCase) {
 		// create build map for each build file upon success
 		BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
 		if (group.buildMapExists(buildFile)) {
@@ -146,7 +146,6 @@ sortedList.each { buildFile ->
 		}
 
 		BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
-		
 		// populate outputs with IExecutes
 		List<IExecute> execs = new ArrayList<IExecute>()
 		if (compile != null) execs.add(compile)
