@@ -65,29 +65,30 @@ sortedList.each { buildFile ->
 	MVSJob job = new MVSJob()
 	job.start()
 	
+	boolean clean = true
 	// compile the easytrieve program
 	int rc = compile.execute()
 	//int rc = 0
 	int maxRC = props.getFileProperty('easytrieve_compileMaxRC', buildFile).toInteger()
 	
 	if (rc > maxRC) {
+		clean = false
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
-		props.error = "true"
+		
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
 	else {
 	// if this program needs to be link edited . . .
-		
-		if (needsLinking.toBoolean()) {
+		if (linkEdit) {
 			rc = linkEdit.execute()
 			//rc = 0
 			maxRC = props.getFileProperty('easytrieve_linkEditMaxRC', buildFile).toInteger()
 		
 			if (rc > maxRC) {
+				clean = false
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
-				props.error = "true"
 				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
@@ -103,6 +104,35 @@ sortedList.each { buildFile ->
 	
 	// clean up passed DD statements
 	job.stop()
+	
+	if (clean) { // success
+		if (props.createBuildMaps) {
+			// create build map for each build file upon success
+			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+			if (group.buildMapExists(buildFile)) {
+				if (props.verbose) println("* Replacing existing build map for $buildFile")
+				group.deleteBuildMap(buildFile)
+			}
+
+			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
+			// populate outputs with IExecutes
+			List<IExecute> execs = new ArrayList<IExecute>()
+			if (compile) execs.add(compile)
+			if (linkEdit) execs.add(linkEdit)
+			buildMap.populateOutputs(execs)
+			// populate inputs using dependency resolution
+			buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+			// populate binary inputs from load module scanning
+			if (linkEdit) { 
+				String scanLoadModule = props.getFileProperty('easytrieve_scanLoadModule', buildFile)
+				if (scanLoadModule && scanLoadModule.toBoolean())
+					buildMap.populateBinaryInputsFromGit(props.linkedit_loadPDS, member)
+			}
+		}
+	}
+	else { // error
+		props.error = "true"
+	}	
 }
 
 // end script
