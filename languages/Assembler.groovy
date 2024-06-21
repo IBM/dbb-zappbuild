@@ -160,7 +160,7 @@ sortedList.each { buildFile ->
 	// clean up passed DD statements
 	job.stop()
 
-	if (clean) { // all steps executed clean
+	if (clean) { // success
 		if (props.createBuildMaps) {
 			// create build map for each build file upon success
 			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)

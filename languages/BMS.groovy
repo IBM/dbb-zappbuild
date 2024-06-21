@@ -60,13 +60,13 @@ sortedList.each { buildFile ->
 				if (props.verbose) println("* Replacing existing build map for $buildFile")
 				group.deleteBuildMap(buildFile)
 			}
-			
+
 			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
 			// populate outputs with IExecutes
 			buildMap.populateOutputs(mvsJob.getExecutables())
 			// populate sources and inputs with git metadata
 			buildMap.populateInputsFromGit(props.workspace, props.bmsSearch)
-			// scan load module to populate binary inputs
+			// populate binary inputs from load module
 			buildMap.populateBinaryInputsFromGit(props.bms_loadPDS, member)
 		}
 	}
