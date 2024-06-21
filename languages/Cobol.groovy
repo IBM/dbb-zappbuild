@@ -150,7 +150,6 @@ sortedList.each { buildFile ->
 			if (compile) execs.add(compile)
 			if (linkEdit) execs.add(linkEdit)
 			buildMap.populateOutputs(execs)
-
 			// populate inputs using dependency resolution
 			buildMap.populateInputsFromGit(props.workspace, dependencySearch)
 			// populate binary inputs from load module scanning
