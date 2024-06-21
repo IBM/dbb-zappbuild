@@ -14,6 +14,8 @@ println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ?
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.linkedit_requiredBuildProperties)
+if (props.createBuildMaps) assert props.linkSearch : "*! Missing required build property for build map creation 'linkSearch'" // verify required prop for build map generation
+
 
 def langQualifier = "linkedit"
 buildUtils.createLanguageDatasets(langQualifier)
@@ -44,16 +46,18 @@ sortedList.each { buildFile ->
 	MVSJob job = new MVSJob()
 	job.start()
 
+	boolean clean = true
+
 	rc = linkEdit.execute()
 	maxRC = props.getFileProperty('linkedit_maxRC', buildFile).toInteger()
 
 	if (rc > maxRC) {
+		clean = false
 		String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
-		props.error = "true"
 		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 	}
-	else {
+	else { // success
 		if(!props.userBuild){
 			// only scan the load module if load module scanning turned on for file
 			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
@@ -63,6 +67,34 @@ sortedList.each { buildFile ->
 	}
 
 	job.stop()
+
+	if (clean) { // success
+		if (props.createBuildMaps) {
+			// create build map for each build file upon success
+			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+			if (group.buildMapExists(buildFile)) {
+				if (props.verbose) println("* Replacing existing build map for $buildFile")
+				group.deleteBuildMap(buildFile)
+			}
+
+			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
+			// populate outputs with IExecutes
+			List<IExecute> execs = new ArrayList<IExecute>()
+			if (linkEdit) execs.add(linkEdit)
+			buildMap.populateOutputs(execs)
+			// populate inputs using dependency resolution
+			buildMap.populateInputsFromGit(props.workspace, props.bmsSearch)
+			// populate binary inputs from load module scanning
+			if (linkEdit) { 
+				String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
+				if (scanLoadModule && scanLoadModule.toBoolean())
+					buildMap.populateBinaryInputsFromGit(props.cobol_loadPDS, member)
+			}
+		}
+	}
+	else { // error
+		props.error = "true"
+	}
 }
 
 // end script
