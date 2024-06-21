@@ -522,9 +522,6 @@ def populateBuildProperties(def opts) {
 	
 	// Validate system datasets
 	if (props.checkDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
-
-	// Create build maps in language scripts
-	if (props.buildMapsEnabled && !props.topicBranchBuild) props.createBuildMaps = 'true'
 	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
@@ -609,6 +606,9 @@ def initMetadataArtifacts() {
 		
 		if (props.buildFile) buildResult.setProperty('buildFile', XmlUtil.escapeXml(props.buildFile))
 		println("** Build result created for BuildGroup:${buildGroup.getName()} BuildLabel:${props.applicationBuildLabel}")
+
+		// Create build maps in language scripts
+		if (props.buildMapsEnabled && !props.topicBranchBuild) props.createBuildMaps = 'true'
 
 	}
 
