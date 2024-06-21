@@ -72,20 +72,15 @@ sortedList.each { buildFile ->
 	MVSJob job = new MVSJob()
 	job.start()
 
-	// initialize return codes
-	int rc = 0
-	
-	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
-
-	boolean error = false
+	boolean clean = true
 
 	// SQL preprocessor
 	if (assembler_SQLTranslator){
-		rc = assembler_SQLTranslator.execute()
-		maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
+		int rc = assembler_SQLTranslator.execute()
+		int maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
-			error = true
+			clean = false
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
@@ -100,12 +95,12 @@ sortedList.each { buildFile ->
 	}
 
 	// CICS preprocessor
-	if (!error && assembler_CICSTranslator){
-		rc = assembler_CICSTranslator.execute()
-		maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
+	if (clean && assembler_CICSTranslator){
+		int rc = assembler_CICSTranslator.execute()
+		int maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
-			error = true
+			clean = false
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
@@ -113,12 +108,12 @@ sortedList.each { buildFile ->
 	}
 
 	// Assembler
-	if (!error) {
-		rc = assembler.execute()
-		maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
+	if (clean) {
+		int rc = assembler.execute()
+		int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 		if (rc > maxRC) {
-			error = true
+			clean = false
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
@@ -126,12 +121,12 @@ sortedList.each { buildFile ->
 	}
 	
 	// create sidefile
-	if (!error && debugSideFile) {
-		rc = debugSideFile.execute()
-		maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
+	if (clean && debugSideFile) {
+		int rc = debugSideFile.execute()
+		int maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
-			error = true
+			clean = false
 			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
@@ -140,13 +135,12 @@ sortedList.each { buildFile ->
 
 	
 	// linkedit
-	if (!error && linkEdit) {
-
-		rc = linkEdit.execute()
-		maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+	if (clean && linkEdit) {
+		int rc = linkEdit.execute()
+		int maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
 
 		if (rc > maxRC) {
-			error = true
+			clean = false
 			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
@@ -166,38 +160,39 @@ sortedList.each { buildFile ->
 	// clean up passed DD statements
 	job.stop()
 
-	if (error) {
-		props.error = "true"
-	}
-	else if (props.createBuildMaps) {
-		// create build map for each build file upon success
-		BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
-		if (group.buildMapExists(buildFile)) {
-			if (props.verbose) println("* Replacing existing build map for $buildFile")
-			group.deleteBuildMap(buildFile)
-		}
-
-		BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
-		// Populate outputs with IExecutes
-		List<IExecute> execs = new ArrayList<IExecute>()
-		if (assembler) execs.add(assembler)
-		if (assembler_SQLTranslator) execs.add(assembler_SQLTranslator)
-		if (assembler_CICSTranslator) execs.add(assembler_CICSTranslator)
-		if (debugSideFile) execs.add(debugSideFile)
-		if (linkEdit) execs.add(linkEdit)
-		buildMap.populateOutputs(execs)
-		// Populate inputs
-		buildMap.populateInputsFromGit(props.workspace, dependencySearch)
-		// Populate binary inputs 
-		if (linkEdit) {
-			String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-			if (scanLoadModule && scanLoadModule.toBoolean()) {
-				String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-				// scan load module to populate binary inputs
-				buildMap.populateBinaryInputsFromGit(assembler_loadPDS, member)
+	if (clean) { // all steps executed clean
+		if (props.createBuildMaps) {
+			// create build map for each build file upon success
+			BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+			if (group.buildMapExists(buildFile)) {
+				if (props.verbose) println("* Replacing existing build map for $buildFile")
+				group.deleteBuildMap(buildFile)
 			}
-		} 
-				
+
+			BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
+			// Populate outputs with IExecutes
+			List<IExecute> execs = new ArrayList<IExecute>()
+			if (assembler) execs.add(assembler)
+			if (assembler_SQLTranslator) execs.add(assembler_SQLTranslator)
+			if (assembler_CICSTranslator) execs.add(assembler_CICSTranslator)
+			if (debugSideFile) execs.add(debugSideFile)
+			if (linkEdit) execs.add(linkEdit)
+			buildMap.populateOutputs(execs)
+			// Populate inputs
+			buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+			// Populate binary inputs 
+			if (linkEdit) {
+				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
+				if (scanLoadModule && scanLoadModule.toBoolean()) {
+					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
+					// scan load module to populate binary inputs
+					buildMap.populateBinaryInputsFromGit(assembler_loadPDS, member)
+				}
+			} 
+		}
+	}
+	else { // error
+		props.error = "true"
 	}
 
 }
