@@ -608,7 +608,7 @@ def initMetadataArtifacts() {
 		println("** Build result created for BuildGroup:${buildGroup.getName()} BuildLabel:${props.applicationBuildLabel}")
 
 		// Create build maps in language scripts
-		if (props.buildMapsEnabled && !props.topicBranchBuild) props.createBuildMaps = 'true'
+		if (props.buildMapsEnabled && props.buildMapsEnabled.toBoolean() && !props.topicBranchBuild) props.createBuildMaps = 'true'
 
 	}
 
