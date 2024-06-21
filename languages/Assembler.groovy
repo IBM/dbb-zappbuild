@@ -51,18 +51,21 @@ sortedList.each { buildFile ->
 	// print logicalFile details and overrides
 	if (props.verbose) buildUtils.printLogicalFileAttributes(logicalFile)
 	
-	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
 	String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
 	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.asm.log")
 	if (logFile.exists())
 		logFile.delete()
-	MVSExec assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
-	MVSExec assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
+	// Define MVSExec commands as appropriate
 	MVSExec assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
-	MVSExec debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit 
+	MVSExec assembler_SQLTranslator 
+	MVSExec assembler_CICSTranslator
+	MVSExec debugSideFile
+	MVSExec linkEdit
+	if (buildUtils.isSQL(logicalFile)) assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
+	if (buildUtils.isCICS(logicalFile)) assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
+	if (props.debug) = createDebugSideFile(buildFile, logicalFile, member, logFile)
 	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
@@ -74,15 +77,17 @@ sortedList.each { buildFile ->
 	
 	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
+	boolean error = false
+
 	// SQL preprocessor
-	if (buildUtils.isSQL(logicalFile)){
+	if (assembler_SQLTranslator){
 		rc = assembler_SQLTranslator.execute()
 		maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
+			error = true
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		} else {
 			// Store db2 bind information as a generic property record in the BuildReport
@@ -95,55 +100,55 @@ sortedList.each { buildFile ->
 	}
 
 	// CICS preprocessor
-	if (rc <= maxRC && buildUtils.isCICS(logicalFile)){
+	if (!error && assembler_CICSTranslator){
 		rc = assembler_CICSTranslator.execute()
 		maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
+			error = true
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
 	// Assembler
-	if (rc <= maxRC) {
+	if (!error) {
 		rc = assembler.execute()
 		maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 		if (rc > maxRC) {
+			error = true
 			String errorMsg = "*! The assembler return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 	
 	// create sidefile
-	if (rc <= maxRC && props.debug) {
+	if (!error && debugSideFile) {
 		rc = debugSideFile.execute()
 		maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
 		
 		if (rc > maxRC) {
+			error = true
 			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 	}
 
 	
 	// linkedit
-	if (rc <= maxRC && needsLinking && needsLinking.toBoolean()) {
+	if (!error && linkEdit) {
 
 		rc = linkEdit.execute()
 		maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
 
 		if (rc > maxRC) {
+			error = true
 			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
-			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
 		else {
@@ -160,6 +165,40 @@ sortedList.each { buildFile ->
 
 	// clean up passed DD statements
 	job.stop()
+
+	if (error) {
+		props.error = "true"
+	}
+	else if (props.createBuildMaps) {
+		// create build map for each build file upon success
+		BuildGroup group = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+		if (group.buildMapExists(buildFile)) {
+			if (props.verbose) println("* Replacing existing build map for $buildFile")
+			group.deleteBuildMap(buildFile)
+		}
+
+		BuildMap buildMap = group.createBuildMap(buildFile) // build map creation
+		// Populate outputs with IExecutes
+		List<IExecute> execs = new ArrayList<IExecute>()
+		if (assembler) execs.add(assembler)
+		if (assembler_SQLTranslator) execs.add(assembler_SQLTranslator)
+		if (assembler_CICSTranslator) execs.add(assembler_CICSTranslator)
+		if (debugSideFile) execs.add(debugSideFile)
+		if (linkEdit) execs.add(linkEdit)
+		buildMap.populateOutputs(execs)
+		// Populate inputs
+		buildMap.populateInputsFromGit(props.workspace, dependencySearch)
+		// Populate binary inputs 
+		if (linkEdit) {
+			String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
+			if (scanLoadModule && scanLoadModule.toBoolean()) {
+				String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
+				// scan load module to populate binary inputs
+				buildMap.populateBinaryInputsFromGit(assembler_loadPDS, member)
+			}
+		} 
+				
+	}
 
 }
 
