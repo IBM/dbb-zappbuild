@@ -55,7 +55,7 @@ if (buildList.size() == 0)
 else {
 	if (!props.scanOnly && !props.scanLoadmodules) {
 		println("** Invoking build scripts according to build order: ${props.buildOrder}")
-		String[] buildOrderList = props.buildOrder.split(',')
+		String[] buildOrderList = props.buildOrder ? props.buildOrder.split(',') : []
 		String[] testOrderList;
 		if (props.runzTests && props.runzTests.toBoolean()) {
 			println("** Invoking test scripts according to test order: ${props.testOrder}")
@@ -711,6 +711,9 @@ def createBuildList() {
 }
 
 def finalizeBuildProcess(Map args) {
+     finalizeBuildProcess(args, 0)
+}
+def finalizeBuildProcess(Map args, int count) {
     println "***************** Finalization of the build process *****************"
 
 	def buildReport = BuildReportFactory.getBuildReport()
