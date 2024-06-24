@@ -110,6 +110,7 @@ def reportExternalImpacts(Set<String> changedFiles){
 
 def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFiles, String analysisMode) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+	BuildGroup buildGroup = metadataStore.getBuildGroup(props.applicationBuildGroup)
 
 	// local matchers to inspect files and collections
 	List<Pattern> collectionMatcherPatterns = createMatcherPatterns(props.reportExternalImpactsCollectionPatterns)
@@ -137,13 +138,13 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 
 		// get all collections which match pattern
 		List<String> selectedCollections = new ArrayList()
-		metadataStore.getBuildGroup(props.applicationBuildGroup).getCollections().each{ it ->
+		buildGroup.getCollections().each{ it ->
 			cName = it.getName()
 			if (matchesPattern(cName,collectionMatcherPatterns)) selectedCollections.add(cName)
 		}
 		
 		// run query
-		logicalImpactedFilesCollections = metadataStore.getBuildGroup(props.applicationBuildGroup).getImpactedFiles(selectedCollections, logicalDependencies);
+		logicalImpactedFilesCollections = buildGroup.getImpactedFiles(selectedCollections, logicalDependencies);
 	}
 	return logicalImpactedFilesCollections
 }
