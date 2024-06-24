@@ -78,7 +78,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	// expecting references with "origin" as segment
 	def origin = "origin/"
 	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
-		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($gitDir). Multiple references point to the same commit. ($gitBranchString)"
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($gitDir). Multiple references point to the same commit ($gitBranchString). Consider to pass applicationCurrentBranch cli parm."
 		println(warningMsg)
 		updateBuildResult(warningMsg:warningMsg)
 	}

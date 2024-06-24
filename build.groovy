@@ -270,6 +270,7 @@ options:
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
 	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
+	cli.cb(longOpt:'applicationCurrentBranch', args:1, 'Applications current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
@@ -301,7 +302,7 @@ options:
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
-	// build framework options
+	// build reporting options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
 	// IDE user build dependency file options
@@ -471,6 +472,7 @@ def populateBuildProperties(def opts) {
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
 	if (opts.cd) props.checkDatasets = 'true'
+	if (opts.cb) props.applicationCurrentBranch = opts.cb
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -516,7 +518,7 @@ def populateBuildProperties(def opts) {
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
 
 	// set calculated properties
-	if (!props.userBuild) {
+	if (!props.userBuild && !props.applicationCurrentBranch) {
 		def gitDir = buildUtils.getAbsolutePath(props.application)
 		if ( gitUtils.isGitDetachedHEAD(gitDir) )
 			props.applicationCurrentBranch = gitUtils.getCurrentGitDetachedBranch(gitDir)
