@@ -83,12 +83,12 @@ sortedList.each { buildFile ->
 			if (linkEdit) execs.add(linkEdit)
 			buildMap.populateOutputs(execs)
 			// populate inputs using dependency resolution
-			buildMap.populateInputsFromGit(props.workspace, props.bmsSearch)
+			buildMap.populateInputsFromGit(props.workspace, props.linkSearch)
 			// populate binary inputs from load module scanning
 			if (linkEdit) { 
 				String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
 				if (scanLoadModule && scanLoadModule.toBoolean())
-					buildMap.populateBinaryInputsFromGit(props.cobol_loadPDS, member)
+					buildMap.populateBinaryInputsFromGit(props.linkedit_loadPDS, member)
 			}
 		}
 	}
