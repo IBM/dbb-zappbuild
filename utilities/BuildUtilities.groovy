@@ -590,13 +590,14 @@ def getLangPrefix(String scriptName){
 def retrieveLastBuildResult(){
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	// get the last build result
-	def lastBuildResult = metadataStore.getLastBuildResult(props.applicationBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+	BuildResult lastBuildResult = metadataStore.getBuildGroup(props.applicationBuildGroup).getLastBuildResult(BuildResult.COMPLETE, BuildResult.CLEAN)
 
 	if (lastBuildResult == null && props.topicBranchBuild){
 		// if this is the first topic branch build get the main branch build result
 		String mainBranchBuildGroup = "${props.application}-${props.mainBuildBranch}"
 		if (props.verbose) println "** No previous successful topic branch build result. Retrieving last successful build result from the main build branch group (${mainBranchBuildGroup})."
-		lastBuildResult = metadataStore.getLastBuildResult(mainBranchBuildGroup, BuildResult.COMPLETE, BuildResult.CLEAN)
+		if (metadataStore.buildGroupExists(mainBranchBuildGroup))
+			lastBuildResult = metadataStore.getBuildGroup(mainBranchBuildGroup).getLastBuildResult(BuildResult.COMPLETE, BuildResult.CLEAN)
 	}
 
 	if (lastBuildResult == null) {
