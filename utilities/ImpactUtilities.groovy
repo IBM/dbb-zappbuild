@@ -643,13 +643,17 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile log
 		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
 		if (props.verbose) println "*** Logical file = \n$scannerLogicalFile"
 
-		// overwrite original logicalDependencies with load module dependencies
-		logicalFile.setLogicalDependencies(scannerLogicalFile.getLogicalDependencies())
+		// set language and submodule attributes based on provided logical file
+		scannerLogicalFile.setLanguage(logicalFile.getLanguage())
+		scannerLogicalFile.setCICS(logicalFile.isCICS())
+		scannerLogicalFile.setSQL(logicalFile.isSQL())
+		scannerLogicalFile.setDLI(logicalFile.isDLI())
+		scannerLogicalFile.setMQ(logicalFile.isMQ())
 
 		// Store logical file and indirect dependencies to the outputs collection
 		MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
 												.getCollection("outputs")
-												.addLogicalFile( logicalFile );
+												.addLogicalFile( scannerLogicalFile );
 	}
 }
 
