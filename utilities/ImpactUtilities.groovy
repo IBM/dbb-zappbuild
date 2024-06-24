@@ -503,12 +503,13 @@ def scanOnlyStaticDependencies(List buildList){
 
 
 def updateCollection(changedFiles, deletedFiles, renamedFiles) {
-
 	if (!MetadataStoreFactory.metadataStoreExists()) {
 		if (props.verbose) println "** Unable to update collections. No Metadata Store."
 		return
 	} 
 	BuildGroup buildGroup = MetadataStoreFactory.getMetadataStore().getBuildGroup(props.applicationBuildGroup)
+	Collection sourcesCollection = buildGroup.getCollection("sources")
+	Collection outputsCollection = buildGroup.getCollection("outputs")
 
 	if (props.verbose) println "** Updating sources and outputs collections"
 	//def scanner = new DependencyScanner()
@@ -520,8 +521,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		buildGroup.getCollection("sources").deleteLogicalFile(logicalFile)
-		buildGroup.getCollection("outputs").deleteLogicalFile(logicalFile)
+		sourcesCollection.deleteLogicalFile(logicalFile)
+		outputsCollection.deleteLogicalFile(logicalFile)
 	}
 
 	// remove renamed files from collection
@@ -529,8 +530,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		// files in a collection are stored as relative paths from a source directory
 		if (props.verbose) println "*** Deleting renamed logical file for $file"
 		logicalFile = buildUtils.relativizePath(file)
-		buildGroup.getCollection("sources").deleteLogicalFile(logicalFile)
-		buildGroup.getCollection("outputs").deleteLogicalFile(logicalFile)
+		sourcesCollection.deleteLogicalFile(logicalFile)
+		outputsCollection.deleteLogicalFile(logicalFile)
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {
@@ -583,7 +584,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 							// find in local list of logical files first (batch processing)
 							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
 							if (!testCaseFiles){ // alternate retrieve it from the collection
-								testCaseFiles = buildGroup.getCollection("sources").getLogicalFiles(sysTestDependency.getLname()).find{
+								testCaseFiles = sourcesCollection.getLogicalFiles(sysTestDependency.getLname()).find{
 									it.getLanguage().equals("COB")
 								}
 							}
@@ -614,11 +615,10 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 
 			// save logical files in batches of 500 to avoid running out of heap space
-			Collection sourceCollection = buildGroup.getCollection("sources")
 			if (logicalFiles.size() == 500) {
 				if (props.verbose)
-					println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '${sourceCollection.getName()}'"
-				sourceCollection.addLogicalFiles(logicalFiles)
+					println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '${sourcesCollection.getName()}'"
+				sourcesCollection.addLogicalFiles(logicalFiles)
 				logicalFiles.clear()
 			}
 		}
@@ -626,8 +626,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
-	buildGroup.getCollection("sources").addLogicalFiles(logicalFiles)
+		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '${sourcesCollection.getName()}'"
+	sourcesCollection.addLogicalFiles(logicalFiles)
 	
 }
 
