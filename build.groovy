@@ -583,10 +583,10 @@ def initMetadataArtifacts() {
 			// check for legacy collection and copy to sources if it exists
 			if (mds.collectionExists(legacyOutputsCollectionName)) {
 				buildGroup.copyCollection(mds.getCollection(legacyOutputsCollectionName), "outputs")
-				println "** Migrated legacy outputs collection ${legacySourceCollectionName}"
+				println "** Migrated legacy outputs collection ${legacyOutputsCollectionName}"
 			} else if (props.topicBranchBuild && mds.collectionExists(legacyMainOutputsCollectionName)) {
 				buildGroup.copyCollection(mds.getCollection(legacyMainOutputsCollectionName), "outputs")
-				println "** Migrated legacy main branch outputs collection ${legacySourceCollectionName}"
+				println "** Migrated legacy main branch outputs collection ${legacyMainOutputsCollectionName}"
 			} else {
 				buildGroup.createCollection("outputs") 
 			}
