@@ -39,7 +39,7 @@ try {
 	println(errorMsg)
 	props.error = "true"
 	buildUtils.updateBuildResult(errorMsg:errorMsg)
-	finalizeBuildProcess(start:startTime, 0)
+	finalizeBuildProcess(start:startTime, count:0)
 }
 
 // create build list
