@@ -270,7 +270,7 @@ options:
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
 	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
-	cli.cb(longOpt:'applicationCurrentBranch', args:1, 'Applications current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.')
+	cli.cb(longOpt:'applicationCurrentBranch', args:1, 'Application\'s current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
