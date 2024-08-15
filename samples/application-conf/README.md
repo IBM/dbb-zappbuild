@@ -310,6 +310,21 @@ rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
+### Eastrieve.properties
+Application properties used by zAppBuild/language/Easytrieve.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+easytrieve_compileMaxRC | Default compile maximum RC allowed. | true
+easytrieve_linkEditMaxRC | Default link edit maximum RC allowed. | true
+easytrieve_dependencySearch | Default dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+easytrieve_compileParms | Default base compile parameters. | true
+easytrieve_linkEdit | Flag indicating to execute the link edit step to produce a compiled easytrieve for the source file. | true
+easytrieve_linkEditParms | Default link edit parameters. | true
+easytrieve_deployType | default deployType | true
+easytrieve_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+easytrieve_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
 ### Transfer.properties
 Application properties used by zAppBuild/language/Transfer.groovy
 
