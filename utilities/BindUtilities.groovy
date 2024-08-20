@@ -4,70 +4,72 @@ import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import groovy.transform.*
 import groovy.cli.commons.*
+import com.ibm.dbb.build.JobExec
 
 /**
  * This script builds a DB2 application package for SQL programs in the application.
  */
 
+@Field BuildProperties props = BuildProperties.getInstance()
+
 bind(args)
 
-def bindPackage(String file, String dbrmHLQ, String workDir, String confDir, String SUBSYS, String COLLID, String OWNER, String QUAL, boolean verbose) {
-	// define local properties
-	def dbrmPDS = "${dbrmHLQ}"
-	def clistPDS = "${dbrmHLQ}.CLIST"
-	def cmdscpDS = "${dbrmHLQ}.ISPFGWY.EXEC"
-	def member = CopyToPDS.createMemberName(file)
-	def logFile = new File("${workDir}/${member}_bind.log")
-	def srcOptions = "cyl space(1,1) lrecl(80) dsorg(PO) recfm(F,B) dsntype(library) msg(1)"
+def bindPackage(String buildFile, String dbrmPDS) {
 
-
-	println("*** Binding $file")
-
-
-	// create BIND CLIST if necessary
-	def clist = new File("${workDir}/bind.clist")
-	if (clist.exists()) {
-		clist.delete()
-	}
+	// Retrieve file overrides	
+	bind_jobcard = props.getFileProperty('bind_jobCard', buildFile)
+	db2_subsys = props.getFileProperty('bind_db2Location', buildFile)
+	db2_collection = props.getFileProperty('bind_collectionID', buildFile)
+	db2_qualifier = props.getFileProperty('bind_qualifier', buildFile)
+	db2_package_owner = ( !props.bind_packageOwner ) ? System.getProperty("user.name") : props.getFileProperty('bind_packageOwner', buildFile)
 	
-	clist << """PROC 6 SUBSYS COLLID MEMBER LIB OWNER QUAL                       
-   DSN SYSTEM(&SUBSYS)                                       
-   BIND PACKAGE(&COLLID)    +                                
-        MEMBER(&MEMBER)     +                                
-        LIBRARY('&LIB')     +                                
-        OWNER(&OWNER)       +                                
-        QUALIFIER(&QUAL)    +                                
-        ACTION(REPLACE)     +                                
-        ISOLATION(CS)                                        
-   END                                                       
-EXIT CODE(&LASTCC)
+	// execute Bind Package Job
+	def (bindRc, bindLogFile) = executeBindPackage(buildFile, bind_jobcard, dbrmPDS, props.buildOutDir, db2_subsys, db2_collection, db2_package_owner, db2_qualifier, props.SDSNLOAD, props.verbose && props.verbose.toBoolean())
+	return [bindRc, bindLogFile]
+		
+}
+
+def executeBindPackage(String file, String jobCard, String dbrmPDS, String workDir, String db2_subsys, String db2_collection, String db2_package_owner, String db2_qualifier, String sdsn_lib,  boolean verbose) {
+
+	def dbrm_member = CopyToPDS.createMemberName(file)
+	
+	println("*** Generate Bind Job for $file")
+	
+	String jcl = jobCard.replace("\\n", "\n")
+	jcl += """\
+\n//*
+//**PKGBIND
+//PKGBIND EXEC PGM=IKJEFT01,DYNAMNBR=20,COND=(4,LT)
+//STEPLIB  DD  DSN=${sdsn_lib},DISP=SHR
+//SYSTSPRT DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//SYSUDUMP DD SYSOUT=*
+//SYSIN DD DUMMY
+//SYSTSIN DD *
+DSN SYSTEM(${db2_subsys})                                       
+BIND PACKAGE(${db2_collection})    +                                
+     MEMBER(${dbrm_member})        +                                
+     LIBRARY('${dbrmPDS}')         +                                
+     OWNER(${db2_package_owner})   +                                
+     QUALIFIER(${db2_qualifier})   +                                
+     ACTION(REPLACE)               +                                
+     ISOLATION(CS)                                        
+END  
+//
 """
-
-	// create CLIST PDS if necessary
-	new CreatePDS().dataset(clistPDS).options(srcOptions).create()
-
-	// copy CLIST to PDS
-	if ( verbose )
-		println("*** Copying ${workDir}/bind.clist to $clistPDS(BIND)")
-	new CopyToPDS().file(clist).dataset(clistPDS).member("BIND").execute()
-
 	// bind the build file
-	if ( verbose )
-		println("*** Executing CLIST to bind program $file")
-
-	// define TSOExec to run the bind clist
-	def bind = new TSOExec().file(file)
-			.command("exec '$clistPDS(BIND)'")
-			.options("'${SUBSYS} ${COLLID} $member $dbrmPDS ${OWNER} ${QUAL}'")
-			.logFile(logFile)
-			.confDir(confDir)
-			.keepCommandScript(true)
-	bind.dd(new DDStatement().name("CMDSCP").dsn(cmdscpDS).options("shr"))
-
-	// execute the bind clist
-	def rc = bind.execute()
+	if ( verbose ) {
+	println("*** Executing Package Bind for program $file using \n$jcl")}
 	
-	return [rc,"${workDir}/${member}_bind.log"]
+	jobExec = new JobExec().text(jcl).buildFile(file) 
+	def rc = jobExec.execute()
+	
+	if ( verbose ) {
+	println("*** Bind Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
+	
+	jobExec.saveOutput(new File("${workDir}/${dbrm_member}_bind.log"))
+	
+	return [rc,"${workDir}/${dbrm_member}_bind.log"]
 
 }
 
@@ -102,7 +104,7 @@ def bind(String[] cliArgs)
 	}
 	
 	def maxRC = opts.m ? opts.m.toInteger() : 0
-	def (rc, logFile) = bindPackage(opts.f, opts.d, opts.w, opts.c, opts.s, opts.p, opts.o, opts.q, opts.v)
+	def (rc, logFile) = executeBindPackage(opts.f, opts.d, opts.w, opts.c, opts.s, opts.p, opts.o, opts.q, opts.v)
 	if ( rc > maxRC ) {
 		String errorMsg = "*! The bind return code ($rc) for $opts.f exceeded the maximum return code allowed ($maxRC)\n** See: $logFile"
 		println(errorMsg)

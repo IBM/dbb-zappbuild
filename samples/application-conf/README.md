@@ -206,15 +206,15 @@ pli_compileSyslibConcatenation | A comma-separated list of libraries to be conca
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### bind.properties
-Application properties used by zAppBuild/language/COBOL.groovy
+Application properties used by zAppBuild/utilities/BindUtilities.groovy
 
 Property | Description | Overridable
 --- | --- | ---
 bind_performBindPackage | Default variable to perform DB2 bind as part of a DBB User Build (default value:false) | true
-bind_runIspfConfDir | |
+bind_jobCard | The Jobcard used for Bind jobs
 bind_db2Location | The name of the DB2 subsystem | true
-bind_collectionID | The DB2 collection (Package) name | true
-bind_packageOwner | The owner of the package, if left empty the use executing the command will be used | true
+bind_collectionID | The DB2 collection (package) name | true
+bind_packageOwner | The owner of the package, if left empty the user executing the command will be used | true
 bind_qualifier | The value of the implicit qualifier | true
 bind_maxRC | Default bind maximum RC allowed. | true
 
