@@ -76,11 +76,26 @@ END
 //Parse the command line and bind
 def bind(String[] cliArgs)
 {
+	
+	// Use BindUtilities.groovy as a standalone util
+	
+//		groovyz BindUtilities.groovy --file /u/dbehm/userBuild/MortgageApplication/cobol/epscmort.cbl \
+//			--dbrmPDS DBEHM.UB.DBRM  \
+//			--workDir /u/dbehm/userBuild/work \
+//			--jobCard "//BINDPKG JOB 'DBB-PKGBIND',MSGLEVEL=(1,1),MSGCLASS=R,NOTIFY=&SYSUID" \
+//			--subSys DBC1 \
+//			--collId SAMP \
+//			--owner DBEHM \
+//			--qual MORT \
+//			--maxRc 4 \
+//			--dsnLibrary DBC0CFG.DB2.V12.SDSNLOAD	
+	
 	def cli = new CliBuilder(usage: "BindUtilities.groovy [options]", header: '', stopAtNonOption: false)
 	cli.f(longOpt:'file', args:1, required:true, 'The build file name.')
-	cli.d(longOpt:'dbrmHLQ', args:1, required:true, 'DBRM partition data sets')	
+	cli.d(longOpt:'dbrmPDS', args:1, required:true, 'DBRM partition data sets')	
 	cli.w(longOpt:'workDir', args:1, required:true, 'Absolute path to the working directory')
-	cli.c(longOpt:'confDir', args:1, required:true, 'Absolute path to runIspf.sh folder')
+	cli.j(longOpt:'jobCard', args:1, required:true, 'Jobcard for Bind JCL')
+	cli.l(longOpt:'dsnLibrary', args:1, required:true, 'SDSN Load library')
 	
 	cli.s(longOpt:'subSys', args:1, required:true, 'The name of the DB2 subsystem')
 	cli.p(longOpt:'collId', args:1, required:true, 'Specify the DB2 collection (Package)')
@@ -104,7 +119,7 @@ def bind(String[] cliArgs)
 	}
 	
 	def maxRC = opts.m ? opts.m.toInteger() : 0
-	def (rc, logFile) = executeBindPackage(opts.f, opts.d, opts.w, opts.c, opts.s, opts.p, opts.o, opts.q, opts.v)
+	def (rc, logFile) = executeBindPackage(opts.f, opts.j, opts.d, opts.w, opts.s, opts.p, opts.o, opts.q, opts.l, opts.v)
 	if ( rc > maxRC ) {
 		String errorMsg = "*! The bind return code ($rc) for $opts.f exceeded the maximum return code allowed ($maxRC)\n** See: $logFile"
 		println(errorMsg)
