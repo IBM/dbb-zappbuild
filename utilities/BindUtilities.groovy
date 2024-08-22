@@ -84,13 +84,13 @@ END
 """
 	// bind the build file
 	if ( verbose ) {
-		println("*** Executing Package Bind for program $file using \n$jcl")}
+		println("*** Execute Package Bind Job for program $file using \n$jcl")}
 
 	jobExec = new JobExec().text(jcl).buildFile(file)
 	def rc = jobExec.execute()
 
 	if ( verbose ) {
-		println("*** Bind Package Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
+		println("*** Bind Package Job(${jobExec.getSubmittedJobId()}) for program $file completed with RC=$rc")}
 
 	jobExec.saveOutput(new File("${workDir}/${dbrm_member}_bind_pkg.log"))
 
@@ -134,13 +134,13 @@ END
 """
 	// bind the build file
 	if ( verbose ) {
-		println("*** Executing Bind Plan for program $file using \n$jcl")}
+		println("*** Execute Bind Plan Job for program $file using \n$jcl")}
 
 	jobExec = new JobExec().text(jcl).buildFile(file)
 	def rc = jobExec.execute()
 
 	if ( verbose ) {
-		println("*** Bind Plan Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
+		println("*** Bind Plan Job(${jobExec.getSubmittedJobId()}) for program $file completed with RC=$rc")}
 
 	jobExec.saveOutput(new File("${workDir}/${db2_plan}_bind_plan.log"))
 
