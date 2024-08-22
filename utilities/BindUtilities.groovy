@@ -58,7 +58,7 @@ def executeBindPackage(String file, String jobCard, String dbrmPDS, String workD
 
 	def dbrm_member = CopyToPDS.createMemberName(file)
 
-	println("*** Generate Bind Job for $file")
+	println("*** Generate Bind Package Job for $file")
 
 	String jcl = jobCard.replace("\\n", "\n")
 	jcl += """\
@@ -72,13 +72,13 @@ def executeBindPackage(String file, String jobCard, String dbrmPDS, String workD
 //SYSIN DD DUMMY
 //SYSTSIN DD *
 DSN SYSTEM(${db2_subsys})                                       
-BIND PACKAGE(${db2_collection})    +                                
-     MEMBER(${dbrm_member})        +                                
-     LIBRARY('${dbrmPDS}')         +                                
-     OWNER(${db2_package_owner})   +                                
-     QUALIFIER(${db2_qualifier})   +                                
-     ACTION(REPLACE)               +                                
-     ISOLATION(CS)                                        
+BIND PACKAGE(${db2_collection}) +                                
+  MEMBER(${dbrm_member}) +                                
+  LIBRARY('${dbrmPDS}') +                                
+  OWNER(${db2_package_owner}) +                                
+  QUALIFIER(${db2_qualifier}) +                                
+  ACTION(REPLACE) +
+  ISOLATION(CS)                                        
 END  
 //
 """
@@ -90,7 +90,7 @@ END
 	def rc = jobExec.execute()
 
 	if ( verbose ) {
-		println("*** Bind Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
+		println("*** Bind Package Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
 
 	jobExec.saveOutput(new File("${workDir}/${dbrm_member}_bind_pkg.log"))
 
@@ -107,7 +107,7 @@ END
 
 def executeBindPlan(String file, String jobCard, String workDir, String db2_subsys, String db2_plan, String db2_package_list, String db2_plan_owner, String db2_qualifier, String sdsn_lib,  boolean verbose) {
 
-	println("*** Generate Bind Job for $file")
+	println("*** Generate Bind Plan Job for $file")
 
 	String jcl = jobCard.replace("\\n", "\n")
 	jcl += """\
@@ -121,26 +121,26 @@ def executeBindPlan(String file, String jobCard, String workDir, String db2_subs
 //SYSIN DD DUMMY
 //SYSTSIN DD *
 DSN SYSTEM(${db2_subsys})         
-BIND PLAN(${db2_plan})            +
-	PKLIST(${db2_package_list})   +
-	OWNER(${db2_plan_owner})      +
-	QUALIFIER(${db2_qualifier})   +
-	ACTION(REPLACE)               +
-	ISOLATION(CS)                 +
-	RELEASE(COMMIT)               +
-	ENCODING(EBCDIC)
+BIND PLAN(${db2_plan}) +
+  PKLIST(${db2_package_list}) +
+  OWNER(${db2_plan_owner}) +
+  QUALIFIER(${db2_qualifier}) +
+  ACTION(REPLACE) +
+  ISOLATION(CS) +
+  RELEASE(COMMIT) +
+  ENCODING(EBCDIC)
 END
 //
 """
 	// bind the build file
 	if ( verbose ) {
-		println("*** Executing Package Bind for program $file using \n$jcl")}
+		println("*** Executing Bind Plan for program $file using \n$jcl")}
 
 	jobExec = new JobExec().text(jcl).buildFile(file)
 	def rc = jobExec.execute()
 
 	if ( verbose ) {
-		println("*** Bind Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
+		println("*** Bind Plan Job(${jobExec.getSubmittedJobId()}) for $file completed with RC=$rc")}
 
 	jobExec.saveOutput(new File("${workDir}/${db2_plan}_bind_plan.log"))
 
