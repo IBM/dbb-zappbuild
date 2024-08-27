@@ -169,6 +169,17 @@ def createImpactBuildList() {
 		}
 
 	}
+	//include statically called sub programs when the main program changes
+     if (props.addSubmodulesToBuildList ==  'true') {
+        Set<String> buildLinkSet = new HashSet<String>()
+
+        // Call addLinkDependencies to append link dependencies to buildSet
+        if (props.verbose) println "**Calculation of statically called sub module programs"
+        buildLinkSet = addLinkDependencies(buildSet, buildLinkSet)
+        if (props.verbose) println "** Buildlinkset file $buildLinkSet" 
+        buildSet.addAll(buildLinkSet)
+        if (props.verbose) println "** Combined buildset $buildSet" 
+    }
 
 	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
@@ -867,4 +878,48 @@ def sortFileList(list) {
  */
 def isMappedAsZUnitConfigFile(String file) {
 	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+}
+
+/*
+ *  addLinkDependencies -
+ *  method to identify all statically called sub module programs when the main program changes
+ *
+ *  @return list of statically called sub modules
+ *
+ */
+def addLinkDependencies(buildSet, buildLinkSet) {
+    String OutputsCollectionName = props.applicationOutputsCollectionName
+    MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+
+    buildSet.each { file ->
+        def logicalFile = buildUtils.relativizePath(file)
+        def logicalFiles = metadataStore.getCollection(props.applicationOutputsCollectionName).getLogicalFile(logicalFile)
+
+        if (logicalFiles) {
+            // Check if any logical files are found
+            // List all link dependencies for every main program that changes from the output collection. 
+            // This will return only the program name and not the absolute path
+            logicalFiles.each { logicalFileRecord ->
+                def dependencies = logicalFileRecord.getLogicalDependencies()
+
+                dependencies.each { logicalDep ->
+                    def linkDepName = logicalDep.getLname()
+                    def linkDepLogicalFile = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(linkDepName)
+
+                    // Get the logical path for all the link dependencies returned
+                    linkDepLogicalFile.each { filePath ->
+                        // Link Dependency Files to be added
+                        def linkDepFile = filePath.getFile()
+
+                        if (linkDepFile != logicalFile) {
+                            buildLinkSet.add(linkDepFile)
+                            if (props.verbose) println "** Adding link dep to buildLinkset $buildLinkSet"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return buildLinkSet
 }
