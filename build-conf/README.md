@@ -300,7 +300,7 @@ Property | Description
 --- | ---
 zcee3_shellEnvironment | Shell environment used to run the gradle command
 zcee3_gradlePath | Path to gradle executable
-zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle
+zcee3_gradle_debug | Flag to indicate if debug option should be added
 
 ### zCEE2.properties
 Application properties used by zAppBuild/language/zCEE2.groovy

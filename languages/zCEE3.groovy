@@ -32,8 +32,6 @@ sortedList.each { buildFile ->
     if (props.verbose) 
         println("** Expected location of the 'api.war' file: ${WarLocation}")
     File WarFile = new File(WarLocation)
-    String[] command;
-    String commandString;
     
     // log file - Changing slashes with dots to avoid conflicts
     String member = buildFile.replace("/", ".")
@@ -41,71 +39,60 @@ sortedList.each { buildFile ->
     if (logFile.exists())
         logFile.delete()
     
-    String JAVA_OPTS = props.getFileProperty('zcee3_gradle_JAVA_OPTS', buildFile)
-    String gradlePath = props.getFileProperty('zcee3_gradlePath', buildFile)
+    String gradlePath = props.zcee3_gradlePath
 
-    File gradleExecutable = new File(gradlePath)
-    if (!gradleExecutable.exists()) {
-        def errorMsg = "*! gradle wasn't find at location '$gradlePath'" 
-        println(errorMsg)
-        props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
-    } else {
-        String shellEnvironment = props.getFileProperty('zcee3_shellEnvironment', buildFile)
+    if (fileExists(gradlePath)) {
+        String shellEnvironment = props.zcee3_shellEnvironment
+        String encoding = props.logEncoding ?: 'IBM-1047'
+        ArrayList<String> optionsList = new ArrayList<String>()
+        optionsList.add(gradlePath)
+        optionsList.add(gradleBuildLocation)
+        if (props.zcee3_gradle_debug && props.zcee3_gradle_debug.toBoolean())
+            optionsList.add("--debug")
 
-        command = [shellEnvironment, gradlePath, gradleBuildLocation]
-        commandString = command.join(" ") 
         if (props.verbose)
-            println("** Executing command '${commandString}' in working directory '${workingDir}'...")
-        StringBuffer shellOutput = new StringBuffer()
-        StringBuffer shellError = new StringBuffer()
+            println("*** Executing command '${shellEnvironment}' with options '${optionsList}'")
 
-        ProcessBuilder cmd = new ProcessBuilder(shellEnvironment, gradlePath, gradleBuildLocation);
-        Map<String, String> env = cmd.environment();
-        env.put("JAVA_OPTS", JAVA_OPTS);
-        cmd.directory(new File(workingDir));
-        Process process = cmd.start()
-        process.consumeProcessOutput(shellOutput, shellError)
-        process.waitFor()
-        if (props.verbose)
-            println("** Exit value for the gradle build: ${process.exitValue()}");
-            
-        // write outputs to log file
-        String enc = props.logEncoding ?: 'IBM-1047'
-        logFile.withWriter(enc) { writer ->
-            writer.append(shellOutput)
-            writer.append(shellError)
-        }
-        
-        if (process.exitValue() != 0) {
-            def errorMsg = "*! Error during the gradle process" 
+        UnixExec zCEE3Execution = new UnixExec().command(shellEnvironment)
+        zCEE3Execution.setOptions(optionsList)
+        zCEE3Execution.output(logFile.getAbsolutePath()).mergeErrors(true);
+        zCEE3Execution.setWorkingDirectory(workingDir)
+        zCEE3Execution.setFile(buildFile)
+        zCEE3Execution.setOutputEncoding(encoding)
+        zCEE3Execution.addOutput(props.buildOutDir, "zCEE3/$WarLocation", "zCEE3")
+        int returnCode = zCEE3Execution.execute()
+
+        if (returnCode != 0) {
+            String errorMsg = "*! Error during the gradle process. Please check the gradle log file at '${logFile.getAbsolutePath()}'."
             println(errorMsg)
-            if (props.verbose)
-                println("*! gradle error message:\n${shellError}")
             props.error = "true"
             buildUtils.updateBuildResult(errorMsg:errorMsg)
         } else {
-            if (props.verbose)
-                println("** gradle output:\n${shellOutput}")
             if (WarFile.exists()) {
                 // Copy api.war to the buildOutDir directory
                 File WarFileTarget = new File(props.buildOutDir + '/zCEE3/' + WarLocation);
                 File WarTargetDir = WarFileTarget.getParentFile();
                 WarTargetDir.mkdirs();
-                Files.copy(WarFile.toPath(), WarFileTarget.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
-            
-                AnyTypeRecord zCEEWARRecord = new AnyTypeRecord("USS_RECORD")
-                zCEEWARRecord.setAttribute("file", buildFile)
-                zCEEWARRecord.setAttribute("label", "z/OS Connect EE OpenAPI 3 YAML definition")
-                zCEEWARRecord.setAttribute("outputs", "[${props.buildOutDir}, zCEE3/$WarLocation, zCEE3]")
-                zCEEWARRecord.setAttribute("command", commandString);
-                BuildReportFactory.getBuildReport().addRecord(zCEEWARRecord)
+                Files.copy(WarFile.toPath(), WarFileTarget.toPath(), StandardCopyOption.COPY_ATTRIBUTES);            
             } else {
-                def errorMsg = "*! Error when searching for the 'api.war' file at location '${WarLocation}'"
+                String errorMsg = "*! Error when searching for the 'api.war' file at location '${WarLocation}'"
                 println(errorMsg)
                 props.error = "true"
                 buildUtils.updateBuildResult(errorMsg:errorMsg)
             }   
         }
+    }
+}
+
+def fileExists(String fileLoc){
+    File file = new File(fileLoc)
+    if (!file.exists()) {
+        String errorMsg = "*! z/OS Connect EE OpenAPI 3 process - $fileLoc not found."
+        println(errorMsg)
+        props.error = "true"
+        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        return false
+    } else {
+        return true
     }
 }
