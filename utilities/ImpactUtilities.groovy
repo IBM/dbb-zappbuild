@@ -887,7 +887,8 @@ def isMappedAsZUnitConfigFile(String file) {
  *  @return list of statically called sub modules
  *
  */
-def addLinkDependencies(buildSet, buildLinkSet) {
+def addLinkDependencies(buildSet) {
+Set<String> buildLinkSet = new HashSet<String>()
     String OutputsCollectionName = props.applicationOutputsCollectionName
     MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
