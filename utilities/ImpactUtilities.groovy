@@ -174,7 +174,7 @@ def createImpactBuildList() {
         Set<String> buildLinkSet = new HashSet<String>()
 
         // Call addLinkDependencies to append link dependencies to buildSet
-        if (props.verbose) println "**Calculation of statically called sub module programs"
+        if (props.verbose) println "*** Perform analysis to add statically called sub modules to build list."
         buildLinkSet = addLinkDependencies(buildSet)
         if (props.verbose) println "** Buildlinkset file $buildLinkSet" 
         buildSet.addAll(buildLinkSet)
