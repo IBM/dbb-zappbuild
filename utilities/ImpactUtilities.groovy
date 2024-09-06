@@ -913,7 +913,7 @@ Set<String> buildLinkSet = new HashSet<String>()
 
                         if (linkDepFile != logicalFile) {
                             buildLinkSet.add(linkDepFile)
-                            if (props.verbose) println "** Adding link dep to buildLinkset $buildLinkSet"
+                            if (props.verbose) println "** Adding submodule $linkDepFile to build list as link dependency for $logicalFile"
                         }
                     }
                 }
