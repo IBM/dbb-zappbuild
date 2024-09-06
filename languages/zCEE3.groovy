@@ -41,7 +41,7 @@ sortedList.each { buildFile ->
     
     String gradlePath = props.zcee3_gradlePath
 
-    if (fileExists(gradlePath)) {
+    if (buildUtils.fileExists(gradlePath, "z/OS Connect EE OpenAPI 3 processing")) {
         String shellEnvironment = props.zcee3_shellEnvironment
         String encoding = props.logEncoding ?: 'IBM-1047'
         ArrayList<String> optionsList = new ArrayList<String>()
@@ -68,6 +68,8 @@ sortedList.each { buildFile ->
             props.error = "true"
             buildUtils.updateBuildResult(errorMsg:errorMsg)
         } else {
+            if (props.verbose)
+                println("** gradle returnCode: ${returnCode}")
             if (WarFile.exists()) {
                 // Copy api.war to the buildOutDir directory
                 File WarFileTarget = new File(props.buildOutDir + '/zCEE3/' + WarLocation);
@@ -81,18 +83,5 @@ sortedList.each { buildFile ->
                 buildUtils.updateBuildResult(errorMsg:errorMsg)
             }   
         }
-    }
-}
-
-def fileExists(String fileLoc){
-    File file = new File(fileLoc)
-    if (!file.exists()) {
-        String errorMsg = "*! z/OS Connect EE OpenAPI 3 process - $fileLoc not found."
-        println(errorMsg)
-        props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
-        return false
-    } else {
-        return true
     }
 }

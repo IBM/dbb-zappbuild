@@ -1021,4 +1021,23 @@ def isGeneratedzUnitTestCaseProgram(String buildFile) {
 	return false
 }
 
+/**
+ * Checks if a zFS file exists and if not, return false and set the Build re
+ * 
+ *  returns true / false
+ *  
+ */
+
+def fileExists(String fileLoc, String errorMessage) {
+    File file = new File(fileLoc)
+    if (!file.exists()) {
+        String errorMsg = "*! ${errorMessage} - $fileLoc not found."
+        println(errorMsg)
+        props.error = "true"
+        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        return false
+    } else {
+        return true
+    }
+}
 
