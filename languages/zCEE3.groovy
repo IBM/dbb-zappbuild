@@ -69,7 +69,7 @@ sortedList.each { buildFile ->
             buildUtils.updateBuildResult(errorMsg:errorMsg)
         } else {
             if (props.verbose)
-                println("** gradle returnCode: ${returnCode}")
+                println("** gradle return code: ${returnCode}")
             if (WarFile.exists()) {
                 // Copy api.war to the buildOutDir directory
                 File WarFileTarget = new File(props.buildOutDir + '/zCEE3/' + WarLocation);
