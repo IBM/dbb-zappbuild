@@ -170,7 +170,7 @@ def createImpactBuildList() {
 
 	}
 	//include statically called sub programs when the main program changes
-     if (props.addSubmodulesToBuildList ==  'true') {
+     if (props.addSubmodulesToBuildList && props.addSubmodulesToBuildList.toBoolean()) {
         Set<String> buildLinkSet = new HashSet<String>()
 
         // Call addLinkDependencies to append link dependencies to buildSet
