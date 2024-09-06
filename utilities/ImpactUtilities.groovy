@@ -889,7 +889,6 @@ def isMappedAsZUnitConfigFile(String file) {
  */
 def addLinkDependencies(buildSet) {
 Set<String> buildLinkSet = new HashSet<String>()
-    String OutputsCollectionName = props.applicationOutputsCollectionName
     MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 
     buildSet.each { file ->
