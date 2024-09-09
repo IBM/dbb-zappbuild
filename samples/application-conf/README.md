@@ -210,10 +210,13 @@ Application properties used by zAppBuild/utilities/BindUtilities.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-bind_performBindPackage | Default variable to perform DB2 bind as part of a DBB User Build (default value:false) | true
+bind_performBindPackage | Flag to perform DB2 bind package as part of a DBB User Build (default value:false) | true
+bind_performBindPlan | Flag to perform DB2 bind plan as part of a DBB User Build (default value:false) | true
 bind_jobCard | The Jobcard used for Bind jobs
 bind_db2Location | The name of the DB2 subsystem | true
-bind_collectionID | The DB2 collection (package) name | true
+bind_collectionID | The Db2 collection (package) name | true
+bind_plan | The Db2 plan name | true
+bind_plan_pklist | The pklist filter for the Db2 plan | true
 bind_packageOwner | The owner of the package, if left empty the user executing the command will be used | true
 bind_qualifier | The value of the implicit qualifier | true
 bind_maxRC | Default bind maximum RC allowed. | true
