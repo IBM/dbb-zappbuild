@@ -902,6 +902,7 @@ Set<String> buildLinkSet = new HashSet<String>()
                 def dependencies = logicalFileRecord.getLogicalDependencies()
 
                 dependencies.each { logicalDep ->
+		  if (logicalDep.getCategory() == "LINK") { 		
                     def linkDepName = logicalDep.getLname()
                     def linkDepLogicalFile = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(linkDepName)
 
@@ -911,11 +912,14 @@ Set<String> buildLinkSet = new HashSet<String>()
                         def linkDepFile = filePath.getFile()
 
                         if (linkDepFile != logicalFile) {
-                            buildLinkSet.add(linkDepFile)
-                            if (props.verbose) println "** Adding submodule $linkDepFile to build list as link dependency for $logicalFile"
-                        }
+			    if (ScriptMappings.getScriptName(linkDepFile)) {	
+                              buildLinkSet.add(linkDepFile)
+                              if (props.verbose) println "** Adding submodule $linkDepFile to build list as link dependency for $logicalFile"
+                            }
+			}	
                     }
                 }
+	      }		
             }
         }
     }
