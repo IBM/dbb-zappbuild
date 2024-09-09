@@ -58,8 +58,6 @@ def executeBindPackage(String file, String jobCard, String dbrmPDS, String workD
 
 	def dbrm_member = CopyToPDS.createMemberName(file)
 
-	println("*** Generate Bind Package Job for $file")
-
 	String jcl = jobCard.replace("\\n", "\n")
 	jcl += """\
 \n//*
@@ -84,7 +82,7 @@ END
 """
 	// bind the build file
 	if ( verbose ) {
-		println("*** Execute Package Bind Job for program $file using \n$jcl")}
+		println("*** Execute Bind Package Job for program $file using \n$jcl")}
 
 	jobExec = new JobExec().text(jcl).buildFile(file)
 	def rc = jobExec.execute()
@@ -106,8 +104,6 @@ END
  */
 
 def executeBindPlan(String file, String jobCard, String workDir, String db2_subsys, String db2_plan, String db2_package_list, String db2_plan_owner, String db2_qualifier, String sdsn_lib,  boolean verbose) {
-
-	println("*** Generate Bind Plan Job for $file")
 
 	String jcl = jobCard.replace("\\n", "\n")
 	jcl += """\
