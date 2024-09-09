@@ -73,6 +73,13 @@ impactBuildOnBuildPropertyList | List of build property lists referencing which 
 documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
 
+### GlobalOptions.properties
+General options that are reused by multiple language scripts
+
+Property | Description
+--- | ---
+global_instreamDataTempAllocation | Default DD allocation options for instream DD Statement allocations
+
 ### dependencyReport.properties
 Properties used by the impact utilities to generate a report of external impacted files
 

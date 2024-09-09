@@ -342,7 +342,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// Define SYSIN dd as instream data
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
 	}
 
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
