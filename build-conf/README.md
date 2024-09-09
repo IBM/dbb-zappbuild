@@ -78,7 +78,7 @@ General options that are reused by multiple language scripts
 
 Property | Description
 --- | ---
-global_instreamDataTempAllocation | Default DD allocation options for instream DD Statement allocations
+global_instreamDataTempAllocation | Default allocation options for in-stream DD statements
 
 ### dependencyReport.properties
 Properties used by the impact utilities to generate a report of external impacted files
