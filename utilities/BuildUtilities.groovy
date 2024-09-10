@@ -1024,7 +1024,7 @@ def isGeneratedzUnitTestCaseProgram(String buildFile) {
 /**
  * Checks if a zFS file exists
  * if the file exists, returns true
- * if not, returns false and set the Build Report accordingly, with the error state and an error message
+ * if not, returns false and updates the Build Result accordingly with an error message
  * 
  */
 
