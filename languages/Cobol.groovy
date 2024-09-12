@@ -20,7 +20,7 @@ println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ?
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
 
 // create language datasets
-def langQualifier = "cobol"
+@Field def langQualifier = "cobol"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
@@ -304,6 +304,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String linker = props.getFileProperty('cobol_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('cobol_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('cobol_linkDebugExit', buildFile)
+	String binderControlCardLookup = props.getFileProperty('cobol_binderControlCardLookup', buildFile)
 
 	// obtain githash for buildfile
 	String cobol_storeSSI = props.getFileProperty('cobol_storeSSI', buildFile)
@@ -357,7 +358,16 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr'))
 	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
-			
+    
+	if (binderControlCardLookup && binderControlCardLookup.toBoolean()) {
+		// lookup binder control member and upload it
+		binderControlLibrary = buildUtils.lookupBinderControlCard(langQualifier, buildFile)
+		if (binderControlLibrary != null) {
+			if (props.verbose) println "*** Appending binder control card ${binderControlLibrary}(${member})"
+			linkedit.dd(new DDStatement().dsn("${binderControlLibrary}(${member})").options('shr'))
+		}
+	}
+					
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
 	if(isZUnitTestCase){
