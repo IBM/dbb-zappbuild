@@ -10,6 +10,7 @@ zAppBuild comes with a number of language specific build scripts.  These script 
 * DBDgen.groovy
 * PSBgen.groovy
 * MFS.groovy
+* zCEE2.groovy
 * zCEE3.groovy
 * ZunitConfig.groovy
 * Easytrieve.groovy

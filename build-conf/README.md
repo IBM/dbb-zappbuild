@@ -315,9 +315,8 @@ Application properties used by zAppBuild/language/zCEE2.groovy
 Property | Description
 --- | ---
 zcee2_zconbtPath | Absolute path to zconbt executable on z/OS UNIX System Services
-zcee2_JAVA_HOME | Java installation used by the zconbt utility
-zcee2_inputType | Mapping of input files with types of files
-zcee2_ARA_PackageArtifacts | Flag to indicate if artifacts produced for the ARA processing should be packaged
+zcee2_inputType | Mapping of input files with types of projects/files
+zcee2_ARA_packageArtifacts | Flag to indicate if artifacts produced for the ARA processing should be packaged
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
