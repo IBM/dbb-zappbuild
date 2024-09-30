@@ -22,6 +22,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
+addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds | false
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
