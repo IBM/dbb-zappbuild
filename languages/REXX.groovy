@@ -124,7 +124,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkEditStream = props.getFileProperty('rexx_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
-	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 	String deployType = buildUtils.getDeployType("rexx_cexec", buildFile, null)
 	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType(deployType))
 	
