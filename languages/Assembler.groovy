@@ -314,7 +314,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	assembler.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
 	// define object dataset allocation
-	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
+	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
