@@ -147,7 +147,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				// create member name
 				String memberName = CopyToPDS.createMemberName(dependencyPath)
 				// retrieve zUnit playback file extension
-				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+				zunitFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependencyLoc.lastIndexOf('.')
 				try {
@@ -216,7 +216,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						// create member name
 						String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
 						//retrieve zUnitFileExtension plbck
-						zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+						zunitFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
 						try {
 							if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
 								new CopyToPDS().file(new File(physicalDependencyLoc))

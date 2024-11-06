@@ -276,19 +276,19 @@ acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
 acbgen_deployType | default deployType for build output | true
 
 ### ZunitConfig.properties
-Application properties used by zAppBuild/language/ZunitConfig.groovy
+Application properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
-zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
-zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
-zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
-zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
-zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
+tazunittest_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
+tazunittest_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
+tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | true
+tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+tazunittest_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
+tazunittest_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
+tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy

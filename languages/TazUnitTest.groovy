@@ -3,6 +3,7 @@ import com.ibm.dbb.metadata.*
 import com.ibm.dbb.dependency.*
 import com.ibm.dbb.build.*
 import groovy.transform.*
+import com.ibm.dbb.build.JobExec
 import groovy.xml.*
 
 
@@ -15,34 +16,34 @@ println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ?
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.cobol_requiredBuildProperties)
-buildUtils.assertBuildProperties(props.zunit_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.tazunittest_requiredBuildProperties)
 
-def langQualifier = "zunit"
+def langQualifier = "tazunittest"
 buildUtils.createLanguageDatasets(langQualifier)
 int currentBuildFileNumber = 1
 
 // iterate through build list
 (argMap.buildList.sort()).each { buildFile ->
-	println "*** (${currentBuildFileNumber++}/${argMap.buildList.size()}) Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${argMap.buildList.size()}) Executing TAZ test case $buildFile"
 
 	String member = CopyToPDS.createMemberName(buildFile)
 
-	File logFile = new File("${props.buildOutDir}/${member}.zunit.jcl.log")
-	File reportLogFile = new File("${props.buildOutDir}/${member}.zunit.report.log")
+	File logFile = new File("${props.buildOutDir}/${member}.tazunittest.jcl.log")
+	File reportLogFile = new File("${props.buildOutDir}/${member}.tazunittest.report.log")
 
-	
-	String dependencySearch = props.getFileProperty('zunit_dependencySearch', buildFile)
+
+	String dependencySearch = props.getFileProperty('tazunittest_dependencySearch', buildFile)
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
-	
+
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildFile, props.zunit_bzucfgPDS, 'zunit_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.tazunittest_bzucfgPDS, 'tazunittest_dependenciesDatasetMapping', null, dependencyResolver)
 
 	// get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
-		
+
 	// get playback dependency for bzucfg file from logicalFile
- 	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
-	
+	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
+
 	// Create JCLExec String
 	String jobcard = props.jobCard.replace("\\n", "\n")
 	String jcl = jobcard
@@ -54,55 +55,55 @@ int currentBuildFileNumber = 1
 //             SPACE=(TRK,(1,1),RLSE)
 //*
 //* Action: Run Test Case...
-//RUNNER EXEC PROC=BZUPPLAY,
-// BZUCFG=${props.zunit_bzucfgPDS}(${member}),
+//RUNNER EXEC PROC=EQAPPLAY,
+// BZUCFG=${props.tazunittest_bzucfgPDS}(${member}),
 // BZUCBK=${props.cobol_testcase_loadPDS},
 // BZULOD=${props.cobol_loadPDS},
 """
-// Add parms for bzupplay proc / zUnit Runner	
-zunitParms = props.getFileProperty('zunit_bzuplayParms', buildFile)
-jcl += """\
-//  PARM=('$zunitParms')
+	// Add parms for eqapplay proc / TAZ Runner
+	unitTestParms = props.getFileProperty('tazunittest_eqaplayParms', buildFile)
+	jcl += """\
+//  PARM=('$unitTestParms')
 """
 	if (playbackFile != null) { // bzucfg contains reference to a playback file
 		jcl +=
-		"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
-		"// DSN=${props.zunit_bzuplayPDS}(${playbackFile.getLname()}) \n"
+				"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
+				"// DSN=${props.tazunittest_bzuplayPDS}(${playbackFile.getLname()}) \n"
 	} else { // no playbackfile referenced
 		jcl +=
-		"//REPLAY.BZUPLAY DD DUMMY   \n"
+				"//REPLAY.BZUPLAY DD DUMMY   \n"
 	}
 
 	jcl += """\
 //REPLAY.BZURPT DD DISP=SHR,
-// DSN=${props.zunit_bzureportPDS}(${member})
+// DSN=${props.tazunittest_bzureportPDS}(${member})
 """
 
-// Add parms for bzupplay proc / zUnit Runner
-zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFile)
+	// Add debugger paramters
+	debugParms = props.getFileProperty('tazunittest_userDebugSessionTestParm', buildFile)
 
-// if code coverage collection is activated
+	// add code coverage collection if activated
 	if (props.codeZunitCoverage && props.codeZunitCoverage.toBoolean()) {
-	        // codeCoverageHost
+		// codeCoverageHost
 		if (props.codeCoverageHeadlessHost != null)
 			codeCoverageHost = props.codeCoverageHeadlessHost
-               else
-			codeCoverageHost = props.getFileProperty('zunit_CodeCoverageHost', buildFile)
-	        // codeCoveragePort
+		else
+			codeCoverageHost = props.getFileProperty('tazunittest_CodeCoverageHost', buildFile)
+		// codeCoveragePort
 		if (props.codeCoverageHeadlessPort != null)
 			codeCoveragePort = props.codeCoverageHeadlessPort
-               else
-			codeCoveragePort = props.getFileProperty('zunit_CodeCoveragePort', buildFile)
+		else
+			codeCoveragePort = props.getFileProperty('tazunittest_CodeCoveragePort', buildFile)
 		// codeCoverageOptions
 		if (props.codeCoverageOptions != null)
 			codeCoverageOptions = props.codeCoverageOptions
-               else
-			codeCoverageOptions = props.getFileProperty('zunit_CodeCoverageOptions', buildFile)
-	
+		else
+			codeCoverageOptions = props.getFileProperty('tazunittest_CodeCoverageOptions', buildFile)
+
 		jcl +=
-		"//CEEOPTS DD *                        \n"   +
-		( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "${zunitDebugParm}  \n" ) +
-		"ENVAR(\n"
+				"//CEEOPTS DD *                        \n"   +
+				( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "${debugParms}  \n" ) +
+				"ENVAR(\n"
 		if (codeCoverageOptions != null) {
 			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
 			optionsParms.each { optionParm ->
@@ -111,12 +112,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 		} else {
 			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
 		}
-   		jcl += "/* \n"
+		jcl += "/* \n"
 	} else if (props.debugzUnitTestcase && props.userBuild) {
-		// initiate debug session of test case 
+		// initiate debug session of test case
 		jcl +=
-		"//CEEOPTS DD *                        \n"   +
-		  "${zunitDebugParm}  \n"
+				"//CEEOPTS DD *                        \n"   +
+				"${debugParms}  \n"
 	}
 	jcl += """\
 //*
@@ -132,18 +133,15 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 	def dbbConf = System.getenv("DBB_CONF")
 
 	// Create jclExec
-	def zUnitRunJCL = new JCLExec().text(jcl)
-	zUnitRunJCL.confDir(dbbConf)
-
-	// Execute jclExec
-	zUnitRunJCL.execute()
+	def tazUnitTestRunJcl = new JobExec().text(jcl).buildFile(buildFile)
+	def rc = tazUnitTestRunJcl.execute()
 
 	/**
 	 * Store results
 	 */
 
 	// Save Job Spool to logFile
-	zUnitRunJCL.saveOutput(logFile, props.logEncoding)
+	tazUnitTestRunJcl.saveOutput(logFile, props.logEncoding)
 
 	//  // Extract Job BZURPT as XML
 	//  def logEncoding = "UTF-8"
@@ -173,46 +171,29 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
 
 	// Evaluate if running in preview build mode
 	if (!props.preview) {
-
-		// Splitting the String into a StringArray using CC as the seperator
-		def jobRcStringArray = zUnitRunJCL.maxRC.split("CC")
-
-		// This evals the number of items in the ARRAY! Dont get confused with the returnCode itself
-		if ( jobRcStringArray.length > 1 ){
-			// Ok, the string can be splitted because it contains the keyword CC : Splitting by CC the second record contains the actual RC
-			rc = zUnitRunJCL.maxRC.split("CC")[1].toInteger()
-
-			// manage processing the RC, up to your logic. You might want to flag the build as failed.
-			if (rc <= props.zunit_maxPassRC.toInteger()){
-				println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
-				// Store Report in Workspace
-				new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
-				// printReport
-				printReport(reportLogFile)
-			} else if (rc <= props.zunit_maxWarnRC.toInteger()){
-				String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
-				// Store Report in Workspace
-				new CopyToHFS().dataset(props.zunit_bzureportPDS).member(member).file(reportLogFile).hfsEncoding(props.logEncoding).append(false).copy()
-				// print warning and report
-				println warningMsg
-				printReport(reportLogFile)
-				buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_zunit.log":logFile])
-			} else { // rc > props.zunit_maxWarnRC.toInteger()
-				props.error = "true"
-				String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
-				println(errorMsg)
-				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
-			}
-		}
-		else {
-			// We don't see the CC, assume an exception
+		// manage processing the RC, up to your logic. You might want to flag the build as failed.
+		if (rc <= props.tazunittest_maxPassRC.toInteger()){
+			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
+			// Store Report in Workspace
+			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
+			// printReport
+			printReport(reportLogFile)
+		} else if (rc <= props.tazunittest_maxWarnRC.toInteger()){
+			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
+			// Store Report in Workspace
+			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
+			// print warning and report
+			println warningMsg
+			printReport(reportLogFile)
+			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_tazunittest.log":logFile])
+		} else { // rc > props.tazunittest_maxWarnRC.toInteger()
 			props.error = "true"
-			String errorMsg = "*!  zUnit Test Job ${zUnitRunJCL.submittedJobId} failed with ${zUnitRunJCL.maxRC}"
+			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_zunit.log":logFile])
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_tazunittest.log":logFile])
 		}
 	} else { // skip evaluating Unit tests result
-		if (props.verbose) println "*** Evaluation of zUnit test result skipped, because running in preview mode."
+		if (props.verbose) println "*** Evaluation of TAZ Unit Test result skipped, because running in preview mode."
 	}
 
 }
@@ -225,12 +206,12 @@ zunitDebugParm = props.getFileProperty('zunit_userDebugSessionTestParm', buildFi
  * returns the LogicalDependency of the playbackfile
  */
 def getPlaybackFile(LogicalFile logicalFile) {
- 	// find playback file dependency
- 	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
- 		it.getLibrary() == "SYSPLAY"
- 	}
+	// find playback file dependency
+	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
+		it.getLibrary() == "SYSPLAY"
+	}
 	return playbackDependency
- }
+}
 
 /**
  *  Parsing the result file and prints summary of the result
@@ -244,7 +225,6 @@ def printReport(File resultFile) {
 		reportString = new FileInputStream(resultFile).getText("IBM-1047")
 
 	try {
-
 		def runnerResult = new XmlParser().parseText(reportString)
 		def testCase = runnerResult.testCase
 		println "****************** Module ${testCase.@moduleName} ******************"

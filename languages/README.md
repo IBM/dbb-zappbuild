@@ -12,7 +12,7 @@ zAppBuild comes with a number of language specific build scripts.  These script 
 * MFS.groovy
 * zCEE2.groovy
 * zCEE3.groovy
-* ZunitConfig.groovy
+* TazUnitTest.groovy
 * Easytrieve.groovy
 
 All language scripts both compile and optionally link-edit programs. The language build scripts are intended to be useful out of the box but depending on the complexity of your applications' build requirements, may require modifications to meet your development team's needs.  By following the examples used in the existing language build scripts of keeping all application specific references out of the build scripts and instead using configuration properties with strong default values, the zAppBuild sample can continue to be a generic build solution for all of your specific applications.

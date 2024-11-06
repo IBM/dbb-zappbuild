@@ -246,7 +246,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+	compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
