@@ -284,7 +284,7 @@ acbgen_outputDatasets | List of output datasets to document deletions ** Can be
 acbgen_pgm | MVS program name of the acbgen pgm
 acbgen_deployType | Deploy Type of build outputs
 
-### ZunitConfig.properties
+### TazUnitTest.properties
 Build properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description

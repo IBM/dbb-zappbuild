@@ -275,7 +275,7 @@ acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
 acbgen_deployType | default deployType for build output | true
 
-### ZunitConfig.properties
+### TazUnitTest.properties
 Application properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description | Overridable
