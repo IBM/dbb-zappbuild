@@ -57,13 +57,8 @@ sortedList.each { buildFile ->
 
 	// compile the cobol program
 	int rc = compile.execute()
-	int maxRC
-	if (props.getFileProperty('rexx_compileMaxRC', buildFile)) {
-		maxRC = props.getFileProperty('rexx_compileMaxRC', buildFile).toInteger()
-	} else {
-		maxRC = 4
-	}
-	
+	int maxRC = props.getFileProperty('rexx_compileMaxRC', buildFile).toInteger()
+
 	boolean bindFlag = true
 
 	if (rc > maxRC) {
@@ -76,14 +71,9 @@ sortedList.each { buildFile ->
 	else {
 		// if this program needs to be link edited . . .
 		String needsLinking = props.getFileProperty('rexx_linkEdit', buildFile)
-		if (needsLinking && needsLinking.toBoolean()) {
+		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
-			if (props.getFileProperty('rexx_linkEditMaxRC', buildFile)) {
-				maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
-			} else {
-				maxRC = 4
-			}
 
 			if (rc > maxRC) {
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
