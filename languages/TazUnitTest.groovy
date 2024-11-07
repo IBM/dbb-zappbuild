@@ -173,13 +173,13 @@ int currentBuildFileNumber = 1
 	if (!props.preview) {
 		// manage processing the RC, up to your logic. You might want to flag the build as failed.
 		if (rc <= props.tazunittest_maxPassRC.toInteger()){
-			println   "***  zUnit Test Job ${zUnitRunJCL.submittedJobId} completed with $rc "
+			println   "***  TAZ Unit Test job ${tazUnitTestRunJcl.submittedJobId} completed with $rc "
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
 			// printReport
 			printReport(reportLogFile)
 		} else if (rc <= props.tazunittest_maxWarnRC.toInteger()){
-			String warningMsg = "*! The zunit test returned a warning ($rc) for $buildFile"
+			String warningMsg = "*! TAZ Unit Test returned a warning ($rc) for $buildFile"
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
 			// print warning and report
@@ -188,7 +188,7 @@ int currentBuildFileNumber = 1
 			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_tazunittest.log":logFile])
 		} else { // rc > props.tazunittest_maxWarnRC.toInteger()
 			props.error = "true"
-			String errorMsg = "*! The zunit test failed with RC=($rc) for $buildFile "
+			String errorMsg = "*! TAZ Unit Test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_tazunittest.log":logFile])
 		}
@@ -237,7 +237,7 @@ def printReport(File resultFile) {
 		}
 		println "****************** Module ${testCase.@moduleName} ****************** \n"
 	} catch (Exception e) {
-		print "! Reading zUnit result failed."
+		print "! Reading TAZ Unit Test result failed."
 	}
 
 }
