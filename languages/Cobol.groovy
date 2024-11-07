@@ -195,18 +195,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-<<<<<<< Upstream, based on 4d50932f527f40e2aa5879d9dd56eb9de2279530
-	
-<<<<<<< HEAD
-	if (isTazUnitTestCase){
-=======
-	if (isZUnitTestCase) {
->>>>>>> bfacfd6 (Provide deployType for object decks (#551))
-	compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
-=======
 	if (isTazUnitTestCase){
 		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
->>>>>>> d8eea54 Update utilities
 	} else {
 		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_srcPDS}($member)").options('shr').report(true))
 	}
