@@ -45,7 +45,7 @@ int currentBuildFileNumber = 1
 	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
 
 	// Create JCLExec String
-	String jobcard = props.jobCard.replace("\\n", "\n")
+	String jobcard = props.getFileProperty('tazunittest_jobCard', buildFile).replace("\\n", "\n")
 	String jcl = jobcard
 	jcl += """\
 \n//*

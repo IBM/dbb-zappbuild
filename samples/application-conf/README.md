@@ -282,6 +282,7 @@ Property | Description | Overridable
 --- | --- | ---
 tazunittest_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
 tazunittest_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
+tazunittest_jobCard  | Jobcard for TAZ Unit Test execution jobs | true
 tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | true
 tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 tazunittest_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
