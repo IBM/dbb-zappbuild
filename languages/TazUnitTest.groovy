@@ -79,7 +79,7 @@ int currentBuildFileNumber = 1
 // DSN=${props.tazunittest_bzureportPDS}(${member})
 """
 
-	// Add debugger paramters
+	// Add debugger parameters
 	debugParms = props.getFileProperty('tazunittest_userDebugSessionTestParm', buildFile)
 
 	// add code coverage collection if activated
