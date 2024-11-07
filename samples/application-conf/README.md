@@ -285,7 +285,7 @@ tazunittest_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everyth
 tazunittest_jobCard  | Jobcard for TAZ Unit Test execution jobs | true
 tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | true
 tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
-tazunittest_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
+tazunittest_eqaplayParms | Default options passed to the TAZ runner procedure EQAPPLAY | true
 tazunittest_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
 tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
 tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
