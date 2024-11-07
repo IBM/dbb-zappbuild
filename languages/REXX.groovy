@@ -78,6 +78,7 @@ sortedList.each { buildFile ->
 		String needsLinking = props.getFileProperty('rexx_linkEdit', buildFile)
 		if (needsLinking && needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
+			maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
 			if (props.getFileProperty('rexx_linkEditMaxRC', buildFile)) {
 				maxRC = props.getFileProperty('rexx_linkEditMaxRC', buildFile).toInteger()
 			} else {
