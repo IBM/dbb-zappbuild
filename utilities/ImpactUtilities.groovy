@@ -64,8 +64,8 @@ def createImpactBuildList() {
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
 				// skip adding generated test cases, when the testing is disabled 
-				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
-					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
+				if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+					if (props.verbose) println "** Identified $changedFile as a generated TAZ unit test case program. Processing TAZ unit tests is not enabled for this build. Skip building this program."
 				} else {
 					buildSet.add(changedFile)
 					if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
@@ -802,7 +802,7 @@ def boolean shouldCalculateImpacts(String changedFile){
 	if (onskipImpactCalculationList) return false
 	
 	// return false if the changed file is a generated test case program but testing is disabled
-	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+	if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 		return false
 	}
 	
