@@ -13,7 +13,7 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-	
+
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -37,14 +37,14 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
+	isTazUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure dependency resolution and create logical file	
 	String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
-	if(isZUnitTestCase){
+	if(isTazUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
@@ -106,7 +106,7 @@ sortedList.each { buildFile ->
 				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
-				if(!props.userBuild && !isZUnitTestCase){
+				if(!props.userBuild && !isTazUnitTestCase){
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('cobol_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
@@ -195,9 +195,8 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	
-	if (isZUnitTestCase) {
-	compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
+	if (isTazUnitTestCase){
+		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
 	} else {
 		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_srcPDS}($member)").options('shr').report(true))
 	}
@@ -242,9 +241,9 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (buildUtils.isMQ(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SCSQCOBC).options("shr"))
 		
-	// add additional zunit libraries
-	if (isZUnitTestCase)
-	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+	// add additional TAZ libraries
+	if (isTazUnitTestCase)
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
@@ -358,7 +357,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 			
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
-	if(isZUnitTestCase){
+	if(isTazUnitTestCase){
 		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cobol_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
 	}
 	else {

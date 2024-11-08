@@ -219,7 +219,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)

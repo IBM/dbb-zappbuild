@@ -27,7 +27,7 @@ The zAppBuild sample provides the following *language* build scripts by default:
 * DBDgen.groovy
 * PSBgen.groovy
 * MFS.groovy
-* ZunitConfig.groovy
+* TazUnitTest.groovy
 * CRB.groovy
 * Transfer.groovy (for transport non-buildable files like JCL or PROC into build libraries and register them as build output)
 * Easytrieve.groovy

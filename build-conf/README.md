@@ -30,7 +30,7 @@ SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
-SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
+SEQASAMP | Optional IBM Debug Tool library containing necessary TAZ copybooks. Example : DEBUG.V16.SEQASAMP
 EZETLOAD | Easytrieve Load Library. Example for IBM Migration Utility: SYS1.SFSYLOAD
 
 ### build.properties
@@ -284,21 +284,21 @@ acbgen_outputDatasets | List of output datasets to document deletions ** Can be
 acbgen_pgm | MVS program name of the acbgen pgm
 acbgen_deployType | Deploy Type of build outputs
 
-### ZunitConfig.properties
-Build properties used by zAppBuild/language/ZunitConfig.groovy
+### TazUnitTest.properties
+Build properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description
 --- | ---
-zunit_bzucfgPDS | Dataset to move BZUCFG files to from USS
-zunit_bzureportPDS | Dataset where BZUCRPT files are stored
-zunit_bzuplayPDS | Dataset to move zUnit Playback files to from USS
-zunit_srcDatasets | Comma separated list of 'source' type data sets
-zunit_srcOptions | BPXWDYN creation options for creating 'source' type data sets
-zunit_loadDatasets | Comma separated list of 'load module' type data sets
-zunit_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
-zunit_reportDatasets | Comma separated list of 'report' type data sets
-zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
-zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
+tazunittest_bzucfgPDS | Dataset to move BZUCFG files to from USS
+tazunittest_bzureportPDS | Dataset where BZUCRPT files are stored
+tazunittest_bzuplayPDS | Dataset to move zUnit Playback files to from USS
+tazunittest_srcDatasets | Comma separated list of 'source' type data sets
+tazunittest_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+tazunittest_loadDatasets | Comma separated list of 'load module' type data sets
+tazunittest_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
+tazunittest_reportDatasets | Comma separated list of 'report' type data sets
+tazunittest_reportOptions | BPXWDYN creation options for creating 'report' type data sets
+tazunittest_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### zCEE3.properties
 Application properties used by zAppBuild/language/zCEE3.groovy

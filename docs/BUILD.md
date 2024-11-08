@@ -95,7 +95,7 @@ $DBB_HOME/bin/groovyz build.groovy  \
                       --debug \
                       --impactBuild
 ```
-**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
+**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in TazUnitTest.properties)**
 ```
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
@@ -300,7 +300,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -379,7 +379,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -483,7 +483,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -723,7 +723,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -882,7 +882,7 @@ Please see the output provided in verbose mode when setting up the collections a
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1014,7 +1014,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1174,7 +1174,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1305,7 +1305,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/Transfer.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
@@ -1652,7 +1652,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1796,7 +1796,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1975,7 +1975,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -2135,7 +2135,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -2164,7 +2164,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** The dataset DEBUG.V14R1.SEQAMOD referenced for property SEQAMOD was found.
 ** The dataset DBC0CFG.SDSNEXIT referenced for property SDSNEXIT was found.
 ** The dataset IMS.V15R1.SDFSRESL referenced for property SDFSRESL was found.
-** The dataset RATCFG.ZUNIT.SBZUSAMP referenced for property SBZUSAMP was found.
+** The dataset DEBUG.V16.SEQASAMP referenced for property SEQASAMP was found.
 ** The dataset CEE.SCEELKED referenced for property SCEELKED was found.
 ..... // lists of all build properties
 ...
