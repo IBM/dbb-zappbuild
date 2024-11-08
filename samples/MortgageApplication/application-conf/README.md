@@ -19,6 +19,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build.
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
+addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds
 jobCard | JOBCARD for JCL execs
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions.

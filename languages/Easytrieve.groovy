@@ -143,7 +143,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 	
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.easytrieve_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.easytrieve_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 		
 	// add a syslib to the compile command
 	compile.dd(new DDStatement().name("PANDD").dsn(props.easytrieve_cpyPDS).options("shr"))

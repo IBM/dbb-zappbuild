@@ -163,7 +163,7 @@ OUTPUT STREAM:
 ** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/PLI.properties
 ** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/REXX.properties
-** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/TazUnitTest.properties
 ** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/Transfer.properties
 ** Loading property file /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/build-conf/defaultzAppBuildConf.properties
 ** appConf = /ZT01/var/jenkins/workspace/dbb-zappbuild-testframework-withParms/samples/MortgageApplication/application-conf

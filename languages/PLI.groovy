@@ -184,7 +184,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -219,7 +219,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)

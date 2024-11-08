@@ -122,7 +122,23 @@ def createImpactBuildList() {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-	
+	    
+	    Set<String> buildLinkSet = new HashSet<String>() 
+	    buildSet.each { buildFile ->
+	         String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
+	 
+	         //include statically called sub programs when the main program changes
+		
+		    if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
+			   // Call addLinkDependencies to append link dependencies to buildSet
+			   if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
+			   buildLinkSet = addLinkDependencies(buildFile)
+		    }
+	    }
+	        if (buildLinkSet !=null) {
+            buildSet.addAll(buildLinkSet)
+	    }
+		
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 			if (props.verbose) println "*** Perform impacted analysis for property changes."
@@ -169,7 +185,7 @@ def createImpactBuildList() {
 		}
 
 	}
-
+	
 	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
@@ -867,4 +883,49 @@ def sortFileList(list) {
  */
 def isMappedAsZUnitConfigFile(String file) {
 	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+}
+
+/*
+ *  addLinkDependencies -
+ *  method to identify all statically called sub module programs when the main program changes
+ *
+ *  @return list of statically called sub modules
+ *
+ */
+def addLinkDependencies(buildFile) {
+    Set<String> buildLinkSet = new HashSet<String>()	
+    MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+    def logicalFile = buildUtils.relativizePath(buildFile)
+    def logicalFiles = metadataStore.getCollection(props.applicationOutputsCollectionName).getLogicalFile(logicalFile)
+		if (logicalFiles) {
+            // Check if any logical files are found
+            // List all link dependencies for every main program that changes from the output collection. 
+            // This will return only the program name and not the absolute path
+            logicalFiles.each { logicalFileRecord ->
+                def dependencies = logicalFileRecord.getLogicalDependencies()
+
+                dependencies.each { logicalDep ->
+				 if (logicalDep.getCategory() == "LINK") { 
+                    def linkDepName = logicalDep.getLname()
+                    def linkDepLogicalFile = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(linkDepName)
+
+                    // Get the logical path for all the link dependencies returned
+                    linkDepLogicalFile.each { filePath ->
+                        // Link Dependency Files to be added
+                        def linkDepFile = filePath.getFile()
+
+                        if (linkDepFile != logicalFile) {
+						    if (ScriptMappings.getScriptName(linkDepFile)) {
+                              buildLinkSet.add(linkDepFile)
+							  if (props.verbose) println "** $linkDepFile has a link dependency to $logicalFile. Adding to build list"
+						    }
+                        }
+                     }
+                   }
+                }
+            }
+        }
+    
+
+    return buildLinkSet
 }
