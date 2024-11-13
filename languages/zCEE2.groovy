@@ -4,8 +4,8 @@ import com.ibm.dbb.build.*
 import groovy.transform.*
 import com.ibm.dbb.build.report.*
 import com.ibm.dbb.build.report.records.*
-import java.nio.file.*;
-
+import java.nio.file.*
+import groovy.io.FileType
 
 // define script properties
 @Field BuildProperties props = BuildProperties.getInstance()
@@ -20,31 +20,30 @@ HashMap<String, String> updatedBuildList = new HashMap<String, String>()
 println("** Streamlining the build list to remove duplicates")
 argMap.buildList.each { buildFile ->
     PropertyMappings inputTypeMappings = new PropertyMappings("zcee2_inputType")
-    inputType = inputTypeMappings.getValue(buildFile)
-
-    if (inputType) {
-        if (inputType == "PROJECT") {
-            File changedBuildFile = new File(buildFile);
-            File projectDir = changedBuildFile.getParentFile()
-            boolean projectDirFound = false
-            while (projectDir != null && !projectDirFound) {
-                File projectFile = new File(projectDir.getPath() + '/.project')
-                if (projectFile.exists()) {
-                    projectDirFound = true
-                } else {
-                    projectDir = projectDir.getParentFile()
-                }
-            }
-            if (projectDirFound) {
-                updatedBuildList.putIfAbsent(projectDir.getPath(), "PROJECT")
+    String inputType = inputTypeMappings.getValue(buildFile)
+    if (!inputType || inputType.isEmpty()) {
+        inputType = props.zcee2_inputType
+        println("*! [WARNING] No Input Type mapping for file ${buildFile}, using default type '${inputType}'")
+    }
+    if (inputType == "PROJECT") {
+        File changedBuildFile = new File(buildFile);
+        File projectDir = changedBuildFile.getParentFile()
+        boolean projectDirFound = false
+        while (projectDir != null && !projectDirFound) {
+            File projectFile = new File(projectDir.getPath() + '/.project')
+            if (projectFile.exists()) {
+                projectDirFound = true
             } else {
-                if (props.verbose) println("!* No project directory found for file '${buildFile}'. Skipping...")
+                projectDir = projectDir.getParentFile()
             }
+        }
+        if (projectDirFound) {
+            updatedBuildList.putIfAbsent(projectDir.getPath(), "PROJECT")
         } else {
-            updatedBuildList.put(buildFile, inputType);
+            if (props.verbose) println("!* No project directory found for file '${buildFile}'. Skipping...")
         }
     } else {
-        println("!* No Input Type mapping for file ${buildFile}, skipping it...")
+        updatedBuildList.put(buildFile, inputType);
     }
 }
 
@@ -59,22 +58,33 @@ sortedList.each { buildFile, inputType ->
     println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building ${inputType == "PROJECT" ? 'project' : 'properties file'} $buildFile"
 
     String parameters = ""
-    String outputDir = ""
     String outputFile = ""
+    String deployType
     if (inputType == "PROJECT") {
-        outputDir = "${props.buildOutDir}/zCEE2/$buildFile"
-        parameters = "-od $outputDir -pd $buildFile"
+        String outputFileName = Paths.get("zCEE2/$buildFile").getFileName()
+        // test if package.xml exsist to determine if it's an API project or a SAR project
+        File packageXMLFile = new File("${props.workspace}/$buildFile/package.xml")
+        if (packageXMLFile.exists()) {
+            // It's an API project (AAR)
+            outputFile = "zCEE2/$buildFile/${outputFileName}.aar"
+            deployType = "zCEE2-AAR"
+        } else {
+            // It's a Service project (SAR)
+            outputFile = "zCEE2/$buildFile/${outputFileName}.sar"
+            deployType = "zCEE2-SAR"
+        }
+        parameters = "-f ${props.buildOutDir}/$outputFile -pd $buildFile"
     } else {
         File changedBuildFile = new File(buildFile);
         String outputFileName = changedBuildFile.getName().split("\\.")[0] + "." + inputType.toLowerCase()
         File projectDir = changedBuildFile.getParentFile()
-        outputFile = "${props.buildOutDir}/zCEE2/${projectDir.getPath()}/${outputFileName}"
-        outputDir = "${props.buildOutDir}/zCEE2/${projectDir.getPath()}"
-        parameters = "-f $outputFile -p $buildFile"
+        outputFile = "zCEE2/${projectDir.getPath()}/${outputFileName}"
+        deployType = "zCEE2-$inputType"
+        parameters = "-f ${props.buildOutDir}/$outputFile -p $buildFile"
     }
-    File outputDirectory = new File(outputDir)
-    outputDirectory.mkdirs()
-
+    Path outputDirPath = Paths.get("${props.buildOutDir}/${outputFile}").getParent()
+    File outputDir = outputDirPath.toFile()
+    outputDir.mkdirs()
 
     Properties ARAproperties = new Properties()
     File dataStructuresLocation
@@ -85,15 +95,17 @@ sortedList.each { buildFile, inputType ->
         ARApropertiesFile.withInputStream {
             ARAproperties.load(it)
         }
-        println("*** dataStructuresLocation: ${ARAproperties.dataStructuresLocation}")
-        println("*** apiInfoFileLocation: ${ARAproperties.apiInfoFileLocation}")
-        println("*** logFileDirectory: ${ARAproperties.logFileDirectory}")
+        if (props.verbose) {
+            println("*** dataStructuresLocation: ${ARAproperties.dataStructuresLocation}")
+            println("*** apiInfoFileLocation: ${ARAproperties.apiInfoFileLocation}")
+            println("*** logFileDirectory: ${ARAproperties.logFileDirectory}")
+        }
         dataStructuresLocation = new File(ARAproperties.dataStructuresLocation)
         dataStructuresLocation.mkdirs()
         apiInfoFileLocation = new File(ARAproperties.apiInfoFileLocation)
         apiInfoFileLocation.mkdirs()
         logFileDirectory = new File(ARAproperties.logFileDirectory)
-        logFileDirectory.mkdirs()            
+        logFileDirectory.mkdirs()
     }
 
 
@@ -102,121 +114,78 @@ sortedList.each { buildFile, inputType ->
     File logFile = new File("${props.buildOutDir}/${logFilePath}.zCEE2.log")
     if (logFile.exists())
         logFile.delete()
+
+    String zconbtPath = props.zcee2_zconbtPath
+
+    if (buildUtils.fileExists(zconbtPath, "z/OS Connect EE OpenAPI 2 processing")) {
+        String encoding = props.logEncoding ?: 'IBM-1047'
+        ArrayList<String> optionsList = new ArrayList<String>(Arrays.asList(parameters))
+        if (props.verbose)
+            println("*** Executing command '${zconbtPath}' with options '${optionsList}'")
+
+        UnixExec zCEE2Execution = new UnixExec().command(zconbtPath)
+        zCEE2Execution.setOptions(optionsList)
+        zCEE2Execution.output(logFile.getAbsolutePath()).mergeErrors(true)
+        zCEE2Execution.setFile(buildFile)
+        zCEE2Execution.setOutputEncoding(encoding)
+
+        zCEE2Execution.addOutput(props.buildOutDir, outputFile, deployType)
+        int returnCode = zCEE2Execution.execute()
     
-    String zconbtPath = props.getFileProperty('zcee2_zconbtPath', buildFile)
+        if (inputType == "ARA") {
+            def ARA_packageArtifacts = props.getFileProperty('zcee2_ARA_packageArtifacts', buildFile)
+            if (ARA_packageArtifacts && ARA_packageArtifacts.toBoolean()) {
+                // if building an API Requester project, we package the generated artifacts
+                // if told to do so
 
-    File zconbt = new File(zconbtPath)
-    if (!zconbt.exists()) {
-        def errorMsg = "*! zconbt wasn't find at location '$zconbtPath'" 
-        println(errorMsg)
-        props.error = "true"
-        buildUtils.updateBuildResult(errorMsg:errorMsg)
-    } else {
-        String[] command;
-
-        command = [zconbtPath, parameters]
-        String commandString = command.join(" ")
-        if (props.verbose)
-            println("** Executing command '${commandString}'...")
-
-        StringBuffer shellOutput = new StringBuffer()
-        StringBuffer shellError = new StringBuffer()
-
-        String javaHome = props.getFileProperty('zcee2_JAVA_HOME', buildFile)
-        if (!javaHome) {
-            javaHome = System.getenv("JAVA_HOME")
-        }
-
-        ProcessBuilder cmd = new ProcessBuilder(zconbtPath, parameters);
-        Map<String, String> env = cmd.environment();
-        env.put("JAVA_HOME", javaHome);
-        env.put("PATH", javaHome + "/bin" + ":" + env.get("PATH"))
-        Process process = cmd.start()
-        process.consumeProcessOutput(shellOutput, shellError)
-        process.waitFor()
-        if (props.verbose)
-            println("** Exit value for the zconbt process: ${process.exitValue()}");
-            
-        // write outputs to log file
-        String enc = props.logEncoding ?: 'IBM-1047'
-        logFile.withWriter(enc) { writer ->
-            writer.append(shellOutput)
-            writer.append(shellError)
-        }
-        
-        if (process.exitValue() != 0) {
-            def errorMsg = "*! Error during the zconbt process" 
-            println(errorMsg)
-            if (props.verbose)
-                println("*! zconbt error message:\n${shellError}")
-            props.error = "true"
-            buildUtils.updateBuildResult(errorMsg:errorMsg)
-        } else {
-            if (props.verbose)
-                println("** zconbt output:\n${shellOutput}")
-
-            ArrayList<String> outputProperty = []
-            Path outputDirectoryPath = Paths.get(props.buildOutDir)
-            if (inputType == "PROJECT") {
-                String[] outputFiles = outputDirectory.list()
-                for (int i=0; i<outputFiles.length; i++) {
-                    Path outputFilePath = Paths.get(outputDir + "/" + outputFiles[i])
-                    Path relativeOutputFilePath = outputDirectoryPath.relativize(outputFilePath)
-                    outputProperty.add("[${props.buildOutDir}, ${relativeOutputFilePath.toString()}, zCEE2]")
+                def unixRecords = BuildReportFactory.getBuildReport().getRecords().findAll() { record ->
+                    record.getType().equals("UNIX")
                 }
-            } else {
-                Path outputFilePath = Paths.get(outputFile)
-                Path relativeOutputFilePath = outputDirectoryPath.relativize(outputFilePath)
-                outputProperty.add("[${props.buildOutDir}, ${relativeOutputFilePath.toString()}, zCEE2]")
-
-                if (inputType == "ARA") {
-                    def ARA_PackageArtifacts = props.getFileProperty('zcee2_ARA_PackageArtifacts', buildFile)
-                    if (ARA_PackageArtifacts && ARA_PackageArtifacts.toBoolean()) {
-
-                        String[] outputFiles
-                        Path finalOutputFilePath
-
-                        outputFiles = dataStructuresLocation.list()
-                        File dataStructuresLocationDir = new File("${props.buildOutDir}/zCEE2/dataStructures")
-                        dataStructuresLocationDir.mkdirs()
-                        for (int i=0; i<outputFiles.length; i++) {
-                            outputFilePath = Paths.get(dataStructuresLocation.getPath() + "/" + outputFiles[i])
-                            finalOutputFilePath = Paths.get(dataStructuresLocationDir.getPath() + "/" + outputFiles[i])
-                            Files.copy(outputFilePath, finalOutputFilePath, StandardCopyOption.COPY_ATTRIBUTES);
-                            relativeOutputFilePath = outputDirectoryPath.relativize(finalOutputFilePath)
-                            outputProperty.add("[${props.buildOutDir}, ${relativeOutputFilePath.toString()}, zCEE2-Copy]")
+                if (unixRecords) {
+                    def unixRecord = unixRecords.find() { record ->
+                        record.getFile().equals(buildFile)
+                    }
+                    if (unixRecord) {
+                        // Captures the generated data structures
+                        File targetDataStructuresLocationDir = new File("${props.buildOutDir}/zCEE2/${buildFile.replace(".properties", "")}/dataStructures")
+                        targetDataStructuresLocationDir.mkdirs()
+                        dataStructuresLocation.eachFile(FileType.FILES) { file ->
+                            Path targetFile = Paths.get(targetDataStructuresLocationDir.getPath() + "/" + file.getName())
+                            Files.copy(file.toPath(), targetFile, StandardCopyOption.COPY_ATTRIBUTES)
+                            Path relativeOutputFilePath = Paths.get(props.buildOutDir).relativize(targetFile)
+                            unixRecord.addOutput(props.buildOutDir, relativeOutputFilePath.toString(), "zCEE2-Copy")
                         }
-                        outputFiles = apiInfoFileLocation.list()
-                        File apiInfoFileLocationDir = new File("${props.buildOutDir}/zCEE2/apiInfoFiles")
-                        apiInfoFileLocationDir.mkdirs()
-                        for (int i=0; i<outputFiles.length; i++) {
-                            outputFilePath = Paths.get(apiInfoFileLocation.getPath() + "/" + outputFiles[i])
-                            finalOutputFilePath = Paths.get(apiInfoFileLocationDir.getPath() + "/" + outputFiles[i])
-                            Files.copy(outputFilePath, finalOutputFilePath, StandardCopyOption.COPY_ATTRIBUTES);
-                            relativeOutputFilePath = outputDirectoryPath.relativize(finalOutputFilePath)
-                            outputProperty.add("[${props.buildOutDir}, ${relativeOutputFilePath.toString()}, zCEE2-Info]")
+                        // Captures the generated API info files
+                        File targetApiInfoFileLocationDir = new File("${props.buildOutDir}/zCEE2/${buildFile.replace(".properties", "")}/apiInfoFiles")
+                        targetApiInfoFileLocationDir.mkdirs()
+                        apiInfoFileLocation.eachFile(FileType.FILES) { file ->
+                            Path targetFile = Paths.get(targetApiInfoFileLocationDir.getPath() + "/" + file.getName())
+                            Files.copy(file.toPath(), targetFile, StandardCopyOption.COPY_ATTRIBUTES)
+                            Path relativeOutputFilePath = Paths.get(props.buildOutDir).relativize(targetFile)
+                            unixRecord.addOutput(props.buildOutDir, relativeOutputFilePath.toString(), "zCEE2-Info")
                         }
-                        outputFiles = logFileDirectory.list()
-                        File logFileDirectoryDir = new File("${props.buildOutDir}/zCEE2/logs")
-                        logFileDirectoryDir.mkdirs()
-                        for (int i=0; i<outputFiles.length; i++) {
-                            if (outputFiles[i].endsWith(".log")) {
-                                outputFilePath = Paths.get(logFileDirectory.getPath() + "/" + outputFiles[i])
-                                finalOutputFilePath = Paths.get(logFileDirectoryDir.getPath() + "/" + outputFiles[i])
-                                Files.copy(outputFilePath, finalOutputFilePath, StandardCopyOption.COPY_ATTRIBUTES);
-                                relativeOutputFilePath = outputDirectoryPath.relativize(finalOutputFilePath)
-                                outputProperty.add("[${props.buildOutDir}, ${relativeOutputFilePath.toString()}, zCEE2-Log]")
-                            }
+                        // Captures the generated log files
+                        File targetLogFileDirectoryDir = new File("${props.buildOutDir}/zCEE2/${buildFile.replace(".properties", "")}/logs")
+                        targetLogFileDirectoryDir.mkdirs()
+                        logFileDirectory.eachFile(FileType.FILES) { file ->
+                            Path targetFile = Paths.get(targetLogFileDirectoryDir.getPath() + "/" + file.getName())
+                            Files.copy(file.toPath(), targetFile, StandardCopyOption.COPY_ATTRIBUTES)
+                            Path relativeOutputFilePath = Paths.get(props.buildOutDir).relativize(targetFile)
+                            unixRecord.addOutput(props.buildOutDir, relativeOutputFilePath.toString(), "zCEE2-Logs")
                         }
                     }
                 }
             }
-            AnyTypeRecord zCEEWARRecord = new AnyTypeRecord("USS_RECORD")
-            zCEEWARRecord.setAttribute("file", buildFile)
-            zCEEWARRecord.setAttribute("label", "z/OS Connect EE OpenAPI 2 definition")
-            zCEEWARRecord.setAttribute("outputs", outputProperty.join(";"))
-            zCEEWARRecord.setAttribute("command", commandString);
-            BuildReportFactory.getBuildReport().addRecord(zCEEWARRecord)
+        }
+
+        if (props.verbose)
+            println("** Exit value for the zconbt process: $returnCode")
+
+        if (returnCode != 0) {
+            def errorMsg = "*! Error during the zconbt process - Please check the log file at '${logFile.getAbsolutePath()}'."
+            println(errorMsg)
+            props.error = "true"
+            buildUtils.updateBuildResult(errorMsg:errorMsg)
         }
     }
 }
