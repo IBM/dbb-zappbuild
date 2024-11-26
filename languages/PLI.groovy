@@ -35,7 +35,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
+	isZUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure SearchPathDependencyResolver
 	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
