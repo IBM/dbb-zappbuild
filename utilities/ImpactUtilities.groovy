@@ -519,7 +519,9 @@ def scanOnlyStaticDependencies(List buildList){
 
 
 def updateCollection(changedFiles, deletedFiles, renamedFiles) {
-
+	
+	int collectionSizeLimit = Integer.valueOf(props.logicalFileCollectionSizeLimit)
+	
 	if (!MetadataStoreFactory.metadataStoreExists()) {
 		if (props.verbose) println "** Unable to update collections. No Metadata Store."
 		return
@@ -631,7 +633,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 			}
 
 			// save logical files in batches of 500 to avoid running out of heap space
-			if (logicalFiles.size() == 500) {
+			if (logicalFiles.size() == collectionSizeLimit) {
 				if (props.verbose)
 					println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
 				metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
