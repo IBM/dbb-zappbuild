@@ -690,10 +690,12 @@ def createBuildList() {
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
-		}
-		else if(buildSet) {
+		} else if(buildSet) {
 			println "** Perform analysis and reporting of external impacted files for the build list."
 			reportingUtils.reportExternalImpacts(buildSet)
+		} else if(changedFiles) {
+			println "** Perform analysis and reporting of external impacted files for changed files only (no files in the build list)."
+			reportingUtils.reportExternalImpacts(changedFiles)
 		}
 	}
 	
