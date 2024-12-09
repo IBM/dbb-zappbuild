@@ -157,6 +157,35 @@ sortedList.each { buildFile ->
 			}
 		}
 	}
+	
+	//perform Db2 binds on userbuild
+	if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+		//perform Db2 Bind Pkg
+		bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+		if (bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.assembler_dbrmPDS);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+			}
+		}
+
+		//perform Db2 Bind Plan
+		bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+		if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+			}
+		}
+	}
 
 	// clean up passed DD statements
 	job.stop()
