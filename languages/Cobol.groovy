@@ -76,8 +76,6 @@ sortedList.each { buildFile ->
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('cobol_compileMaxRC', buildFile).toInteger()
 
-	boolean bindFlag = true
-
 	if (rc > maxRC) {
 		bindFlag = false
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
@@ -99,7 +97,6 @@ sortedList.each { buildFile ->
 			maxRC = props.getFileProperty('cobol_linkEditMaxRC', buildFile).toInteger()
 
 			if (rc > maxRC) {
-				bindFlag = false
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
@@ -116,29 +113,33 @@ sortedList.each { buildFile ->
 		}
 	}
 
-	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
-	bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPackage && bind_performBindPackage.toBoolean()) {
-		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
-		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS);
-		if ( bindRc > bindMaxRC) {
-			String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+	//perform Db2 binds on userbuild
+	if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+
+		//perform Db2 Bind Pkg
+		bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+		if ( bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+			}
 		}
-	}
-	
-	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
-	bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPlan && bind_performBindPlan.toBoolean()) {
-		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
-		def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
-		if ( bindRc > bindMaxRC) {
-			String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+
+		//perform Db2 Bind Plan
+		bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+		if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+			}
 		}
 	}
 
