@@ -741,9 +741,9 @@ def finalizeBuildProcess(Map args) {
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl
-				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
 				if (url) {
+					String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 					if (props.verbose) println "** Setting property $giturlkey : $url"
 					buildResult.setProperty(giturlkey, url)
 				}
