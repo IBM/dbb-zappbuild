@@ -743,8 +743,10 @@ def finalizeBuildProcess(Map args) {
 				// store gitUrl
 				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
-				if (props.verbose) println "** Setting property $giturlkey : $url"
-				buildResult.setProperty(giturlkey, url)
+				if (url) {
+					if (props.verbose) println "** Setting property $giturlkey : $url"
+					buildResult.setProperty(giturlkey, url)
+				}
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
