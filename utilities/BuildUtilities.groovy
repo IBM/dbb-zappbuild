@@ -674,6 +674,50 @@ def getDeployType(String langQualifier, String buildFile, LogicalFile logicalFil
 }
 
 /*
+ * Lookup binder control card members
+ *  if found it will upload binder control card to target libary 
+ */
+
+def lookupBinderControlCard(String langQualifier, String buildFile) {
+
+	retval = null
+	
+	binderControlCardPath = props.getFileProperty("${langQualifier}_binderControlCardLookupPath", buildFile)
+
+	// Locate binder control card
+	if (binderControlCardPath) {
+		fileName = buildFile.substring(buildFile.lastIndexOf("/") + 1, buildFile.lastIndexOf('.'))
+		def binderControlCard = binderControlCardPath.replace("\\n","\n").replace('@{member}', fileName)
+		
+		File binderControlCardFile = new File(getAbsolutePath(binderControlCard))
+		if (binderControlCardFile.exists()) {
+
+			binderControlCardLibrary = props."${langQualifier}_bndPDS"
+			libraryOptions = props."${langQualifier}_srcOptions"
+			if (binderControlCardLibrary && libraryOptions)	{
+				// create library
+				createDatasets(binderControlCardLibrary.split(","), libraryOptions)
+
+				// upload binder control card
+				String member = CopyToPDS.createMemberName(buildFile)
+				new CopyToPDS().file(binderControlCardFile).dataset(binderControlCardLibrary).member(member).execute()
+				retval = binderControlCardLibrary
+			} else {
+				if (props.verbose) println "***! Binder control card library name ($binderControlCardLibrary) or library options ($libraryOptions) not specified."
+			}
+
+		} else {
+			if (props.verbose) println "*** No binder control card ($binderControlCardFile) found for build file $buildFile."
+		}
+
+	} else {
+		// No Binder Control Card path specified
+	}
+
+	return retval
+}
+
+/*
  * Creates a Generic PropertyRecord with the provided db2 information in bind.properties
  */
 def generateDb2InfoRecord(String buildFile){
