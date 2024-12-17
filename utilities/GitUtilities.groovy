@@ -135,17 +135,20 @@ def getRemoteGitBranches(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  */
 def isGitDetachedHEAD(String gitDir) {
+	// If not detached, HEAD will be a symbolic-ref pointing to the branch
+	// If detached, HEAD will be a commit and this command will return a non-zero RC
 	String cmd = "git -C $gitDir symbolic-ref HEAD"
 	StringBuffer gitStatus = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitStatus, gitError)
-	if (gitError) {
+
+	if (gitError && (gitError.contains("not a git repository") == false && gitError.contains("not a symbolic ref") == false)) {
 		println("*! Error executing Git command: $cmd error $gitError")
 	}
 
-	return process.exitValue() != 0
+	return process.exitValue() != 0;
 }
 
 /*
