@@ -9,6 +9,9 @@ import java.util.regex.Pattern
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field MetadataStore metadataStore
 
+
+println("Is detached: ${isDetachedHead(System.getProperty('user.dir'))}")
+
 /*
  * Tests if directory is in a local git repository
  *
@@ -132,7 +135,7 @@ def getRemoteGitBranches(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  */
 def isGitDetachedHEAD(String gitDir) {
-	String cmd = "git -C $gitDir status"
+	String cmd = "git -C $gitDir symbolic-ref HEAD"
 	StringBuffer gitStatus = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 
@@ -142,7 +145,7 @@ def isGitDetachedHEAD(String gitDir) {
 		println("*! Error executing Git command: $cmd error $gitError")
 	}
 
-	return gitStatus.toString().contains("HEAD detached at")
+	return process.exitValue() != 0
 }
 
 /*
