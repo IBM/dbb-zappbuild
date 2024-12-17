@@ -144,7 +144,7 @@ def isGitDetachedHEAD(String gitDir) {
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitStatus, gitError)
 
-	if (gitError && (gitError.contains("not a git repository") == false && gitError.contains("not a symbolic ref") == false)) {
+	if (gitError && gitError.contains("not a symbolic ref") == false) {
 		println("*! Error executing Git command: $cmd error $gitError")
 	}
 
