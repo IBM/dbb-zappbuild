@@ -10,7 +10,7 @@ import java.util.regex.Pattern
 @Field MetadataStore metadataStore
 
 
-println("Is detached: ${isDetachedHead(System.getProperty('user.dir'))}")
+println("Is detached: ${isGitDetachedHEAD(System.getProperty('user.dir'))}")
 
 /*
  * Tests if directory is in a local git repository
