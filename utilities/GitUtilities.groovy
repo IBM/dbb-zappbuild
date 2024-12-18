@@ -9,8 +9,6 @@ import java.util.regex.Pattern
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field MetadataStore metadataStore
 
-println("Is detached: ${isGitDetachedHEAD(System.getProperty('user.dir'))}")
-
 /*
  * Tests if directory is in a local git repository
  *
