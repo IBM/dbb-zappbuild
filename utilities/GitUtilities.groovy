@@ -9,8 +9,6 @@ import java.util.regex.Pattern
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field MetadataStore metadataStore
 
-
-
 /*
  * Tests if directory is in a local git repository
  *
