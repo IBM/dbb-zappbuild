@@ -2,7 +2,7 @@ name: CI Demo - IBM Z Modernization
 
 on:
   push:
-    branches-ignore:
+    branches:
       - main
   pull_request:
 
