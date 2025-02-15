@@ -1,0 +1,40 @@
+name: CI Demo - IBM Z Modernization
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+
+jobs:
+  build-test:
+    name: 🏗️ Build & Test (Demo)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up IBM Z Environment (Simulated)
+        run: echo "Setting up IBM Z Build Environment..."
+
+      - name: Build COBOL Application (Demo)
+        run: echo "Compiling COBOL programs for IBM Z..."
+
+      - name: Run Unit Tests (Demo)
+        run: echo "Running unit tests for COBOL application..."
+
+  analysis:
+    name: 🔍 Code Analysis (Demo)
+    runs-on: ubuntu-latest
+    needs: build-test
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Code Review (Simulated)
+        run: echo "Performing static code analysis and linting..."
+
+      - name: Run Wazi Analyze (Demo)
+        run: echo "Executing Wazi Analyze for IBM Z modernization..."
