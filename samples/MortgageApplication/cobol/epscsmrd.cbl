@@ -8,6 +8,7 @@
       *    ************************RD/z**7.5************************
       *          *********************************************
       * test SHAREDC
+      * Test again
        IDENTIFICATION DIVISION.
         PROGRAM-ID. 'EPSCSMRD'.
         AUTHOR. WD4Z.
