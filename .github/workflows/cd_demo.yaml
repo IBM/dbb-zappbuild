@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - Test
+      - ShareDC
 
 jobs:
   build-test:

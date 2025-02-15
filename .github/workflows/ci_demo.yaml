@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - Test
+      - ShareDC
 
   pull_request:
 
