@@ -7,8 +7,7 @@
       *  *************************************************************
       *    ************************RD/z**7.5************************
       *          *********************************************
-      * Add some changes
-      * Hello from Epic branch
+      * Hi from ShareDC
        IDENTIFICATION DIVISION.
         PROGRAM-ID. 'EPSCSMRD'.
         AUTHOR. WD4Z.
