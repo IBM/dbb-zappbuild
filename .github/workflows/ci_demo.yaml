@@ -3,7 +3,6 @@ name: CI Demo - IBM Z Modernization
 on:
   push:
     branches:
-      - main
       - Test
       - ShareDC
 
