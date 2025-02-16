@@ -7,7 +7,7 @@
       *  *************************************************************
       *    ************************RD/z**7.5************************
       *          *********************************************
-      * Hi from ShareDC
+      * Hi from ShareDC & everyone
        IDENTIFICATION DIVISION.
         PROGRAM-ID. 'EPSCSMRD'.
         AUTHOR. WD4Z.
