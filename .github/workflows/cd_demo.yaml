@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      
+  
 
 jobs:
   build-test:
-    name: 🏗️ Build & Test (Demo)
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +26,7 @@ jobs:
         run: echo "Running unit tests for COBOL application..."
 
   analysis:
-    name: 🔍 Code Analysis (Demo)
+    name: Analysis
     runs-on: ubuntu-latest
     needs: build-test
 
@@ -39,7 +41,7 @@ jobs:
         run: echo "Executing Wazi Analyze for IBM Z modernization..."
 
   packaging:
-    name: 📦 Package Artifacts (Demo)
+    name: Packaging
     runs-on: ubuntu-latest
     needs: [build-test, analysis]
 
@@ -54,7 +56,7 @@ jobs:
         run: echo "Uploading compiled COBOL artifacts for IBM Z..."
   
   deploy:
-    name: 🚀 Deploy (IBM DevOps Deploy Simulated)
+    name: Deploy
     runs-on: ubuntu-latest
     needs: packaging
 
@@ -69,7 +71,7 @@ jobs:
         run: echo "Validating IBM Z deployment success..."
 
   release:
-    name: 🎉 Release (IBM DevOps Release Simulated)
+    name: Release
     runs-on: ubuntu-latest
     needs: deploy
 

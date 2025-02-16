@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-test:
-    name: 🏗️ Build & Test (Demo)
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
         run: echo "Running unit tests for COBOL application..."
 
   analysis:
-    name: 🔍 Code Analysis (Demo)
+    name: Analysis
     runs-on: ubuntu-latest
     needs: build-test
 
