@@ -6,8 +6,6 @@ on:
       - Test
       - ShareDC
 
-  pull_request:
-
 jobs:
   build-test:
     name: Build & Test
