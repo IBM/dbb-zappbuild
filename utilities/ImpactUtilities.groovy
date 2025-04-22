@@ -462,7 +462,6 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') > 1){
 					if (props.verbose) println "**** $file"
 					changedIndividualFilePropertiesFiles << file
-					}
 				}
 			}
 		}
