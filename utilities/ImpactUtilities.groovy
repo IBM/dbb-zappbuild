@@ -742,8 +742,9 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// default value, relevant for non-existent files (like deletions)
 	String defaultValue
 
-	// if mode is not defined, add extra query to find match between computed
-	//  fix and the existing DBB logical filse in the DBB metadatastore
+	// if mode is not defined and it deals with a deleted file,
+	// an extra query is performed to find the match between computed
+	//  fix and the existing DBB logical file entry in the DBB metadatastore
 	def logicalFiles
 	if (mode == null && !mustExist) {
 		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
@@ -758,56 +759,54 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 	defaultValue = fixedFileName
 
-	// check for changed files
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 1];
-	// check deleted file, but known mode
-	if (mode==1 && !mustExist) return [fixedFileName, 1]
-	// check deleted file, mode unknown
-	if (!mode && !mustExist) {
-		if (logicalFiles.any { it.getFile() == "${props.workspace}/${fixedFileName}"}) {
-			return [fixedFileName, 1]
+	if (mode == 1) {
+		return [fixedFileName, 1]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 1];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 1]
+			}
 		}
 	}
 
 	// Scenario 2: Repository name is used as Application Root directory
-	// check for changed files
 	String dirName = new File(dir).getName()
-	if (new File("${dir}/${file}").exists())
-		return [
-			"$dirName/$file" as String,
-			2
-		]
-	// check deleted file, but known mode
-	if (mode==2 && !mustExist) return [
-			"$dirName/$file" as String,
-			2
-		]
-	// check deleted file, mode unknown
-	if (!mode && !mustExist) {
-		if (logicalFiles.any { it.getFile() == "$dirName/$file"}) {
-			return [
-				"$dirName/$file" as String,
-				2
-			]
+	fixedFileName = "${dirName}/${file}"
+
+	if (mode == 2) {
+		return [fixedFileName, 2]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${dir}/${file}").exists()) {
+			return [fixedFileName, 2];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 2]
+			}
 		}
 	}
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
-
-	// check for changed files
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 3];
-	// check deleted file, but known mode
-	if (mode==3 && !mustExist) return [fixedFileName, 3]
-
-	// check deleted file, mode unknown
-	if (!mode && !mustExist) {
-		if (logicalFiles.any { it.getFile() == "$fixedFileName"}) {
-			return [fixedFileName, 3]
+	
+	if (mode == 3) {
+		return [fixedFileName, 3]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 3];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 3]
+			}
 		}
 	}
 
@@ -816,20 +815,20 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
-	// check for changed files
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 4];
 
-	// check deleted file, but known mode
-	if (mode==4 && !mustExist) return [fixedFileName, 4]
-
-	// check deleted file, mode unknown
-	if (!mode && !mustExist) {
-		if (logicalFiles.any { it.getFile() == "$fixedFileName"}) {
-			return [fixedFileName, 4]
+	if (mode == 4) {
+		return [fixedFileName, 4]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 4];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 4]
+			}
 		}
 	}
-
 
 	// returns null or assumed default fullPath to file
 	if (mustExist){
