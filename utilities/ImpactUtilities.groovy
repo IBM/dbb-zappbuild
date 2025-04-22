@@ -724,6 +724,9 @@ def verifyCollections() {
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
  *
+ *	the deleted file case cannot check if the file exists (mustExist=false)
+ *  if the mode is known, it tries to match based on a query with the metadatastore 
+ *  
  *  returns null if file not found + mustExist
  *
  *  scenarios / mode
@@ -739,52 +742,105 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// default value, relevant for non-existent files (like deletions)
 	String defaultValue
 
+	// if mode is not defined, add extra query to find match between computed
+	//  fix and the existing DBB logical filse in the DBB metadatastore
+	def logicalFiles
+	if (mode == null && !mustExist) {
+		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+		if (metadataStore.collectionExists(props.applicationCollectionName)) {
+			logicalName = CopyToPDS.createMemberName(file)
+			logicalFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(logicalName)
+		}
+	}
+
 	// Scenario 1: Nested projects, like MortgageApplication and projects with a top-level dir
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 	defaultValue = fixedFileName
 
+	// check for changed files
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 1];
+	// check deleted file, but known mode
 	if (mode==1 && !mustExist) return [fixedFileName, 1]
+	// check deleted file, mode unknown
+	if (!mode && !mustExist) {
+		if (logicalFiles.any { it.getFile() == "${props.workspace}/${fixedFileName}"}) {
+			return [fixedFileName, 1]
+		}
+	}
 
 	// Scenario 2: Repository name is used as Application Root directory
+	// check for changed files
 	String dirName = new File(dir).getName()
 	if (new File("${dir}/${file}").exists())
 		return [
 			"$dirName/$file" as String,
 			2
 		]
+	// check deleted file, but known mode
 	if (mode==2 && !mustExist) return [
 			"$dirName/$file" as String,
 			2
 		]
+	// check deleted file, mode unknown
+	if (!mode && !mustExist) {
+		if (logicalFiles.any { it.getFile() == "$dirName/$file"}) {
+			return [
+				"$dirName/$file" as String,
+				2
+			]
+		}
+	}
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
+
+	// check for changed files
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 3];
+	// check deleted file, but known mode
 	if (mode==3 && !mustExist) return [fixedFileName, 3]
+
+	// check deleted file, mode unknown
+	if (!mode && !mustExist) {
+		if (logicalFiles.any { it.getFile() == "$fixedFileName"}) {
+			return [fixedFileName, 3]
+		}
+	}
 
 	// Scenario 4:
 	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
+	// check for changed files
 	if ( new File("${props.workspace}/${fixedFileName}").exists())
 		return [fixedFileName, 4];
+
+	// check deleted file, but known mode
 	if (mode==4 && !mustExist) return [fixedFileName, 4]
-	
-	// returns null or assumed fullPath to file
+
+	// check deleted file, mode unknown
+	if (!mode && !mustExist) {
+		if (logicalFiles.any { it.getFile() == "$fixedFileName"}) {
+			return [fixedFileName, 4]
+		}
+	}
+
+
+	// returns null or assumed default fullPath to file
 	if (mustExist){
 		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue, null]
+	if (props.verbose) {
+		println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
+		return [defaultValue, null]
+	}
 }
 
 /**
