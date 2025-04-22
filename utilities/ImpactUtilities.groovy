@@ -56,7 +56,7 @@ def createImpactBuildList() {
 	if (calculatedChanges) {
 
 		// create build list using impact analysis
-		if (props.verbose) println "*** Perform impact analysis for changed files."
+		if (props.verbose) println "*** Perform impacted analysis for changed files."
 
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
@@ -142,7 +142,7 @@ def createImpactBuildList() {
 		
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-			if (props.verbose) println "*** Perform impact analysis for property changes."
+			if (props.verbose) println "*** Perform impacted analysis for property changes."
 
 			changedBuildProperties.each { changedProp ->
 
@@ -181,18 +181,16 @@ def createImpactBuildList() {
 					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
 			}
-		
-		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
 			
 		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
-			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+			def repositoryFileName = changedIndividualPropertiesFile.last().replace(".properties", "")
 			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
 			// locate logical files from the collection
 			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
 			logicalFileList.each { logicalFile ->
 				if (logicalFile.getFile().contains(repositoryFileName)) {
 					buildSet.add(logicalFile.getFile())
-					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+					if (props.verbose) println "** $logicalFile.getFile() is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
 				}
 			}
 		}
@@ -464,6 +462,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') > 1){
 					if (props.verbose) println "**** $file"
 					changedIndividualFilePropertiesFiles << file
+					}
 				}
 			}
 		}
