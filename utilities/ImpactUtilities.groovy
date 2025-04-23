@@ -26,6 +26,7 @@ def createImpactBuildList() {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
 	
@@ -36,7 +37,7 @@ def createImpactBuildList() {
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -55,7 +56,7 @@ def createImpactBuildList() {
 	if (calculatedChanges) {
 
 		// create build list using impact analysis
-		if (props.verbose) println "*** Perform impacted analysis for changed files."
+		if (props.verbose) println "*** Perform impact analysis for changed files."
 
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
@@ -141,7 +142,7 @@ def createImpactBuildList() {
 		
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-			if (props.verbose) println "*** Perform impacted analysis for property changes."
+			if (props.verbose) println "*** Perform impact analysis for property changes."
 
 			changedBuildProperties.each { changedProp ->
 
@@ -180,6 +181,22 @@ def createImpactBuildList() {
 					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
 			}
+		
+		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
+			
+		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
+			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
+			// locate logical files from the collection
+			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
+			logicalFileList.each { logicalFile ->
+				if (logicalFile.getFile().contains(repositoryFileName)) {
+					buildSet.add(logicalFile.getFile())
+					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+				}
+			}
+		}
+		
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
@@ -200,9 +217,10 @@ def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
+	
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(null)
 
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles)
@@ -220,7 +238,7 @@ def createMergeBuildList(){
 		}
 	}
 
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles]
 }
 
 /*
@@ -309,6 +327,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// DBB property map to store changed files with their abbreviated git hash
@@ -430,15 +449,21 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
-				} else {
+				} else if (!file.endsWith(".properties")){
 					if (props.verbose) println "**** $file is changed, but is excluded from build scope. See excludeFileList configuration."
 				}
-				//retrieving changed build properties
-				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
+				// retrieving changed build properties, that are maintained in the application repository
+				// skip individual file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') == 1){
 					if (props.verbose) println "**** $file"
 					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
 					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
 					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
+				}
+				// deal with individual changed file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') > 1){
+					if (props.verbose) println "**** $file"
+					changedIndividualFilePropertiesFiles << file
 				}
 			}
 		}
@@ -471,7 +496,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
-		changedBuildProperties
+		changedBuildProperties, 
+		changedIndividualFilePropertiesFiles
 	]
 }
 
