@@ -179,9 +179,6 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 
 		if (props.verbose) println "*** Physical dependencies for $buildFile:"
 
-		// Load property mapping containing the map of targetPDS and dependencyfile
-		PropertyMappings dependenciesDatasetMapping = new PropertyMappings(dependencyDatasetMapping)
-
 		if (physicalDependencies.size() != 0) {
 			if (props.verbose && props.formatConsoleOutput && props.formatConsoleOutput.toBoolean()) {
 				printPhysicalDependencies(physicalDependencies)
@@ -203,8 +200,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					dependencyPDS = props.getProperty(parseJSONStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
 				if (dependencyPDS == null && dependenciesDatasetMapping){
-					dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(physicalDependency.getFile()))
+					dependencyPDS = props.getProperty(props.getFileProperty(dependencyDatasetMapping, physicalDependency.getFile())) 
 				}
+				
+				String copyMode = props.getFileProperty('cobol_dependenciesCopyMode', physicalDependency.getFile())
 
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
 
@@ -228,6 +227,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 							{
 								new CopyToPDS().file(new File(physicalDependencyLoc))
 										.dataset(dependencyPDS)
+										.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
 										.member(memberName)
 										.execute()
 							}
