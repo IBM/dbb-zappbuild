@@ -96,6 +96,11 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
+// Backward compatililty for older language script implementations, that don't specify dependencyCopyModeMapping
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, SearchPathDependencyResolver dependencyResolver) {
+	copySourceFiles(buildFile, srcPDS, dependencyDatasetMapping, dependenciesAlternativeLibraryNameMapping, null, dependencyResolver) {
+}
+
 def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, String dependencyCopyModeMapping, SearchPathDependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {

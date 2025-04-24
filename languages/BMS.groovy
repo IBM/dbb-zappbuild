@@ -25,7 +25,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 	
 	// copy build file to input data set
-	buildUtils.copySourceFiles(buildFile, props.bms_srcPDS, null, null, null, null)
+	buildUtils.copySourceFiles(buildFile, props.bms_srcPDS, null, null, null)
 	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
