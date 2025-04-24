@@ -149,7 +149,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				try {
 					new CopyToPDS().file(new File(physicalDependencyLoc))
 					.dataset(dependencyPDS)
-					.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
+					.copyMode(DBBConstants.CopyMode.valueOf(copyMode))
 					.member(memberName)
 					.execute()
 				} catch (BuildException e) {
@@ -187,7 +187,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				if (!physicalDependency.getLibrary().equals("SYSLIB") && dependenciesAlternativeLibraryNameMapping) {
 					dependencyPDS = props.getProperty(parseJSONStringToMap(dependenciesAlternativeLibraryNameMapping).get(physicalDependency.getLibrary()))
 				}
-				if (dependencyPDS == null && dependenciesDatasetMapping){
+				if (dependencyPDS == null && dependencyDatasetMapping){
 					dependencyPDS = props.getProperty(props.getFileProperty(dependencyDatasetMapping, physicalDependency.getFile())) 
 				}
 				
@@ -205,7 +205,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						try {
 							new CopyToPDS().file(new File(physicalDependencyLoc))
 							.dataset(dependencyPDS)
-							.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
+							.copyMode(DBBConstants.CopyMode.valueOf(copyMode))
 							.member(memberName)
 							.execute()
 						} catch (BuildException e) {
