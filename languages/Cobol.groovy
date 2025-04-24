@@ -45,9 +45,9 @@ sortedList.each { buildFile ->
 	
 	// copy build file and dependency files to data sets
 	if(isTazUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
+		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, 'cobol_dependenciesCopyMode', dependencyResolver)
 	}
 
 	// Get logical file

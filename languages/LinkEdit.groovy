@@ -27,7 +27,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// copy build file to input data set
-	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null, null)
+	buildUtils.copySourceFiles(buildFile, props.linkedit_srcPDS, null, null, null, null)
 
 	// Get logical file
 	LogicalFile logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)

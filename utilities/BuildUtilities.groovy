@@ -96,7 +96,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
  *  - DependencyResolver to resolve dependencies
  */
 
-def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, SearchPathDependencyResolver dependencyResolver) {
+def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, String dependencyCopyModeMapping, SearchPathDependencyResolver dependencyResolver) {
 	// only copy the build file once
 	if (!copiedFileCache.contains(buildFile)) {
 		copiedFileCache.add(buildFile)
@@ -146,26 +146,14 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				copiedFileCache.add(dependencyLoc)
 				// create member name
 				String memberName = CopyToPDS.createMemberName(dependencyPath)
-				// retrieve TAZ recording file extension
-				tazRecordingFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
-				// get index of last '.' in file path to extract the file extension
-				def extIndex = dependencyLoc.lastIndexOf('.')
 				try {
-					if( tazRecordingFileExtension && !tazRecordingFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(tazRecordingFileExtension))){
-						new CopyToPDS().file(new File(dependencyLoc))
-								.copyMode(CopyMode.BINARY)
-								.dataset(dependencyPDS)
-								.member(memberName)
-								.execute()
-					}
-					else
-					{
-						new CopyToPDS().file(new File(dependencyLoc))
-								.dataset(dependencyPDS)
-								.member(memberName)
-								.execute()
-					}
-				} catch (BuildException e) { // Catch potential exceptions like file truncation
+					new CopyToPDS().file(new File(physicalDependencyLoc))
+					.dataset(dependencyPDS)
+					.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
+					.member(memberName)
+					.execute()
+				} catch (BuildException e) {
+					// Catch potential exceptions like file truncation
 					String errorMsg = "*! (BuildUtilities.copySourceFiles)  CopyToPDS of dependency ${dependencyLoc} failed with an exception ${e.getMessage()}."
 					throw new BuildException(errorMsg)
 				}
@@ -203,41 +191,31 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 					dependencyPDS = props.getProperty(props.getFileProperty(dependencyDatasetMapping, physicalDependency.getFile())) 
 				}
 				
-				String copyMode = props.getFileProperty('cobol_dependenciesCopyMode', physicalDependency.getFile())
+				String copyMode = props.getFileProperty(dependencyCopyModeMapping, physicalDependency.getFile())
 
 				String physicalDependencyLoc = "${physicalDependency.getSourceDir()}/${physicalDependency.getFile()}"
 
-				if (dependencyPDS != null) {
+				if (dependencyPDS != null && copyMode != null) {
 
 					// only copy the dependency file once per script invocation
 					if (!copiedFileCache.contains(physicalDependencyLoc)) {
 						copiedFileCache.add(physicalDependencyLoc)
 						// create member name
 						String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
-						//retrieve Taz Recording file
-						tazRecordingFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
 						try {
-							if( tazRecordingFileExtension && !tazRecordingFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(tazRecordingFileExtension))){
-								new CopyToPDS().file(new File(physicalDependencyLoc))
-										.copyMode(CopyMode.BINARY)
-										.dataset(dependencyPDS)
-										.member(memberName)
-										.execute()
-							} else
-							{
-								new CopyToPDS().file(new File(physicalDependencyLoc))
-										.dataset(dependencyPDS)
-										.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
-										.member(memberName)
-										.execute()
-							}
-						} catch (BuildException e) { // Catch potential exceptions like file truncation
+							new CopyToPDS().file(new File(physicalDependencyLoc))
+							.dataset(dependencyPDS)
+							.copyMode(DBBConstants.CopyMode.valueOf(copyMode)))
+							.member(memberName)
+							.execute()
+						} catch (BuildException e) {
+							// Catch potential exceptions like file truncation
 							String errorMsg = "*! (BuildUtilities.copySourceFiles)  CopyToPDS of dependency ${physicalDependencyLoc} failed with an exception \n ${e.getMessage()}."
 							throw new BuildException(errorMsg)
 						}
 					}
 				} else {
-					String errorMsg = "*! Target dataset mapping for dependency ${physicalDependency.getFile()} could not be found in either in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping"
+					String errorMsg = "*! Either the target dataset (${dependencyPDS}) for dependency ${physicalDependency.getFile()} was not be found in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping. Or the copyMode (${copyMod}) is not configured for the dependency."
 					println(errorMsg)
 					props.error = "true"
 					updateBuildResult(errorMsg:errorMsg)

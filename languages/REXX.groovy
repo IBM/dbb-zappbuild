@@ -34,7 +34,7 @@ sortedList.each { buildFile ->
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.rexx_srcPDS, 'rexx_dependenciesDatasetMapping', null, 'rexx_dependenciesCopyMode', dependencyResolver)
 
 	// Get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)

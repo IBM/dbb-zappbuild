@@ -43,7 +43,7 @@ sortedList.each { buildFile ->
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 
 	// copy source files and dependency files to data sets	
-	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, 'easytrieve_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.easytrieve_srcPDS, 'easytrieve_dependenciesDatasetMapping', null, 'easytrieve_dependenciesCopyMode', dependencyResolver)
 
 	// Get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
