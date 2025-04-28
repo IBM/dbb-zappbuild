@@ -442,7 +442,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
-			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			(file, mode) = fixGitDiffPath(file, dir, true, mode)
 			if ( file != null ) {
 				// filter excluded files
 				if ( !buildUtils.matches(file, excludeMatchers)) {
@@ -750,6 +750,9 @@ def verifyCollections() {
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
  *
+ *	the deleted file case cannot check if the file exists (mustExist=false)
+ *  if the mode is known, it tries to match based on a query with the metadatastore 
+ *  
  *  returns null if file not found + mustExist
  *
  *  scenarios / mode
@@ -765,52 +768,104 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// default value, relevant for non-existent files (like deletions)
 	String defaultValue
 
+	// if mode is not defined and it deals with a deleted file,
+	// an extra query is performed to find the match between computed
+	//  fix and the existing DBB logical file entry in the DBB metadatastore
+	def logicalFiles
+	if (mode == null && !mustExist) {
+		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+		if (metadataStore.collectionExists(props.applicationCollectionName)) {
+			logicalName = CopyToPDS.createMemberName(file)
+			logicalFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(logicalName)
+		}
+	}
+
 	// Scenario 1: Nested projects, like MortgageApplication and projects with a top-level dir
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 	defaultValue = fixedFileName
 
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 1];
-	if (mode==1 && !mustExist) return [fixedFileName, 1]
+	if (mode == 1) {
+		return [fixedFileName, 1]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 1];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 1]
+			}
+		}
+	}
 
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
-	if (new File("${dir}/${file}").exists())
-		return [
-			"$dirName/$file" as String,
-			2
-		]
-	if (mode==2 && !mustExist) return [
-			"$dirName/$file" as String,
-			2
-		]
+	fixedFileName = "${dirName}/${file}"
+
+	if (mode == 2) {
+		return [fixedFileName, 2]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${dir}/${file}").exists()) {
+			return [fixedFileName, 2];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 2]
+			}
+		}
+	}
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 3];
-	if (mode==3 && !mustExist) return [fixedFileName, 3]
+	
+	if (mode == 3) {
+		return [fixedFileName, 3]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 3];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 3]
+			}
+		}
+	}
 
 	// Scenario 4:
 	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 4];
-	if (mode==4 && !mustExist) return [fixedFileName, 4]
-	
-	// returns null or assumed fullPath to file
+
+	if (mode == 4) {
+		return [fixedFileName, 4]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 4];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 4]
+			}
+		}
+	}
+
+	// returns null or assumed default fullPath to file
 	if (mustExist){
 		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue, null]
+	if (props.verbose) {
+		println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
+		return [defaultValue, null]
+	}
 }
 
 /**
