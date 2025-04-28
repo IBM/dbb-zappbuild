@@ -22,6 +22,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
+addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds | false
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
@@ -206,15 +207,18 @@ pli_compileSyslibConcatenation | A comma-separated list of libraries to be conca
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### bind.properties
-Application properties used by zAppBuild/language/COBOL.groovy
+Application properties used by zAppBuild/utilities/BindUtilities.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-bind_performBindPackage | Default variable to perform DB2 bind as part of a DBB User Build (default value:false) | true
-bind_runIspfConfDir | |
+bind_performBindPackage | Flag to perform DB2 bind package as part of a DBB User Build (default value:false) | true
+bind_performBindPlan | Flag to perform DB2 bind plan as part of a DBB User Build (default value:false) | true
+bind_jobCard | The Jobcard used for Bind jobs
 bind_db2Location | The name of the DB2 subsystem | true
-bind_collectionID | The DB2 collection (Package) name | true
-bind_packageOwner | The owner of the package, if left empty the use executing the command will be used | true
+bind_collectionID | The Db2 collection (package) name | true
+bind_plan | The Db2 plan name | true
+bind_plan_pklist | The package list parameter for the Db2 plan | true
+bind_packageOwner | The owner of the package, if left empty the user executing the command will be used | true
 bind_qualifier | The value of the implicit qualifier | true
 bind_maxRC | Default bind maximum RC allowed. | true
 
@@ -271,20 +275,21 @@ acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
 acbgen_deployType | default deployType for build output | true
 
-### ZunitConfig.properties
-Application properties used by zAppBuild/language/ZunitConfig.groovy
+### TazUnitTest.properties
+Application properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
-zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
-zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
-zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
-zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
-zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
+tazunittest_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
+tazunittest_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
+tazunittest_jobCard  | Jobcard for TAZ Unit Test execution jobs | true
+tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | true
+tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+tazunittest_eqaplayParms | Default options passed to the TAZ runner procedure EQAPPLAY | true
+tazunittest_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
+tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
@@ -309,6 +314,21 @@ rexx_deployType | default deployType | true
 rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### Eastrieve.properties
+Application properties used by zAppBuild/language/Easytrieve.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+easytrieve_compileMaxRC | Default compile maximum RC allowed. | true
+easytrieve_linkEditMaxRC | Default link edit maximum RC allowed. | true
+easytrieve_dependencySearch | Default dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+easytrieve_compileParms | Default base compile parameters. | true
+easytrieve_linkEdit | Flag indicating to execute the link edit step to produce a compiled easytrieve for the source file. | true
+easytrieve_linkEditParms | Default link edit parameters. | true
+easytrieve_deployType | default deployType | true
+easytrieve_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+easytrieve_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### Transfer.properties
 Application properties used by zAppBuild/language/Transfer.groovy

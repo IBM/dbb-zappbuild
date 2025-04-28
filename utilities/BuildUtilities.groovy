@@ -146,12 +146,12 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				copiedFileCache.add(dependencyLoc)
 				// create member name
 				String memberName = CopyToPDS.createMemberName(dependencyPath)
-				// retrieve zUnit playback file extension
-				zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+				// retrieve TAZ recording file extension
+				tazRecordingFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
 				// get index of last '.' in file path to extract the file extension
 				def extIndex = dependencyLoc.lastIndexOf('.')
 				try {
-					if( zunitFileExtension && !zunitFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(zunitFileExtension))){
+					if( tazRecordingFileExtension && !tazRecordingFileExtension.isEmpty() && (dependencyLoc.substring(extIndex).contains(tazRecordingFileExtension))){
 						new CopyToPDS().file(new File(dependencyLoc))
 								.copyMode(CopyMode.BINARY)
 								.dataset(dependencyPDS)
@@ -215,10 +215,10 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						copiedFileCache.add(physicalDependencyLoc)
 						// create member name
 						String memberName = CopyToPDS.createMemberName(physicalDependency.getFile())
-						//retrieve zUnitFileExtension plbck
-						zunitFileExtension = (props.zunit_playbackFileExtension) ? props.zunit_playbackFileExtension : null
+						//retrieve Taz Recording file
+						tazRecordingFileExtension = (props.tazunittest_playbackFileExtension) ? props.tazunittest_playbackFileExtension : null
 						try {
-							if( zunitFileExtension && !zunitFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(zunitFileExtension))){
+							if( tazRecordingFileExtension && !tazRecordingFileExtension.isEmpty() && ((physicalDependency.getFile().substring(physicalDependency.getFile().indexOf("."))).contains(tazRecordingFileExtension))){
 								new CopyToPDS().file(new File(physicalDependencyLoc))
 										.copyMode(CopyMode.BINARY)
 										.dataset(dependencyPDS)
@@ -606,6 +606,45 @@ def retrieveLastBuildResult(){
 }
 
 /*
+ * Returns the user-provided baseline hash for configurations passed in with the baselineRef cli option
+ *   returns null if not defined
+ */
+
+def getUserProvidedBaselineRef(String dir) {
+
+	String hash
+	String relDir = relativizePath(dir)
+
+	if (props.baselineRef) {
+
+		String[] baselineMap = (props.baselineRef).split(",")
+		baselineMap.each{
+			// case: baselineRef (gitref)
+			if(it.split(":").size()==1 && relDir.equals(props.application)){
+				if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+				hash = it
+			}
+			// case: baselineRef (folder:gitref)
+			else if(it.split(":").size()>1){
+				(appSrcDir, gitReference) = it.split(":")
+				if (appSrcDir.equals(relDir)){
+					if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
+					hash = gitReference
+				}
+			} else {
+				// No user-provided baseline ref found for dir
+			}
+		}
+	} else {
+		// No baseline ref defined
+	}
+
+	return hash
+}
+
+
+
+/*
  * returns the deployType for a logicalFile depending on the
  * isCICS, isIMS and isDLI setting
  */
@@ -970,16 +1009,35 @@ def loadBuildProperties(String propertyFile) {
 }
 
 /**
- * Validates if a buildFile is a zUnit generated test case program
+ * Validates if a buildFile is a TAZ generated test harness program
  * 
  *  returns true / false
  *  
  */
-def isGeneratedzUnitTestCaseProgram(String buildFile) {
+def isGeneratedTazTestCaseProgram(String buildFile) {
 	if (props.getFileProperty('cobol_testcase', buildFile).equals('true') || props.getFileProperty('pli_testcase', buildFile).equals('true')) {
 		return true
 	}
 	return false
 }
 
+/**
+ * Checks if a zFS file exists
+ * if the file exists, returns true
+ * if not, returns false and updates the Build Result accordingly with an error message
+ * 
+ */
+
+def fileExists(String fileLoc, String errorMessage) {
+    File file = new File(fileLoc)
+    if (!file.exists()) {
+        String errorMsg = "*! ${errorMessage} - $fileLoc not found."
+        println(errorMsg)
+        props.error = "true"
+        buildUtils.updateBuildResult(errorMsg:errorMsg)
+        return false
+    } else {
+        return true
+    }
+}
 

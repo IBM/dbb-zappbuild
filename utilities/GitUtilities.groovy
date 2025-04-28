@@ -78,7 +78,7 @@ def getCurrentGitDetachedBranch(String gitDir) {
 	// expecting references with "origin" as segment
 	def origin = "origin/"
 	if (gitBranchesArray.count {it.contains(origin)}  > 1 ) {
-		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Warning obtaining branch name for ($gitDir). Multiple references point to the same commit. ($gitBranchString)"
+		String warningMsg = "*! (GitUtils.getCurrentGitDetachedBranch) Issue when obtaining the current branch for ($gitDir): multiple references ($gitBranchString) point to the same commit. Consider passing the current Git branch with the '--applicationCurrentBranch' CLI parameter."
 		println(warningMsg)
 		updateBuildResult(warningMsg:warningMsg)
 	}
@@ -132,17 +132,20 @@ def getRemoteGitBranches(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  */
 def isGitDetachedHEAD(String gitDir) {
-	String cmd = "git -C $gitDir status"
+	// If not detached, HEAD will be a symbolic-ref pointing to the branch
+	// If detached, HEAD will be a commit and this command will return a non-zero RC
+	String cmd = "git -C $gitDir symbolic-ref -q HEAD"
 	StringBuffer gitStatus = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitStatus, gitError)
+
 	if (gitError) {
 		println("*! Error executing Git command: $cmd error $gitError")
 	}
 
-	return gitStatus.toString().contains("HEAD detached at")
+	return process.exitValue() != 0;
 }
 
 /*

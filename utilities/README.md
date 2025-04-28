@@ -61,6 +61,6 @@ groovyz /u/ibmuser/zAppBuild/utilities/DatasetValidationUtilities.groovy -d /var
 ** The dataset DEBUG.V14R1.SEQAMOD referenced for property SEQAMOD was found.
 ** The dataset DBC0CFG.SDSNEXIT referenced for property SDSNEXIT was found.
 ** The dataset IMS.V15R1.SDFSRESL referenced for property SDFSRESL was found.
-** The dataset RATCFG.ZUNIT.SBZUSAMP referenced for property SBZUSAMP was found.
+** The dataset RATCFG.ZUNIT.SEQASAMP referenced for property SEQASAMP was found.
 ** The dataset CEE.SCEELKED referenced for property SCEELKED was found.
 ```

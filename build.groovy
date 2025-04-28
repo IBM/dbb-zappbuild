@@ -39,7 +39,7 @@ try {
 	println(errorMsg)
 	props.error = "true"
 	buildUtils.updateBuildResult(errorMsg:errorMsg)
-	finalizeBuildProcess(start:startTime, 0)
+	finalizeBuildProcess(start:startTime, count:0)
 }
 
 // create build list
@@ -270,6 +270,7 @@ options:
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
 	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
+	cli.cb(longOpt:'applicationCurrentBranch', args:1, 'Application\'s current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
@@ -301,7 +302,7 @@ options:
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
-	// build framework options
+	// build reporting options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
 	// IDE user build dependency file options
@@ -471,6 +472,7 @@ def populateBuildProperties(def opts) {
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
 	if (opts.cd) props.checkDatasets = 'true'
+	if (opts.cb) props.applicationCurrentBranch = opts.cb
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -516,7 +518,7 @@ def populateBuildProperties(def opts) {
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
 
 	// set calculated properties
-	if (!props.userBuild) {
+	if (!props.userBuild && !props.applicationCurrentBranch) {
 		def gitDir = buildUtils.getAbsolutePath(props.application)
 		if ( gitUtils.isGitDetachedHEAD(gitDir) )
 			props.applicationCurrentBranch = gitUtils.getCurrentGitDetachedBranch(gitDir)
@@ -586,7 +588,11 @@ def createBuildList() {
 	}
 	// check if impact build
 	else if (props.impactBuild) {
-		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		if (props.baselineRef) {
+			println "** --impactBuild --baselineRef ${props.baselineRef} option selected. $action impacted programs for application ${props.application} "
+		} else {
+			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		}
 		if (metadataStore) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
@@ -684,10 +690,12 @@ def createBuildList() {
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
-		}
-		else if(buildSet) {
+		} else if(buildSet) {
 			println "** Perform analysis and reporting of external impacted files for the build list."
 			reportingUtils.reportExternalImpacts(buildSet)
+		} else if(changedFiles) {
+			println "** Perform analysis and reporting of external impacted files for changed files only (no files in the build list)."
+			reportingUtils.reportExternalImpacts(changedFiles)
 		}
 	}
 	
@@ -735,17 +743,20 @@ def finalizeBuildProcess(Map args) {
 				if (props.verbose) println "** Setting property $key : $currenthash"
 				buildResult.setProperty(key, currenthash)
 				// store gitUrl
-				String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
 				String url = gitUtils.getCurrentGitUrl(dir)
-				if (props.verbose) println "** Setting property $giturlkey : $url"
-				buildResult.setProperty(giturlkey, url)
+				if (url) {
+					String giturlkey = "$giturlPrefix${buildUtils.relativizePath(dir)}"
+					if (props.verbose) println "** Setting property $giturlkey : $url"
+					buildResult.setProperty(giturlkey, url)
+				}
 				// document changed files - Git compare link
 				if (props.impactBuild && props.gitRepositoryURL && props.gitRepositoryCompareService){
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
-						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
+						String userBaselineRef = (props.baselineRef) ? buildUtils.getUserProvidedBaselineRef(dir).replaceAll("origin/","") : null
+						String baselineHash = (userBaselineRef) ? userBaselineRef : lastBuildResult.getProperty(key)
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << "..." << currenthash
 						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
 						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLinkUrl"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)

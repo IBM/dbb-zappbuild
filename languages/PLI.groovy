@@ -12,6 +12,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -35,7 +36,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
+	isZUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure SearchPathDependencyResolver
 	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
@@ -74,7 +75,7 @@ sortedList.each { buildFile ->
 	// compile the program
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('pli_compileMaxRC', buildFile).toInteger()
-
+	
 	if (rc > maxRC) {
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
@@ -107,6 +108,36 @@ sortedList.each { buildFile ->
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
+				}
+			}
+		}
+		
+		//perform Db2 binds on userbuild
+		if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+			
+			//perform Db2 Bind Pkg
+			bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+			if (bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+				int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+				def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.pli_dbrmPDS);
+				if ( bindRc > bindMaxRC) {
+					String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+					println(errorMsg)
+					props.error = "true"
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+				}
+			}
+
+			//perform Db2 Bind plan
+			bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+			if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+				int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+				def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+				if ( bindRc > bindMaxRC) {
+					String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+					println(errorMsg)
+					props.error = "true"
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
 				}
 			}
 		}
@@ -184,7 +215,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -219,7 +250,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)
@@ -334,7 +365,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
 	}
 
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream

@@ -26,6 +26,7 @@ def createImpactBuildList() {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
 	
@@ -36,7 +37,7 @@ def createImpactBuildList() {
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -55,7 +56,7 @@ def createImpactBuildList() {
 	if (calculatedChanges) {
 
 		// create build list using impact analysis
-		if (props.verbose) println "*** Perform impacted analysis for changed files."
+		if (props.verbose) println "*** Perform impact analysis for changed files."
 
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
@@ -64,8 +65,8 @@ def createImpactBuildList() {
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
 				// skip adding generated test cases, when the testing is disabled 
-				if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
-					if (props.verbose) println "** Identified $changedFile as a generated zunit test case program. Processing zUnit tests is not enabled for this build. Skip building this program."
+				if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+					if (props.verbose) println "** Identified $changedFile as a generated TAZ unit test case program. Processing TAZ unit tests is not enabled for this build. Skip building this program."
 				} else {
 					buildSet.add(changedFile)
 					if (props.verbose) println "** Found build script mapping for $changedFile. Adding to build list"
@@ -122,10 +123,26 @@ def createImpactBuildList() {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-	
+	    
+	    Set<String> buildLinkSet = new HashSet<String>() 
+	    buildSet.each { buildFile ->
+	         String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
+	 
+	         //include statically called sub programs when the main program changes
+		
+		    if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
+			   // Call addLinkDependencies to append link dependencies to buildSet
+			   if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
+			   buildLinkSet = addLinkDependencies(buildFile)
+		    }
+	    }
+	        if (buildLinkSet !=null) {
+            buildSet.addAll(buildLinkSet)
+	    }
+		
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-			if (props.verbose) println "*** Perform impacted analysis for property changes."
+			if (props.verbose) println "*** Perform impact analysis for property changes."
 
 			changedBuildProperties.each { changedProp ->
 
@@ -164,12 +181,28 @@ def createImpactBuildList() {
 					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
 			}
+		
+		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
+			
+		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
+			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
+			// locate logical files from the collection
+			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
+			logicalFileList.each { logicalFile ->
+				if (logicalFile.getFile().contains(repositoryFileName)) {
+					buildSet.add(logicalFile.getFile())
+					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+				}
+			}
+		}
+		
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
 
 	}
-
+	
 	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
 }
 
@@ -184,9 +217,10 @@ def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
+	
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(null)
 
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles)
@@ -204,7 +238,7 @@ def createMergeBuildList(){
 		}
 	}
 
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles]
 }
 
 /*
@@ -293,6 +327,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// DBB property map to store changed files with their abbreviated git hash
@@ -324,28 +359,16 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		// get the baseline hash for all build directories
 		directories.each { dir ->
 			dir = buildUtils.getAbsolutePath(dir)
+
 			if (props.verbose) println "** Getting baseline hash for directory $dir"
 			String key = "$hashPrefix${buildUtils.relativizePath(dir)}"
 			String relDir = buildUtils.relativizePath(dir)
+			
 			String hash
 			// retrieve baseline reference overwrite if set
 			if (props.baselineRef){
-				String[] baselineMap = (props.baselineRef).split(",")
-				baselineMap.each{
-					// case: baselineRef (gitref)
-					if(it.split(":").size()==1 && relDir.equals(props.application)){
-						if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-						hash = it
-					}
-					// case: baselineRef (folder:gitref)
-					else if(it.split(":").size()>1){
-						(appSrcDir, gitReference) = it.split(":")
-						if (appSrcDir.equals(relDir)){
-							if (props.verbose) println "*** Baseline hash for directory $relDir retrieved from overwrite."
-							hash = gitReference
-						}
-					}
-				}
+				// get user-provided baseline configuration from cli config 
+				hash = buildUtils.getUserProvidedBaselineRef(dir)
 				// for build directories which are not specified in baselineRef mapping, return the info from lastBuildResult
 				if (hash == null && lastBuildResult) {
 					hash = lastBuildResult.getProperty(key)
@@ -419,22 +442,28 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
-			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			(file, mode) = fixGitDiffPath(file, dir, true, mode)
 			if ( file != null ) {
 				// filter excluded files
 				if ( !buildUtils.matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
-				} else {
+				} else if (!file.endsWith(".properties")){
 					if (props.verbose) println "**** $file is changed, but is excluded from build scope. See excludeFileList configuration."
 				}
-				//retrieving changed build properties
-				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
+				// retrieving changed build properties, that are maintained in the application repository
+				// skip individual file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') == 1){
 					if (props.verbose) println "**** $file"
 					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
 					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
 					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
+				}
+				// deal with individual changed file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') > 1){
+					if (props.verbose) println "**** $file"
+					changedIndividualFilePropertiesFiles << file
 				}
 			}
 		}
@@ -467,7 +496,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
-		changedBuildProperties
+		changedBuildProperties, 
+		changedIndividualFilePropertiesFiles
 	]
 }
 
@@ -720,6 +750,9 @@ def verifyCollections() {
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
  *
+ *	the deleted file case cannot check if the file exists (mustExist=false)
+ *  if the mode is known, it tries to match based on a query with the metadatastore 
+ *  
  *  returns null if file not found + mustExist
  *
  *  scenarios / mode
@@ -735,52 +768,104 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// default value, relevant for non-existent files (like deletions)
 	String defaultValue
 
+	// if mode is not defined and it deals with a deleted file,
+	// an extra query is performed to find the match between computed
+	//  fix and the existing DBB logical file entry in the DBB metadatastore
+	def logicalFiles
+	if (mode == null && !mustExist) {
+		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+		if (metadataStore.collectionExists(props.applicationCollectionName)) {
+			logicalName = CopyToPDS.createMemberName(file)
+			logicalFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(logicalName)
+		}
+	}
+
 	// Scenario 1: Nested projects, like MortgageApplication and projects with a top-level dir
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 	defaultValue = fixedFileName
 
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 1];
-	if (mode==1 && !mustExist) return [fixedFileName, 1]
+	if (mode == 1) {
+		return [fixedFileName, 1]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 1];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 1]
+			}
+		}
+	}
 
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
-	if (new File("${dir}/${file}").exists())
-		return [
-			"$dirName/$file" as String,
-			2
-		]
-	if (mode==2 && !mustExist) return [
-			"$dirName/$file" as String,
-			2
-		]
+	fixedFileName = "${dirName}/${file}"
+
+	if (mode == 2) {
+		return [fixedFileName, 2]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${dir}/${file}").exists()) {
+			return [fixedFileName, 2];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 2]
+			}
+		}
+	}
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 3];
-	if (mode==3 && !mustExist) return [fixedFileName, 3]
+	
+	if (mode == 3) {
+		return [fixedFileName, 3]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 3];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 3]
+			}
+		}
+	}
 
 	// Scenario 4:
 	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 4];
-	if (mode==4 && !mustExist) return [fixedFileName, 4]
-	
-	// returns null or assumed fullPath to file
+
+	if (mode == 4) {
+		return [fixedFileName, 4]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 4];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 4]
+			}
+		}
+	}
+
+	// returns null or assumed default fullPath to file
 	if (mustExist){
 		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue, null]
+	if (props.verbose) {
+		println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
+		return [defaultValue, null]
+	}
 }
 
 /**
@@ -798,7 +883,7 @@ def boolean shouldCalculateImpacts(String changedFile){
 	if (onskipImpactCalculationList) return false
 	
 	// return false if the changed file is a generated test case program but testing is disabled
-	if (buildUtils.isGeneratedzUnitTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
+	if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 		return false
 	}
 	
@@ -879,4 +964,49 @@ def sortFileList(list) {
  */
 def isMappedAsZUnitConfigFile(String file) {
 	return (dependencyScannerUtils.getScanner(file).getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner)
+}
+
+/*
+ *  addLinkDependencies -
+ *  method to identify all statically called sub module programs when the main program changes
+ *
+ *  @return list of statically called sub modules
+ *
+ */
+def addLinkDependencies(buildFile) {
+    Set<String> buildLinkSet = new HashSet<String>()	
+    MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+    def logicalFile = buildUtils.relativizePath(buildFile)
+    def logicalFiles = metadataStore.getCollection(props.applicationOutputsCollectionName).getLogicalFile(logicalFile)
+		if (logicalFiles) {
+            // Check if any logical files are found
+            // List all link dependencies for every main program that changes from the output collection. 
+            // This will return only the program name and not the absolute path
+            logicalFiles.each { logicalFileRecord ->
+                def dependencies = logicalFileRecord.getLogicalDependencies()
+
+                dependencies.each { logicalDep ->
+				 if (logicalDep.getCategory() == "LINK") { 
+                    def linkDepName = logicalDep.getLname()
+                    def linkDepLogicalFile = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(linkDepName)
+
+                    // Get the logical path for all the link dependencies returned
+                    linkDepLogicalFile.each { filePath ->
+                        // Link Dependency Files to be added
+                        def linkDepFile = filePath.getFile()
+
+                        if (linkDepFile != logicalFile) {
+						    if (ScriptMappings.getScriptName(linkDepFile)) {
+                              buildLinkSet.add(linkDepFile)
+							  if (props.verbose) println "** $linkDepFile has a link dependency to $logicalFile. Adding to build list"
+						    }
+                        }
+                     }
+                   }
+                }
+            }
+        }
+    
+
+    return buildLinkSet
 }
