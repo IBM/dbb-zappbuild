@@ -13,54 +13,45 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-@Field def resolverUtils = loadScript(new File("${props.zAppBuildDir}/utilities/ResolverUtilities.groovy"))
 
 println("** Building files mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
-buildUtils.assertBuildProperties(props.cc_requiredBuildProperties)
+buildUtils.assertBuildProperties(props.cpp_requiredBuildProperties)
 
 // create language datasets
-def langQualifier = "cc"
+def langQualifier = "cpp"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cc_fileBuildRank')
-
-if (buildListContainsTests(sortedList)) {
-    langQualifier = "cc_test"
-    buildUtils.createLanguageDatasets(langQualifier)
-}
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'cpp_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-    println "*** Building file $buildFile"
-
-    // Check if this a testcase
-    isZUnitTestCase = (props.getFileProperty('cc_testcase', buildFile).equals('true')) ? true : false
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
     // configure dependency resolution and create logical file
-    String dependencySearch = props.getFileProperty('cc_dependencySearch', buildFile)
-    def dependencyResolver = resolverUtils.createSearchPathDependencyResolver(dependencySearch)
+    String dependencySearch = props.getFileProperty('cpp_dependencySearch', buildFile)
+    SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 
     // copy build file and dependency files to data sets
-    if(isZUnitTestCase){
-        buildUtils.copySourceFiles(buildFile, props.cc_testcase_srcPDS, null, null, null)
-    }else{
-        buildUtils.copySourceFiles(buildFile, props.cc_srcPDS, 'cc_dependenciesDatasetMapping', props.cc_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
-    }
-
+    buildUtils.copySourceFiles(buildFile, props.cpp_srcPDS, 'cpp_dependenciesDatasetMapping', props.cpp_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
 
     // Get logical file
-    LogicalFile logicalFile = resolverUtils.createLogicalFile(dependencyResolver, buildFile)
+    LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
     // create mvs commands
     String member = CopyToPDS.createMemberName(buildFile)
     File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.c.log")
     if (logFile.exists())
         logFile.delete()
-    MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-    MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+    
+	String needsLinking = props.getFileProperty('cpp_linkEdit', buildFile)
+			
+	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
+    MVSExec linkEdit
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
     // execute mvs commands in a mvs job
     MVSJob job = new MVSJob()
@@ -68,7 +59,7 @@ sortedList.each { buildFile ->
 
     // compile the c program
     int rc = compile.execute()
-    int maxRC = props.getFileProperty('cc_compileMaxRC', buildFile).toInteger()
+    int maxRC = props.getFileProperty('cpp_compileMaxRC', buildFile).toInteger()
 
     boolean bindFlag = true
 
@@ -81,12 +72,16 @@ sortedList.each { buildFile ->
     }
     else { // if this program needs to be link edited . . .
 
-        // Store db2 bind information as a generic property record in the BuildReport
-
-        String needsLinking = props.getFileProperty('cc_linkEdit', buildFile)
-        if (needsLinking.toBoolean()) {
+		// Store db2 bind information as a generic property record in the BuildReport
+		String generateDb2BindInfoRecord = props.getFileProperty('generateDb2BindInfoRecord', buildFile)
+		if (buildUtils.isSQL(logicalFile) && generateDb2BindInfoRecord.toBoolean() ){
+			PropertiesRecord db2BindInfoRecord = buildUtils.generateDb2InfoRecord(buildFile)
+			BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
+		}
+		
+		if (needsLinking.toBoolean()) {
             rc = linkEdit.execute()
-            maxRC = props.getFileProperty('cc_linkEditMaxRC', buildFile).toInteger()
+            maxRC = props.getFileProperty('cpp_linkEditMaxRC', buildFile).toInteger()
 
             if (rc > maxRC) {
                 bindFlag = false
@@ -98,13 +93,43 @@ sortedList.each { buildFile ->
             else {
                 if(!props.userBuild){
                     // only scan the load module if load module scanning turned on for file
-                    String scanLoadModule = props.getFileProperty('cc_scanLoadModule', buildFile)
+                    String scanLoadModule = props.getFileProperty('cpp_scanLoadModule', buildFile)
                     if (scanLoadModule && scanLoadModule.toBoolean())
                         impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
                 }
             }
         }
     }
+	
+	//perform Db2 binds on userbuild
+	if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+
+		//perform Db2 Bind Pkg
+		bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+		if ( bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cpp_dbrmPDS);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+			}
+		}
+
+		//perform Db2 Bind Plan
+		bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+		if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+			}
+		}
+	}
 
     // clean up passed DD statements
     job.stop()
@@ -121,20 +146,16 @@ sortedList.each { buildFile ->
  * createCParms - Builds up the c compiler parameter list from build and file properties
  */
 def createCParms(String buildFile, LogicalFile logicalFile) {
-    def parms = props.getFileProperty('cc_compileParms', buildFile) ?: ""
-    def cics = props.getFileProperty('cc_compileCICSParms', buildFile) ?: ""
-    def sql = props.getFileProperty('cc_compileSQLParms', buildFile) ?: ""
-    def errPrefixOptions = props.getFileProperty('cc_compileErrorPrefixParms', buildFile) ?: ""
-    def compileDebugParms = props.getFileProperty('cc_compileDebugParms', buildFile)
+    def parms = props.getFileProperty('cpp_compileParms', buildFile) ?: ""
+    def cics = props.getFileProperty('cpp_compileCICSParms', buildFile) ?: ""
+    def sql = props.getFileProperty('cpp_compileSQLParms', buildFile) ?: ""
+    def compileDebugParms = props.getFileProperty('cpp_compileDebugParms', buildFile)
 
     if (buildUtils.isCICS(logicalFile))
         parms = "$parms,$cics"
 
     if (buildUtils.isSQL(logicalFile))
         parms = "$parms,$sql"
-
-    if (props.errPrefix)
-        parms = "$parms,$errPrefixOptions"
 
     // add debug options
     if (props.debug)  {
@@ -144,7 +165,7 @@ def createCParms(String buildFile, LogicalFile logicalFile) {
     if (parms.startsWith(','))
         parms = parms.drop(1)
 
-    if (props.verbose) println "c compiler parms for $buildFile = $parms"
+    if (props.verbose) println " C/CPP compiler parms for $buildFile = $parms"
     return parms
 }
 
@@ -153,126 +174,59 @@ def createCParms(String buildFile, LogicalFile logicalFile) {
  */
 def createCompileCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
     String parms = createCParms(buildFile, logicalFile)
-    String compiler = props.getFileProperty('cc_compiler', buildFile)
+    String compiler = props.getFileProperty('cpp_compiler', buildFile)
 
     // define the MVSExec command to compile the program
     MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
     // add DD statements to the compile command
-    if (isZUnitTestCase){
-        compile.dd(new DDStatement().name("SYSIN").dsn("${props.cc_testcase_srcPDS}($member)").options('shr').report(true))
-    }
-    else
-    {
-        compile.dd(new DDStatement().name("SYSIN").dsn("${props.cc_srcPDS}($member)").options('shr').report(true))
-    }
+    compile.dd(new DDStatement().name("SYSIN").dsn("${props.cpp_srcPDS}($member)").options('shr').report(true))
 
-    compile.dd(new DDStatement().name("SYSOUT").options(props.cc_tempOptions))
-    compile.dd(new DDStatement().name("SYSPRINT").options(props.cc_tempOptions))
+    compile.dd(new DDStatement().name("SYSOUT").options(props.cpp_tempOptions))
+    compile.dd(new DDStatement().name("SYSPRINT").options(props.cpp_tempOptions))
 
-    compile.dd(new DDStatement().name("SYSMDECK").options(props.cc_tempOptions))
-    (1..17).toList().each { num ->
-        compile.dd(new DDStatement().name("SYSUT$num").options(props.cc_tempOptions))
+    compile.dd(new DDStatement().name("SYSMDECK").options(props.cpp_tempOptions))
+    (1..15).toList().each { num ->
+        compile.dd(new DDStatement().name("SYSUT$num").options("cyl space(1,1) unit(sysallda) new"))
     }
-
-    // Write SYSLIN to temporary dataset if performing link edit or to physical dataset
-    String doLinkEdit = props.getFileProperty('cc_linkEdit', buildFile)
-    String linkEditStream = props.getFileProperty('cc_linkEditStream', buildFile)
-    String linkDebugExit = props.getFileProperty('cc_linkDebugExit', buildFile)
-
-    if (props.debug && linkDebugExit && doLinkEdit.toBoolean()){
-        compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cc_objPDS}($member)").options('shr').output(true))
-    } else if (doLinkEdit && doLinkEdit.toBoolean() && ( !linkEditStream || linkEditStream.isEmpty())) {
-        compile.dd(new DDStatement().name("SYSLIN").dsn("&&TEMPOBJ").options(props.cc_tempOptions).pass(true))
-    } else {
-        compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cc_objPDS}($member)").options('shr').output(true))
-    }
+	
+	// define object dataset allocation
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cpp_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
     // add a syslib to the compile command
-    compile.dd(new DDStatement().name("SYSLIB").dsn(props.cc_incPDS).options("shr"))
-    compile.dd(new DDStatement().dsn(props.SCEEH).options("shr"))
-    compile.dd(new DDStatement().dsn(props.SCEEHS).options("shr"))
-    compile.dd(new DDStatement().name("TASKLIB").dsn("${props.SCEERUN2}").options('shr'))
-    compile.dd(new DDStatement().dsn("${props.SCCNCMP}").options('shr'))
-
-    // add additional datasets with dependencies based on the dependenciesDatasetMapping
-    PropertyMappings dsMapping = new PropertyMappings('cc_dependenciesDatasetMapping')
-    dsMapping.getValues().each { targetDataset ->
-        // exclude the defaults cc_cpyPDS and any overwrite in the alternativeLibraryNameMap
-        if (targetDataset != 'cc_incPDS')
-            compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
-    }
+    compile.dd(new DDStatement().name("SYSLIB").dsn(props.cpp_incPDS).options("shr"))
 
     // add custom concatenation
-    def compileSyslibConcatenation = props.getFileProperty('cc_compileSyslibConcatenation', buildFile) ?: ""
+    def compileSyslibConcatenation = props.getFileProperty('cpp_compileSyslibConcatenation', buildFile) ?: ""
     if (compileSyslibConcatenation) {
         def String[] syslibDatasets = compileSyslibConcatenation.split(',');
-        def DDStatement statement = null
-        for (String syslibDataset : syslibDatasets ) {
-            if (statement == null){
-                statement = new DDStatement().name("SYSLIB").dsn(syslibDataset).options("shr")
-            } else {
-                statement.concatenate(new DDStatement().dsn(syslibDataset).options("shr"))
-            }
-        }
-        if (statement != null){
-            compile.dd(statement)
-        }
+		for (String syslibDataset : syslibDatasets )
+		compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
     }
+	
+	if (props.SCEEH)
+		compile.dd(new DDStatement().dsn(props.SCEEH).options("shr"))
 
-    def assemblySyslibConcatenation = props.getFileProperty('cc_assemblySyslibConcatenation', buildFile) ?: ""
-    if (assemblySyslibConcatenation) {
-        def String[] syslibDatasets = assemblySyslibConcatenation.split(',');
-        for (String syslibDataset : syslibDatasets )
-            compile.dd(new DDStatement().dsn(syslibDataset).options("shr"))
-    }
-    if (props.SCEEH)
-        compile.dd(new DDStatement().dsn(props.SCEEH).options("shr"))
-    if (props.SCEEHS)
-        compile.dd(new DDStatement().dsn(props.SCEEHS).options("shr"))
+	// add ASMLIB concatenation for C programs using the ASM option
+	def asmSyslibConcatenation = props.getFileProperty('cpp_assemblySyslibConcatenation', buildFile) ?: ""
+	if (asmSyslibConcatenation) {
+		def firstASMLIB = asmSyslibConcatenation.tokenize(",")[0]
+		cpp.dd(new DDStatement().name("ASMLIB").dsn(firstASMLIB).options("shr"))
+		def String[] syslibDatasets = asmSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+			cpp.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+	}
 
-    // add additional zunit libraries
-    if (isZUnitTestCase)
-        compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+	// add subsystem libraries
+	if (buildUtils.isCICS(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
 
-    // add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
-    //String compilerVer = props.getFileProperty('cc_compilerVersion', buildFile)
-    //compile.dd(new DDStatement().name("TASKLIB").dsn(props."SIGYCOMP_$compilerVer").options("shr"))
-
-    if (buildUtils.isCICS(logicalFile))
-        compile.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-    if (buildUtils.isSQL(logicalFile)) {
-        compile.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
-        if (props.SDSNEXIT)
-            compile.dd(new DDStatement().dsn(props.SDSNEXIT).options("shr"))
-    }
-
-    if (props.SFELLOAD)
-        compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))
-
-    // adding alternate library definitions
-    if (props.cc_dependenciesAlternativeLibraryNameMapping) {
-        alternateLibraryNameAllocations = buildUtils.parseJSONStringToMap(props.cc_dependenciesAlternativeLibraryNameMapping)
-        alternateLibraryNameAllocations.each { libraryName, datasetDefinition ->
-            datasetName = props.getProperty(datasetDefinition)
-            if (datasetName) {
-                compile.dd(new DDStatement().name(libraryName).dsn(datasetName).options("shr"))
-            }
-            else {
-                String errorMsg = "*! C.groovy. The dataset definition $datasetDefinition could not be resolved from the DBB Build properties."
-                println(errorMsg)
-                props.error = "true"
-                buildUtils.updateBuildResult(errorMsg:errorMsg)
-            }
-        }
-    }
-
-    // add IDz User Build Error Feedback DDs
-    if (props.errPrefix) {
-        compile.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
-        // SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
-        compile.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.cc_compileErrorFeedbackXmlOptions))
-    }
+	if (buildUtils.isMQ(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SCSQCPPS).options("shr"))
+	
+	// add optional DBRMLIB if build file contains DB2 code
+	if (buildUtils.isSQL(logicalFile))
+		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.cpp_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
     // add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
     compile.copy(new CopyToHFS().ddName("SYSOUT").file(logFile).hfsEncoding(props.logEncoding))
@@ -282,98 +236,109 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 
 /*
- * createLinkEditCommand - creates a MVSExec xommand for link editing the c object module produced by the compile
+ * createLinkEditCommand - creates a MVSExec xommand for link editing the C/CPP object module produced by the compile
  */
 def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+	String parms = props.getFileProperty('cpp_linkEditParms', buildFile)
+	String linker = props.getFileProperty('cpp_linkEditor', buildFile)
+	String linkEditStream = props.getFileProperty('cpp_linkEditStream', buildFile)
+	String linkDebugExit = props.getFileProperty('cpp_linkDebugExit', buildFile)
 
-    String parms = props.getFileProperty('cc_linkEditParms', buildFile)
-    String linker = props.getFileProperty('cc_linkEditor', buildFile)
-    String linkEditStream = props.getFileProperty('cc_linkEditStream', buildFile)
-    String linkDebugExit = props.getFileProperty('cc_linkDebugExit', buildFile)
+	// obtain githash for buildfile
+	String cpp_storeSSI = props.getFileProperty('cpp_storeSSI', buildFile)
+	if (cpp_storeSSI && cpp_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
+		String ssi = buildUtils.getShortGitHash(buildFile)
+		if (ssi != null) parms = parms + ",SSI=$ssi"
+	}
+	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parms"
+	
+	// define the MVSExec command to link edit the program
+	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
-    // obtain githash for buildfile
-    String cc_storeSSI = props.getFileProperty('cc_storeSSI', buildFile)
-    if (cc_storeSSI && cc_storeSSI.toBoolean() && (props.mergeBuild || props.impactBuild || props.fullBuild)) {
-        String ssi = buildUtils.getShortGitHash(buildFile)
-        if (ssi != null) parms = parms + ",SSI=$ssi"
-    }
+	// Assemble linkEditInstream to define SYSIN as instreamData
+	String sysin_linkEditInstream = ''
+	
+	// appending configured linkEdit stream if specified
+	if (linkEditStream) {
+		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('cpp_identifyLoad', buildFile)
+	
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.cpp_loadOptions)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
+	
+	// appending mq stub according to file flags
+	if(buildUtils.isMQ(logicalFile)) {
+		// include mq stub program
+		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
+		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
+	}
 
-    // Create the link stream if needed
-    if ( linkEditStream != null ) {
-        def langQualifier = "linkedit"
-        buildUtils.createLanguageDatasets(langQualifier)
-        def lnkFile = new File("${props.buildOutDir}/linkCard.lnk")
-        if (lnkFile.exists())
-            lnkFile.delete()
+	// appending debug exit to link instructions
+	if (props.debug && linkDebugExit!= null) {
+		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
+	}
 
-        lnkFile << "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-        if (props.verbose)
-            println("Copying ${props.buildOutDir}/linkCard.lnk to ${props.linkedit_srcPDS}($member)")
-        new CopyToPDS().file(lnkFile).dataset(props.linkedit_srcPDS).member(member).execute()
+	// Define SYSIN dd as instream data
+	if (sysin_linkEditInstream) {
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
+	}
 
-    }
+	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.cpp_objPDS}($member)").options('shr'))
+	if (sysin_linkEditInstream) linkedit.dd(new DDStatement().ddref("SYSIN"))
+			
+	// add DD statements to the linkedit command
+	String deployType = buildUtils.getDeployType("cpp", buildFile, logicalFile)
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cpp_loadPDS}($member)").options('shr').output(true).deployType(deployType))
 
-    // define the MVSExec command to link edit the program
-    MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
+	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.cpp_printTempOptions))
+	linkedit.dd(new DDStatement().name("SYSUT1").options(props.cpp_tempOptions))
 
-    // Create a physical link card
+	// add RESLIB if needed
+	if ( props.RESLIB ) {
+		linkedit.dd(new DDStatement().name("RESLIB").dsn(props.RESLIB).options("shr"))
+	}
 
-    // add DD statements to the linkedit command
-    String deployType = buildUtils.getDeployType("cc", buildFile, logicalFile)
-    if(isZUnitTestCase){
-        linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cc_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
-    }
-    else {
-        linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cc_loadPDS}($member)").options('shr').output(true).deployType(deployType))
-    }
-    linkedit.dd(new DDStatement().name("TASKLIB").dsn("${props.SCEERUN2}").options('shr'))
-    linkedit.dd(new DDStatement().dsn("${props.SCEERUN}").options('shr'))
-    linkedit.dd(new DDStatement().name("SYSPRINT").options(props.cc_tempOptions))
-    linkedit.dd(new DDStatement().name("SYSUT1").options(props.cc_tempOptions))
+	// add a syslib to the compile command with optional CICS concatenation
+	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.cpp_objPDS).options("shr"))
+	
+	// add custom concatenation
+	def linkEditSyslibConcatenation = props.getFileProperty('cpp_linkEditSyslibConcatenation', buildFile) ?: ""
+	if (linkEditSyslibConcatenation) {
+		def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
+		for (String syslibDataset : syslibDatasets )
+		linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
+	}
+	linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
 
-    // add the link source code
-    if ( linkEditStream != null ) {
-        linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr"))
-    }
+	// Add Debug Dataset to find the debug exit to SYSLIB
+	if (props.debug && props.SEQAMOD)
+		linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
 
-    // add RESLIB if needed
-    if ( props.RESLIB ) {
-        linkedit.dd(new DDStatement().name("RESLIB").dsn(props.RESLIB).options("shr"))
-    }
+	if (buildUtils.isCICS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+			
+	if (buildUtils.isSQL(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
-    // add a syslib to the compile command with optional CICS concatenation
-    //linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.cc_objPDS).options("shr"))
-    linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.SCEELKEX).options("shr"))
-    linkedit.dd(new DDStatement().dsn(props.SCEECPP).options("shr"))
+	if (buildUtils.isMQ(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SCSQLOAD).options("shr"))
 
-    // add custom concatenation
-    def linkEditSyslibConcatenation = props.getFileProperty('cc_linkEditSyslibConcatenation', buildFile) ?: ""
-    if (linkEditSyslibConcatenation) {
-        def String[] syslibDatasets = linkEditSyslibConcatenation.split(',');
-        for (String syslibDataset : syslibDatasets )
-        linkedit.dd(new DDStatement().dsn(syslibDataset).options("shr"))
-    }
-    linkedit.dd(new DDStatement().dsn(props.SCEELKED).options("shr"))
+	// add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
+	linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
 
-    // Add Debug Dataset to find the debug exit to SYSLIB
-    if (props.debug && props.SEQAMOD)
-        linkedit.dd(new DDStatement().dsn(props.SEQAMOD).options("shr"))
-
-    if (buildUtils.isCICS(logicalFile))
-        linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-
-    if (buildUtils.isSQL(logicalFile))
-        linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
-
-
-    // add a copy command to the linkedit command to append the SYSPRINT from the temporary dataset to the HFS log file
-    linkedit.copy(new CopyToHFS().ddName("SYSPRINT").file(logFile).hfsEncoding(props.logEncoding).append(true))
-
-    return linkedit
-
-}
-
-boolean buildListContainsTests(List<String> buildList) {
-    boolean containsZUnitTestCase = buildList.find { buildFile -> props.getFileProperty('cc_testcase', buildFile).equals('true')}
-    return containsZUnitTestCase ? true : false
+	return linkedit
 }

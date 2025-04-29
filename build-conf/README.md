@@ -163,6 +163,27 @@ cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
 
+### CPP.properties
+Build properties used by zAppBuild/language/CPP.groovy
+
+Property | Description
+--- | ---
+cpp_requiredBuildProperties | Releng properties used by language/cc.groovy  Comma separated list of required build properties for language/cc.groovy
+cpp_compiler |  C/CPP compiler name
+cpp_linkEditor | C/CPP linker name
+cpp_srcPDS |  C/CPP source data sets
+cpp_incPDS |  C/CPP header data sets
+cpp_objPDS |  C/CPP object data sets
+cpp_loadPDS |  C/CPP load data sets
+cpp_srcDatasets | List the data sets that need to be created
+cpp_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+cpp_loadDatasets | List the data sets that need to be created
+cpp_loadOptions | BPXWDYN creation options for creating 'load' type data sets
+cpp_tempOptions | BPXWDYN creation options for creating 'temporary' data sets
+cpp_outputDatasets |  List of output datasets to document deletions
+dbb.DependencyScanner.languageHint | C/CPP scanner language hint
+cpp_dependenciesDatasetMapping | cpp_dependenciesDatasetMapping - an optional dbb property mapping to map dependencies to different target datasets this property is used when dependencies are copied to the different build libraries
+
 
 ### LinkEdit.properties
 Build properties used by zAppBuild/language/LinkEdit.groovy
