@@ -14,6 +14,7 @@ Property | Description
 --- | ---
 MACLIB | z/OS macro library. Example: SYS1.MACLIB
 SCEEMAC | Assembler macro library. Example: CEE.SCEEMAC
+SCEEH | CPP Header library
 SCEELKED | LE (Language Environment) load library. Example: CEE.SCEELKED
 SASMMOD1 | High Level Assembler (HLASM) load library. Example: ASM.SASMMOD1
 SIGYCOMP_V4 | Cobol Compiler Data Set for version 4.x.x. Example: COBOL.V4R1M0.SIGYCOMP
@@ -26,6 +27,7 @@ SDFHCOB | CICS COBOL Library. Example: CICSTS.V3R2M0.CICS.SDFHCOB
 SDFHPL1 | CICS PL1 Library. Example: CICSTS.V3R2M0.CICS.SDFHPL1
 SCSQCOBC | MQ COBOL Library. Example: CSQ.V9R1M0.SCSQCOBC
 SCSQPLIC | MQ PLI Library. Example: CSQ.V9R1M0.SCSQPLIC
+SCSQCPPS | MQ CPP Library. Example: WMQ.V9R2M4.SCSQCPPS
 SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
