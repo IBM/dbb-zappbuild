@@ -31,8 +31,8 @@ propertyFilePath | relative path to folder containing individual artifact proper
 propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
-impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
+impactSearch | A list of searchPath configurations to configure the DBB SearchPathImpactFinder API for impact analysis based on dependency information stored in the DBB Metadatastore. | true
+dependency resolution rules (DBB search path) | `copybookSearch` used to locate copybooks in dependency resolution process and find impacted programs during impact analysis <br> `pliincludeSearch` used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `asmMacroSearch` and `asmCopySearch` used to resolve assembler dependencies in dependency resolution process and find impacted programs during impact analysis <br> `rexxCopySearch`  used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `tazRecordingFileSearch`  used to locate recording files during dependency resolution <br> `eztMacSearch` used to locate ezt macros in dependency resolution process and find impacted programs during impact analysis <br> `bmsSearch` used to find impacted programs during impact analysis <br> `linkSearch` used to find impacted programs during impact analysis <br> | false
 
 ### file.properties
 
