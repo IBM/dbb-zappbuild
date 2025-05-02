@@ -98,7 +98,7 @@ def getFileSet(String dir, boolean relativePaths, String includeFileList, String
 
 // Backward compatililty for older language script implementations, that don't specify dependencyCopyModeMapping
 def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, SearchPathDependencyResolver dependencyResolver) {
-	copySourceFiles(buildFile, srcPDS, dependencyDatasetMapping, dependenciesAlternativeLibraryNameMapping, null, dependencyResolver) {
+	copySourceFiles(buildFile, srcPDS, dependencyDatasetMapping, dependenciesAlternativeLibraryNameMapping, null, dependencyResolver)
 }
 
 def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMapping, String dependenciesAlternativeLibraryNameMapping, String dependencyCopyModeMapping, SearchPathDependencyResolver dependencyResolver) {
