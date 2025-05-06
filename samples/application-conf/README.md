@@ -216,7 +216,6 @@ cpp_compileParms |  default C/CPP compiler parameters | true
 cpp_compileDebugParms | Compile Options for IBM Debugger. Assuming to keep Dwarf Files inside the load. If you would like to separate debug info, additional allocations needed (See C/CPP + Debugger libraries) | true
 cpp_linkEditParms |  default LinkEdit parameters | true
 cpp_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd, sample: cpp_linkEditStream=    INCLUDE SYSLIB(COBJT) | true
-cpp_linkDebugExit | If using a debug exit for IBM Debug tool, provide the SYSIN instream DD which is appended to SYSIN. Samp: cpp_linkDebugExit=    INCLUDE SYSLIB(EQAD3CXT) | true
 cpp_linkEdit |  execute link edit step | true
 cpp_storeSSI |  store abbrev git hash in ssi field available for buildTypes impactBuild, mergeBuild and fullBuild | true
 cpp_identifyLoad |  flag to generate IDENTIFY statement during link edit phase to create an user data record (IDRU) to "sign" the load module with an identify String: <application>/<abbreviatedGitHash> to increase traceability. default: true | true

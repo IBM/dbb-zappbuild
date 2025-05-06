@@ -174,7 +174,7 @@ cpp_requiredBuildProperties | Releng properties used by language/cc.groovy  Comm
 cpp_compiler |  C/CPP compiler name
 cpp_linkEditor | C/CPP linker name
 cpp_srcPDS |  C/CPP source data sets
-cpp_incPDS |  C/CPP header data sets
+cpp_headerPDS |  C/CPP header data sets
 cpp_objPDS |  C/CPP object data sets
 cpp_loadPDS |  C/CPP load data sets
 cpp_srcDatasets | List the data sets that need to be created

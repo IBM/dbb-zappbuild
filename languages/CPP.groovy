@@ -188,8 +188,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
     compile.dd(new DDStatement().name("SYSOUT").options(props.cpp_tempOptions))
     compile.dd(new DDStatement().name("SYSPRINT").options(props.cpp_tempOptions))
 
-    compile.dd(new DDStatement().name("SYSMDECK").options(props.cpp_tempOptions))
-    (1..15).toList().each { num ->
+    (1..17).toList().each { num ->
         compile.dd(new DDStatement().name("SYSUT$num").options("cyl space(1,1) unit(sysallda) new"))
     }
 	
@@ -197,7 +196,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cpp_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
     // add a syslib to the compile command
-    compile.dd(new DDStatement().name("SYSLIB").dsn(props.cpp_incPDS).options("shr"))
+    compile.dd(new DDStatement().name("SYSLIB").dsn(props.cpp_headerPDS).options("shr"))
 
     // add custom concatenation
     def compileSyslibConcatenation = props.getFileProperty('cpp_compileSyslibConcatenation', buildFile) ?: ""
@@ -245,7 +244,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	String parms = props.getFileProperty('cpp_linkEditParms', buildFile)
 	String linker = props.getFileProperty('cpp_linkEditor', buildFile)
 	String linkEditStream = props.getFileProperty('cpp_linkEditStream', buildFile)
-	String linkDebugExit = props.getFileProperty('cpp_linkDebugExit', buildFile)
 
 	// obtain githash for buildfile
 	String cpp_storeSSI = props.getFileProperty('cpp_storeSSI', buildFile)
@@ -283,11 +281,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		// include mq stub program
 		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
 		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
-	}
-
-	// appending debug exit to link instructions
-	if (props.debug && linkDebugExit!= null) {
-		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
 	}
 
 	// Define SYSIN dd as instream data
