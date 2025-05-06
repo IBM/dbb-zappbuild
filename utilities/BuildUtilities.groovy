@@ -220,7 +220,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 						}
 					}
 				} else {
-					String errorMsg = "*! Either the target dataset (${dependencyPDS}) for dependency ${physicalDependency.getFile()} was not be found in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping. Or the copyMode (${copyMod}) is not configured for the dependency."
+					String errorMsg = "*! Either the target dataset (${dependencyPDS}) for dependency ${physicalDependency.getFile()} was not be found in dependenciesAlternativeLibraryNameMapping (COBOL and PLI) or PropertyMapping $dependencyDatasetMapping, or the copyMode (${copyMode}) is not configured for the dependency."
 					println(errorMsg)
 					props.error = "true"
 					updateBuildResult(errorMsg:errorMsg)
