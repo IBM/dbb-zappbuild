@@ -226,7 +226,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		if (targetDataset != 'cobol_cpyPDS')
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
-
+	
+	// add external dependencies datasets when present
+	props.cobol_compileDependenciesDatasets.split(",").each { additionalDependencyDataset ->
+		if (ZFile.dsExists("'${additionalDependencyDataset}'"))
+			compile.dd(new DDStatement().dsn(additionalDependencyDataset).options("shr"))
+	}
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('cobol_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
@@ -374,6 +379,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// add a syslib to the compile command with optional CICS concatenation
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.cobol_objPDS).options("shr"))
+	
+	// add additional linkedit datasets containing dependencies dependencies when present
+	props.cobol_linkEditDependenciesDatasets.split(",").each { additionalLinkDataset ->
+		if (ZFile.dsExists("'${additionalLinkDataset}'"))
+			linkedit.dd(new DDStatement().dsn(additionalLinkDataset).options("shr"))
+	}
 	
 	// add custom concatenation
 	def linkEditSyslibConcatenation = props.getFileProperty('cobol_linkEditSyslibConcatenation', buildFile) ?: ""
