@@ -30,6 +30,8 @@ int currentBuildFileNumber = 1
 
 	File logFile = new File("${props.buildOutDir}/${member}.tazunittest.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.tazunittest.report.log")
+	File reportJunitFile = new File("${props.buildOutDir}/${member}.tazunittest.report.xml")
+	String xslFile = props.tazxlsconv
 
 
 	String dependencySearch = props.getFileProperty('tazunittest_dependencySearch', buildFile)
@@ -176,6 +178,13 @@ int currentBuildFileNumber = 1
 			println   "***  TAZ Unit Test job ${tazUnitTestRunJcl.submittedJobId} completed with $rc "
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
+			if (props.tazunittest_resultsConvtoJunit && props.tazunittest_resultsConvtoJunit.toBoolean()) {
+			// Convert the report to Junit and store in workspace
+			def exec = new UnixExec()
+			.command("Xalan")
+			.options(["-o", reportJunitFile.toString(), reportLogFile.toString(), xslFile])
+			.execute()
+			}	
 			// printReport
 			printReport(reportLogFile)
 		} else if (rc <= props.tazunittest_maxWarnRC.toInteger()){
