@@ -14,13 +14,14 @@ Property | Description
 --- | ---
 MACLIB | z/OS macro library. Example: SYS1.MACLIB
 SCEEMAC | Assembler macro library. Example: CEE.SCEEMAC
-SCEEH | CPP Header library
 SCEELKED | LE (Language Environment) load library. Example: CEE.SCEELKED
 SASMMOD1 | High Level Assembler (HLASM) load library. Example: ASM.SASMMOD1
 SIGYCOMP_V4 | Cobol Compiler Data Set for version 4.x.x. Example: COBOL.V4R1M0.SIGYCOMP
 SIGYCOMP_V6 | Cobol Compiler Data Set for version 6.x.x. Example: IGY.V6R1M0.SIGYCOMP
 IBMZPLI_V52 | PLI Compiler Data Set for version 5.2. Example: PLI.V5R2M0.SIBMZCMP
 IBMZPLI_V51 | PLI Compiler Data Set for version 5.1. Example: PLI.V5R1M0.SIBMZCMP
+SCCNCMP | C/CPP Compiler Data Set. Example: CBC.SCCNCMP
+SCEEH | CPP Header library. Example: CEE.SCEEH.H
 SDFHMAC | CICS Macro Library. Example: CICSTS.V3R2M0.CICS.SDFHMAC
 SDFHLOAD | CICS Load Library. Example: CICSTS.V3R2M0.CICS.SDFHLOAD
 SDFHCOB | CICS COBOL Library. Example: CICSTS.V3R2M0.CICS.SDFHCOB

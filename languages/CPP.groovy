@@ -186,8 +186,10 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
     compile.dd(new DDStatement().name("SYSIN").dsn("${props.cpp_srcPDS}($member)").options('shr').report(true))
 
     compile.dd(new DDStatement().name("SYSOUT").options(props.cpp_tempOptions))
-    compile.dd(new DDStatement().name("SYSPRINT").options(props.cpp_tempOptions))
-
+    compile.dd(new DDStatement().name("SYSPRINT").options(props.cpp_tempListOptions))
+	compile.dd(new DDStatement().name("SYSCPRT").options(props.cpp_tempListOptions))
+	compile.dd(new DDStatement().name("SYSMSGS").options(props.cpp_tempListOptions))
+	
     (1..17).toList().each { num ->
         compile.dd(new DDStatement().name("SYSUT$num").options("cyl space(1,1) unit(sysallda) new"))
     }
@@ -221,7 +223,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 
 	// add subsystem libraries
 	if (buildUtils.isCICS(logicalFile))
-		compile.dd(new DDStatement().dsn(props.SDFHCOB).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SDFHC370).options("shr"))
 
 	if (buildUtils.isMQ(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SCSQCPPS).options("shr"))
@@ -230,8 +232,20 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (buildUtils.isSQL(logicalFile))
 		compile.dd(new DDStatement().name("DBRMLIB").dsn("$props.cpp_dbrmPDS($member)").options('shr').output(true).deployType('DBRM'))
 
+	//  add a tasklib to the compile command with optional CICS, DB2
+	compile.dd(new DDStatement().name("TASKLIB").dsn(props.SCCNCMP).options("shr"))
+	if (buildUtils.isCICS(logicalFile))
+		compile.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
+	if (buildUtils.isSQL(logicalFile)) {
+		if (props.SDSNEXIT) compile.dd(new DDStatement().dsn(props.SDSNEXIT).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+	}
+		
     // add a copy command to the compile command to copy the SYSPRINT from the temporary dataset to an HFS log file
     compile.copy(new CopyToHFS().ddName("SYSOUT").file(logFile).hfsEncoding(props.logEncoding))
+	compile.copy(new CopyToHFS().ddName("SYSCPRT").file(logFile).hfsEncoding(props.logEncoding).append(true))
+	compile.copy(new CopyToHFS().ddName("SYSMSGS").file(logFile).hfsEncoding(props.logEncoding).append(true))
+	
 
     return compile
 }
