@@ -32,7 +32,7 @@ propertyFileExtension | file extension for individual artifact properties files 
 **Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
 impactSearch | A list of searchPath configurations to configure the DBB SearchPathImpactFinder API for impact analysis based on dependency information stored in the DBB Metadatastore. | true
-dependency resolution rules (DBB search path) | `copybookSearch` used to locate copybooks in dependency resolution process and find impacted programs during impact analysis <br> `pliincludeSearch` used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `asmMacroSearch` and `asmCopySearch` used to resolve assembler dependencies in dependency resolution process and find impacted programs during impact analysis <br> `rexxCopySearch`  used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `tazRecordingFileSearch`  used to locate recording files during dependency resolution <br> `eztMacSearch` used to locate ezt macros in dependency resolution process and find impacted programs during impact analysis <br> `bmsSearch` used to find impacted programs during impact analysis <br> `linkSearch` used to find impacted programs during impact analysis <br> | false
+dependency resolution rules (DBB search path) | `copybookSearch` used to locate copybooks in dependency resolution process and find impacted programs during impact analysis <br> `pliincludeSearch` used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `asmMacroSearch` and `asmCopySearch` used to resolve assembler dependencies in dependency resolution process and find impacted programs during impact analysis `cppHeaderSearch` used to locate c header files in dependency resolution process and to find impacted programs during impact analysis <br> `rexxCopySearch`  used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `tazRecordingFileSearch`  used to locate recording files during dependency resolution <br> `eztMacSearch` used to locate ezt macros in dependency resolution process and find impacted programs during impact analysis <br> `bmsSearch` used to find impacted programs during impact analysis <br> `linkSearch` used to find impacted programs during impact analysis <br> | false
 
 ### file.properties
 
@@ -205,6 +205,27 @@ pli_deployTypeDLI | deployType for build output for build files with isDLI=true 
 pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+Property | Description | Overridable
+--- | --- |
+cpp_fileBuildRank | default C/CPP program build rank - used to sort language build file list leave empty - overridden by file properties if sorting needed | true
+cpp_dependencySearch |  C/CPP dependencySearch configuration searchPath defined in application.properties | true
+cpp_compileMaxRC |  default C/CPP maximum RCs allowed | true
+cpp_impactPropertyList |  lists of properties which should cause a rebuild after being changed | false
+cpp_compileParms |  default C/CPP compiler parameters | true
+cpp_compileDebugParms | Compile Options for IBM Debugger. Assuming to keep Dwarf Files inside the load. If you would like to separate debug info, additional allocations needed (See C/CPP + Debugger libraries) | true
+cpp_linkEditParms |  default LinkEdit parameters | true
+cpp_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd, sample: cpp_linkEditStream=    INCLUDE SYSLIB(COBJT) | true
+cpp_linkEdit |  execute link edit step | true
+cpp_storeSSI |  store abbrev git hash in ssi field available for buildTypes impactBuild, mergeBuild and fullBuild | true
+cpp_identifyLoad |  flag to generate IDENTIFY statement during link edit phase to create an user data record (IDRU) to "sign" the load module with an identify String: <application>/<abbreviatedGitHash> to increase traceability. default: true | true
+cpp_deployType |  default deployType | true
+cpp_deployTypeCICS |  deployType for build files with isCICS=true | true
+cpp_deployTypeDLI |  deployType for build files with isDLI=true | true
+cpp_scanLoadModule |  scan link edit load module for link dependencies | true
+cpp_compileSyslibConcatenation |  additional libraries for compile SYSLIB concatenation, comma-separated | true
+cpp_assemblySyslibConcatenation |  additional libraries for compile ASMLIB concatenation, comma-separated ASMLIB concatenation for C programs using the ASM option | true
+cpp_linkEditSyslibConcatenation |  additional libraries for linkEdit SYSLIB concatenation, comma-separated | true
 
 ### bind.properties
 Application properties used by zAppBuild/utilities/BindUtilities.groovy

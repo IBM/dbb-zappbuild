@@ -20,12 +20,15 @@ SIGYCOMP_V4 | Cobol Compiler Data Set for version 4.x.x. Example: COBOL.V4R1M0.S
 SIGYCOMP_V6 | Cobol Compiler Data Set for version 6.x.x. Example: IGY.V6R1M0.SIGYCOMP
 IBMZPLI_V52 | PLI Compiler Data Set for version 5.2. Example: PLI.V5R2M0.SIBMZCMP
 IBMZPLI_V51 | PLI Compiler Data Set for version 5.1. Example: PLI.V5R1M0.SIBMZCMP
+SCCNCMP | C/CPP Compiler Data Set. Example: CBC.SCCNCMP
+SCEEH | CPP Header library. Example: CEE.SCEEH.H
 SDFHMAC | CICS Macro Library. Example: CICSTS.V3R2M0.CICS.SDFHMAC
 SDFHLOAD | CICS Load Library. Example: CICSTS.V3R2M0.CICS.SDFHLOAD
 SDFHCOB | CICS COBOL Library. Example: CICSTS.V3R2M0.CICS.SDFHCOB
 SDFHPL1 | CICS PL1 Library. Example: CICSTS.V3R2M0.CICS.SDFHPL1
 SCSQCOBC | MQ COBOL Library. Example: CSQ.V9R1M0.SCSQCOBC
 SCSQPLIC | MQ PLI Library. Example: CSQ.V9R1M0.SCSQPLIC
+SCSQCPPS | MQ CPP Library. Example: WMQ.V9R2M4.SCSQCPPS
 SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
@@ -164,6 +167,27 @@ cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
 cobol_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
+
+### CPP.properties
+Build properties used by zAppBuild/language/CPP.groovy
+
+Property | Description
+--- | ---
+cpp_requiredBuildProperties | Releng properties used by language/cc.groovy  Comma separated list of required build properties for language/cc.groovy
+cpp_compiler |  C/CPP compiler name
+cpp_linkEditor | C/CPP linker name
+cpp_srcPDS |  C/CPP source data sets
+cpp_headerPDS |  C/CPP header data sets
+cpp_objPDS |  C/CPP object data sets
+cpp_loadPDS |  C/CPP load data sets
+cpp_srcDatasets | List the data sets that need to be created
+cpp_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+cpp_loadDatasets | List the data sets that need to be created
+cpp_loadOptions | BPXWDYN creation options for creating 'load' type data sets
+cpp_tempOptions | BPXWDYN creation options for creating 'temporary' data sets
+cpp_outputDatasets |  List of output datasets to document deletions
+dbb.DependencyScanner.languageHint | C/CPP scanner language hint
+cpp_dependenciesDatasetMapping | cpp_dependenciesDatasetMapping - an optional dbb property mapping to map dependencies to different target datasets this property is used when dependencies are copied to the different build libraries
 
 
 ### LinkEdit.properties
