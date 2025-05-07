@@ -12,7 +12,7 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.assembler_requiredBuildProperties)
@@ -20,12 +20,23 @@ buildUtils.assertBuildProperties(props.assembler_requiredBuildProperties)
 def langQualifier = "assembler"
 buildUtils.createLanguageDatasets(langQualifier)
 
+// create sysadata dataset used in errorPrefix and debug
+if (props.errPrefix || props.debug) {
+	buildUtils.createDatasets(props.assembler_sysadataPDS.split(), props.assembler_sysadataOptions)
+}
+
+// create debug dataset for the sidefile
+if (props.debug) {
+	buildUtils.createDatasets(props.assembler_debugPDS.split(), props.assembler_sidefileOptions)
+}
+
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'assembler_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'assembler_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Configure dependency resolution
 	String dependencySearch = props.getFileProperty('assembler_dependencySearch', buildFile)
@@ -37,15 +48,22 @@ sortedList.each { buildFile ->
 	// Create logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
+	// print logicalFile details and overrides
+	if (props.verbose) buildUtils.printLogicalFileAttributes(logicalFile)
+	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.asm.log")
 	if (logFile.exists())
 		logFile.delete()
 	MVSExec assembler_SQLTranslator = createAssemblerSQLTranslatorCommand(buildFile, logicalFile, member, logFile)
 	MVSExec assembler_CICSTranslator = createAssemblerCICSTranslatorCommand(buildFile, logicalFile, member, logFile)
 	MVSExec assembler = createAssemblerCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec debugSideFile = createDebugSideFile(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit 
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -53,11 +71,14 @@ sortedList.each { buildFile ->
 
 	// initialize return codes
 	int rc = 0
+	
 	int maxRC = props.getFileProperty('assembler_maxRC', buildFile).toInteger()
 
 	// SQL preprocessor
 	if (buildUtils.isSQL(logicalFile)){
 		rc = assembler_SQLTranslator.execute()
+		maxRC = props.getFileProperty('assembler_maxSQLTranslatorRC', buildFile).toInteger()
+		
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler sql translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -74,8 +95,10 @@ sortedList.each { buildFile ->
 	}
 
 	// CICS preprocessor
-	if (buildUtils.isCICS(logicalFile)){
+	if (rc <= maxRC && buildUtils.isCICS(logicalFile)){
 		rc = assembler_CICSTranslator.execute()
+		maxRC = props.getFileProperty('assembler_maxCICSTranslatorRC', buildFile).toInteger()
+		
 		if (rc > maxRC) {
 			String errorMsg = "*! The assembler cics translator return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 			println(errorMsg)
@@ -95,34 +118,46 @@ sortedList.each { buildFile ->
 			props.error = "true"
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 		}
-		else {
-			// if this program needs to be link edited . . .
-			String needsLinking = props.getFileProperty('assembler_linkEdit', buildFile)
-			if (needsLinking && needsLinking.toBoolean()) {
-				rc = linkEdit.execute()
-				maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+	}
+	
+	// create sidefile
+	if (rc <= maxRC && props.debug) {
+		rc = debugSideFile.execute()
+		maxRC = props.getFileProperty('assembler_maxIDILANGX_RC', buildFile).toInteger()
+		
+		if (rc > maxRC) {
+			String errorMsg = "*! The preparation step of the sidefile EQALANX return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		}
+	}
 
-				if (rc > maxRC) {
-					String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
-					println(errorMsg)
-					props.error = "true"
-					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
-				}
-				else {
-					// only scan the load module if load module scanning turned on for file
-					if(!props.userBuild){
-						String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
-						if (scanLoadModule && scanLoadModule.toBoolean()) {
-							String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-							impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
-						}
-					}
+	
+	// linkedit
+	if (rc <= maxRC && needsLinking && needsLinking.toBoolean()) {
+
+		rc = linkEdit.execute()
+		maxRC = props.getFileProperty('assembler_linkEditMaxRC', buildFile).toInteger()
+
+		if (rc > maxRC) {
+			String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		}
+		else {
+			// only scan the load module if load module scanning turned on for file
+			if(!props.userBuild){
+				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
+				if (scanLoadModule && scanLoadModule.toBoolean()) {
+					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
+					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
 				}
 			}
-
 		}
-
 	}
+
 	// clean up passed DD statements
 	job.stop()
 
@@ -178,8 +213,14 @@ def createAssemblerSQLTranslatorCommand(String buildFile, LogicalFile logicalFil
 	assembler_SQLtranslator.dd(new DDStatement().name("SYSCIN").dsn("&&SYSCIN").options('cyl space(5,5) unit(vio) new').pass(true))
 
 	// steplib
-	assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNLOAD).options("shr"))
+	if (props.SDSNEXIT) {
+		assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNEXIT).options("shr"))
+		assembler_SQLtranslator.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 
+	} else {
+		assembler_SQLtranslator.dd(new DDStatement().name("TASKLIB").dsn(props.SDSNLOAD).options("shr"))
+	}
+	
 	assembler_SQLtranslator.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
 	// sysprint
@@ -233,19 +274,30 @@ def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFi
 }
 
 /*
- * createCompileCommand - creates a MVSExec command for compiling the BMS Map (buildFile)
+ * createCompileCommand - creates a MVSExec command for compiling the source code
  */
 def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+	
 	def errPrefixOptions = props.getFileProperty('assembler_compileErrorPrefixParms', buildFile) ?: ""
-
+	def debugOptions = props.getFileProperty('assembler_debugParms', buildFile) ?: ""
+		
 	String parameters = props.getFileProperty('assembler_pgmParms', buildFile)
 
 	if (props.errPrefix)
 		parameters = "$parameters,$errPrefixOptions"
 
+	if (props.debug)
+		parameters = "$parameters,$debugOptions"	
+
+	if (props.verbose) println "*** Assembler options for $buildFile = $parameters"
+				
 	// define the MVSExec command to compile the BMS map
 	MVSExec assembler = new MVSExec().file(buildFile).pgm(props.assembler_pgm).parm(parameters)
 
+	// asma options file
+	def asmaOpts = props.getFileProperty('assembler_asmaOptFile', buildFile) ?: ""
+	if (asmaOpts) assembler.dd(new DDStatement().name("ASMAOPT").dsn("${asmaOpts}").options("shr"))
+	
 	// add DD statements to the compile command
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
 
@@ -262,7 +314,7 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	assembler.dd(new DDStatement().name("SYSUT1").options(props.assembler_tempOptions))
 
 	// define object dataset allocation
-	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true))
+	assembler.dd(new DDStatement().name("SYSLIN").dsn("${props.assembler_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// create a SYSLIB concatenation with optional MACLIB and MODGEN
 	assembler.dd(new DDStatement().name("SYSLIB").dsn(props.assembler_macroPDS).options("shr"))
@@ -296,9 +348,13 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	if (props.SDFSMAC)
 		assembler.dd(new DDStatement().dsn(props.SDFSMAC).options("shr"))
 
+	// SYSADATA allocation
+	if (props.errPrefix || props.debug) {	
+		assembler.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}($member)").options("shr"))
+	}	
+	
 	// add IDz User Build Error Feedback DDs
 	if (props.errPrefix) {
-		assembler.dd(new DDStatement().name("SYSADATA").options("DUMMY"))
 		// SYSXMLSD.XML suffix is mandatory for IDZ/ZOD to populate remote error list
 		assembler.dd(new DDStatement().name("SYSXMLSD").dsn("${props.hlq}.${props.errPrefix}.SYSXMLSD.XML").options(props.assembler_compileErrorFeedbackXmlOptions))
 	}
@@ -308,6 +364,22 @@ def createAssemblerCommand(String buildFile, LogicalFile logicalFile, String mem
 	return assembler
 }
 
+
+/*
+ * createDebugSideFileCommand - creates a MVSExec command creating a IDILANGX side file
+ * https://www.ibm.com/docs/en/developer-for-zos/16.0?topic=program-creating-eqalangx-file-assembler
+ * 
+ */
+def createDebugSideFile(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+
+	String parameters = props.getFileProperty('assembler_eqalangxParms', buildFile)
+	
+	MVSExec generateSidefile = new MVSExec().file(buildFile).pgm(props.assembler_eqalangx).parm(parameters)
+	generateSidefile.dd(new DDStatement().name("TASKLIB").dsn("${props.PDTCCMOD}").options("shr"))
+	generateSidefile.dd(new DDStatement().name("SYSADATA").dsn("${props.assembler_sysadataPDS}($member)").options("shr"))
+	generateSidefile.dd(new DDStatement().name("IDILANGX").dsn("${props.assembler_debugPDS}($member)").options("shr").output(true).deployType("EQALANGX"))
+	return generateSidefile
+}
 
 /*
  * createLinkEditCommand - creates a MVSExec xommand for link editing the assembler object module produced by the compile
@@ -323,6 +395,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		String ssi = buildUtils.getShortGitHash(buildFile)
 		if (ssi != null) parameters = parameters + ",SSI=$ssi"
 	}
+	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parameters"
 	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(props.assembler_linkEditor).parm(parameters)
@@ -340,7 +414,17 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// linkEdit stream specified
 	if (linkEditStream) {
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-	} 
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('assembler_identifyLoad', buildFile)
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.assembler_loadOptions)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
 	
 	// appending mq stub according to file flags
 	if(buildUtils.isMQ(logicalFile)) {
@@ -351,7 +435,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Define SYSIN dd as instream data
 	if (sysin_linkEditInstream) {
-		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
 		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
 	}
 
@@ -374,6 +458,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+		
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

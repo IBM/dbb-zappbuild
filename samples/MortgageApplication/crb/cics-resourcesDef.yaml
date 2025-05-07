@@ -1,0 +1,48 @@
+resourceDefinitions:
+- mapset:
+    name: EPSMORT
+    group: EPSMTM
+- mapset:
+    name: EPSMLIS
+    group: EPSMTM
+- program:
+    name: EPSCMORT
+    group: EPSMTM
+    datalocation: ANY
+    language: COBOL
+    execkey: USER
+    concurrency: QUASIRENT
+    dynamic: NO
+    executionset: FULLAPI
+- program:
+    name: EPSCSMRT
+    group: EPSMTM
+    datalocation: ANY
+    language: COBOL
+    execkey: USER
+    concurrency: QUASIRENT
+    dynamic: NO
+    executionset: FULLAPI
+- program:
+    name: EPSMPMT
+    group: EPSMTM
+    datalocation: ANY
+    language: COBOL
+    execkey: USER
+    concurrency: QUASIRENT
+    dynamic: NO
+    executionset: FULLAPI
+- program:
+    name: EPSMLIST
+    group: EPSMTM
+    datalocation: ANY
+    language: COBOL
+    execkey: USER
+    concurrency: QUASIRENT
+    dynamic: NO
+    executionset: FULLAPI
+- transaction:
+    name: EPSP
+    group: EPSMTM
+    storageclear: NO
+    program: EPSCMORT

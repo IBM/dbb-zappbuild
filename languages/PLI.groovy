@@ -13,7 +13,7 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.pli_requiredBuildProperties)
@@ -22,7 +22,8 @@ def langQualifier = "pli"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'pli_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'pli_fileBuildRank')
+int currentBuildFileNumber = 1
 
 if (buildListContainsTests(sortedList)) {
 	langQualifier = "pli_test"
@@ -31,10 +32,10 @@ if (buildListContainsTests(sortedList)) {
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = (props.getFileProperty('pli_testcase', buildFile).equals('true')) ? true : false
+	isZUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure SearchPathDependencyResolver
 	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
@@ -51,13 +52,20 @@ sortedList.each { buildFile ->
 	// Get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
+	// print logicalFile details and overrides
+	if (props.verbose) buildUtils.printLogicalFileAttributes(logicalFile)
+	
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
+	String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
+	
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.pli.log")
 	if (logFile.exists())
 		logFile.delete()
+		
 	MVSExec compile = createCompileCommand(buildFile, logicalFile, member, logFile)
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit 
+	if (needsLinking.toBoolean()) linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -83,7 +91,6 @@ sortedList.each { buildFile ->
 			BuildReportFactory.getBuildReport().addRecord(db2BindInfoRecord)
 		}
 
-		String needsLinking = props.getFileProperty('pli_linkEdit', buildFile)
 		if (needsLinking.toBoolean()) {
 			rc = linkEdit.execute()
 			maxRC = props.getFileProperty('pli_linkEditMaxRC', buildFile).toInteger()
@@ -99,7 +106,7 @@ sortedList.each { buildFile ->
 				if(!props.userBuild && !isZUnitTestCase){
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -122,6 +129,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	def parms = props.getFileProperty('pli_compileParms', buildFile) ?: ""
 	def cics = props.getFileProperty('pli_compileCICSParms', buildFile) ?: ""
 	def sql = props.getFileProperty('pli_compileSQLParms', buildFile) ?: ""
+	def ims = props.getFileProperty('pli_compileIMSParms', buildFile) ?: ""
 	def errPrefixOptions = props.getFileProperty('pli_compileErrorPrefixParms', buildFile) ?: ""
 	def compileDebugParms = props.getFileProperty('pli_compileDebugParms', buildFile)
 
@@ -135,6 +143,9 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	if (props.errPrefix)
 		parms = "$parms,$errPrefixOptions"
 
+	if (buildUtils.isIMS(logicalFile))	
+		parms = "$parms,$ims"
+		
 	// add debug options
 	if (props.debug)  {
 		parms = "$parms,$compileDebugParms"
@@ -143,7 +154,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
     if (parms.startsWith(','))
 		parms = parms.drop(1)
 
-	if (props.verbose) println "PLI compiler parms for $buildFile = $parms"
+	if (props.verbose) println "*** PLI compiler parms for $buildFile = $parms"
 	return parms
 }
 
@@ -173,7 +184,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -208,15 +219,17 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)
 	compile.dd(new DDStatement().name("TASKLIB").dsn(props."IBMZPLI_$compilerVer").options("shr"))
 	if (buildUtils.isCICS(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
-	if (buildUtils.isSQL(logicalFile))
+	if (buildUtils.isSQL(logicalFile)) {
+		if (props.SDSNEXIT) compile.dd(new DDStatement().dsn(props.SDSNEXIT).options("shr"))
 		compile.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
+	}
 	if (props.SFELLOAD)
 		compile.dd(new DDStatement().dsn(props.SFELLOAD).options("shr"))
 
@@ -272,6 +285,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		if (ssi != null) parms = parms + ",SSI=$ssi"
 	}
 	
+	if (props.verbose) println "*** Link-Edit parms for $buildFile = $parms"
+	
 	// define the MVSExec command to link edit the program
 	MVSExec linkedit = new MVSExec().file(buildFile).pgm(linker).parm(parms)
 
@@ -292,7 +307,17 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// appending configured linkEdit stream if specified
 	if (linkEditStream) {
 		sysin_linkEditInstream += "  " + linkEditStream.replace("\\n","\n").replace('@{member}',member)
-	} 
+	}
+	
+	// appending IDENTIFY statement to link phase for traceability of load modules
+	// this adds an IDRU record, which can be retrieved with amblist
+	def identifyLoad = props.getFileProperty('pli_identifyLoad', buildFile)
+	if (identifyLoad && identifyLoad.toBoolean()) {
+		String identifyStatement = buildUtils.generateIdentifyStatement(buildFile, props.pli_loadOptions)
+		if (identifyStatement != null ) {
+			sysin_linkEditInstream += identifyStatement
+		}
+	}
 
 	// appending mq stub according to file flags
 	if(buildUtils.isMQ(logicalFile)) {
@@ -308,8 +333,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
-		if (props.verbose) println("** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
 	}
 
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
@@ -334,6 +359,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+		
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

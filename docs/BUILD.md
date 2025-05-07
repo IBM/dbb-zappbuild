@@ -16,7 +16,7 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1
 ```
-Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.  
+Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.
 
 ## Common Pipeline Invocation Examples
 
@@ -93,9 +93,9 @@ $DBB_HOME/bin/groovyz build.groovy  \
                       --outDir /u/build/out \
                       --hlq BUILD.APP1 \
                       --debug \
-                      --impactBuild 
+                      --impactBuild
 ```
-**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
+**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in TazUnitTest.properties)**
 ```
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
@@ -117,12 +117,12 @@ $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
                       --application app1 \
                       --outDir /u/build/out \
-                      --hlq BUILD.APP1 \ 
+                      --hlq BUILD.APP1 \
                       --userBuild app1/cobol/epsmpmt.cbl
 ```
 **Build one program using a [user build dependency file](samples/userBuildDependencyFile) predefining dependency information to skip DBB scans and dependency resolution.**
 
-Build a single program in a user build context and provide the dependency information from the IDE to skip scanning the files on USS. Useful when building on IBM ZD&T or Wazi Sandbox environments. 
+Build a single program in a user build context and provide the dependency information from the IDE to skip scanning the files on USS. Useful when building on IBM ZD&T or Wazi Sandbox environments.
 ```
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
@@ -173,100 +173,119 @@ $DBB_HOME/bin/groovyz build.groovy \
 ```
 $DBB_HOME/bin/groovyz <zAppBuildLocation>/build.groovy [options] buildfile
 
-buildFile (optional):  Path of the source file to build (absolute or relative to workspace). 
+buildFile (optional):  Path of the source file to build (absolute or relative to workspace).
 If buildFile is a text file (*.txt), then it is assumed to be a build list file.
 
 Options:
 
 required options:
- -w,--workspace <arg>         Absolute path to workspace (root) directory
-                              containing all required source directories
- -a,--application <arg>       Application directory name (relative to workspace)
- -o,--outDir <arg>            Absolute path to the build output root directory
- -h,--hlq <arg>               High level qualifier for partition data sets
+ -w,--workspace <arg>               Absolute path to workspace (root) directory
+                                    containing all required source directories
+ -a,--application <arg>             Application directory name (relative to workspace)
+ -o,--outDir <arg>                  Absolute path to the build output root directory
+ -h,--hlq <arg>                     High level qualifier for partition data sets
 
 build options:
 
- -f,--fullBuild               Flag indicating to build all programs for
-                              the application
- -i,--impactBuild             Flag indicating to build only programs impacted
-                              by changed files since last successful build.
- -b,--baselineRef             Comma seperated list of git references to overwrite
-                              the baselineHash hash in an impactBuild scenario.
- -m,--mergeBuild              Flag indicating to build only source code changes which will be 
-                              merged back to the mainBuildBranch. 
+ -f,--fullBuild                     Flag indicating to build all programs for
+                                    the application
+ -i,--impactBuild                   Flag indicating to build only programs impacted
+                                    by changed files since last successful build.
+ -b,--baselineRef                   Comma seperated list of git references to overwrite
+                                    the baselineHash hash in an impactBuild scenario.
+ -m,--mergeBuild                    Flag indicating to build only source code changes which will be
+                                    merged back to the mainBuildBranch.
 
- -s,--scanOnly                Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
- -ss,--scanSource             Flag indicating to only scan source files for application without building anything
- -sl,--scanLoad               Flag indicating to only scan load modules for application without building anything
- -sa,--scanAll                Flag indicating to scan both source files and load modules for application without building anything
- 
- -r,--reset                   Deletes the application's dependency collections 
-                              and build result group from the DBB repository
- -v,--verbose                 Flag to turn on script trace
- -d,--debug                   Flag to build modules for debugging with
-                              IBM Debug for z/OS
- -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC 
-                              directory for user build
- -zTest,--runzTests           Specify if zUnit Tests should be run
+ -s,--scanOnly                      Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
+ -ss,--scanSource                   Flag indicating to only scan source files for application without building anything
+ -sl,--scanLoad                     Flag indicating to only scan load modules for application without building anything
+ -sa,--scanAll                      Flag indicating to scan both source files and load modules for application without building anything
+ -pv,--preview                      Supplemental flag indicating to run build in preview mode without processing the execute commands
 
- -p,--propFiles               Comma separated list of additional property files 
-                              to load. Absolute paths or relative to workspace
- -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties                             
+ -cb,--applicationCurrentBranch     Application's current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.
 
- -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
- -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
- -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
- -cco,--cccOptions            Headless Code Coverage Collector Options
 
- -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
- 
+ -r,--reset                         Deletes the application's dependency collections
+                                    and build result group from the DBB repository
+ -v,--verbose                       Flag to turn on script trace
+ -d,--debug                         Flag to build modules for debugging with
+                                    IBM Debug for z/OS
+ -l,--logEncoding <arg>             Encoding of output logs. Default is EBCDIC
+                                    directory for user build
+ -zTest,--runzTests                 Specify if zUnit Tests should be run
+
+ -p,--propFiles                     Comma separated list of additional property files
+                                    to load. Absolute paths or relative to workspace
+ -po,--propOverwrites               Comma separated list of key=value pairs for set and overwrite build properties
+
+ -cc,--ccczUnit                     Flag to indicate to collect code coverage reports during zUnit step
+ -cch,--cccHost                     Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
+ -ccp,--cccPort                     Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ -cco,--cccOptions                  Headless Code Coverage Collector Options
+
+ -re,--reportExternalImpacts        Flag to activate analysis and report of external impacted files within DBB collections
+ -cd,--checkDatasets                Flag to enable validation of the defined system dataset definitions.
 
 Db2 MetadataStore configuration options
- -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
-                              Example: jdbc:db2:<Db2 server location>
- -id,--id <arg>               Db2 user id for the MetadataStore
- -pw,--pw <arg>               Db2 password (encrypted with DBB Password Utility) for the MetadataStore
- -pf,--pwFile <arg>           Absolute or relative (from workspace) path to file containing Db2 password
+ -url,--url <arg>                   Db2 JDBC URL for the MetadataStore.
+                                    Example: jdbc:db2:<Db2 server location>
+ -id,--id <arg>                     Db2 user id for the MetadataStore
+ -pw,--pw <arg>                     Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+ -pf,--pwFile <arg>                 Absolute or relative (from workspace) path to file containing Db2 password
 
 IDz/ZOD User Build options
- -u,--userBuild               Flag indicating running a user build
- -dz,--debugzUnitTestcase     Flag indicating to start a debug session for zUnit Test configurations as part of user build  
- -e,--errPrefix <arg>         Unique id used for IDz error message datasets
- -df,--dependencyFile <arg>   Absolute or relative path (from workspace) to user build JSON file containing dependency information.
+ -u,--userBuild                     Flag indicating running a user build
+ -dz,--debugzUnitTestcase           Flag indicating to start a debug session for zUnit Test configurations as part of user build
+ -e,--errPrefix <arg>               Unique id used for IDz error message datasets
+ -df,--dependencyFile <arg>         Absolute or relative path (from workspace) to user build JSON file containing dependency information.
 
 utility options
- -help,--help                 Prints this message
+ -help,--help                       Prints this message
 ```
- 
+
 ## Invocation Samples including console log
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Build a Single Program](#build-a-single-program)
-- [Build a List of Programs](#build-a-list-of-programs)
-- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-- [Perform Impact Build](#perform-impact-build)
-- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform a Merge build](#perform-a-merge-build)
-- [Perform a Scan Source build](#perform-a-scan-source-build)
-- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
+  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
+  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
+  - [Command Line Options Summary](#command-line-options-summary)
+  - [Invocation Samples including console log](#invocation-samples-including-console-log)
+    - [Build a Single Program](#build-a-single-program)
+    - [Build a List of Programs](#build-a-list-of-programs)
+    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+    - [Perform Impact Build](#perform-impact-build)
+    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+    - [Perform a Merge build](#perform-a-merge-build)
+    - [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
+    - [Perform a Scan Source build](#perform-a-scan-source-build)
+    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+    - [Validate System Datasets](#validate-system-datasets)
 
 <!-- /TOC -->
-### Build a Single Program 
+### Build a Single Program
 
-Build a single program in the application. 
+Build a single program in the application.
 
-By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.  
+By leveraging `--userBuild` zAppBuild does not intialize the MetadataStore and also does not store a build result.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq USER.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --userBuild --verbose MortgageApplication/cobol/epsnbrvl.cbl
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq USER.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --userBuild \
+                      --verbose \
+                      MortgageApplication/cobol/epsnbrvl.cbl
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 
 ** Build start at 20210622.080042.000
@@ -281,7 +300,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -334,12 +353,19 @@ MortgageApplication/cobol/epscmort.cbl
 ```
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --verbose \
+                      /var/dbb/MortgageApplication/myBuildList.txt
 
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210622.081915.019
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --verbose /var/dbb/MortgageApplication/myBuildList.txt
@@ -353,7 +379,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -425,12 +451,19 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 
 </details>
 
-### Perform Full Build to build all files 
+### Perform Full Build to build all files
 
 The zAppBuild build option `--fullBuild` builds all files within the build scope which have a build script mapping defined in file.properties
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --verbose
 
 ```
 
@@ -450,7 +483,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -657,14 +690,21 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 </details>
 
-### Perform Impact Build 
+### Perform Impact Build
 
 `--impactBuild` builds only programs impacted by source files that have changed since the last successful build.
 
 This build scenario identifies the changed files based on diffing the git baseline hash and the current hash; then the list of changed files is passed into the impact analysis phase, which will detect the impacted files based on the `impactResolutionRules` which are defined in application.properties.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose
 
 ```
 <details>
@@ -683,7 +723,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -808,7 +848,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 </details>
 
-### Perform Impact Build for topic branches 
+### Perform Impact Build for topic branches
 
 zAppBuild is able to detect when building a topic branch for the first time. It will automatically clone the dependency data collections from the main build branch (see `mainBuildBranch` build property in application.properties) in order to avoid having to rescan the entire application.
 
@@ -816,12 +856,19 @@ It also leverages the last successful build result from the buildgroup of the `m
 
 The invocation is similar to other impact builds (you might want to consider a dedicated set of build libraries):
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.FEAT --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.FEAT \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose
 ```
 Please see the output provided in verbose mode when setting up the collections as well as the calculation of changed files:
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210622.085830.058
 ** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.FEAT --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose
@@ -835,7 +882,7 @@ Please see the output provided in verbose mode when setting up the collections a
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -915,7 +962,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 ** Build State : ERROR
 ** Total files processed : 2
 ** Total build time  : 44.702 seconds
-``` 
+```
 
 </details>
 
@@ -932,18 +979,26 @@ The syntax for `--baselineRef` is a comma-seperated list of mappings for each ap
 --baselineRef <application source dir>:<gitReference>,<application source dir>:<gitReference>,...
 ```
 
-Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`. 
+Alternatively, for the main application directory reference, it is sufficient to specify `--baselineRef <gitReference>`.
 
 `gitReference` can either be a git commit hash or a git tag in the history.
 
 Another scenario of this build setup is to run the build with the DBB reportOnly option to build a cumulative deployment package without rebuilding the binaries.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.REL --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8 --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.REL \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8 \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
-  
+
 ```
 ** Build start at 20210830.095350.053
 ** Input args = /var/dbb/dbb-zappbuild/samples --workDir /var/dbb/out/MortgageApplication --hlq DBB.ZAPP.REL --application MortgageApplication --verbose --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/jenkins/zappbuild_config/zappbuild.jenkins.properties --impactBuild --baselineRef 6db56f7eecb420b56b69ca0ab7fcc2f1d9a7e5a8
@@ -959,7 +1014,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1074,7 +1129,7 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Build State : CLEAN
 ** Total files processed : 3
 ** Total build time  : 8.546 seconds
-``` 
+```
 
 </details>
 
@@ -1083,14 +1138,21 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 
 `--mergeBuild` calculate the changes of a topic branch flowing back into the `mainBuildBranch` reference. This build type does not perform calculation of impacted files.
 
-The scenario is targeting for builds on topic branches. The scope of the build is focussing on the outgoing changes. It is not incremental. Any time you invoke this build, it will the changes which will be merged to the target reference. 
+The scenario is targeting for builds on topic branches. The scope of the build is focussing on the outgoing changes. It is not incremental. Any time you invoke this build, it will the changes which will be merged to the target reference.
 
-It leverages the git triple-dot diff syntax to identify the changes, similar to what can be seen in a pull/merge request.      
+It leverages the git triple-dot diff syntax to identify the changes, similar to what can be seen in a pull/merge request.
 
-In the below case both `MortgageApplication/cobol/epsmlist.cbl` and `MortgageApplication/copybook/epsnbrpm.cpy` are changed, but only the `epsmlist.cbl` is built because it is mapped to a build script.  
+In the below case both `MortgageApplication/cobol/epsmlist.cbl` and `MortgageApplication/copybook/epsnbrpm.cpy` are changed, but only the `epsmlist.cbl` is built because it is mapped to a build script.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --mergeBuild --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --mergeBuild \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1112,7 +1174,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1200,6 +1262,363 @@ Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
 
 </details>
 
+### Perform a Build in Preview Mode
+
+`--preview` is a supplemental option to the various build types of zAppBuild. This supplemental option will let the build process run through all the build phases of the specified build option, but instead of executing the build commands such as copying the source files to the datasets or invoking the compile and link commands, it just documents what would be done and sets the return codes of these commands to 0. Please note, that file are scanned and, depending on the primary build option, dependency information is stored in the DBB Metadatastore.
+
+For instance, use the `--preview` flag with the `--impactBuild` option to obtain a preview of the impact build actions such as identified changed files, the calculated impacted files, the build list, the build flow, the applied build properties and option including the outputs which would be produced.
+
+Use the `--preview` flag with the `--fullBuild` option to produce the full bill of material (documented in a build report) for the artifacts that could be generated in the datasets pointed by the `hlq` parameter.
+
+The build will generate a build report, which, depending of the provided build option, will be stored in the build group. However, the build result status is set to `4` and does not impact the calculation of changed file of subsequent impact builds.
+
+The below sample build log is documenting an `--impactBuild --preview` with the reporting capablities activated to what the build would do and any potential conflicts of concurrent development activities.
+
+```
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --preview \
+                      --verbose
+```
+<details>
+  <summary>Build log</summary>
+
+```
++ /usr/lpp/dbb/v2r0/bin/groovyz /var/dbb/dbb-zappbuild/build.groovy --sourceDir /var/dbb/dbb-zappbuild/samples --workDir /var/dbb/work/mortgageout --url jdbc:db2://10.3.20.201:4740/MOPDBC0 --id DB2ID --pwFile /var/dbb/config/db2-pwd-file.xml --hlq DBEHM.DBB.BUILD --application MortgageApplication --verbose --impactBuild --preview --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties
+
+** Build start at 20230425.040722.007
+** Input args = /var/dbb/dbb-zappbuild/samples --workDir /var/dbb/work/mortgageout --url jdbc:db2://10.3.20.201:4740/MOPDBC0 --id DB2ID --pwFile /var/dbb/config/db2-pwd-file.xml --hlq DBEHM.DBB.BUILD --application MortgageApplication --verbose --impactBuild --preview --propFiles /var/dbb/dbb-zappbuild-config/build.properties,/var/dbb/dbb-zappbuild-config/datasets.properties,/var/dbb/dbb-zappbuild-config/dbehm.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/datasets.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/dependencyReport.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/Assembler.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/MFS.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/PSBgen.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/DBDgen.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/ACBgen.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/Transfer.properties
+** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/LinkEdit.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/languageConfigurationMapping.properties
+java.version=8.0.7.20 - pmz6480sr7fp20-20221020_01(SR7 FP20)
+java.home=/V2R4/usr/lpp/java/J8.0_64
+user.dir=/u/builduser
+** Build properties at start up:
+...
+preview=true
+...
+** zAppBuild running on DBB Toolkit Version 2.0.0 20-Mar-2023 10:36:28
+required props = buildOrder,buildListFileExt
+** Running in reportOnly mode. Will process build options but not execute any steps.
+** Db2 MetadataStore initialized
+** Build output located at /var/dbb/work/mortgageout/build.20230425.160722.007
+** Build result created for BuildGroup:MortgageApplication-350_preview_builds BuildLabel:build.20230425.160722.007
+** --preview cli option provided. Processing all phases of the supplied build option, but will not execute the commands.
+** --impactBuild option selected. Building impacted programs for application MortgageApplication
+** Getting current hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Storing MortgageApplication : 2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
+** Getting baseline hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Storing MortgageApplication : cf6bc732bd717b404c5cf71a8f8d14458138a2d0
+** Calculating changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Diffing baseline cf6bc732bd717b404c5cf71a8f8d14458138a2d0 -> current 2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
+*** Changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication :
+**** MortgageApplication/jcl/MYSAMP.jcl
+**** MortgageApplication/copybook/epsmtcom.cpy
+*** Deleted files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication :
+*** Renamed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication :
+** Updating collections MortgageApplication-350_preview_builds and MortgageApplication-350_preview_builds-outputs
+*** Sorted list of changed files: [MortgageApplication/jcl/MYSAMP.jcl, MortgageApplication/copybook/epsmtcom.cpy]
+*** Scanning file MortgageApplication/jcl/MYSAMP.jcl (/var/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/MYSAMP.jcl)
+*** Scanning file with the default scanner
+*** Logical file for MortgageApplication/copybook/MYSAMP.jcl =
+{
+   "cics": false,
+   "dli": false,
+   "file": "MortgageApplication\/jcl\/MYSAMP.jcl",
+   "language": "JCL",
+   "lname": "MYSAMP",
+   "logicalDependencies": [
+      {
+         "category": "COPY",
+         "library": "SYSLIB",
+         "lname": "EPSMTINP"
+      },
+      {
+         "category": "COPY",
+         "library": "SYSLIB",
+         "lname": "EPSMTOUT"
+      }
+   ],
+   "mq": false,
+   "sql": false
+}
+*** Scanning file MortgageApplication/copybook/epsmtcom.cpy (/var/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtcom.cpy)
+*** Scanning file with the default scanner
+*** Logical file for MortgageApplication/copybook/epsmtcom.cpy =
+{
+   "cics": false,
+   "dli": false,
+   "file": "MortgageApplication\/copybook\/epsmtcom.cpy",
+   "language": "COB",
+   "lname": "EPSMTCOM",
+   "logicalDependencies": [
+      {
+         "category": "COPY",
+         "library": "SYSLIB",
+         "lname": "EPSMTINP"
+      },
+      {
+         "category": "COPY",
+         "library": "SYSLIB",
+         "lname": "EPSMTOUT"
+      }
+   ],
+   "mq": false,
+   "sql": false
+}
+** Storing 2 logical files in MetadataStore collection 'MortgageApplication-350_preview_builds'
+*** Perform impacted analysis for changed files.
+** Found build script mapping for MortgageApplication/jcl/MYSAMP.jcl. Adding to build list
+** Performing impact analysis on changed file MortgageApplication/jcl/MYSAMP.jcl
+*** Creating SearchPathImpactFinder with collections [MortgageApplication-350_preview_builds, MortgageApplication-350_preview_builds-outputs] and impactSearch configuration search:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/copybook/*.cpysearch:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/bms/*.bmssearch:[:LINK]/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/cobol/*.cbl
+** Performing impact analysis on changed file MortgageApplication/copybook/epsmtcom.cpy
+*** Creating SearchPathImpactFinder with collections [MortgageApplication-350_preview_builds, MortgageApplication-350_preview_builds-outputs] and impactSearch configuration search:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/copybook/*.cpysearch:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/bms/*.bmssearch:[:LINK]/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/cobol/*.cbl
+** Found impacted file MortgageApplication/cobol/epscmort.cbl
+** MortgageApplication/cobol/epscmort.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscsmrt.cbl
+** MortgageApplication/cobol/epscsmrt.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epsmlist.cbl
+** MortgageApplication/cobol/epsmlist.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscsmrt.cbl
+** MortgageApplication/cobol/epscsmrt.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/cobol/epscmort.cbl
+** MortgageApplication/cobol/epscmort.cbl is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Found impacted file MortgageApplication/link/epsmlist.lnk
+** MortgageApplication/link/epsmlist.lnk is impacted by changed file MortgageApplication/copybook/epsmtcom.cpy. Adding to build list.
+** Calculation of impacted files by changed properties has been skipped due to configuration.
+** Writing build list file to /var/dbb/work/mortgageout/build.20230425.160722.007/buildList.txt
+MortgageApplication/cobol/epsmlist.cbl
+MortgageApplication/cobol/epscsmrt.cbl
+MortgageApplication/cobol/epscmort.cbl
+MortgageApplication/link/epsmlist.lnk
+MortgageApplication/jcl/MYSAMP.jcl
+** Populating file level properties from individual artifact properties files.
+* Populating file level properties overrides.
+** Checking file property overrides for MortgageApplication/cobol/epsmlist.cbl
+*** MortgageApplication/cobol/epsmlist.cbl has an individual artifact properties file defined in properties/epsmlist.cbl.properties
+    Found file property cobol_compileParms = ${cobol_compileParms},SOURCE
+*** Checking for existing file property overrides
+    Checking build property cobol_compileParms
+    Adding file property override cobol_compileParms = ${cobol_compileParms},SOURCE for MortgageApplication/cobol/epsmlist.cbl
+** Checking file property overrides for MortgageApplication/cobol/epscsmrt.cbl
+*** Checking for existing file property overrides
+** Checking file property overrides for MortgageApplication/cobol/epscmort.cbl
+*** Checking for existing file property overrides
+** Checking file property overrides for MortgageApplication/link/epsmlist.lnk
+*** Checking for existing file property overrides
+** Checking file property overrides for MortgageApplication/jcl/MYSAMP.jcl
+*** Checking for existing file property overrides
+** Perform analysis and reporting of external impacted files for the build list including changed files.
+*** Running external impact analysis with file filter **/* and collection patterns .*-main.* with analysis mode deep
+*** Running external impact analysis for files
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/link/epsmlist.lnk
+     MortgageApplication/jcl/MYSAMP.jcl
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/copybook/epsmtcom.cpy
+*** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-outputs.log
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-outputs
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-outputs
+*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-outputs
+*** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-patch.log
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main-patch
+*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main-patch
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main-patch
+*** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main.log
+*** Potential external impact found EPSCSMRT (MortgageApplication/cobol/epscsmrt.cbl) in collection MortgageApplication-main
+*** Potential external impact found EPSMLIST (MortgageApplication/cobol/epsmlist.cbl) in collection MortgageApplication-main
+*** Potential external impact found EPSCMORT (MortgageApplication/cobol/epscmort.cbl) in collection MortgageApplication-main
+*** Writing report of external impacts to file /var/dbb/work/mortgageout/build.20230425.160722.007/externalImpacts_MortgageApplication-main-patch-outputs.log
+*** Potential external impact found EPSMLIST (MortgageApplication/link/epsmlist.lnk) in collection MortgageApplication-main-patch-outputs
+**** Running external impact analysis for identified external impacted files as dependent files of the initial set.
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/link/epsmlist.lnk
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/cobol/epscsmrt.cbl
+     MortgageApplication/cobol/epsmlist.cbl
+     MortgageApplication/cobol/epscmort.cbl
+     MortgageApplication/link/epsmlist.lnk
+** Calculate and document concurrent changes.
+***  Analysing and validating changes for branch : main
+** Getting current hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Storing MortgageApplication : 2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
+** Calculating changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+*** Changed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication in configuration main:
+**** MortgageApplication/cobol/epscmort.cbl
+*** Deleted files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication in configuration main:
+*** Renamed files for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication in configuration main:
+** Writing report of concurrent changes to /var/dbb/work/mortgageout/build.20230425.160722.007/report_concurrentChanges.txt for configuration main
+ Changed: MortgageApplication/cobol/epscmort.cbl
+*!! MortgageApplication/cobol/epscmort.cbl is changed on branch main and intersects with the current build list.
+** Invoking build scripts according to build order: BMS.groovy,Cobol.groovy,LinkEdit.groovy,Transfer.groovy
+** Building files mapped to Cobol.groovy script
+required props = cobol_srcPDS,cobol_cpyPDS,cobol_objPDS,cobol_loadPDS,cobol_compiler,cobol_linkEditor,cobol_tempOptions,applicationOutputsCollectionName,SDFHCOB,SDFHLOAD,SDSNLOAD,SCEELKED,   cobol_dependencySearch
+** Creating / verifying build dataset DBEHM.DBB.BUILD.COBOL
+** Creating / verifying build dataset DBEHM.DBB.BUILD.COPY
+** Creating / verifying build dataset DBEHM.DBB.BUILD.OBJ
+** Creating / verifying build dataset DBEHM.DBB.BUILD.DBRM
+** Creating / verifying build dataset DBEHM.DBB.BUILD.LOAD
+*** Building file MortgageApplication/cobol/epsmlist.cbl
+*** Resolution rules for MortgageApplication/cobol/epsmlist.cbl:
+search:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/copybook/*.cpy
+*** Physical dependencies for MortgageApplication/cobol/epsmlist.cbl:
+{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"lname":"EPSMLIS","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMORTF","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmortf.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSNBRPM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsnbrpm.cpy","category":"COPY","resolved":true}
+Program attributes: CICS=true, SQL=false, DLI=false, MQ=false
+Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,SOURCE,CICS
+Link-Edit parms for MortgageApplication/cobol/epsmlist.cbl = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
+*** Building file MortgageApplication/cobol/epscsmrt.cbl
+*** Resolution rules for MortgageApplication/cobol/epscsmrt.cbl:
+search:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/copybook/*.cpy
+*** Physical dependencies for MortgageApplication/cobol/epscsmrt.cbl:
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSPDATA","library":"SYSLIB","file":"MortgageApplication\/copybook\/epspdata.cpy","category":"COPY","resolved":true}
+Program attributes: CICS=true*, SQL=false, DLI=false, MQ=false
+Cobol compiler parms for MortgageApplication/cobol/epscsmrt.cbl = LIB,CICS
+Link-Edit parms for MortgageApplication/cobol/epscsmrt.cbl = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
+*** Scanning load module for MortgageApplication/cobol/epscsmrt.cbl
+*** Logical file =
+{
+   "cics": false,
+   "dli": false,
+   "file": "MortgageApplication\/cobol\/epscsmrt.cbl",
+   "language": "ZBND",
+   "lname": "EPSCSMRT",
+   "logicalDependencies": [
+      {
+         "category": "LINK",
+         "library": "DBEHM.DBB.BUILD.OBJ",
+         "lname": "EPSCSMRT"
+      }
+   ],
+   "mq": false,
+   "sql": false
+}
+*** Building file MortgageApplication/cobol/epscmort.cbl
+*** Resolution rules for MortgageApplication/cobol/epscmort.cbl:
+search:/var/dbb/dbb-zappbuild/samples/?path=MortgageApplication/copybook/*.cpy
+*** Physical dependencies for MortgageApplication/cobol/epscmort.cbl:
+{"excluded":false,"lname":"DFHAID","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"lname":"EPSMORT","library":"SYSLIB","category":"COPY","resolved":false}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTCOM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtcom.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTINP","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtinp.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSMTOUT","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsmtout.cpy","category":"COPY","resolved":true}
+{"excluded":false,"sourceDir":"\/u\/dbehm\/test-zapp\/dbb-zappbuild\/samples\/","lname":"EPSNBRPM","library":"SYSLIB","file":"MortgageApplication\/copybook\/epsnbrpm.cpy","category":"COPY","resolved":true}
+{"excluded":false,"lname":"SQLCA","library":"SYSLIB","category":"SQL INCLUDE","resolved":false}
+Program attributes: CICS=true, SQL=true, DLI=false, MQ=false
+Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
+Link-Edit parms for MortgageApplication/cobol/epscmort.cbl = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
+*** Scanning load module for MortgageApplication/cobol/epscmort.cbl
+*** Logical file =
+{
+   "cics": false,
+   "dli": false,
+   "file": "MortgageApplication\/cobol\/epscmort.cbl",
+   "language": "ZBND",
+   "lname": "EPSCMORT",
+   "logicalDependencies": [
+      {
+         "category": "LINK",
+         "library": "DBEHM.DBB.BUILD.OBJ",
+         "lname": "EPSCMORT"
+      },
+      {
+         "category": "LINK",
+         "library": "DBEHM.DBB.BUILD.OBJ",
+         "lname": "EPSNBRVL"
+      }
+   ],
+   "mq": false,
+   "sql": false
+}
+** Building files mapped to LinkEdit.groovy script
+required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkEditor,linkedit_tempOptions,applicationOutputsCollectionName,  SDFHLOAD,SCEELKED
+** Creating / verifying build dataset DBEHM.DBB.BUILD.LINK
+** Creating / verifying build dataset DBEHM.DBB.BUILD.OBJ
+** Creating / verifying build dataset DBEHM.DBB.BUILD.LOAD
+*** Building file MortgageApplication/link/epsmlist.lnk
+Link-Edit parms for MortgageApplication/link/epsmlist.lnk = MAP,RENT,COMPAT(PM5),SSI=2b3add1e
+*** Scanning load module for MortgageApplication/link/epsmlist.lnk
+*** Logical file =
+{
+   "cics": false,
+   "dli": false,
+   "file": "MortgageApplication\/link\/epsmlist.lnk",
+   "language": "ZBND",
+   "lname": "EPSMLIST",
+   "logicalDependencies": [
+      {
+         "category": "LINK",
+         "library": "DBEHM.DBB.BUILD.LOAD",
+         "lname": "EPSMPMT"
+      },
+      {
+         "category": "LINK",
+         "library": "DBEHM.DBB.BUILD.OBJ",
+         "lname": "EPSMLIST"
+      }
+   ],
+   "mq": false,
+   "sql": false
+}
+** Building files mapped to Transfer.groovy script
+required props = transfer_srcPDS,transfer_dsOptions,  transfer_deployType
+*** Transferring file MortgageApplication/jcl/MYSAMP.jcl
+** Creating / verifying build dataset DBEHM.DBB.BUILD.JCL
+** Copied MortgageApplication/jcl/MYSAMP.jcl to DBEHM.DBB.BUILD.JCL with deployType JCL (rc = 0)
+*** Obtaining hash for directory /var/dbb/dbb-zappbuild/samples/MortgageApplication
+** Setting property :githash:MortgageApplication : 2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
+** Setting property :giturl:MortgageApplication : https://github.com/dennis-behm/dbb-zappbuild.git
+** Setting property :gitchangedfiles:MortgageApplication : https://github.com/ibm/dbb-zappbuild/compare/cf6bc732bd717b404c5cf71a8f8d14458138a2d0..2b3add1e85a8124ff1d7af6ab1de2e5463325d7a
+** Writing build report data to /var/dbb/work/mortgageout/build.20230425.160722.007/BuildReport.json
+** Writing build report to /var/dbb/work/mortgageout/build.20230425.160722.007/BuildReport.html
+** Updating build result BuildGroup:MortgageApplication-350_preview_builds BuildLabel:build.20230425.160722.007
+** Build ended at Tue Apr 25 16:07:34 GMT+01:00 2023
+** Build State : CLEAN
+** Build ran in preview mode.
+** Total files processed : 5
+** Total build time  : 12.204 seconds
+
+** Build finished
+```
+
+
+</details>
+
 ### Perform a Scan Source build
 
 `--fullBuild --scanSource` skips the actual building and only scan source files to store dependency data in the collection (migration scenario). Please be aware that it scans all programs including the copybooks, which is required to perform proper impact analysis.
@@ -1207,7 +1626,15 @@ Cobol compiler parms for MortgageApplication/cobol/epsmlist.cbl = LIB,CICS
 This build type also stores a build result to build a baseline for following impact builds.
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanSource --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --scanSource \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1225,7 +1652,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1336,14 +1763,22 @@ HTTP/1.1 200 OK
 
 </details>
 
-### Perform a Scan Source + Outputs build 
+### Perform a Scan Source + Outputs build
 
 `--fullBuild --scanAll` skips the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios). This build type also stores a build result to build a baseline for following impact builds.
 
 Please see also the [TechDoc for Advanced Build and Migration recipes](https://www.ibm.com/support/pages/node/6427617)
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --fullBuild --scanAll --verbose
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --fullBuild \
+                      --scanAll \
+                      --verbose
 ```
 <details>
   <summary>Build log</summary>
@@ -1361,7 +1796,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1514,7 +1949,15 @@ To dynamically overwrite any build property, you can make use of the `--propOver
 
 
 ```
-groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose \
+                      --propOverwrite mainBuildBranch=develop
 ```
 <details>
   <summary>Build log</summary>
@@ -1532,7 +1975,7 @@ groovyz dbb-zappbuild/build.groovy --workspace /var/dbb/dbb-zappbuild/samples --
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1657,3 +2100,77 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ```
 
 </details>
+
+
+### Validate System Datasets
+
+During the initialization phase of the build, a validation of the defined system datasets can be performed. The system datasets are configured with the build property `systemDatasets` in [build-conf/build.properties](../build-conf/build.properties), which contains one or multiple references to build property files defining key-value pairs listing the system datasets. In zAppBuild the default file is called [datasets.properties](../build-conf/datasets.properties) managed in the `build-conf` folder.
+
+To enable validation of system datasets specify the option `--checkDatasets`. It is available in any build scenario. Be aware that this functionality is also available as a stand-alone script and find the instructions [here](../utilities/README.md#dataset-validation-utilities)
+
+```
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose \
+                      --checkDatasets
+```
+<details>
+  <summary>Build log</summary>
+
+```
+** Build start at 20210622.082942.029
+** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Assembler.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/BMS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/MFS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PSBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/DBDgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ACBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
+** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/LinkEdit.properties
+** Overwriting build property mainBuildBranch from cli argument --propOverwrite with value develop
+** The dataset PLI.V5R2.SIBMZCMP referenced for property IBMZPLI_V52 was found.
+*! No dataset defined for property IBMZPLI_V51 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset WMQ.V9R2M4.SCSQPLIC referenced for property SCSQPLIC was found.
+** The dataset COBOL.V6R1.SIGYCOMP referenced for property SIGYCOMP_V6 was found.
+** The dataset CICSTS.V5R4.CICS.SDFHCOB referenced for property SDFHCOB was found.
+*! No dataset defined for property SIGYCOMP_V4 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset HLASM.SASMMOD1 referenced for property SASMMOD1 was found.
+** The dataset SYS1.MACLIB referenced for property MACLIB was found.
+** The dataset PDTCC.V1R8.SIPVMODA referenced for property PDTCCMOD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHLOAD referenced for property SDFHLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHMAC referenced for property SDFHMAC was found.
+** The dataset CEE.SCEEMAC referenced for property SCEEMAC was found.
+** The dataset WMQ.V9R2M4.SCSQCOBC referenced for property SCSQCOBC was found.
+** The dataset IMS.V15R1.SDFSMAC referenced for property SDFSMAC was found.
+** The dataset RDZ.V14R1.SFELLOAD referenced for property SFELLOAD was found.
+** The dataset DBC0CFG.DB2.V12.SDSNLOAD referenced for property SDSNLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHPL1 referenced for property SDFHPL1 was found.
+** The dataset WMQ.V9R2M4.SCSQLOAD referenced for property SCSQLOAD was found.
+** The dataset IMSCFG.IMSC.REFERAL referenced for property REFERAL was found.
+** The dataset DEBUG.V14R1.SEQAMOD referenced for property SEQAMOD was found.
+** The dataset DBC0CFG.SDSNEXIT referenced for property SDSNEXIT was found.
+** The dataset IMS.V15R1.SDFSRESL referenced for property SDFSRESL was found.
+** The dataset DEBUG.V16.SEQASAMP referenced for property SEQASAMP was found.
+** The dataset CEE.SCEELKED referenced for property SCEELKED was found.
+..... // lists of all build properties
+...
+...
+```
+
+</details>
+
+

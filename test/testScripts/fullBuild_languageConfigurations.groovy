@@ -2,10 +2,13 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script fullBuild_languageConfigurations.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -20,9 +23,10 @@ fullBuildCommand << "--application ${props.app}"
 fullBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 fullBuildCommand << "--hlq ${props.hlq}"
 fullBuildCommand << "--logEncoding UTF-8"
-fullBuildCommand << "--url ${props.url}"
-fullBuildCommand << "--id ${props.id}"
-fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+fullBuildCommand << (props.url ? "--url ${props.url}" : "")
+fullBuildCommand << (props.id ? "--id ${props.id}" : "")
+fullBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+fullBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 fullBuildCommand << (props.verbose ? "--verbose" : "")
 fullBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 fullBuildCommand << "--fullBuild"
@@ -36,9 +40,10 @@ userBuildCommand << "--application ${props.app}"
 userBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 userBuildCommand << "--hlq ${props.hlq}"
 userBuildCommand << "--logEncoding UTF-8"
-userBuildCommand << "--url ${props.url}"
-userBuildCommand << "--id ${props.id}"
-userBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+userBuildCommand << (props.url ? "--url ${props.url}" : "")
+userBuildCommand << (props.id ? "--id ${props.id}" : "")
+userBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+userBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 userBuildCommand << (props.verbose ? "--verbose" : "")
 userBuildCommand << (props.propFiles ? "--propFiles ${props.propFiles}" : "")
 userBuildCommand << "--userBuild ${props.userBuild_languageConfigurations_buildFile}"
@@ -157,10 +162,8 @@ catch(AssertionError e) {
 	props.testsSucceeded = 'false'
 }
 finally {
-	cleanUpDatasets()
-	// reset language configuration changes
-	resetLanguageConfigurationChanges()
-	
+
+	// report failures
 	if (assertionList.size()>0) {
 		println "\n***"
 	println "**START OF FAILED TEST CASE for Language Configuration Overrides TEST RESULTS**\n"
@@ -168,6 +171,10 @@ finally {
 	println "\n**END OF FAILED TEST CASE for Language Configurations **"
 	println "***"
   }
+  
+  testUtils.cleanUpDatasets(props.fullBuild_languageConfigurations_datasetsToCleanUp)
+  // reset language configuration changes
+  resetLanguageConfigurationChanges()
 	
 }
 
@@ -214,15 +221,3 @@ def resetLanguageConfigurationChanges() {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def cleanUpDatasets() {
-	def segments = props.fullBuild_languageConfigurations_datasetsToCleanUp.split(',')
-	
-	println "Deleting full build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
-}

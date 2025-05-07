@@ -19,6 +19,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build.
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build
+addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds
 jobCard | JOBCARD for JCL execs
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions.
@@ -30,7 +31,7 @@ Location of file properties, script mappings and file level property overrides. 
 Property | Description 
 --- | --- 
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
-dbb.scannerMapping | DBB scanner mapping to overwrite the file scanner. File property
+dbb.scannerMapping | zAppBuild configuration to map files extensions to DBB dependency scanner configurations
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
 
 ### BMS.properties
@@ -74,6 +75,13 @@ cobol_deployTypeDLI | deployType for build output for build files with isDLI=tru
 cobol_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 cobol_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 cobol_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### CRB.properties
+Application properties used by zAppBuild/language/CRB.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+crb_maxRC | CICS Resource Builder maximum acceptable return code (default is 4 if not specified) | true
 
 ### LinkEdit.properties
 Application properties used by zAppBuild/language/LinkEdit.groovy

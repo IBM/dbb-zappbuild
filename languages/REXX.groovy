@@ -11,7 +11,7 @@ import groovy.transform.*
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 
 
-println("** Building files mapped to ${this.class.getName()}.groovy script")
+println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
 buildUtils.assertBuildProperties(props.rexx_requiredBuildProperties)
@@ -21,11 +21,12 @@ def langQualifier = "rexx"
 buildUtils.createLanguageDatasets(langQualifier)
 
 // sort the build list based on build file rank if provided
-List<String> sortedList = buildUtils.sortBuildList(argMap.buildList, 'rexx_fileBuildRank')
+List<String> sortedList = buildUtils.sortBuildList(argMap.buildList.sort(), 'rexx_fileBuildRank')
+int currentBuildFileNumber = 1
 
 // iterate through build list
 sortedList.each { buildFile ->
-	println "*** Building file $buildFile"
+	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	
 	// configure dependency resolution and create logical file	
@@ -85,7 +86,7 @@ sortedList.each { buildFile ->
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('rexx_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.rexx_loadPDS, logicalFile)
 				}
 			}
 		}
@@ -123,7 +124,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	String linkEditStream = props.getFileProperty('rexx_linkEditStream', buildFile)
 	String linkDebugExit = props.getFileProperty('rexx_linkDebugExit', buildFile)
 
-	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSPUNCH").dsn("${props.rexx_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 	String deployType = buildUtils.getDeployType("rexx_cexec", buildFile, null)
 	compile.dd(new DDStatement().name("SYSCEXEC").dsn("${props.rexx_cexecPDS}($member)").options('shr').output(true).deployType(deployType))
 	

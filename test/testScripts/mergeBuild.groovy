@@ -3,10 +3,13 @@
 import groovy.transform.*
 import com.ibm.dbb.*
 import com.ibm.dbb.build.*
-import com.ibm.jzos.ZFile
 
 @Field BuildProperties props = BuildProperties.getInstance()
-println "\n** Executing test script mergeBuild.groovy"
+@Field def testUtils = loadScript(new File("../utils/testUtilities.groovy"))
+
+println "\n**************************************************************"
+println "** Executing test script ${this.class.getName()}.groovy"
+println "**************************************************************"
 
 // Get the DBB_HOME location
 def dbbHome = EnvVars.getHome()
@@ -24,9 +27,10 @@ mergeBuildCommand << "--application ${props.app}"
 mergeBuildCommand << (props.outDir ? "--outDir ${props.outDir}" : "--outDir ${props.zAppBuildDir}/out")
 mergeBuildCommand << "--hlq ${props.hlq}"
 mergeBuildCommand << "--logEncoding UTF-8"
-mergeBuildCommand << "--url ${props.url}"
-mergeBuildCommand << "--id ${props.id}"
-mergeBuildCommand << (props.pw ? "--pw ${props.pw}" : "--pwFile ${props.pwFile}")
+mergeBuildCommand << (props.url ? "--url ${props.url}" : "")
+mergeBuildCommand << (props.id ? "--id ${props.id}" : "")
+mergeBuildCommand << (props.pw ? "--pw ${props.pw}" : "") 
+mergeBuildCommand << (props.pwFile ? "--pwFile ${props.pwFile}" : "")
 mergeBuildCommand << (props.verbose ? "--verbose" : "")
 mergeBuildCommand << (props.propFiles ? "--propFiles ${props.zAppBuildDir}/test/applications/${props.app}/${props.mergeBuild_buildPropSetting},${props.propFiles}" : "")
 mergeBuildCommand << "--mergeBuild"
@@ -35,13 +39,19 @@ mergeBuildCommand << "--mergeBuild"
 @Field def assertionList = []
 PropertyMappings filesBuiltMappings = new PropertyMappings('mergeBuild_expectedFilesBuilt')
 def changedFiles = props.mergeBuild_changedFiles.split(',')
-println("** Processing changed files from mergeBuild_changedFiles property : ${props.mergeBuild_changedFiles}")
 try {
+	
+	// Create full build command to set baseline
+	testUtils.runBaselineBuild()
+	
+	// test setup
+	println("** Processing changed files from mergeBuild_changedFiles property : ${props.mergeBuild_changedFiles}")
+		
 	changedFiles.each { changedFile ->
 		println "\n** Running merge build test for changed file $changedFile"
 		
 		// update changed file in Git repo test branch
-		copyAndCommit(changedFile)
+		testUtils.updateFileAndCommit(props.appLocation, changedFile)
 		
 		// run merge build
 		println "** Executing ${mergeBuildCommand.join(" ")}"
@@ -54,7 +64,7 @@ try {
 	}
 }
 finally {
-	cleanUpDatasets()
+	// report failures
 	if (assertionList.size()>0) {
         println "\n***"
 	println "**START OF FAILED MERGED BUILD TEST RESULTS**\n"
@@ -62,6 +72,9 @@ finally {
 	println "\n**END OF FAILED MERGED BUILD TEST RESULTS**"
 	println "***"
   }
+  // cleanup datasets
+  testUtils.cleanUpDatasets(props.mergeBuild_datasetsToCleanUp)
+  
 }
 // script end  
 
@@ -79,19 +92,6 @@ def writePropsFile() {
 		def outputStream = new StringBuffer();
 		task.waitForProcessOutput(outputStream, System.err)
 	
-}
-
-def copyAndCommit(String changedFile) {
-	println "** Copying and committing ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} to ${props.appLocation}/${changedFile}"
-	def commands = """
-    cp ${props.zAppBuildDir}/test/applications/${props.app}/${changedFile} ${props.appLocation}/${changedFile}
-    cd ${props.appLocation}/
-    git add .
-    git commit . -m "edited program file"
-"""
-	def task = ['bash', '-c', commands].execute()
-	def outputStream = new StringBuffer();
-	task.waitForProcessOutput(outputStream, System.err)
 }
 
 def validateMergeBuild(String changedFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
@@ -120,15 +120,4 @@ def validateMergeBuild(String changedFile, PropertyMappings filesBuiltMappings, 
 		props.testsSucceeded = 'false'
  }
 }
-def cleanUpDatasets() {
-	def segments = props.mergeBuild_datasetsToCleanUp.split(',')
-	
-	println "Deleting merge build PDSEs ${segments}"
-	segments.each { segment ->
-	    def pds = "'${props.hlq}.${segment}'"
-	    if (ZFile.dsExists(pds)) {
-	       if (props.verbose) println "** Deleting ${pds}"
-	       ZFile.remove("//$pds")
-	    }
-	}
-}
+
