@@ -48,8 +48,8 @@ def createFullBuildList() {
 
 	// create the list of build directories
 	List<String> srcDirs = []
-	if (props.applicationSrcDirs)
-	srcDirs.addAll(props.applicationSrcDirs.split(','))
+
+	if (props.applicationSrcDirs) srcDirs.addAll(props.applicationSrcDirs.split(','))
 
 	srcDirs.each{
 		dir ->
