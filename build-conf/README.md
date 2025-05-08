@@ -187,7 +187,9 @@ cpp_loadOptions | BPXWDYN creation options for creating 'load' type data sets
 cpp_tempOptions | BPXWDYN creation options for creating 'temporary' data sets
 cpp_outputDatasets |  List of output datasets to document deletions
 dbb.DependencyScanner.languageHint | C/CPP scanner language hint
-cpp_dependenciesDatasetMapping | cpp_dependenciesDatasetMapping - an optional dbb property mapping to map dependencies to different target datasets this property is used when dependencies are copied to the different build libraries
+cpp_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
+cpp_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
+
 
 
 ### LinkEdit.properties
