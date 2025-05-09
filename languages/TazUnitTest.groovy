@@ -31,7 +31,7 @@ int currentBuildFileNumber = 1
 	File logFile = new File("${props.buildOutDir}/${member}.tazunittest.jcl.log")
 	File reportLogFile = new File("${props.buildOutDir}/${member}.tazunittest.report.log")
 	File reportJunitFile = new File("${props.buildOutDir}/${member}.tazunittest.report.xml")
-	String xslFile = props.tazxlsconv
+	String xslFile = props.tazunittest_tazxlsconv
 
 
 	String dependencySearch = props.getFileProperty('tazunittest_dependencySearch', buildFile)
