@@ -453,7 +453,7 @@ Cobol compiler parms for MortgageApplication/cobol/epscmort.cbl = LIB,CICS,SQL
 
 ### Perform Full Build to build all files
 
-The zAppBuild build option `--fullBuild` builds all files within the build scope which have a build script mapping defined in file.properties
+The zAppBuild build option `--fullBuild` drops the existing collections and recreates them by building all files within the build scope which have a build script mapping defined in file.properties
 
 ```
 groovyz dbb-zappbuild/build.groovy \
@@ -510,7 +510,8 @@ MortgageApplication/copybook/epspdata.cpy
 MortgageApplication/cobol/epsmpmt.cbl
 MortgageApplication/cobol/epscmort.cbl
 MortgageApplication/cobol/epscsmrd.cbl
-** Scanning source code.
+** Deleting collection MortgageApplication-master
+** Deleting collection MortgageApplication-master-outputs
 ** Updating collections MortgageApplication-master and MortgageApplication-master-outputs
 *** Scanning file MortgageApplication/copybook/epsmtout.cpy (/var/dbb/dbb-zappbuild/samples/MortgageApplication/copybook/epsmtout.cpy)
 *** Scanning file with the default scanner
