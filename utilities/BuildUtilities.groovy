@@ -55,7 +55,7 @@ def createFullBuildList() {
 		dir ->
 		dir = getAbsolutePath(dir)
 
-		if ((new File(dir)).exists()) {
+		if (new File(dir).exists()) {
 				Set<String> fileSet = getFileSet(dir, true, '**/*.*', props.excludeFileList)
 				buildSet.addAll(fileSet)
 		} else {
