@@ -32,21 +32,11 @@ def getScanner(String buildFile){
 
 	def scanner = null
 
-	// check scannerMapping
+	// retrieve scanner from ScannerRegistry
 	scanner = DependencyScannerRegistry.getScanner(buildFile)
 
-	if (scanner){
-		if (scanner instanceof com.ibm.dbb.dependency.DependencyScanner) {
-			// Workaround - if no language hint exists the registry returned the default
-			//   Scanner, and the file is not mapped
-			if (((DependencyScanner) scanner).getLanguageHint() == null) {
-				if (props.verbose) println("*** $buildFile is not mapped to a DBB Dependency scanner.")
-				scanner = null
-			}
-		}
-	}
-	else {
-		if (props.verbose) println("*** No scanner specified for $buildFile")
+	if (!scanner){
+		println("*! [WARNING]* No scanner specified for $buildFile")
 	}
 
 	return scanner
@@ -64,6 +54,9 @@ def getScanner(String buildFile){
 def populateDependencyScannerRegistry() {
 
 	println("** Loading DBB scanner mapping configuration dbb.scannerMapping")
+
+	// Set default scanner as the RegistrationScanner
+	DependencyScannerRegistry.setDefaultScanner(new DummyScanner())
 
 	// loading scannerMappings
 	PropertyMappings scannerMapping = new PropertyMappings("dbb.scannerMapping")
@@ -108,7 +101,7 @@ def populateDependencyScannerRegistry() {
 			}
 			else {
 				println("**! The scanner configuration $scannerConfig could not successfully be parsed and is skipped.")
-			} 
+			}
 		}
 	}
 	else {
@@ -145,12 +138,12 @@ def parseConfigStringToMap(String configString) {
 			scannerConfigMap.put(pair[0].trim(),pair[1].trim())
 		}
 	}
-	
+
 	if (scannerConfigMap.scannerClass == null) {
 		println "*! The provided scanner mapping configuration ($configString) is not formed correctly and skipped."
 		println "*! Sample syntax: 'dbb.scannerMapping = \"scannerClass\":\"DependencyScanner\", \"languageHint\":\"COB\" :: cbl,cpy,cob'"
 		return null
 	}
-	
+
 	return scannerConfigMap
 }
