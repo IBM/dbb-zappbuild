@@ -584,15 +584,15 @@ def createBuildList() {
 	if (props.fullBuild) {
 		println "** --fullBuild option selected. $action all programs for application ${props.application}. Recreating DBB collections."
 		buildSet = buildUtils.createFullBuildList()
-		
-		println("* Deleting collection ${props.applicationCollectionName}")
-		metadataStore.deleteCollection(props.applicationCollectionName)
 
-		println("* Deleting collection ${props.applicationOutputsCollectionName}")
-		metadataStore.deleteCollection(props.applicationOutputsCollectionName)
-		
-		impactUtils.updateCollection(buildList, null, null)
-		
+		if (metadataStore) {
+			println("** Deleting collection ${props.applicationCollectionName}")
+			metadataStore.deleteCollection(props.applicationCollectionName)
+
+			println("** Deleting collection ${props.applicationOutputsCollectionName}")
+			metadataStore.deleteCollection(props.applicationOutputsCollectionName)
+		}
+		impactUtils.updateCollection(buildSet, null, null)
 	}
 	// check if impact build
 	else if (props.impactBuild) {
