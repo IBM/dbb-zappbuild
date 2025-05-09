@@ -220,10 +220,12 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.cobol_BMS_PDS).options("shr"))
 	
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
-	PropertyMappings dsMapping = new PropertyMappings('cobol_dependenciesDatasetMapping')
-	dsMapping.getValues().each { targetDataset ->
+	PropertyMappings dependenciesDatasetMapping = new PropertyMappings('cobol_dependenciesDatasetMapping')
+	def compileDependenciesDatasets = props.getFileProperty('cobol_compileDependenciesDatasets', buildFile).split(',')
+	
+	dependenciesDatasetMapping.getValues().each { targetDataset ->
 		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
-		if (targetDataset != 'cobol_cpyPDS')
+		if (targetDataset != 'cobol_cpyPDS' && compileDependenciesDatasets.contains(targetDataset)) )
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
 	
