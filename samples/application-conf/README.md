@@ -31,9 +31,9 @@ propertyFilePath | relative path to folder containing individual artifact proper
 propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
-
+**searchPath** configurations | Multiple sample search path configurations such as copybookSearch, pliincludeSearch, cppHeaderSearch, asmMacroSearch, asmCopySearch, bmsSearch, rexxCopySearch, linkSearch, tazTestConfigSearch, tazRecordingFileSearch, tazTestcasePgmSearch, eztMacSearch. Used for dependency analysis and (some) for impact analysis (see `impactSearch` setting).
+ 
 ### file.properties
 
 Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Please also read the section [Build properties](https://www.ibm.com/docs/en/dbb/2.0?topic=apis-build-properties) in the official DBB documentation.
@@ -205,6 +205,27 @@ pli_deployTypeDLI | deployType for build output for build files with isDLI=true 
 pli_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
 pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+Property | Description | Overridable
+--- | --- |
+cpp_fileBuildRank | default C/CPP program build rank - used to sort language build file list leave empty - overridden by file properties if sorting needed | true
+cpp_dependencySearch |  C/CPP dependencySearch configuration searchPath defined in application.properties | true
+cpp_compileMaxRC |  default C/CPP maximum RCs allowed | true
+cpp_impactPropertyList |  lists of properties which should cause a rebuild after being changed | false
+cpp_compileParms |  default C/CPP compiler parameters | true
+cpp_compileDebugParms | Compile Options for IBM Debugger. Assuming to keep Dwarf Files inside the load. If you would like to separate debug info, additional allocations needed (See C/CPP + Debugger libraries) | true
+cpp_linkEditParms |  default LinkEdit parameters | true
+cpp_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd, sample: cpp_linkEditStream=    INCLUDE SYSLIB(COBJT) | true
+cpp_linkEdit |  execute link edit step | true
+cpp_storeSSI |  store abbrev git hash in ssi field available for buildTypes impactBuild, mergeBuild and fullBuild | true
+cpp_identifyLoad |  flag to generate IDENTIFY statement during link edit phase to create an user data record (IDRU) to "sign" the load module with an identify String: <application>/<abbreviatedGitHash> to increase traceability. default: true | true
+cpp_deployType |  default deployType | true
+cpp_deployTypeCICS |  deployType for build files with isCICS=true | true
+cpp_deployTypeDLI |  deployType for build files with isDLI=true | true
+cpp_scanLoadModule |  scan link edit load module for link dependencies | true
+cpp_compileSyslibConcatenation |  additional libraries for compile SYSLIB concatenation, comma-separated | true
+cpp_assemblySyslibConcatenation |  additional libraries for compile ASMLIB concatenation, comma-separated ASMLIB concatenation for C programs using the ASM option | true
+cpp_linkEditSyslibConcatenation |  additional libraries for linkEdit SYSLIB concatenation, comma-separated | true
 
 ### bind.properties
 Application properties used by zAppBuild/utilities/BindUtilities.groovy
