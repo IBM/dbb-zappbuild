@@ -225,7 +225,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	
 	dependenciesDatasetMapping.getValues().each { targetDataset ->
 		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
-		if (targetDataset != 'cobol_cpyPDS' && compileDependenciesDatasets.contains(targetDataset)) )
+		if (targetDataset != 'cobol_cpyPDS' && compileDependenciesDatasets.contains(targetDataset))
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
 	
