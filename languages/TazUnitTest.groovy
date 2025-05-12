@@ -191,7 +191,7 @@ int currentBuildFileNumber = 1
                           } else {
                              println "***  JUnit Conversion executed successfully with return code RC=${exec} for $buildFile"
                           }	
-		       }	
+		        }	
 			// printReport
 			printReport(reportLogFile)
 		} else if (rc <= props.tazunittest_maxWarnRC.toInteger()){
