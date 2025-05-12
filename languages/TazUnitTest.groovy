@@ -184,6 +184,11 @@ int currentBuildFileNumber = 1
 			.command("Xalan")
 			.options(["-o", reportJunitFile.toString(), reportLogFile.toString(), xslFile])
 			.execute()
+		        if (exec != 0) {
+                             println "***  Warning: JUnit Conversion failed with return code RC=${exec}"
+                           } else {
+                             println "***  JUnit Conversion executed successfully with return code RC=${exec}"
+                           }	
 			}	
 			// printReport
 			printReport(reportLogFile)
