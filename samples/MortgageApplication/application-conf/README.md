@@ -12,7 +12,7 @@ This property file is loaded automatically at the beginning of the build and con
 Property | Description
 --- | ---
 runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `false`, to enable zUnit Tests, set value to `true`.
-tazunittest_resultsConvtoJunit | Boolean value to specify if TAZ Unit Test results need to be converted to JUnit format.  Defaults to `false`, to enable JUnit conversion, set value to `true`. | false. Xalan needs to be available in the users path to help in conversion.
+tazunittest_convertTazResultsToJunit | Boolean value to specify if TAZ Unit Test results need to be converted to JUnit format.  Defaults to `false`, to enable JUnit conversion, set value to `true`. | false. Xalan needs to be available in the users path to help in conversion.
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/.
 applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}.
 buildOrder | Comma separated list of the build script processing order.
