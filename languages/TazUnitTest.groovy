@@ -179,17 +179,19 @@ int currentBuildFileNumber = 1
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
 			if (props.tazunittest_convertTazResultsToJunit && props.tazunittest_convertTazResultsToJunit.toBoolean()) {
-			// Convert the report to Junit and store in workspace
-			def exec = new UnixExec()
-			.command("Xalan")
-			.options(["-o", reportJunitFile.toString(), reportLogFile.toString(), xslFile])
-			.execute()
-		        if (exec != 0) {
-                             println "***  Warning: JUnit Conversion failed with return code RC=${exec}"
-                           } else {
-                             println "***  JUnit Conversion executed successfully with return code RC=${exec}"
-                           }	
-			}	
+			  // Convert the report to Junit and store in workspace
+			  def exec = new UnixExec()
+			  .command("Xalan")
+			  .options(["-o", reportJunitFile.toString(), reportLogFile.toString(), xslFile])
+			  .execute()
+		          if (exec != 0) {
+                             String convWarningMsg = "*** Warning: JUnit Conversion failed with return code RC=${exec} for $buildFile"
+			     println  convWarningMsg
+                             updateBuildResult(warningMsg:convWarningMsg)                             
+                          } else {
+                             println "***  JUnit Conversion executed successfully with return code RC=${exec} for $buildFile"
+                          }	
+		       }	
 			// printReport
 			printReport(reportLogFile)
 		} else if (rc <= props.tazunittest_maxWarnRC.toInteger()){
