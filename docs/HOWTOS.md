@@ -118,7 +118,7 @@ default-application-conf/BMS.properties,\
 default-application-conf/PLI.properties,\
 default-application-conf/Transfer.properties,\
 default-application-conf/LinkEdit.properties,\
-default-application-conf/ZunitConfig.properties
+default-application-conf/TazUnitTest.properties
 ..
 ```
 This allows to reduce the necessary definitions within the `application-conf` directory of the application repository. This `application-conf` directory now only contains the `application.properties` and `file.properties` files to define the application-specific settings and exceptions, such as [file properties](../docs/FilePropertyManagement.md#dbb-file-properties) for particular build files:

@@ -95,7 +95,7 @@ $DBB_HOME/bin/groovyz build.groovy  \
                       --debug \
                       --impactBuild
 ```
-**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in ZunitConfig.properties)**
+**Use Code Coverage Headless Collector in zUnit Tests and specify parameters through command-line options (which override properties defined in TazUnitTest.properties)**
 ```
 $DBB_HOME/bin/groovyz build.groovy \
                       --workspace /u/build/repos \
@@ -179,83 +179,91 @@ If buildFile is a text file (*.txt), then it is assumed to be a build list file.
 Options:
 
 required options:
- -w,--workspace <arg>         Absolute path to workspace (root) directory
-                              containing all required source directories
- -a,--application <arg>       Application directory name (relative to workspace)
- -o,--outDir <arg>            Absolute path to the build output root directory
- -h,--hlq <arg>               High level qualifier for partition data sets
+ -w,--workspace <arg>               Absolute path to workspace (root) directory
+                                    containing all required source directories
+ -a,--application <arg>             Application directory name (relative to workspace)
+ -o,--outDir <arg>                  Absolute path to the build output root directory
+ -h,--hlq <arg>                     High level qualifier for partition data sets
 
 build options:
 
- -f,--fullBuild               Flag indicating to build all programs for
-                              the application
- -i,--impactBuild             Flag indicating to build only programs impacted
-                              by changed files since last successful build.
- -b,--baselineRef             Comma seperated list of git references to overwrite
-                              the baselineHash hash in an impactBuild scenario.
- -m,--mergeBuild              Flag indicating to build only source code changes which will be
-                              merged back to the mainBuildBranch.
+ -f,--fullBuild                     Flag indicating to build all programs for
+                                    the application
+ -i,--impactBuild                   Flag indicating to build only programs impacted
+                                    by changed files since last successful build.
+ -b,--baselineRef                   Comma seperated list of git references to overwrite
+                                    the baselineHash hash in an impactBuild scenario.
+ -m,--mergeBuild                    Flag indicating to build only source code changes which will be
+                                    merged back to the mainBuildBranch.
 
- -s,--scanOnly                Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
- -ss,--scanSource             Flag indicating to only scan source files for application without building anything
- -sl,--scanLoad               Flag indicating to only scan load modules for application without building anything
- -sa,--scanAll                Flag indicating to scan both source files and load modules for application without building anything
- -pv,--preview                Supplemental flag indicating to run build in preview mode without processing the execute commands
+ -s,--scanOnly                      Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)
+ -ss,--scanSource                   Flag indicating to only scan source files for application without building anything
+ -sl,--scanLoad                     Flag indicating to only scan load modules for application without building anything
+ -sa,--scanAll                      Flag indicating to scan both source files and load modules for application without building anything
+ -pv,--preview                      Supplemental flag indicating to run build in preview mode without processing the execute commands
+
+ -cb,--applicationCurrentBranch     Application's current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.
 
 
- -r,--reset                   Deletes the application's dependency collections
-                              and build result group from the DBB repository
- -v,--verbose                 Flag to turn on script trace
- -d,--debug                   Flag to build modules for debugging with
-                              IBM Debug for z/OS
- -l,--logEncoding <arg>       Encoding of output logs. Default is EBCDIC
-                              directory for user build
- -zTest,--runzTests           Specify if zUnit Tests should be run
+ -r,--reset                         Deletes the application's dependency collections
+                                    and build result group from the DBB repository
+ -v,--verbose                       Flag to turn on script trace
+ -d,--debug                         Flag to build modules for debugging with
+                                    IBM Debug for z/OS
+ -l,--logEncoding <arg>             Encoding of output logs. Default is EBCDIC
+                                    directory for user build
+ -zTest,--runzTests                 Specify if zUnit Tests should be run
 
- -p,--propFiles               Comma separated list of additional property files
-                              to load. Absolute paths or relative to workspace
- -po,--propOverwrites         Comma separated list of key=value pairs for set and overwrite build properties
+ -p,--propFiles                     Comma separated list of additional property files
+                                    to load. Absolute paths or relative to workspace
+ -po,--propOverwrites               Comma separated list of key=value pairs for set and overwrite build properties
 
- -cc,--ccczUnit               Flag to indicate to collect code coverage reports during zUnit step
- -cch,--cccHost               Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
- -ccp,--cccPort               Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
- -cco,--cccOptions            Headless Code Coverage Collector Options
+ -cc,--ccczUnit                     Flag to indicate to collect code coverage reports during zUnit step
+ -cch,--cccHost                     Headless Code Coverage Collector host (if not specified IDz will be used for reporting)
+ -ccp,--cccPort                     Headless Code Coverage Collector port (if not specified IDz will be used for reporting)
+ -cco,--cccOptions                  Headless Code Coverage Collector Options
 
- -re,--reportExternalImpacts  Flag to activate analysis and report of external impacted files within DBB collections
-
+ -re,--reportExternalImpacts        Flag to activate analysis and report of external impacted files within DBB collections
+ -cd,--checkDatasets                Flag to enable validation of the defined system dataset definitions.
 
 Db2 MetadataStore configuration options
- -url,--url <arg>             Db2 JDBC URL for the MetadataStore.
-                              Example: jdbc:db2:<Db2 server location>
- -id,--id <arg>               Db2 user id for the MetadataStore
- -pw,--pw <arg>               Db2 password (encrypted with DBB Password Utility) for the MetadataStore
- -pf,--pwFile <arg>           Absolute or relative (from workspace) path to file containing Db2 password
+ -url,--url <arg>                   Db2 JDBC URL for the MetadataStore.
+                                    Example: jdbc:db2:<Db2 server location>
+ -id,--id <arg>                     Db2 user id for the MetadataStore
+ -pw,--pw <arg>                     Db2 password (encrypted with DBB Password Utility) for the MetadataStore
+ -pf,--pwFile <arg>                 Absolute or relative (from workspace) path to file containing Db2 password
 
 IDz/ZOD User Build options
- -u,--userBuild               Flag indicating running a user build
- -dz,--debugzUnitTestcase     Flag indicating to start a debug session for zUnit Test configurations as part of user build
- -e,--errPrefix <arg>         Unique id used for IDz error message datasets
- -df,--dependencyFile <arg>   Absolute or relative path (from workspace) to user build JSON file containing dependency information.
+ -u,--userBuild                     Flag indicating running a user build
+ -dz,--debugzUnitTestcase           Flag indicating to start a debug session for zUnit Test configurations as part of user build
+ -e,--errPrefix <arg>               Unique id used for IDz error message datasets
+ -df,--dependencyFile <arg>         Absolute or relative path (from workspace) to user build JSON file containing dependency information.
 
 utility options
- -help,--help                 Prints this message
+ -help,--help                       Prints this message
 ```
 
 ## Invocation Samples including console log
 
 <!-- TOC depthFrom:3 depthTo:3 orderedList:false anchorMode:github.com -->
 
-- [Build a Single Program](#build-a-single-program)
-- [Build a List of Programs](#build-a-list-of-programs)
-- [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
-- [Perform Impact Build](#perform-impact-build)
-- [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
-- [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
-- [Perform a Merge build](#perform-a-merge-build)
-- [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
-- [Perform a Scan Source build](#perform-a-scan-source-build)
-- [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
-- [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+- [Building Applications with zAppBuild](#building-applications-with-zappbuild)
+  - [Common Pipeline Invocation Examples](#common-pipeline-invocation-examples)
+  - [Common User Build Invocation Examples](#common-user-build-invocation-examples)
+  - [Command Line Options Summary](#command-line-options-summary)
+  - [Invocation Samples including console log](#invocation-samples-including-console-log)
+    - [Build a Single Program](#build-a-single-program)
+    - [Build a List of Programs](#build-a-list-of-programs)
+    - [Perform Full Build to build all files](#perform-full-build-to-build-all-files)
+    - [Perform Impact Build](#perform-impact-build)
+    - [Perform Impact Build for topic branches](#perform-impact-build-for-topic-branches)
+    - [Perform Impact Build by providing baseline reference for the analysis of changed files](#perform-impact-build-by-providing-baseline-reference-for-the-analysis-of-changed-files)
+    - [Perform a Merge build](#perform-a-merge-build)
+    - [Perform a Build in Preview Mode](#perform-a-build-in-preview-mode)
+    - [Perform a Scan Source build](#perform-a-scan-source-build)
+    - [Perform a Scan Source + Outputs build](#perform-a-scan-source--outputs-build)
+    - [Dynamically Overwrite build properties](#dynamically-overwrite-build-properties)
+    - [Validate System Datasets](#validate-system-datasets)
 
 <!-- /TOC -->
 ### Build a Single Program
@@ -292,7 +300,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -371,7 +379,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -475,7 +483,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -715,7 +723,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -874,7 +882,7 @@ Please see the output provided in verbose mode when setting up the collections a
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1006,7 +1014,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1166,7 +1174,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1297,7 +1305,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/PLI.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/REXX.properties
-** Loading property file /var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** Loading property file /var/dbb/dbb-zappbuild/build-conf/Transfer.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
@@ -1644,7 +1652,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1788,7 +1796,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -1967,7 +1975,7 @@ groovyz dbb-zappbuild/build.groovy \
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
 ** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
-** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ZunitConfig.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
 ** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
 ** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
@@ -2089,6 +2097,78 @@ required props = linkedit_srcPDS,linkedit_objPDS,linkedit_loadPDS,linkedit_linkE
 ** Build State : CLEAN
 ** Total files processed : 4
 ** Total build time  : 17.239 seconds
+```
+
+</details>
+
+
+### Validate System Datasets
+
+During the initialization phase of the build, a validation of the defined system datasets can be performed. The system datasets are configured with the build property `systemDatasets` in [build-conf/build.properties](../build-conf/build.properties), which contains one or multiple references to build property files defining key-value pairs listing the system datasets. In zAppBuild the default file is called [datasets.properties](../build-conf/datasets.properties) managed in the `build-conf` folder.
+
+To enable validation of system datasets specify the option `--checkDatasets`. It is available in any build scenario. Be aware that this functionality is also available as a stand-alone script and find the instructions [here](../utilities/README.md#dataset-validation-utilities)
+
+```
+groovyz dbb-zappbuild/build.groovy \
+                      --workspace /var/dbb/dbb-zappbuild/samples \
+                      --hlq DBB.ZAPP.CLEAN.MASTER \
+                      --workDir /var/dbb/out/MortgageApplication \
+                      --application MortgageApplication \
+                      --logEncoding UTF-8 \
+                      --impactBuild \
+                      --verbose \
+                      --checkDatasets
+```
+<details>
+  <summary>Build log</summary>
+
+```
+** Build start at 20210622.082942.029
+** Input args = /var/dbb/dbb-zappbuild/samples --hlq DBB.ZAPP.CLEAN.MASTER --workDir /var/dbb/out/MortgageApplication --application MortgageApplication --logEncoding UTF-8 --impactBuild --verbose --propOverwrite mainBuildBranch=develop
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Assembler.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/BMS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/MFS.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PSBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/DBDgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/ACBgen.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/Cobol.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/LinkEdit.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/PLI.properties
+** Loading property file /ZT01/var/dbb/dbb-zappbuild/build-conf/TazUnitTest.properties
+** appConf = /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/file.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/BMS.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/Cobol.properties
+** Loading property file /var/dbb/dbb-zappbuild/samples/MortgageApplication/application-conf/LinkEdit.properties
+** Overwriting build property mainBuildBranch from cli argument --propOverwrite with value develop
+** The dataset PLI.V5R2.SIBMZCMP referenced for property IBMZPLI_V52 was found.
+*! No dataset defined for property IBMZPLI_V51 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset WMQ.V9R2M4.SCSQPLIC referenced for property SCSQPLIC was found.
+** The dataset COBOL.V6R1.SIGYCOMP referenced for property SIGYCOMP_V6 was found.
+** The dataset CICSTS.V5R4.CICS.SDFHCOB referenced for property SDFHCOB was found.
+*! No dataset defined for property SIGYCOMP_V4 specified in /ZT01/var/dbb/dbb-zappbuild/build-conf/datasets.properties.
+** The dataset HLASM.SASMMOD1 referenced for property SASMMOD1 was found.
+** The dataset SYS1.MACLIB referenced for property MACLIB was found.
+** The dataset PDTCC.V1R8.SIPVMODA referenced for property PDTCCMOD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHLOAD referenced for property SDFHLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHMAC referenced for property SDFHMAC was found.
+** The dataset CEE.SCEEMAC referenced for property SCEEMAC was found.
+** The dataset WMQ.V9R2M4.SCSQCOBC referenced for property SCSQCOBC was found.
+** The dataset IMS.V15R1.SDFSMAC referenced for property SDFSMAC was found.
+** The dataset RDZ.V14R1.SFELLOAD referenced for property SFELLOAD was found.
+** The dataset DBC0CFG.DB2.V12.SDSNLOAD referenced for property SDSNLOAD was found.
+** The dataset CICSTS.V5R4.CICS.SDFHPL1 referenced for property SDFHPL1 was found.
+** The dataset WMQ.V9R2M4.SCSQLOAD referenced for property SCSQLOAD was found.
+** The dataset IMSCFG.IMSC.REFERAL referenced for property REFERAL was found.
+** The dataset DEBUG.V14R1.SEQAMOD referenced for property SEQAMOD was found.
+** The dataset DBC0CFG.SDSNEXIT referenced for property SDSNEXIT was found.
+** The dataset IMS.V15R1.SDFSRESL referenced for property SDFSRESL was found.
+** The dataset DEBUG.V16.SEQASAMP referenced for property SEQASAMP was found.
+** The dataset CEE.SCEELKED referenced for property SCEELKED was found.
+..... // lists of all build properties
+...
+...
 ```
 
 </details>

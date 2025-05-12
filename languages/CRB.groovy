@@ -59,30 +59,24 @@ buildList.each { buildFile ->
         if (!outputDir.exists())
             outputDir.mkdirs()
 
-
         // Build the shell command to execute
-        def applicationParm = ""
-        if (applicationConstraintsFile) {
-            fileExists(applicationConstraintsFile)
-            applicationParm = "--application $applicationConstraintsFile"
+        String optionsString = "build --model ${resourceModelFile} --resources ${props.workspace}/${buildFile}"
+        optionsString += " --output ${props.buildOutDir}/${outputFile}"
+        if (applicationConstraintsFile && fileExists(applicationConstraintsFile)) {
+            optionsString += " --application ${applicationConstraintsFile}"
         }
-        def commandString = zrbPath + " build --model $resourceModelFile $applicationParm --resources ${props.workspace}/${buildFile} --output ${props.buildOutDir}/$outputFile"
+        ArrayList<String> optionsList = new ArrayList<String>(Arrays.asList(optionsString.split(" ")))
         if (props.verbose)
-            println("*** Executing zrb command: $commandString")
+            println("*** Executing command '$zrbPath' with options '${optionsList}'")
+        String encoding = props.logEncoding ?: 'IBM-1047'
 
-        // Execute the command and direct console output and error streams to buffer
-        def process = commandString.execute()
-        StringBuffer zrbOut = new StringBuffer()
-        StringBuffer zrbErr = new StringBuffer()
-        process.waitForProcessOutput(zrbOut, zrbErr)
-        def returnCode = process.exitValue()
-
-        // write outputs to log file
-        String enc = props.logEncoding ?: 'IBM-1047'
-        logFile.withWriter(enc) { writer ->
-            writer.append(zrbOut)
-            writer.append(zrbErr)
-        }
+        UnixExec zrbExecution = new UnixExec().command(zrbPath)
+        zrbExecution.setOptions(optionsList)
+        zrbExecution.output(logFile.getAbsolutePath()).mergeErrors(true);
+        zrbExecution.setFile(buildFile)
+        zrbExecution.setOutputEncoding(encoding)
+        zrbExecution.addOutput(props.buildOutDir, outputFile, "CSD")
+        int returnCode = zrbExecution.execute()
 
         // evaluate return code
         if (returnCode > maxRC) {
@@ -93,18 +87,6 @@ buildList.each { buildFile ->
         } else {
             if (props.verbose) println("*** zrb return code: $returnCode")
             println("*** Output file is ${props.buildOutDir}/$outputFile.")
-
-            // Create a new record of type AnyTypeRecord
-            AnyTypeRecord CRBRecord = new AnyTypeRecord("USS_RECORD")
-            CRBRecord.setAttribute("file", buildFile)
-            CRBRecord.setAttribute("label", "CSD file created with CICS Resource Builder")
-            CRBRecord.setAttribute("outputs", "[${props.buildOutDir}, $outputFile, CSD]")
-            CRBRecord.setAttribute("command", commandString);
-
-            // Add new record to build report
-            if (props.verbose)
-                println("*** Adding USS_RECORD for $buildFile")
-            BuildReportFactory.getBuildReport().addRecord(CRBRecord)
         }
     }
 }

@@ -13,7 +13,7 @@ import com.ibm.dbb.build.report.records.*
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
 @Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
-	
+
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
 // verify required build properties
@@ -37,14 +37,14 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
+	isTazUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure dependency resolution and create logical file	
 	String dependencySearch = props.getFileProperty('cobol_dependencySearch', buildFile)
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 	
 	// copy build file and dependency files to data sets
-	if(isZUnitTestCase){
+	if(isTazUnitTestCase){
 		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
 	}else{
 		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
@@ -106,7 +106,7 @@ sortedList.each { buildFile ->
 				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
 			}
 			else {
-				if(!props.userBuild && !isZUnitTestCase){
+				if(!props.userBuild && !isTazUnitTestCase){
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('cobol_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
@@ -116,20 +116,29 @@ sortedList.each { buildFile ->
 		}
 	}
 
-	//perform Db2 Bind only on User Build and perfromBindPackage property
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && props.bind_performBindPackage && props.bind_performBindPackage.toBoolean() ) {
+	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
+	bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPackage && bind_performBindPackage.toBoolean()) {
 		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
-
-		// if no  owner is set, use the user.name as package owner
-		def owner = ( !props.bind_packageOwner ) ? System.getProperty("user.name") : props.bind_packageOwner
-
-		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS, props.buildOutDir, props.bind_runIspfConfDir,
-				props.bind_db2Location, props.bind_collectionID, owner, props.bind_qualifier, props.verbose && props.verbose.toBoolean());
+		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS);
 		if ( bindRc > bindMaxRC) {
 			String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
 			println(errorMsg)
 			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind.log":bindLogFile])
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+		}
+	}
+	
+	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
+	bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+		def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+		if ( bindRc > bindMaxRC) {
+			String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+			println(errorMsg)
+			props.error = "true"
+			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
 		}
 	}
 
@@ -186,23 +195,20 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	MVSExec compile = new MVSExec().file(buildFile).pgm(compiler).parm(parms)
 
 	// add DD statements to the compile command
-	
-	if (isZUnitTestCase){
-	compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
-	}
-	else
-	{
+	if (isTazUnitTestCase){
+		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_testcase_srcPDS}($member)").options('shr').report(true))
+	} else {
 		compile.dd(new DDStatement().name("SYSIN").dsn("${props.cobol_srcPDS}($member)").options('shr').report(true))
 	}
 	
 	compile.dd(new DDStatement().name("SYSPRINT").options(props.cobol_printTempOptions))
 	compile.dd(new DDStatement().name("SYSMDECK").options(props.cobol_tempOptions))
-	(1..17).toList().each { num ->
-		compile.dd(new DDStatement().name("SYSUT$num").options(props.cobol_tempOptions))
+	(1..15).toList().each { num ->
+		compile.dd(new DDStatement().name("SYSUT$num").options("cyl space(1,1) unit(sysallda) new"))
 	}
 
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.cobol_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.cobol_cpyPDS).options("shr"))
@@ -235,9 +241,9 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	if (buildUtils.isMQ(logicalFile))
 		compile.dd(new DDStatement().dsn(props.SCSQCOBC).options("shr"))
 		
-	// add additional zunit libraries
-	if (isZUnitTestCase)
-	compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+	// add additional TAZ libraries
+	if (isTazUnitTestCase)
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 
 	// adding alternate library definitions
 	if (props.cobol_dependenciesAlternativeLibraryNameMapping) {
@@ -342,7 +348,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// Define SYSIN dd as instream data
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
 	}
 
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
@@ -351,7 +357,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 			
 	// add DD statements to the linkedit command
 	String deployType = buildUtils.getDeployType("cobol", buildFile, logicalFile)
-	if(isZUnitTestCase){
+	if(isTazUnitTestCase){
 		linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.cobol_testcase_loadPDS}($member)").options('shr').output(true).deployType('ZUNIT-TESTCASE'))
 	}
 	else {
@@ -384,6 +390,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 	
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+			
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

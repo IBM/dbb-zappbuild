@@ -111,14 +111,14 @@ def validateImpactBuild(String changedFile, PropertyMappings filesBuiltMappings,
 	
     try{
 	// Validate clean build
-	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
+	assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD WITH PREVIEW FOR $changedFile\nOUTPUT STREAM:\n$outputStream\n"
 
 	// Validate expected number of files built
 	def numImpactFiles = expectedFilesBuiltList.size()
-	assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
+	assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD WITH PREVIEW FOR $changedFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
 
 	// Validate expected built files in output stream
-	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
+	assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD WITH PREVIEW FOR $changedFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
 	
 	println "**"
 	println "** IMPACT BUILD WITH PREVIEW TEST : PASSED FOR $changedFile **"

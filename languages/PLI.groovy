@@ -35,7 +35,7 @@ sortedList.each { buildFile ->
 	println "*** (${currentBuildFileNumber++}/${sortedList.size()}) Building file $buildFile"
 
 	// Check if this a testcase
-	isZUnitTestCase = buildUtils.isGeneratedzUnitTestCaseProgram(buildFile)
+	isZUnitTestCase = buildUtils.isGeneratedTazTestCaseProgram(buildFile)
 
 	// configure SearchPathDependencyResolver
 	String dependencySearch = props.getFileProperty('pli_dependencySearch', buildFile)
@@ -129,6 +129,7 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	def parms = props.getFileProperty('pli_compileParms', buildFile) ?: ""
 	def cics = props.getFileProperty('pli_compileCICSParms', buildFile) ?: ""
 	def sql = props.getFileProperty('pli_compileSQLParms', buildFile) ?: ""
+	def ims = props.getFileProperty('pli_compileIMSParms', buildFile) ?: ""
 	def errPrefixOptions = props.getFileProperty('pli_compileErrorPrefixParms', buildFile) ?: ""
 	def compileDebugParms = props.getFileProperty('pli_compileDebugParms', buildFile)
 
@@ -142,6 +143,9 @@ def createPLIParms(String buildFile, LogicalFile logicalFile) {
 	if (props.errPrefix)
 		parms = "$parms,$errPrefixOptions"
 
+	if (buildUtils.isIMS(logicalFile))	
+		parms = "$parms,$ims"
+		
 	// add debug options
 	if (props.debug)  {
 		parms = "$parms,$compileDebugParms"
@@ -180,7 +184,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 	}
 
 	// define object dataset allocation
-	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true))
+	compile.dd(new DDStatement().name("SYSLIN").dsn("${props.pli_objPDS}($member)").options('shr').output(true).deployType("OBJ"))
 
 	// add a syslib to the compile command with optional bms output copybook and CICS concatenation
 	compile.dd(new DDStatement().name("SYSLIB").dsn(props.pli_incPDS).options("shr"))
@@ -215,7 +219,7 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		
 	// add additional zunit libraries
 	if (isZUnitTestCase)
-		compile.dd(new DDStatement().dsn(props.SBZUSAMP).options("shr"))
+		compile.dd(new DDStatement().dsn(props.SEQASAMP).options("shr"))
 	
 	// add a tasklib to the compile command with optional CICS, DB2, and IDz concatenations
 	String compilerVer = props.getFileProperty('pli_compilerVersion', buildFile)
@@ -330,7 +334,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// Define SYSIN dd
 	if (sysin_linkEditInstream) {
 		if (props.verbose) println("*** Generated linkcard input stream: \n $sysin_linkEditInstream")
-		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream))
+		linkedit.dd(new DDStatement().name("SYSIN").instreamData(sysin_linkEditInstream).options(props.global_instreamDataTempAllocation))
 	}
 
 	// add SYSLIN along the reference to SYSIN if configured through sysin_linkEditInstream
@@ -355,6 +359,9 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	if (buildUtils.isCICS(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDFHLOAD).options("shr"))
 
+	if (buildUtils.isIMS(logicalFile))
+		linkedit.dd(new DDStatement().dsn(props.SDFSRESL).options("shr"))
+		
 	if (buildUtils.isSQL(logicalFile))
 		linkedit.dd(new DDStatement().dsn(props.SDSNLOAD).options("shr"))
 

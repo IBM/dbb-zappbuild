@@ -22,6 +22,7 @@ mainBuildBranch | The main build branch of the main application repository.  Use
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
 excludeFileList | Files to exclude when scanning or running full build. | false
 skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
+addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds | false
 jobCard | JOBCARD for JCL execs | false
 **Build Property management** | | 
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
@@ -34,17 +35,34 @@ impactResolutionRules | Comma separated list of resolution rule properties used 
 impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
 
 ### file.properties
-Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Additional file-level properties can be defined through individual artifact properties files in a separate directory of the repository. For more details, see [File Property Management](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md).
+
+Location of file properties, script mappings and file-level property overrides. All file properties for the entire application, including source files in distributed repositories of the application need to be contained either in this file or in other property files in the `application-conf` directory. Look for the column 'Overridable' in the tables below for build properties that can have file-level property overrides. Please also read the section [Build properties](https://www.ibm.com/docs/en/dbb/2.0?topic=apis-build-properties) in the official DBB documentation.
+
+Additional file-level properties can be defined through **individual artifact properties files** in a separate directory of the repository or through **language configuration** files to configure the language scripts. For more details, see [File Property Management](https://github.com/IBM/dbb-zappbuild/docs/FilePropertyManagement.md).
 
 Property | Description
 --- | ---
 dbb.scriptMapping | DBB configuration file properties association build files to language scripts
 dbb.scannerMapping | zAppBuild configuration override/expansion to map files extensions to DBB dependency scanner configurations
-isSQL | File property overwrite to indicate that a file requires to include SQL parameters
-isCICS | File property overwrite to indicate that a file requires to include CICS parameters
-isMQ | File property overwrite to indicate that a file requires to include MQ parameters
-isDLI | File property overwrite to indicate that a file requires to include DLI parameters
 cobol_testcase | File property to indicate a generated zUnit cobol test case to use a different set of source and output libraries
+
+Property | Description
+--- | ---
+loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for source files. See default configuration in [application.properties](#application.properties)
+loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties files for source files. See default configuration in [application.properties](#application.properties)
+languageConfiguration | Properties mapping for assigning build files to language configuration to define the build configuration
+
+General file level overwrites to control the allocations of system datasets for compile and link steps or activation of preprocessing
+
+Property | Description
+--- | ---
+isSQL | File property overwrite to indicate that a file requires to include SQL preprocessing, and allocation of Db2 libraries for compile and link phase.
+isCICS | File property overwrite to indicate that a file requires to include CICS preprocessing, and allocation of CICS libraries for compile and link phase. Also used to indicate if a *batch* module is executed under CICS for pulling appropriate language interface modules for Db2 or MQ. 
+isMQ | File property overwrite to indicate that a file requires to include MQ libraries for compile and link phase.
+isDLI | File property overwrite to indicate that a file requires to include DLI 
+isIMS | File property flag to indicate IMS batch and online programs to allocate the IMS RESLIB library during link phase (Compared to the other 4 above flags, the isIMS flag is a pure file property, and not computed by the DBB scanners). 
+
+Please note that the above file property settings `isCICS` and `isIMS` are also used to control the allocations when processing link cards with `LinkEdit.groovy` to include the appropriate runtime specific language interfaces.
 
 ### reports.properties
 Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
@@ -168,6 +186,7 @@ pli_compileParms | Default base compile parameters. | true
 pli_compileCICSParms | Default CICS compile parameters. Appended to base parameters if has value.| true
 pli_compileSQLParms | Default SQL compile parameters. Appended to base parameters if has value. | true
 pli_compileDebugParms | Default Debug compile parameters. Appended to base parameters if running with debug flag set. | true
+pli_compileIMSParms | Default IMS compile parameters. Appended to parms for file with `isIMS` flag turned on. | true
 pli_compileErrorPrefixParms | IDz user build parameters. Appended to base parameters if has value. | true
 pli_impactPropertyList | List of build properties causing programs to rebuild when changed | false
 pli_impactPropertyListCICS | List of CICS build properties causing programs to rebuild when changed | false
@@ -188,15 +207,18 @@ pli_compileSyslibConcatenation | A comma-separated list of libraries to be conca
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### bind.properties
-Application properties used by zAppBuild/language/COBOL.groovy
+Application properties used by zAppBuild/utilities/BindUtilities.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-bind_performBindPackage | Default variable to perform DB2 bind as part of a DBB User Build (default value:false) | true
-bind_runIspfConfDir | |
+bind_performBindPackage | Flag to perform DB2 bind package as part of a DBB User Build (default value:false) | true
+bind_performBindPlan | Flag to perform DB2 bind plan as part of a DBB User Build (default value:false) | true
+bind_jobCard | The Jobcard used for Bind jobs
 bind_db2Location | The name of the DB2 subsystem | true
-bind_collectionID | The DB2 collection (Package) name | true
-bind_packageOwner | The owner of the package, if left empty the use executing the command will be used | true
+bind_collectionID | The Db2 collection (package) name | true
+bind_plan | The Db2 plan name | true
+bind_plan_pklist | The package list parameter for the Db2 plan | true
+bind_packageOwner | The owner of the package, if left empty the user executing the command will be used | true
 bind_qualifier | The value of the implicit qualifier | true
 bind_maxRC | Default bind maximum RC allowed. | true
 
@@ -253,20 +275,21 @@ acbgen_pgmParms | Default ACBgen parameters. | true
 acbgen_pgmMaxRC | Default ACBgen maximum RC allowed. | true
 acbgen_deployType | default deployType for build output | true
 
-### ZunitConfig.properties
-Application properties used by zAppBuild/language/ZunitConfig.groovy
+### TazUnitTest.properties
+Application properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description | Overridable
 --- | --- | ---
-zunit_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
-zunit_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
-zunit_playbackFileExtension | Default zUnit Playback File Extension. | true
-zunit_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
-zunit_bzuplayParms | Default options passed to the zUnit runner BZUPLAY | true
-zunit_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
-zunit_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
-zunit_CodeCoverageOptions | Headless Code Coverage Collector Options | true
+tazunittest_maxPassRC | Default zUnit maximum RC allowed for a Pass. | true
+tazunittest_maxWarnRC | Default zUnit maximum RC allowed for a Warninig (everything beyond this value will Fail). | true
+tazunittest_jobCard  | Jobcard for TAZ Unit Test execution jobs | true
+tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | true
+tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+tazunittest_eqaplayParms | Default options passed to the TAZ runner procedure EQAPPLAY | true
+tazunittest_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
+tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
@@ -291,6 +314,21 @@ rexx_deployType | default deployType | true
 rexx_cexec_deployType | default deployType CEXEC | true
 rexx_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 rexx_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
+
+### Eastrieve.properties
+Application properties used by zAppBuild/language/Easytrieve.groovy
+
+Property | Description | Overridable
+--- | --- | ---
+easytrieve_compileMaxRC | Default compile maximum RC allowed. | true
+easytrieve_linkEditMaxRC | Default link edit maximum RC allowed. | true
+easytrieve_dependencySearch | Default dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
+easytrieve_compileParms | Default base compile parameters. | true
+easytrieve_linkEdit | Flag indicating to execute the link edit step to produce a compiled easytrieve for the source file. | true
+easytrieve_linkEditParms | Default link edit parameters. | true
+easytrieve_deployType | default deployType | true
+easytrieve_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
+easytrieve_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### Transfer.properties
 Application properties used by zAppBuild/language/Transfer.groovy

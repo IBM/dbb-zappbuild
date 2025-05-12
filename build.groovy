@@ -20,6 +20,7 @@ import groovy.cli.commons.*
 @Field def reportingUtils= loadScript(new File("utilities/ReportingUtilities.groovy"))
 @Field def filePropUtils= loadScript(new File("utilities/FilePropUtilities.groovy"))
 @Field def dependencyScannerUtils= loadScript(new File("utilities/DependencyScannerUtilities.groovy"))
+@Field def validationUtils= loadScript(new File("utilities/DatasetValidationUtilities.groovy"))
 @Field String hashPrefix = ':githash:'
 @Field String giturlPrefix = ':giturl:'
 @Field String gitchangedfilesPrefix = ':gitchangedfiles:'
@@ -31,7 +32,15 @@ props.startTime = startTime.format("yyyyMMdd.HHmmss.SSS")
 println("\n** Build start at $props.startTime")
 
 // initialize build
-initializeBuildProcess(args)
+try {
+	initializeBuildProcess(args)
+} catch ( AssertionError e ) {
+	String errorMsg = e.getMessage()
+	println(errorMsg)
+	props.error = "true"
+	buildUtils.updateBuildResult(errorMsg:errorMsg)
+	finalizeBuildProcess(start:startTime, count:0)
+}
 
 // create build list
 List<String> buildList = new ArrayList() 
@@ -57,13 +66,21 @@ else {
 			scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
 			def buildFiles = ScriptMappings.getMappedList(script, buildList)
-			if (buildFiles.size() > 0) {
-				if (scriptPath.startsWith('/'))
-					runScript(new File("${scriptPath}"), ['buildList':buildFiles])
-				else
-					runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+			try {
+				if (buildFiles.size() > 0) {
+					if (scriptPath.startsWith('/'))
+						runScript(new File("${scriptPath}"), ['buildList':buildFiles])
+					else
+						runScript(new File("languages/${scriptPath}"), ['buildList':buildFiles])
+				}
+				processCounter = processCounter + buildFiles.size()
+			} catch (BuildException | AssertionError e ) {
+				String errorMsg = e.getMessage()
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				finalizeBuildProcess(start:startTime, count:processCounter)
 			}
-			processCounter = processCounter + buildFiles.size()
 		}
 	} else if(props.scanLoadmodules && props.scanLoadmodules.toBoolean()){
 		println ("** Scanning load modules.")
@@ -76,10 +93,6 @@ if (processCounter == 0)
 	processCounter = buildList.size()
 
 finalizeBuildProcess(start:startTime, count:processCounter)
-
-// if error occurred signal process error
-if (props.error)
-	System.exit(1)
 
 // end script
 
@@ -96,10 +109,17 @@ def initializeBuildProcess(String[] args) {
 	
 	// print and store property dbb toolkit version in use
 	def dbbToolkitVersion = VersionInfo.getInstance().getVersion()
-	props.dbbToolkitVersion = dbbToolkitVersion
 	def dbbToolkitBuildDate = VersionInfo.getInstance().getDate()
-	if (props.verbose) println "** zAppBuild running on DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+	props.dbbToolkitVersion = dbbToolkitVersion
+	props.dbbToolkitBuildDate = dbbToolkitBuildDate
 	
+	File versionFile = new File("${props.zAppBuildDir}/version.properties")
+	if (versionFile.exists()) {
+		props.load(versionFile)
+		if (props.zappbuild_version) println "** Running zAppBuild Version ${props.zappbuild_version} "
+	}
+	if (props.verbose) println "** Running DBB Toolkit Version ${dbbToolkitVersion} ${dbbToolkitBuildDate} "
+
 	// verify required dbb toolkit
 	buildUtils.assertDbbBuildToolkitVersion(props.dbbToolkitVersion, props.requiredDBBToolkitVersion)
 
@@ -231,7 +251,7 @@ If buildFile is a text file (*.txt) then it is assumed to be a build list file.
 options:
 	'''
 
-	def cli = new CliBuilder(usage:usage,header:header)
+	def cli = new CliBuilder(usage:usage,header:header,stopAtNonOption: false)
 	// required sandbox options
 	cli.w(longOpt:'workspace', args:1, 'Absolute path to workspace (root) directory containing all required source directories')
 	cli.a(longOpt:'application', args:1, required:true, 'Application directory name (relative to workspace)')
@@ -249,6 +269,8 @@ options:
 	cli.r(longOpt:'reset', 'Deletes the dependency collections and build result group from the MetadataStore')
 	cli.v(longOpt:'verbose', 'Flag to turn on script trace')
 	cli.pv(longOpt:'preview', 'Supplemental flag indicating to run build in preview mode without processing the execute commands')
+	cli.cd(longOpt:'checkDatasets', 'Optional flag to validate the presense of the defined system datasets. ')
+	cli.cb(longOpt:'applicationCurrentBranch', args:1, 'Application\'s current Git branch. Used in pipeline builds to identify DBB Metadatastore objects.')
 	
 	// scan options
 	cli.s(longOpt:'scanOnly', 'Flag indicating to only scan source files for application without building anything (deprecated use --scanSource)')
@@ -256,7 +278,7 @@ options:
 	cli.sl(longOpt:'scanLoad', 'Flag indicating to only scan load modules for application without building anything')
 	cli.sa(longOpt:'scanAll', 'Flag indicating to scan both source files and load modules for application without building anything')
 
-	// web application credentials (overrides properties in build.properties)
+	// DBB metadatastore credentials (overrides properties in build.properties)
 	cli.url(longOpt:'url', args:1, 'Db2 JDBC URL for the MetadataStore. Example: jdbc:db2:<Db2 server location>')
 	cli.id(longOpt:'id', args:1, 'Db2 user id for the MetadataStore')
 	cli.pw(longOpt:'pw', args:1,  'Db2 password (encrypted with DBB Password Utility) for the MetadataStore')
@@ -280,7 +302,7 @@ options:
 	cli.ccp(longOpt:'cccPort', args:1, argName:'cccPort', 'Headless Code Coverage Collector port (if not specified IDz will be used for reporting)')
 	cli.cco(longOpt:'cccOptions', args:1, argName:'cccOptions', 'Headless Code Coverage Collector Options')
 
-	// build framework options
+	// build reporting options
 	cli.re(longOpt:'reportExternalImpacts', 'Flag to activate analysis and report of external impacted files within DBB collections')
 	
 	// IDE user build dependency file options
@@ -329,8 +351,22 @@ def populateBuildProperties(def opts) {
 	// need to support IDz user build parameters
 	if (opts.srcDir) props.workspace = opts.srcDir
 	if (opts.wrkDir) props.outDir = opts.wrkDir
+
+	// assert workspace
 	buildUtils.assertBuildProperties('workspace,outDir')
 
+	// Validate that workspace exists 
+	if (!(new File (props.workspace).exists())) {
+		println "!! The specified workspace folder ${props.workspace} does not exist. Build exits."
+		System.exit(1)
+	}
+	
+	// Check read/write permission of specified out/log dir if already existing 
+	if (new File (props.outDir).exists() && !(new File(props.outDir).canWrite())) {
+		println "!! User does not have WRITE permission to work output directory ${props.outDir}. Build exits."
+		System.exit(1)
+	}
+	
 	// load build.properties
 	def buildConf = "${zAppBuildDir}/build-conf"
 	if (opts.v) println "** Loading property file ${buildConf}/build.properties"
@@ -435,6 +471,8 @@ def populateBuildProperties(def opts) {
 	if (opts.b) props.baselineRef = opts.b
 	if (opts.m) props.mergeBuild = 'true'
 	if (opts.pv) props.preview = 'true'
+	if (opts.cd) props.checkDatasets = 'true'
+	if (opts.cb) props.applicationCurrentBranch = opts.cb
 		
 	// scan options
 	if (opts.s) props.scanOnly = 'true'
@@ -480,7 +518,7 @@ def populateBuildProperties(def opts) {
 	if (opts.arguments()) props.buildFile = opts.arguments()[0].trim()
 
 	// set calculated properties
-	if (!props.userBuild) {
+	if (!props.userBuild && !props.applicationCurrentBranch) {
 		def gitDir = buildUtils.getAbsolutePath(props.application)
 		if ( gitUtils.isGitDetachedHEAD(gitDir) )
 			props.applicationCurrentBranch = gitUtils.getCurrentGitDetachedBranch(gitDir)
@@ -506,6 +544,9 @@ def populateBuildProperties(def opts) {
 	// Validate Build Properties  
 	if(props.reportExternalImpactsAnalysisDepths) assert (props.reportExternalImpactsAnalysisDepths == 'simple' || props.reportExternalImpactsAnalysisDepths == 'deep' ) : "*! Build Property props.reportExternalImpactsAnalysisDepths has an invalid value"
 	if(props.baselineRef) assert (props.impactBuild) : "*! Build Property props.baselineRef is exclusive to an impactBuild scenario"
+	
+	// Validate system datasets
+	if (props.checkDatasets && props.systemDatasets) validationUtils.validateSystemDatasets(props.systemDatasets, props.verbose)
 	
 	// Print all build properties + some envionment variables 
 	if (props.verbose) {
@@ -547,7 +588,11 @@ def createBuildList() {
 	}
 	// check if impact build
 	else if (props.impactBuild) {
-		println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		if (props.baselineRef) {
+			println "** --impactBuild --baselineRef ${props.baselineRef} option selected. $action impacted programs for application ${props.application} "
+		} else {
+			println "** --impactBuild option selected. $action impacted programs for application ${props.application} "
+		}
 		if (metadataStore) {
 			(buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = impactUtils.createImpactBuildList()		}
 		else {
@@ -636,12 +681,12 @@ def createBuildList() {
 	    || props.filePropertyValueKeySet().getAt("loadLanguageConfigurationProperties") 
 	    || (props.loadFileLevelProperties && props.loadFileLevelProperties.toBoolean())
 		|| (props.loadLanguageConfigurationProperties && props.loadLanguageConfigurationProperties.toBoolean())) {
-		println "** Populating file level properties from individual artifact properties files."
-		filePropUtils.loadFileLevelPropertiesFromFile(buildList)
+		filePropUtils.loadFileLevelPropertiesFromConfigFiles(buildList)
 	}
 	
 	// Perform analysis and build report of external impacts
-	if (props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
+	// Prereq: Metadatastore Connection
+	if (metadataStore && props.reportExternalImpacts && props.reportExternalImpacts.toBoolean()){
 		if (buildSet && changedFiles) {
 			println "** Perform analysis and reporting of external impacted files for the build list including changed files."
 			reportingUtils.reportExternalImpacts(buildSet.plus(changedFiles))
@@ -653,7 +698,8 @@ def createBuildList() {
 	}
 	
 	// Document and validate concurrent changes
-	if (props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
+	// Prereq: Workspace containing git repos. Skipped for --userBuild build type
+	if (!props.userBuild && props.reportConcurrentChanges && props.reportConcurrentChanges.toBoolean()){
 		println "** Calculate and document concurrent changes."
 		reportingUtils.calculateConcurrentChanges(buildSet)
 	}
@@ -669,7 +715,6 @@ def createBuildList() {
 
 	return buildList
 }
-
 
 def finalizeBuildProcess(Map args) {
     println "***************** Finalization of the build process *****************"
@@ -705,8 +750,9 @@ def finalizeBuildProcess(Map args) {
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
-						String baselineHash = lastBuildResult.getProperty(key)
-						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << ".." << currenthash
+						String userBaselineRef = (props.baselineRef) ? buildUtils.getUserProvidedBaselineRef(dir).replaceAll("origin/","") : null
+						String baselineHash = (userBaselineRef) ? userBaselineRef : lastBuildResult.getProperty(key)
+						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << "..." << currenthash
 						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
 						if (props.verbose) println "** Setting property $gitchangedfilesKey : $gitchangedfilesLinkUrl"
 						buildResult.setProperty(gitchangedfilesKey, gitchangedfilesLink)
@@ -722,7 +768,10 @@ def finalizeBuildProcess(Map args) {
 		buildResult.setProperty("filesProcessed", String.valueOf(args.count))
 		buildResult.setState(buildResult.COMPLETE)
 
-
+		// add zAppBuild and DBB toolkit version info
+		if (props.zappbuild_version) buildResult.setProperty("zAppBuildVersion", props.zappbuild_version)
+		buildResult.setProperty("DBBToolkitVersion" , "${props.dbbToolkitVersion} ${props.dbbToolkitBuildDate}")
+		
 		// store build result properties in BuildReport.json
 		PropertiesRecord buildReportRecord = new PropertiesRecord("DBB.BuildResultProperties")
 		def buildResultProps = buildResult.getPropertyNames()
@@ -768,7 +817,17 @@ def finalizeBuildProcess(Map args) {
 	println("** Build State : $state")
 	if (props.preview) println("** Build ran in preview mode.")
 	println("** Total files processed : ${args.count}")
+	if (props.errorSummary) {
+		println("** Summary of error messages")
+		println("${props.errorSummary}")
+	}
 	println("** Total build time  : $duration\n")
+
+
+	
+	// if error occurred signal process error
+	if (props.error)
+		System.exit(1)
 }
 
 

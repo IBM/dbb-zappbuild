@@ -122,10 +122,8 @@ buildList.each { buildFile ->
 					buildUtils.updateBuildResult(errorMsg:errorMsg)
 				}
 			} catch (BuildException e) { // Catch potential exceptions like file truncation
-				String errorMsg = "*! The CopyToPDS failed with an exception ${e.getMessage()}."
-				println(errorMsg)
-				props.error = "true"
-				buildUtils.updateBuildResult(errorMsg:errorMsg)
+				String errorMsg = "*! (Transfer.groovy)  CopyToPDS of file ${buildFile} failed with an exception \n ${e.getMessage()}."
+				throw new BuildException(errorMsg)
 			}
 		} else {
 			String errorMsg =  "*! Target dataset for $buildFile could not be obtained from file properties. "

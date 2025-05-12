@@ -30,7 +30,8 @@ SCSQLOAD | MQ Load Library. Example: CSQ.V9R1M0.SCSQLOAD
 SDSNLOAD | DB2 Load Library. Example: DB2.V9R1M0.SDSNLOAD
 SDSNEXIT | DB2 Exit Library. Example: DBC0CFG.SDSNEXIT
 SFELLOAD | Optional IDz Load Library. Example: FEL.V14R0M0.SFELLOAD
-SBZUSAMP | Optional z/OS Dynamic Test Runner IDz zUnit / WAZI VTP library containing necessary copybooks. Example : FEL.V14R2.SBZUSAMP
+SEQASAMP | Optional IBM Debug Tool library containing necessary TAZ copybooks. Example : DEBUG.V16.SEQASAMP
+EZETLOAD | Easytrieve Load Library. Example for IBM Migration Utility: SYS1.SFSYLOAD
 
 ### build.properties
 General properties used mainly by `build.groovy` but can also be a place to declare properties used by multiple language scripts.
@@ -71,6 +72,13 @@ impactBuildOnBuildPropertyChanges | Boolean property to activate impact builds o
 impactBuildOnBuildPropertyList | List of build property lists referencing which language properties should cause an impact build when the given property is changed 
 documentDeleteRecords | Option determine if the build framework should document deletions of outputs in DBB Build Report. Default: false.
 dbb.LinkEditScanner.excludeFilter | DBB configuration property used by the link edit scanner to exclude load module entries
+
+### GlobalOptions.properties
+General options that are reused by multiple language scripts
+
+Property | Description
+--- | ---
+global_instreamDataTempAllocation | Default allocation options for in-stream DD statements
 
 ### dependencyReport.properties
 Properties used by the impact utilities to generate a report of external impacted files
@@ -276,21 +284,21 @@ acbgen_outputDatasets | List of output datasets to document deletions ** Can be
 acbgen_pgm | MVS program name of the acbgen pgm
 acbgen_deployType | Deploy Type of build outputs
 
-### ZunitConfig.properties
-Build properties used by zAppBuild/language/ZunitConfig.groovy
+### TazUnitTest.properties
+Build properties used by zAppBuild/language/TazUnitTest.groovy
 
 Property | Description
 --- | ---
-zunit_bzucfgPDS | Dataset to move BZUCFG files to from USS
-zunit_bzureportPDS | Dataset where BZUCRPT files are stored
-zunit_bzuplayPDS | Dataset to move zUnit Playback files to from USS
-zunit_srcDatasets | Comma separated list of 'source' type data sets
-zunit_srcOptions | BPXWDYN creation options for creating 'source' type data sets
-zunit_loadDatasets | Comma separated list of 'load module' type data sets
-zunit_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
-zunit_reportDatasets | Comma separated list of 'report' type data sets
-zunit_reportOptions | BPXWDYN creation options for creating 'report' type data sets
-zunit_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
+tazunittest_bzucfgPDS | Dataset to move BZUCFG files to from USS
+tazunittest_bzureportPDS | Dataset where BZUCRPT files are stored
+tazunittest_bzuplayPDS | Dataset to move zUnit Playback files to from USS
+tazunittest_srcDatasets | Comma separated list of 'source' type data sets
+tazunittest_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+tazunittest_loadDatasets | Comma separated list of 'load module' type data sets
+tazunittest_loadOptions | BPXWDYN creation options for creating 'load module' type data sets
+tazunittest_reportDatasets | Comma separated list of 'report' type data sets
+tazunittest_reportOptions | BPXWDYN creation options for creating 'report' type data sets
+tazunittest_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 
 ### zCEE3.properties
 Application properties used by zAppBuild/language/zCEE3.groovy
@@ -299,7 +307,16 @@ Property | Description
 --- | ---
 zcee3_shellEnvironment | Shell environment used to run the gradle command
 zcee3_gradlePath | Path to gradle executable
-zcee3_gradle_JAVA_OPTS | JAVA Options used with gradle
+zcee3_gradle_debug | Flag to indicate if debug option should be added
+
+### zCEE2.properties
+Application properties used by zAppBuild/language/zCEE2.groovy
+
+Property | Description
+--- | ---
+zcee2_zconbtPath | Absolute path to zconbt executable on z/OS UNIX System Services
+zcee2_inputType | Mapping of input files with types of projects/files
+zcee2_ARA_packageArtifacts | Flag to indicate if artifacts produced for the ARA processing should be packaged
 
 ### CRB.properties
 Application properties used by zAppBuild/language/CRB.groovy
@@ -325,6 +342,26 @@ transfer_jclPDS | Sample dataset for JCL members
 transfer_xmlPDS | Sample dataset for xml members
 transfer_dsOptions | BPXWDYN creation options for creating 'source' type data sets
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets
+
+### Easytrieve.properties
+Build properties used by zAppBuild/language/Easytrieve.groovy
+
+Property | Description
+--- | ---
+easytrieve_requiredBuildProperties | Comma separated list of required build properties for language/Cobol.groovy
+easytrieve_srcPDS | Dataset to move Easytrieve source files to from USS
+easytrieve_cpyPDS | Dataset to move Easytrieve macros to from USS
+easytrieve_objPDS | Dataset to create object decks in from compile step
+easytrieve_dbrmPDS | Dataset to create DB2 DBRM modules in from compile step
+easytrieve_loadPDS | Dataset to create load modules in from link edit step
+easytrieve_srcDataSets | Comma separated list of 'source' type data sets
+easytrieve_srcOptions | BPXWDYN creation options for creating 'source' type data sets
+easytrieve_loadDatasets | Comma separated list of 'load module' type data sets
+easytrieve_loadOptions | BPXWDYN creation options for 'load module' type data sets
+easytrieve_tempOptions | BPXWDYN creation options for temporary data sets
+easytrieve_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property.
+easytrieve_compiler | MVS program name of the COBOL compiler
+easytrieve_linkEditor | MVS program name of the link editor
 
 ### language-conf/languageConfigProps01.properties
 Sample language configuration properties file used by dbb-zappbuild/utilities/BuildUtilities.groovy.
