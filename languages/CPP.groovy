@@ -36,7 +36,7 @@ sortedList.each { buildFile ->
     SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 
     // copy build file and dependency files to data sets
-    buildUtils.copySourceFiles(buildFile, props.cpp_srcPDS, 'cpp_dependenciesDatasetMapping', props.cpp_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+    buildUtils.copySourceFiles(buildFile, props.cpp_srcPDS, 'cpp_dependenciesDatasetMapping', null, 'cpp_dependenciesCopyMode', dependencyResolver)
 
     // Get logical file
     LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)

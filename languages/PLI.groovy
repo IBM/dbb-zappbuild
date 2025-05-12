@@ -45,9 +45,9 @@ sortedList.each { buildFile ->
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
+		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, 'pli_dependenciesCopyMode', dependencyResolver)
 	}
 
 	// Get logical file

@@ -118,6 +118,7 @@ assembler_outputDatasets | List of output datasets to document deletions ** Can 
 assembler_pgm | MVS program name of the high level assembler
 assembler_linkEditor | MVS program name of the link editor
 assembler_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
+assembler_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
 
 ### BMS.properties
 Build properties used by zAppBuild/language/BMS.groovy
@@ -165,6 +166,7 @@ cobol_compiler | MVS program name of the COBOL compiler
 cobol_linkEditor | MVS program name of the link editor
 cobol_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 cobol_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
+cobol_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
 
 ### CPP.properties
 Build properties used by zAppBuild/language/CPP.groovy
@@ -185,7 +187,9 @@ cpp_loadOptions | BPXWDYN creation options for creating 'load' type data sets
 cpp_tempOptions | BPXWDYN creation options for creating 'temporary' data sets
 cpp_outputDatasets |  List of output datasets to document deletions
 dbb.DependencyScanner.languageHint | C/CPP scanner language hint
-cpp_dependenciesDatasetMapping | cpp_dependenciesDatasetMapping - an optional dbb property mapping to map dependencies to different target datasets this property is used when dependencies are copied to the different build libraries
+cpp_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
+cpp_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
+
 
 
 ### LinkEdit.properties
@@ -234,6 +238,7 @@ pli_outputDatasets | List of output datasets to document deletions ** Can be ov
 pli_listOptions | BPXWDYN creation options for LIST data sets
 pli_dependenciesAlternativeLibraryNameMapping | a map to define target dataset definition for alternate include libraries
 pli_dependenciesDatasetMapping | dbb property mapping to map dependencies to different target datasets
+pli_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: TEXT.
 
 ### MFS.properties
 Build properties used by zAppBuild/language/MFS.groovy
@@ -323,6 +328,7 @@ tazunittest_loadOptions | BPXWDYN creation options for creating 'load module' ty
 tazunittest_reportDatasets | Comma separated list of 'report' type data sets
 tazunittest_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 tazunittest_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
+tazunittest_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: BINARY.
 
 ### zCEE3.properties
 Application properties used by zAppBuild/language/zCEE3.groovy
