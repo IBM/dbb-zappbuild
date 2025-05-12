@@ -178,7 +178,7 @@ int currentBuildFileNumber = 1
 			println   "***  TAZ Unit Test job ${tazUnitTestRunJcl.submittedJobId} completed with $rc "
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
-			if (props.tazunittest_resultsConvtoJunit && props.tazunittest_resultsConvtoJunit.toBoolean()) {
+			if (props.tazunittest_convertTazResultsToJunit && props.tazunittest_convertTazResultsToJunit.toBoolean()) {
 			// Convert the report to Junit and store in workspace
 			def exec = new UnixExec()
 			.command("Xalan")
