@@ -187,7 +187,7 @@ int currentBuildFileNumber = 1
 		          if (exec != 0) {
                              String convWarningMsg = "*** Warning: JUnit Conversion failed with return code RC=${exec} for $buildFile"
 			     println  convWarningMsg
-                             updateBuildResult(warningMsg:convWarningMsg)                             
+                             buildUtils.updateBuildResult(warningMsg:convWarningMsg)                             
                           } else {
                              println "***  JUnit Conversion executed successfully with return code RC=${exec} for $buildFile"
                           }	
