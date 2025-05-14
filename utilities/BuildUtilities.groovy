@@ -59,7 +59,7 @@ def createFullBuildList() {
 				Set<String> fileSet = getFileSet(dir, true, '**/*.*', props.excludeFileList)
 				buildSet.addAll(fileSet)
 		} else {
-			String warningMsg = "*! (utilities/BuildUtilities.createFullBuildList) The provided build directory ${dir} in 'applicationSrcDirs' does not exist."
+			String warningMsg = "*![WARNING] (utilities/BuildUtilities.createFullBuildList) The provided build directory ${dir} in 'applicationSrcDirs' does not exist."
 			println warningMsg
 		}
 
