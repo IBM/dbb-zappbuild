@@ -48,13 +48,20 @@ def createFullBuildList() {
 
 	// create the list of build directories
 	List<String> srcDirs = []
-	if (props.applicationSrcDirs)
-		srcDirs.addAll(props.applicationSrcDirs.split(','))
 
-	srcDirs.each{ dir ->
+	if (props.applicationSrcDirs) srcDirs.addAll(props.applicationSrcDirs.split(','))
+
+	srcDirs.each{
+		dir ->
 		dir = getAbsolutePath(dir)
-		Set<String> fileSet =getFileSet(dir, true, '**/*.*', props.excludeFileList)
-		buildSet.addAll(fileSet)
+
+		if (new File("$dir").exists()){
+				Set<String> fileSet = getFileSet(dir, true, '**/*.*', props.excludeFileList)
+				buildSet.addAll(fileSet)
+		} else {
+			String warningMsg = "*![WARNING] (utilities/BuildUtilities.createFullBuildList) The provided build directory ${dir} in 'applicationSrcDirs' does not exist."
+			println warningMsg
+		}
 
 		// capture abbreviated gitHash for all buildable files
 		String abbrevHash = gitUtils.getCurrentGitHash(dir, true)
