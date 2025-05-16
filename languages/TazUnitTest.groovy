@@ -38,7 +38,7 @@ int currentBuildFileNumber = 1
 	SearchPathDependencyResolver dependencyResolver = new SearchPathDependencyResolver(dependencySearch)
 
 	// copy build file and dependency files to data sets
-	buildUtils.copySourceFiles(buildFile, props.tazunittest_bzucfgPDS, 'tazunittest_dependenciesDatasetMapping', null, dependencyResolver)
+	buildUtils.copySourceFiles(buildFile, props.tazunittest_bzucfgPDS, 'tazunittest_dependenciesDatasetMapping', null, 'tazunittest_dependenciesCopyMode', dependencyResolver)
 
 	// get logical file
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)

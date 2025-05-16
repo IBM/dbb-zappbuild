@@ -12,6 +12,7 @@ import com.ibm.dbb.build.report.records.*
 @Field BuildProperties props = BuildProperties.getInstance()
 @Field def buildUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BuildUtilities.groovy"))
 @Field def impactUtils= loadScript(new File("${props.zAppBuildDir}/utilities/ImpactUtilities.groovy"))
+@Field def bindUtils= loadScript(new File("${props.zAppBuildDir}/utilities/BindUtilities.groovy"))
 
 println("** Building ${argMap.buildList.size()} ${argMap.buildList.size() == 1 ? 'file' : 'files'} mapped to ${this.class.getName()}.groovy script")
 
@@ -44,9 +45,9 @@ sortedList.each { buildFile ->
 	
 	// copy build file and dependency files to data sets
 	if(isZUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null)
+		buildUtils.copySourceFiles(buildFile, props.pli_testcase_srcPDS, null, null, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.pli_srcPDS, 'pli_dependenciesDatasetMapping', props.pli_dependenciesAlternativeLibraryNameMapping, 'pli_dependenciesCopyMode', dependencyResolver)
 	}
 
 	// Get logical file
@@ -74,7 +75,7 @@ sortedList.each { buildFile ->
 	// compile the program
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('pli_compileMaxRC', buildFile).toInteger()
-
+	
 	if (rc > maxRC) {
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
@@ -107,6 +108,36 @@ sortedList.each { buildFile ->
 					String scanLoadModule = props.getFileProperty('pli_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
 						impactUtils.saveStaticLinkDependencies(buildFile, props.pli_loadPDS, logicalFile)
+				}
+			}
+		}
+		
+		//perform Db2 binds on userbuild
+		if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+			
+			//perform Db2 Bind Pkg
+			bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+			if (bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+				int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+				def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.pli_dbrmPDS);
+				if ( bindRc > bindMaxRC) {
+					String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+					println(errorMsg)
+					props.error = "true"
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+				}
+			}
+
+			//perform Db2 Bind plan
+			bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+			if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+				int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+				def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+				if ( bindRc > bindMaxRC) {
+					String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+					println(errorMsg)
+					props.error = "true"
+					buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
 				}
 			}
 		}
