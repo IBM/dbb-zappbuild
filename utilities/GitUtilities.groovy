@@ -252,7 +252,7 @@ def getPreviousGitHash(String gitDir) {
  * 
  */
 def getChangedFiles(String gitDir, String baseHash, String currentHash) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash $gitDir"
 	return getChangedFiles(gitCmd)
 }
 
@@ -262,7 +262,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
  *  
  */
 def getMergeChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD $gitDir"
 	return getChangedFiles(gitCmd)
 }
 
@@ -272,7 +272,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
  *
  */
 def getConcurrentChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference $gitDir"
 	return getChangedFiles(gitCmd)
 }
 
