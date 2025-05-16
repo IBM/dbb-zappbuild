@@ -640,7 +640,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					e.printStackTrace()
 
 					// terminate when continueOnScanFailure is not set to true
-					if(!(props.continueOnScanFailure == 'true')){
+					if(props.continueOnScanFailure && props.continueOnScanFailure.toBoolean() == false){
 						println("*! [ERROR] 'continueOnScanFailure' set to false. Terminating.")
 						System.exit(1)
 					}
