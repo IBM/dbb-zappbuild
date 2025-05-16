@@ -36,7 +36,7 @@ def getScanner(String buildFile){
 	scanner = DependencyScannerRegistry.getScanner(buildFile)
 
 	if (!scanner){
-		println("*! [WARNING]* No scanner specified for $buildFile")
+		println("*! [WARNING] No scanner specified for $buildFile.")
 	}
 
 	return scanner

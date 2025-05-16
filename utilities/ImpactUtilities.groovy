@@ -587,15 +587,15 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 			if (props.getFileProperty('skipStoringLogicalFile',file)) {
 				// treat file as a build file, but don't create a logicalFile in the DBB Medatastore
-				if (props.verbose) println "*** File $file (${props.workspace}/${file} is skipped from being added to DBB Metadatastore, but can be processed by build scripts.)"
+				if (props.verbose) println("*** The file '${props.workspace}/${file}' is not added to DBB Metadatastore, but can be processed by build scripts.")
 			} else {
 				try {
 					def logicalFile
 					def scanner = dependencyScannerUtils.getScanner(file)
 					if (scanner != null) {
-						if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
+						if (props.verbose) println("*** Scanning file '(${props.workspace}/${file}' with ${scanner.getClass()}")
 						logicalFile = scanner.scan(file, props.workspace)
-						if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+						if (props.verbose) println("*** Logical file for '$file' =\n$logicalFile")
 					} 
 
 					// Update logical file with dependencies to build properties
@@ -624,7 +624,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 								}
 								testCaseFiles.each{
 									it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
-									if (props.verbose) println "*** Updating dependencies for test case program ${it.getFile()} =\n$it"
+									if (props.verbose) println("*** Updating dependencies for test case program '${it.getFile()}' =\n$it")
 									logicalFiles.add(it)
 								}
 							}
@@ -634,14 +634,14 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					logicalFiles.add(logicalFile)
 				} catch (Exception e) {
 
-					String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
+					String warningMsg = "*! [WARNING] Scanning failed for file '${props.workspace}/${file}'"
 					buildUtils.updateBuildResult(warningMsg:warningMsg)
 					println(warningMsg)
 					e.printStackTrace()
 
 					// terminate when continueOnScanFailure is not set to true
 					if(!(props.continueOnScanFailure == 'true')){
-						println "***** continueOnScan Failure set to false. Build terminates."
+						println("*! [ERROR] 'continueOnScanFailure' set to false. Terminating.")
 						System.exit(1)
 					}
 				}
@@ -659,7 +659,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
+		println("** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'")
 	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
 }
 
