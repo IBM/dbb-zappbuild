@@ -329,6 +329,7 @@ tazunittest_reportDatasets | Comma separated list of 'report' type data sets
 tazunittest_reportOptions | BPXWDYN creation options for creating 'report' type data sets
 tazunittest_dependenciesDatasetMapping | DBB property mapping to map dependencies to different target datasets
 tazunittest_dependenciesCopyMode | Property mapping to configure the copyMode when uploading dependencies into target libraries. Default: BINARY.
+tazunittest_tazxlsconv | Location of Style sheet to convert TAZ Unit test case results to JUnit. Xalan needs to be available in the users path to help in the conversion
 
 ### zCEE3.properties
 Application properties used by zAppBuild/language/zCEE3.groovy
