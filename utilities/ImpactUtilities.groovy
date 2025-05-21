@@ -540,10 +540,6 @@ def scanOnlyStaticDependencies(List buildList){
 	}
 }
 
-
-
-
-
 def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	if (!MetadataStoreFactory.metadataStoreExists()) {
@@ -589,70 +585,65 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 
-			def scanner = dependencyScannerUtils.getScanner(file)
-			try {
-				def logicalFile
-				if (scanner != null) {
-					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
-					logicalFile = scanner.scan(file, props.workspace)
-				} else {
-					// The below logic should be replaced with Registration Scanner when available
-					// See reported idea: https://ibm-z-software-portal.ideas.ibm.com/ideas/DBB-I-48
-					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
-					
-					// New logical file with Membername, buildfile, language set to file extension
-					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
-					
-					// Add logicalFile to LogicalFileCache
-					LogicalFileCache.add(props.workspace, logicalFile)
-				}
-				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+			if (props.getFileProperty('skipStoringLogicalFile',file)) {
+				// treat file as a build file, but don't create a logicalFile in the DBB Medatastore
+				if (props.verbose) println("*** The file '${props.workspace}/${file}' is not added to DBB Metadatastore, but can be processed by build scripts.")
+			} else {
+				try {
+					def logicalFile
+					def scanner = dependencyScannerUtils.getScanner(file)
+					if (scanner != null) {
+						if (props.verbose) println("*** Scanning file '(${props.workspace}/${file}' with ${scanner.getClass()}")
+						logicalFile = scanner.scan(file, props.workspace)
+						if (props.verbose) println("*** Logical file for '$file' =\n$logicalFile")
+					} 
 
-				// Update logical file with dependencies to build properties
-				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-					createPropertyDependency(file, logicalFile)
-				}
+					// Update logical file with dependencies to build properties
+					if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+						createPropertyDependency(file, logicalFile)
+					}
 
-				// If configured, update test case program dependencies
-				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
-					// If the file is a zUnit configuration file (BZUCFG)
-					if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+					// If configured, update test case program dependencies
+					if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
+						// If the file is a zUnit configuration file (BZUCFG)
+						if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 
-						def logicalDependencies = logicalFile.getLogicalDependencies()
+							def logicalDependencies = logicalFile.getLogicalDependencies()
 
-						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
-						def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
+							def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
+							def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
 
-						if (sysTestDependency){
-							// find in local list of logical files first (batch processing)
-							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
-							if (!testCaseFiles){ // alternate retrieve it from the collection
-								testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
-									it.getLanguage().equals("COB")
+							if (sysTestDependency){
+								// find in local list of logical files first (batch processing)
+								def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
+								if (!testCaseFiles){
+									// alternate retrieve it from the collection
+									testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
+										it.getLanguage().equals("COB")
+									}
 								}
-							}
-							testCaseFiles.each{
-								it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
-								if (props.verbose) println "*** Updating dependencies for test case program ${it.getFile()} =\n$it"
-								logicalFiles.add(it)
+								testCaseFiles.each{
+									it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
+									if (props.verbose) println("*** Updating dependencies for test case program '${it.getFile()}' =\n$it")
+									logicalFiles.add(it)
+								}
 							}
 						}
 					}
-				}
 
-				logicalFiles.add(logicalFile)
+					logicalFiles.add(logicalFile)
+				} catch (Exception e) {
 
-			} catch (Exception e) {
+					String warningMsg = "*! [WARNING] Scanning failed for file '${props.workspace}/${file}'"
+					buildUtils.updateBuildResult(warningMsg:warningMsg)
+					println(warningMsg)
+					e.printStackTrace()
 
-				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
-				buildUtils.updateBuildResult(warningMsg:warningMsg)
-				println(warningMsg)
-				e.printStackTrace()
-
-				// terminate when continueOnScanFailure is not set to true
-				if(!(props.continueOnScanFailure == 'true')){
-					println "***** continueOnScan Failure set to false. Build terminates."
-					System.exit(1)
+					// terminate when continueOnScanFailure is not set to true
+					if(props.continueOnScanFailure && props.continueOnScanFailure.toBoolean() == false){
+						println("*! [ERROR] 'continueOnScanFailure' set to false. Terminating.")
+						System.exit(1)
+					}
 				}
 			}
 
@@ -668,9 +659,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
+		println("** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'")
 	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
-	
 }
 
 /*
