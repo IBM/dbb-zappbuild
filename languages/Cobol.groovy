@@ -142,7 +142,7 @@ sortedList.each { buildFile ->
 		}
 	}
 
-	// clean up passed DD 32ments
+	// clean up passed DD statements
 	job.stop()
 }
 
