@@ -45,9 +45,9 @@ sortedList.each { buildFile ->
 	
 	// copy build file and dependency files to data sets
 	if(isTazUnitTestCase){
-		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null)
+		buildUtils.copySourceFiles(buildFile, props.cobol_testcase_srcPDS, null, null, null, null)
 	}else{
-		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, dependencyResolver)
+		buildUtils.copySourceFiles(buildFile, props.cobol_srcPDS, 'cobol_dependenciesDatasetMapping', props.cobol_dependenciesAlternativeLibraryNameMapping, 'cobol_dependenciesCopyMode', dependencyResolver)
 	}
 
 	// Get logical file
@@ -76,8 +76,6 @@ sortedList.each { buildFile ->
 	int rc = compile.execute()
 	int maxRC = props.getFileProperty('cobol_compileMaxRC', buildFile).toInteger()
 
-	boolean bindFlag = true
-
 	if (rc > maxRC) {
 		bindFlag = false
 		String errorMsg = "*! The compile return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
@@ -99,7 +97,6 @@ sortedList.each { buildFile ->
 			maxRC = props.getFileProperty('cobol_linkEditMaxRC', buildFile).toInteger()
 
 			if (rc > maxRC) {
-				bindFlag = false
 				String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 				println(errorMsg)
 				props.error = "true"
@@ -116,29 +113,33 @@ sortedList.each { buildFile ->
 		}
 	}
 
-	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
-	bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPackage && bind_performBindPackage.toBoolean()) {
-		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
-		def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS);
-		if ( bindRc > bindMaxRC) {
-			String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+	//perform Db2 binds on userbuild
+	if (rc <= maxRC && buildUtils.isSQL(logicalFile) && props.userBuild) {
+
+		//perform Db2 Bind Pkg
+		bind_performBindPackage = props.getFileProperty('bind_performBindPackage', buildFile)
+		if ( bind_performBindPackage && bind_performBindPackage.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPackage(buildFile, props.cobol_dbrmPDS);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind package return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_pkg.log":bindLogFile])
+			}
 		}
-	}
-	
-	//perform Db2 Bind Pkg only on User Build and perfromBindPackage property
-	bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
-	if (props.userBuild && bindFlag && logicalFile.isSQL() && bind_performBindPlan && bind_performBindPlan.toBoolean()) {
-		int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
-		def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
-		if ( bindRc > bindMaxRC) {
-			String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
-			println(errorMsg)
-			props.error = "true"
-			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+
+		//perform Db2 Bind Plan
+		bind_performBindPlan = props.getFileProperty('bind_performBindPlan', buildFile)
+		if (bind_performBindPlan && bind_performBindPlan.toBoolean()) {
+			int bindMaxRC = props.getFileProperty('bind_maxRC', buildFile).toInteger()
+			def (bindRc, bindLogFile) = bindUtils.bindPlan(buildFile);
+			if ( bindRc > bindMaxRC) {
+				String errorMsg = "*! The bind plan return code ($bindRc) for $buildFile exceeded the maximum return code allowed ($props.bind_maxRC)"
+				println(errorMsg)
+				props.error = "true"
+				buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_bind_plan.log":bindLogFile])
+			}
 		}
 	}
 
@@ -219,13 +220,20 @@ def createCompileCommand(String buildFile, LogicalFile logicalFile, String membe
 		compile.dd(new DDStatement().dsn(props.cobol_BMS_PDS).options("shr"))
 	
 	// add additional datasets with dependencies based on the dependenciesDatasetMapping
-	PropertyMappings dsMapping = new PropertyMappings('cobol_dependenciesDatasetMapping')
-	dsMapping.getValues().each { targetDataset ->
+	PropertyMappings dependenciesDatasetMapping = new PropertyMappings('cobol_dependenciesDatasetMapping')
+	def compileDependenciesDatasets = props.getFileProperty('cobol_compileDependenciesDatasets', buildFile).split(',')
+	
+	dependenciesDatasetMapping.getValues().each { targetDataset ->
 		// exclude the defaults cobol_cpyPDS and any overwrite in the alternativeLibraryNameMap
-		if (targetDataset != 'cobol_cpyPDS')
+		if (targetDataset != 'cobol_cpyPDS' && compileDependenciesDatasets.contains(targetDataset))
 			compile.dd(new DDStatement().dsn(props.getProperty(targetDataset)).options("shr"))
 	}
-
+	
+	// add external dependencies datasets when present
+	props.cobol_compileDependenciesDatasets.split(",").each { additionalDependencyDataset ->
+		if (ZFile.dsExists("'${additionalDependencyDataset}'"))
+			compile.dd(new DDStatement().dsn(additionalDependencyDataset).options("shr"))
+	}
 	// add custom concatenation
 	def compileSyslibConcatenation = props.getFileProperty('cobol_compileSyslibConcatenation', buildFile) ?: ""
 	if (compileSyslibConcatenation) {
@@ -373,6 +381,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	// add a syslib to the compile command with optional CICS concatenation
 	linkedit.dd(new DDStatement().name("SYSLIB").dsn(props.cobol_objPDS).options("shr"))
+	
+	// add additional linkedit datasets containing dependencies dependencies when present
+	props.cobol_linkEditDependenciesDatasets.split(",").each { additionalLinkDataset ->
+		if (ZFile.dsExists("'${additionalLinkDataset}'"))
+			linkedit.dd(new DDStatement().dsn(additionalLinkDataset).options("shr"))
+	}
 	
 	// add custom concatenation
 	def linkEditSyslibConcatenation = props.getFileProperty('cobol_linkEditSyslibConcatenation', buildFile) ?: ""

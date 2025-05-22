@@ -132,17 +132,20 @@ def getRemoteGitBranches(String gitDir) {
  * @param  String gitDir  		Local Git repository directory
  */
 def isGitDetachedHEAD(String gitDir) {
-	String cmd = "git -C $gitDir status"
+	// If not detached, HEAD will be a symbolic-ref pointing to the branch
+	// If detached, HEAD will be a commit and this command will return a non-zero RC
+	String cmd = "git -C $gitDir symbolic-ref -q HEAD"
 	StringBuffer gitStatus = new StringBuffer()
 	StringBuffer gitError = new StringBuffer()
 
 	Process process = cmd.execute()
 	process.waitForProcessOutput(gitStatus, gitError)
+
 	if (gitError) {
 		println("*! Error executing Git command: $cmd error $gitError")
 	}
 
-	return gitStatus.toString().contains("HEAD detached at")
+	return process.exitValue() != 0;
 }
 
 /*
@@ -249,7 +252,7 @@ def getPreviousGitHash(String gitDir) {
  * 
  */
 def getChangedFiles(String gitDir, String baseHash, String currentHash) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status $baseHash $currentHash $gitDir"
 	return getChangedFiles(gitCmd)
 }
 
@@ -259,7 +262,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
  *  
  */
 def getMergeChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status remotes/origin/$baselineReference...HEAD $gitDir"
 	return getChangedFiles(gitCmd)
 }
 
@@ -269,7 +272,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
  *
  */
 def getConcurrentChanges(String gitDir, String baselineReference) {
-	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference"
+	String gitCmd = "git -C $gitDir --no-pager diff --name-status HEAD...remotes/origin/$baselineReference $gitDir"
 	return getChangedFiles(gitCmd)
 }
 

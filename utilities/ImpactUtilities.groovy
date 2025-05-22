@@ -26,6 +26,7 @@ def createImpactBuildList() {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
 	
@@ -36,7 +37,7 @@ def createImpactBuildList() {
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -55,7 +56,7 @@ def createImpactBuildList() {
 	if (calculatedChanges) {
 
 		// create build list using impact analysis
-		if (props.verbose) println "*** Perform impacted analysis for changed files."
+		if (props.verbose) println "*** Perform impact analysis for changed files."
 
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
@@ -141,7 +142,7 @@ def createImpactBuildList() {
 		
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-			if (props.verbose) println "*** Perform impacted analysis for property changes."
+			if (props.verbose) println "*** Perform impact analysis for property changes."
 
 			changedBuildProperties.each { changedProp ->
 
@@ -180,6 +181,22 @@ def createImpactBuildList() {
 					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
 			}
+		
+		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
+			
+		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
+			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
+			// locate logical files from the collection
+			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
+			logicalFileList.each { logicalFile ->
+				if (logicalFile.getFile().contains(repositoryFileName)) {
+					buildSet.add(logicalFile.getFile())
+					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+				}
+			}
+		}
+		
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
@@ -200,9 +217,10 @@ def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
-
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties) = calculateChangedFiles(null)
+	
+	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(null)
 
 	// scan files and update source collection
 	updateCollection(changedFiles, deletedFiles, renamedFiles)
@@ -220,7 +238,7 @@ def createMergeBuildList(){
 		}
 	}
 
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles]
 }
 
 /*
@@ -309,6 +327,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
 	// DBB property map to store changed files with their abbreviated git hash
@@ -423,22 +442,28 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 
 		if (props.verbose) println "*** Changed files for directory $dir $msg:"
 		changed.each { file ->
-			(file, mode) = fixGitDiffPath(file, dir, true, null)
+			(file, mode) = fixGitDiffPath(file, dir, true, mode)
 			if ( file != null ) {
 				// filter excluded files
 				if ( !buildUtils.matches(file, excludeMatchers)) {
 					changedFiles << file
 					if (!calculateConcurrentChanges) githashBuildableFilesMap.addFilePattern(abbrevCurrent, file)
 					if (props.verbose) println "**** $file"
-				} else {
+				} else if (!file.endsWith(".properties")){
 					if (props.verbose) println "**** $file is changed, but is excluded from build scope. See excludeFileList configuration."
 				}
-				//retrieving changed build properties
-				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties")){
+				// retrieving changed build properties, that are maintained in the application repository
+				// skip individual file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') == 1){
 					if (props.verbose) println "**** $file"
 					String gitDir = new File(buildUtils.getAbsolutePath(file)).getParent()
 					String pFile =  new File(buildUtils.getAbsolutePath(file)).getName()
 					changedBuildProperties.addAll(gitUtils.getChangedProperties(gitDir, baseline, current, pFile))
+				}
+				// deal with individual changed file level properties files
+				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean() && file.endsWith(".properties") && file.count('.') > 1){
+					if (props.verbose) println "**** $file"
+					changedIndividualFilePropertiesFiles << file
 				}
 			}
 		}
@@ -471,7 +496,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
-		changedBuildProperties
+		changedBuildProperties, 
+		changedIndividualFilePropertiesFiles
 	]
 }
 
@@ -513,10 +539,6 @@ def scanOnlyStaticDependencies(List buildList){
 		}
 	}
 }
-
-
-
-
 
 def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
@@ -563,70 +585,65 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
 			// files in a collection are stored as relative paths from a source directory
 
-			def scanner = dependencyScannerUtils.getScanner(file)
-			try {
-				def logicalFile
-				if (scanner != null) {
-					if (props.verbose) println "*** Scanning file $file (${props.workspace}/${file} with ${scanner.getClass()})"
-					logicalFile = scanner.scan(file, props.workspace)
-				} else {
-					// The below logic should be replaced with Registration Scanner when available
-					// See reported idea: https://ibm-z-software-portal.ideas.ibm.com/ideas/DBB-I-48
-					if (props.verbose) println "*** Skipped scanning file $file (${props.workspace}/${file})"
-					
-					// New logical file with Membername, buildfile, language set to file extension
-					logicalFile = new LogicalFile(CopyToPDS.createMemberName(file), file, file.substring(file.lastIndexOf(".") + 1).toUpperCase(), false, false, false)
-					
-					// Add logicalFile to LogicalFileCache
-					LogicalFileCache.add(props.workspace, logicalFile)
-				}
-				if (props.verbose) println "*** Logical file for $file =\n$logicalFile"
+			if (props.getFileProperty('skipStoringLogicalFile',file)) {
+				// treat file as a build file, but don't create a logicalFile in the DBB Medatastore
+				if (props.verbose) println("*** The file '${props.workspace}/${file}' is not added to DBB Metadatastore, but can be processed by build scripts.")
+			} else {
+				try {
+					def logicalFile
+					def scanner = dependencyScannerUtils.getScanner(file)
+					if (scanner != null) {
+						if (props.verbose) println("*** Scanning file '(${props.workspace}/${file}' with ${scanner.getClass()}")
+						logicalFile = scanner.scan(file, props.workspace)
+						if (props.verbose) println("*** Logical file for '$file' =\n$logicalFile")
+					} 
 
-				// Update logical file with dependencies to build properties
-				if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-					createPropertyDependency(file, logicalFile)
-				}
+					// Update logical file with dependencies to build properties
+					if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+						createPropertyDependency(file, logicalFile)
+					}
 
-				// If configured, update test case program dependencies
-				if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
-					// If the file is a zUnit configuration file (BZUCFG)
-					if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
+					// If configured, update test case program dependencies
+					if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean()) {
+						// If the file is a zUnit configuration file (BZUCFG)
+						if (scanner != null && scanner.getClass() == com.ibm.dbb.dependency.ZUnitConfigScanner) {
 
-						def logicalDependencies = logicalFile.getLogicalDependencies()
+							def logicalDependencies = logicalFile.getLogicalDependencies()
 
-						def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
-						def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
+							def sysTestDependency = logicalDependencies.find{it.getLibrary().equals("SYSTEST")} // Get the test case program from testcfg
+							def sysProgDependency = logicalDependencies.find{it.getLibrary().equals("SYSPROG")} // Get the application program name from testcfg
 
-						if (sysTestDependency){
-							// find in local list of logical files first (batch processing)
-							def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
-							if (!testCaseFiles){ // alternate retrieve it from the collection
-								testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
-									it.getLanguage().equals("COB")
+							if (sysTestDependency){
+								// find in local list of logical files first (batch processing)
+								def testCaseFiles = logicalFiles.findAll{it.getLname().equals(sysTestDependency.getLname())}
+								if (!testCaseFiles){
+									// alternate retrieve it from the collection
+									testCaseFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(sysTestDependency.getLname()).find{
+										it.getLanguage().equals("COB")
+									}
 								}
-							}
-							testCaseFiles.each{
-								it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
-								if (props.verbose) println "*** Updating dependencies for test case program ${it.getFile()} =\n$it"
-								logicalFiles.add(it)
+								testCaseFiles.each{
+									it.addLogicalDependency(new LogicalDependency(sysProgDependency.getLname(),"SYSPROG","PROGRAMDEPENDENCY"))
+									if (props.verbose) println("*** Updating dependencies for test case program '${it.getFile()}' =\n$it")
+									logicalFiles.add(it)
+								}
 							}
 						}
 					}
-				}
 
-				logicalFiles.add(logicalFile)
+					logicalFiles.add(logicalFile)
+				} catch (Exception e) {
 
-			} catch (Exception e) {
+					String warningMsg = "*! [WARNING] Scanning failed for file '${props.workspace}/${file}'"
+					buildUtils.updateBuildResult(warningMsg:warningMsg)
+					println(warningMsg)
+					e.printStackTrace()
 
-				String warningMsg = "***** Scanning failed for file $file (${props.workspace}/${file})"
-				buildUtils.updateBuildResult(warningMsg:warningMsg)
-				println(warningMsg)
-				e.printStackTrace()
-
-				// terminate when continueOnScanFailure is not set to true
-				if(!(props.continueOnScanFailure == 'true')){
-					println "***** continueOnScan Failure set to false. Build terminates."
-					System.exit(1)
+					// terminate when continueOnScanFailure is not set to true
+					if(props.continueOnScanFailure && props.continueOnScanFailure.toBoolean() == false){
+						println("*! [ERROR] 'continueOnScanFailure' set to false. Terminating.")
+						System.exit(1)
+					}
 				}
 			}
 
@@ -642,9 +659,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 
 	// save logical files
 	if (props.verbose)
-		println "** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'"
+		println("** Storing ${logicalFiles.size()} logical files in MetadataStore collection '$props.applicationCollectionName'")
 	metadataStore.getCollection(props.applicationCollectionName).addLogicalFiles(logicalFiles)
-	
 }
 
 /*
@@ -724,6 +740,9 @@ def verifyCollections() {
  *  calculates the correct filepath from the git diff, due to different offsets in the directory path
  *  like nested projects, projects at root level, no root folder
  *
+ *	the deleted file case cannot check if the file exists (mustExist=false)
+ *  if the mode is known, it tries to match based on a query with the metadatastore 
+ *  
  *  returns null if file not found + mustExist
  *
  *  scenarios / mode
@@ -739,52 +758,104 @@ def fixGitDiffPath(String file, String dir, boolean mustExist, mode) {
 	// default value, relevant for non-existent files (like deletions)
 	String defaultValue
 
+	// if mode is not defined and it deals with a deleted file,
+	// an extra query is performed to find the match between computed
+	//  fix and the existing DBB logical file entry in the DBB metadatastore
+	def logicalFiles
+	if (mode == null && !mustExist) {
+		MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
+		if (metadataStore.collectionExists(props.applicationCollectionName)) {
+			logicalName = CopyToPDS.createMemberName(file)
+			logicalFiles = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(logicalName)
+		}
+	}
+
 	// Scenario 1: Nested projects, like MortgageApplication and projects with a top-level dir
 	String relPath = new File(props.workspace).toURI().relativize(new File((dir).trim()).toURI()).getPath()
 	String fixedFileName= file.indexOf(relPath) >= 0 ? file.substring(file.indexOf(relPath)) : file
 	defaultValue = fixedFileName
 
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 1];
-	if (mode==1 && !mustExist) return [fixedFileName, 1]
+	if (mode == 1) {
+		return [fixedFileName, 1]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 1];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 1]
+			}
+		}
+	}
 
 	// Scenario 2: Repository name is used as Application Root directory
 	String dirName = new File(dir).getName()
-	if (new File("${dir}/${file}").exists())
-		return [
-			"$dirName/$file" as String,
-			2
-		]
-	if (mode==2 && !mustExist) return [
-			"$dirName/$file" as String,
-			2
-		]
+	fixedFileName = "${dirName}/${file}"
+
+	if (mode == 2) {
+		return [fixedFileName, 2]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${dir}/${file}").exists()) {
+			return [fixedFileName, 2];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 2]
+			}
+		}
+	}
 
 	// Scenario 3: Directory ${dir} is not the root directory of the file
 	// Example :
 	//   - applicationSrcDirs=nazare-demo-genapp/base/src/cobol,nazare-demo-genapp/base/src/bms
 	fixedFileName = buildUtils.relativizePath(dir) + ( file.indexOf ("/") >= 0 ? file.substring(file.lastIndexOf("/")) : file )
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 3];
-	if (mode==3 && !mustExist) return [fixedFileName, 3]
+	
+	if (mode == 3) {
+		return [fixedFileName, 3]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 3];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 3]
+			}
+		}
+	}
 
 	// Scenario 4:
 	//    Repository name is used as application root directory and
 	//      applicationSrcDirs is scoping the build scope by filtering on a subdirectory
 	//        applicationSrcDirs=nazare-demo-genapp/src
 	fixedFileName = "${props.application}/$file"
-	if ( new File("${props.workspace}/${fixedFileName}").exists())
-		return [fixedFileName, 4];
-	if (mode==4 && !mustExist) return [fixedFileName, 4]
-	
-	// returns null or assumed fullPath to file
+
+	if (mode == 4) {
+		return [fixedFileName, 4]
+	} else if (mode == null) { // mode unknown
+		if ( new File("${props.workspace}/${fixedFileName}").exists()) {
+			return [fixedFileName, 4];
+		}
+		// deleted file case
+		if (!mustExist) {
+			if (logicalFiles.any { it.getFile() == "${fixedFileName}"}) {
+				return [fixedFileName, 4]
+			}
+		}
+	}
+
+	// returns null or assumed default fullPath to file
 	if (mustExist){
 		if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) directory offset for file $file in dir $dir not found."
 		return [null, null]
 	}
 
-	if (props.verbose) println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
-	return [defaultValue, null]
+	if (props.verbose) {
+		println "*! (ImpactUtilities.fixGitDiffPath) Mode could not be determined. Returning default."
+		return [defaultValue, null]
+	}
 }
 
 /**

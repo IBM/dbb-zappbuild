@@ -14,25 +14,27 @@ This property file is loaded automatically at the beginning of the build and con
 Property | Description | Overridable
 --- | --- | ---
 runzTests | Boolean value to specify if zUnit tests should be run.  Defaults to `false`, to enable zUnit Tests, set value to `true`. | false
+tazunittest_convertTazResultsToJunit | Boolean value to specify if TAZ Unit Test results need to be converted to JUnit format.  Defaults to `false`, to enable JUnit conversion, set value to `true`. Xalan needs to be available in the users path to help in conversion. | false 
 applicationPropFiles | Comma separated list of additional application property files to load. Supports both absolute and relative file paths.  Relative paths assumed to be relative to ${workspace}/${application}/application-conf/. | false
-applicationSrcDirs | Comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used.  Relative paths assumed to be relative to ${workspace}. | false
+applicationSrcDirs | Define a comma separated list of all source directories included in application build. Each directory is assumed to be a local Git repository clone or subdirectory of it. Supports both absolute and relative paths though for maximum reuse of collected dependency data relative paths should be used. Relative paths assumed to be relative to ${workspace}. | false
+skipStoringLogicalFile | Define files that should not be tracked/recorded as logical file in the DBB metadatastore. Files can still be processed by language scripts and will be present in the dbb build reports. | false
+excludeFileList | Files that are completely excluded from being processed by the build. | false
+skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 buildOrder | Comma separated list of the build script processing order. | false
 formatConsoleOutput | Flag to log output in table views instead of printing raw JSON data | false
 mainBuildBranch | The main build branch of the main application repository.  Used for cloning collections for topic branch builds instead of rescanning the entire application. | false
 gitRepositoryURL | git repository URL of the application repository to establish links to the changed files in the build result properties | false
-excludeFileList | Files to exclude when scanning or running full build. | false
-skipImpactCalculationList | Files for which the impact analysis should be skipped in impact build | false
 addSubmodulesToBuildList  | Flag to include Static Sub module files in pipeline builds | false
 jobCard | JOBCARD for JCL execs | false
-**Build Property management** | | 
+**Build Property management** | |
 loadFileLevelProperties | Flag to enable the zAppBuild capability to load individual artifact properties files for a build file | true
 loadLanguageConfigurationProperties | Flag to enable the zAppBuild capability to load language configuration properties for build files mapped in languageConfigurationMapping.properties | true
 propertyFilePath | relative path to folder containing individual artifact properties files | true
 propertyFileExtension | file extension for individual artifact properties files | true
 **Dependency and Impact resolution configuration** ||
 resolveSubsystems | boolean flag to configure the SearchPathDependencyResolver to evaluate if resolved dependencies impact the file flags isCICS, isSQL, isDLI, isMQ when creating the LogicalFile | false
-impactResolutionRules | Comma separated list of resolution rule properties used for impact builds.  Sample resolution rule properties (in JSON format) are included below. ** deprecated ** Please consider moving to new SearchPathDepedencyAPI leveraging `impactSearch` configuration. | true, recommended in file.properties
-impactSearch | Impact finder resolution search configuration leveraging the SearchPathImpactFinder API. Sample configurations are inlcuded below, next to the previous rule definitions. | true
+impactSearch | A list of searchPath configurations to configure the DBB SearchPathImpactFinder API for impact analysis based on dependency information stored in the DBB Metadatastore. | true
+dependency resolution rules (DBB search path) | `copybookSearch` used to locate copybooks in dependency resolution process and find impacted programs during impact analysis <br> `pliincludeSearch` used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `asmMacroSearch` and `asmCopySearch` used to resolve assembler dependencies in dependency resolution process and find impacted programs during impact analysis `cppHeaderSearch` used to locate c header files in dependency resolution process and to find impacted programs during impact analysis <br> `rexxCopySearch`  used to resolve include files in dependency resolution process and find impacted programs during impact analysis <br> `tazRecordingFileSearch`  used to locate recording files during dependency resolution <br> `eztMacSearch` used to locate ezt macros in dependency resolution process and find impacted programs during impact analysis <br> `bmsSearch` used to find impacted programs during impact analysis <br> `linkSearch` used to find impacted programs during impact analysis <br> | false
 
 ### file.properties
 
@@ -57,17 +59,17 @@ General file level overwrites to control the allocations of system datasets for 
 Property | Description
 --- | ---
 isSQL | File property overwrite to indicate that a file requires to include SQL preprocessing, and allocation of Db2 libraries for compile and link phase.
-isCICS | File property overwrite to indicate that a file requires to include CICS preprocessing, and allocation of CICS libraries for compile and link phase. Also used to indicate if a *batch* module is executed under CICS for pulling appropriate language interface modules for Db2 or MQ. 
+isCICS | File property overwrite to indicate that a file requires to include CICS preprocessing, and allocation of CICS libraries for compile and link phase. Also used to indicate if a *batch* module is executed under CICS for pulling appropriate language interface modules for Db2 or MQ.
 isMQ | File property overwrite to indicate that a file requires to include MQ libraries for compile and link phase.
-isDLI | File property overwrite to indicate that a file requires to include DLI 
-isIMS | File property flag to indicate IMS batch and online programs to allocate the IMS RESLIB library during link phase (Compared to the other 4 above flags, the isIMS flag is a pure file property, and not computed by the DBB scanners). 
+isDLI | File property overwrite to indicate that a file requires to include DLI
+isIMS | File property flag to indicate IMS batch and online programs to allocate the IMS RESLIB library during link phase (Compared to the other 4 above flags, the isIMS flag is a pure file property, and not computed by the DBB scanners).
 
 Please note that the above file property settings `isCICS` and `isIMS` are also used to control the allocations when processing link cards with `LinkEdit.groovy` to include the appropriate runtime specific language interfaces.
 
 ### reports.properties
 Properties used by the build framework to generate reports. Sample properties file to all application-conf to overwrite central build-conf configuration.
 
-Property | Description 
+Property | Description
 --- | ---
 reportExternalImpacts | Flag to indicate if an *impactBuild* should analyze and report external impacted files in other collections
 reportExternalImpactsAnalysisDepths | Configuration of the analysis depths when performing impact analysis for external impacts (simple|deep)
@@ -206,6 +208,27 @@ pli_scanLoadModule | Flag indicating to scan the load module for link dependenci
 pli_compileSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during compile step | true
 pli_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
+Property | Description | Overridable
+--- | --- |
+cpp_fileBuildRank | default C/CPP program build rank - used to sort language build file list leave empty - overridden by file properties if sorting needed | true
+cpp_dependencySearch |  C/CPP dependencySearch configuration searchPath defined in application.properties | true
+cpp_compileMaxRC |  default C/CPP maximum RCs allowed | true
+cpp_impactPropertyList |  lists of properties which should cause a rebuild after being changed | false
+cpp_compileParms |  default C/CPP compiler parameters | true
+cpp_compileDebugParms | Compile Options for IBM Debugger. Assuming to keep Dwarf Files inside the load. If you would like to separate debug info, additional allocations needed (See C/CPP + Debugger libraries) | true
+cpp_linkEditParms |  default LinkEdit parameters | true
+cpp_linkEditStream | Optional linkEditStream defining additional link instructions via SYSIN dd, sample: cpp_linkEditStream=    INCLUDE SYSLIB(COBJT) | true
+cpp_linkEdit |  execute link edit step | true
+cpp_storeSSI |  store abbrev git hash in ssi field available for buildTypes impactBuild, mergeBuild and fullBuild | true
+cpp_identifyLoad |  flag to generate IDENTIFY statement during link edit phase to create an user data record (IDRU) to "sign" the load module with an identify String: <application>/<abbreviatedGitHash> to increase traceability. default: true | true
+cpp_deployType |  default deployType | true
+cpp_deployTypeCICS |  deployType for build files with isCICS=true | true
+cpp_deployTypeDLI |  deployType for build files with isDLI=true | true
+cpp_scanLoadModule |  scan link edit load module for link dependencies | true
+cpp_compileSyslibConcatenation |  additional libraries for compile SYSLIB concatenation, comma-separated | true
+cpp_assemblySyslibConcatenation |  additional libraries for compile ASMLIB concatenation, comma-separated ASMLIB concatenation for C programs using the ASM option | true
+cpp_linkEditSyslibConcatenation |  additional libraries for linkEdit SYSLIB concatenation, comma-separated | true
+
 ### bind.properties
 Application properties used by zAppBuild/utilities/BindUtilities.groovy
 
@@ -287,8 +310,8 @@ tazunittest_playbackFileExtension | Default zUnit Playback File Extension. | tru
 tazunittest_dependencySearch | Default zUnit dependencySearch configuration to configure the SearchPathDependencyResolver. Format is a concatenated string of searchPath configurations. Strings representing the SearchPaths defined in `application-conf/application.properties`.  | true
 tazunittest_eqaplayParms | Default options passed to the TAZ runner procedure EQAPPLAY | true
 tazunittest_userDebugSessionTestParm | Debug Tool Test parameter to initiate the debug session | true
-tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true 
-tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true 
+tazunittest_CodeCoverageHost | Headless Code Coverage Collector host (if not specified IDz will be used for reporting) | true
+tazunittest_CodeCoveragePort | Headless Code Coverage Collector port (if not specified IDz will be used for reporting) | true
 tazunittest_CodeCoverageOptions | Headless Code Coverage Collector Options | true
 
 ### CRB.properties
