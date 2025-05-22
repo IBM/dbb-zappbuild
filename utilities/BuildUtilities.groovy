@@ -939,7 +939,7 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 		if (shortGitHash != null) {
 			String identifyString = props.application + "/" + shortGitHash
 			//   IDENTIFY EPSCSMRT('MortgageApplication/abcabcabc')
-			identifyStmt = " " + "IDENTIFY ${member}(\'$identifyString\')"
+			identifyStmt = " " + "IDENTIFY ${member}(\'$identifyString\')\n "
 			if (identifyString.length() > maxRecordLength) {
 				String errorMsg = "*!* BuildUtilities.generateIdentifyStatement() - Identify string exceeds $maxRecordLength chars: identifyStmt=$identifyStmt"
 				println(errorMsg)
@@ -948,6 +948,10 @@ def generateIdentifyStatement(String buildFile, String dsProperty) {
 				return null
 			} else { 
 				// return generated IDENTIFY statement
+				if (identifyStmt.length() > 71) { // Split IDENTIFY after col 71
+					// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
+					identifyStmt = identifyStmt.substring(0,71) + "\n " + identifyStmt.substring(71,identifyStmt.length()) + "\n"
+				}
 				return identifyStmt
 			}
 		} else {

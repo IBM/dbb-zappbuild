@@ -340,12 +340,6 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
 	}
 
-	// Split linkEditInstream after col 71
-	if (sysin_linkEditInstream.length() > 71) { 
-		// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
-		sysin_linkEditInstream = sysin_linkEditInstream.substring(0,71) + "\n " + sysin_linkEditInstream.substring(71,sysin_linkEditInstream.length())
-	}
-
 	// appending debug exit to link instructions
 	if (props.debug && linkDebugExit!= null) {
 		sysin_linkEditInstream += "   " + linkDebugExit.replace("\\n","\n").replace('@{member}',member)
