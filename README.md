@@ -1,24 +1,30 @@
 # zAppBuild
+
 zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs.
 
 ## Resources
+
 * [IBM Dependency Based Build Product Page](https://www.ibm.com/products/dependency-based-build)
-* [IBM DBB Knowledge Center](https://www.ibm.com/docs/en/dbb/1.1.0)
+* [IBM DBB Knowledge Center](https://www.ibm.com/docs/en/adffz/dbb/3.0.0)
 * [IBM/dbb Repository](https://github.com/IBM/dbb/)
 * [IBM IDZ Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=f461c55d-159c-4a94-b708-9f7fe11d972b)
 * [IBM DBB Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=20c9b889-9450-4ab6-8f11-8a5eb2b3342d)
 
 
 ## Contributing
+
 For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
 
 ## How zAppBuild works
+
 The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. Global configuration properties are configured in the properties files in the [build-conf](build-conf/) directory. Specifying application-level properties is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
 
 **IMPORTANT** : The [datasets.properties](build-conf/datasets.properties) must be configured for your build machine before executing a build!  See [build-conf/README.md](build-conf/README.md) for more information.
 
 ## Supported Languages
+
 The zAppBuild sample provides the following *language* build scripts by default:
+
 * Assembler.groovy
 * BMS.groovy
 * Cobol.groovy
@@ -37,11 +43,13 @@ The zAppBuild sample provides the following *language* build scripts by default:
 All language scripts both compile and optionally link-edit programs. The language build scripts are intended to be useful out of the box but depending on the complexity of your applications' build requirements, may require modifications to meet your development team's needs.  By following the examples used in the existing language build scripts of keeping all application specific references out of the build scripts and instead using configuration properties with strong default values, the zAppBuild sample can continue to be a generic build solution for all of your specific applications.
 
 ## Build Scope
+
 The build scope of zAppBuild is an application which is loosely defined as one or more Git repositories containing all the z/OS source files required to build the application.  There are no specific rules as to the structure of the repositories except that one repository must contain the high level `application-conf` folder provided by zAppBuild which contains all of the configuration properties for building the application programs.  
 
 **NOTE:** All source repositories that make up the application must be cloned on the build machine under a common *workspace*  directory prior to calling build.groovy.
 
 zAppBuild supports a number of build scenarios:
+
 * **Single Program** - Build a single program in the application.
 * **List of Programs** - Build a list of programs provided by a text file.
 * **Full Build** - Build all programs (or buildable files) of an application.
@@ -51,8 +59,9 @@ zAppBuild supports a number of build scenarios:
 * **Merge Build** - Build only changed programs which will be merged back into the mainBuildBranch by using a triple-dot git diff. 
 * **Scan Source** - Skip the actual building and only scan source files to store dependency data in collection (migration scenario).
 * **Scan Source + Outputs** - Skip the actual building and only scan source files and existing load modules to dependency data in source and output collection (migration scenario with static linkage scenarios).
-* **Build Preview** - Supplemental build option. Process all phases of the supplied build option, but will not execute the commands. A build report and a build result are generated with a specific status that excludes them in subsequent impact build calculations. 
+* **Build Preview** - Supplemental build option. Process all phases of the supplied build option, but will not execute the commands. A build report and a build result are generated with a specific status that excludes them in subsequent impact build calculations.
 
+To check how to get started with zAppBuild, see [Getting started with zAppbuild](./docs/GettingStarted.md) section.
 
 Instructions on invoking a zAppBuild is included in [docs/BUILD.md](docs/BUILD.md) as well as invocation samples for the above mentioned build scenarios including sample console logs.
 
@@ -63,6 +72,7 @@ zAppBuild comes with a set of reporting features. It helps development teams to 
 Links to additional documentation is provided in the table below.  
 
 ## Repository Legend
+
 Folder/File | Description | Documentation Link
 --- | --- | ---
 build-conf | This folder contains global configuration properties used by build.groovy and language build scripts. | [build-conf/README.md](build-conf/README.md)
