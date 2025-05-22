@@ -142,7 +142,7 @@ sortedList.each { buildFile ->
 		}
 	}
 
-	// clean up passed DD statements
+	// clean up passed DD 32ments
 	job.stop()
 }
 
@@ -338,6 +338,12 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 		// include mq stub program
 		// https://www.ibm.com/docs/en/ibm-mq/9.3?topic=files-mq-zos-stub-programs
 		sysin_linkEditInstream += buildUtils.getMqStubInstruction(logicalFile)
+	}
+
+	// Split linkEditInstream after col 71
+	if (sysin_linkEditInstream.length() > 71) { 
+		// See syntax rules: https://www.ibm.com/docs/en/zos/3.1.0?topic=reference-identify-statement
+		sysin_linkEditInstream = sysin_linkEditInstream.substring(0,71) + "\n " + sysin_linkEditInstream.substring(71,sysin_linkEditInstream.length())
 	}
 
 	// appending debug exit to link instructions
