@@ -2,6 +2,8 @@
 
 zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs.
 
+IBM Dependency Based Build version 3.0 has introduced the zBuilder build framework - allowing your build configuration to be defined in YAML. This is an alternative build approach to zAppBuild. for further information see, [Getting Started Guide for zBuilder](https://www.ibm.com/docs/en/adffz/dbb/3.0.0?topic=zbuilder-getting-started).
+
 ## Resources
 
 * [IBM Dependency Based Build Product Page](https://www.ibm.com/products/dependency-based-build)
