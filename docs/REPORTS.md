@@ -2,6 +2,8 @@
 
 zAppBuild provides a set of reporting capabilities, which are part of the build framework itself to address some common demands of mainframe development teams.
 
+IBM Dependency Based Build version 3.0 has introduced the zBuilder build framework - allowing your build configuration to be defined in YAML. This is an alternative build approach to zAppBuild. for further information see, [Getting Started Guide for zBuilder](https://www.ibm.com/docs/en/adffz/dbb/3.0.0?topic=zbuilder-getting-started).
+
 Developers are particularly interested if:
 * A change of an element impacts other application components which are managed in a different repository.
 * Their changes on an isolated feature branch potentially cause a conflict with some concurrent development done by others within the same repository.
