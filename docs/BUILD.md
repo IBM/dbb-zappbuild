@@ -18,8 +18,6 @@ $DBB_HOME/bin/groovyz build.groovy \
 ```
 Since we are still missing a build target or calculated build option, the build will run successfully but not actually build any programs.
 
-**NOTE:** If you are looking for the YAML-based build configuration approach using zBuilder, please check out the zBuilder documentation at the [Getting Started Guide for zBuilder](https://www.ibm.com/docs/en/adffz/dbb/3.0.0?topic=zbuilder-getting-started).
-
 ## Common Pipeline Invocation Examples
 
 **Build one program**
