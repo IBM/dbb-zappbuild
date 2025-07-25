@@ -22,7 +22,7 @@ Here are the steps to make the zAppBuild repository available in a central repos
     1. In the terminal, navigate to the folder where you would like to clone the repository.
     2. Retrieve the Git repository URL or SSH path from IBM's public [zAppBuild repository](https://github.com/IBM/dbb-zappbuild):
 
-        ![Retrieving the Git repository URL from IBM's public zAppBuild repository](./img/dbb-zappbuild-code.png)
+        ![Retrieving the Git repository URL from IBM's public zAppBuild repository](./img/code.png)
     3. In your terminal, enter the command for cloning the repository. (The following command uses the Git repository URL, but the SSH path can also be used if you have SSH keys set up.):
 
         ```shell
@@ -31,7 +31,7 @@ Here are the steps to make the zAppBuild repository available in a central repos
 
         - Example Git clone command with output in a terminal:
 
-          ![Example Git clone command with output in a terminal](./img/dbb-zappbuild-clone-output.png)
+          ![Example Git clone command with output in a terminal](./img/clone-output.png)
 3. Follow the instructions of your Git provider to push the contents of your newly-cloned local repository (from Step 2) to the central repository on your Git provider (created in Step 1). (Note: Exact instructions may vary from Git provider to Git provider.)
     1. Within the terminal session, execute the following commands to push an existing Git repository:
         - Replace `<existing_repo>` with the path to your newly-cloned local repository.
@@ -48,7 +48,7 @@ Here are the steps to make the zAppBuild repository available in a central repos
     2. On the Git provider's webpage for your new central repository in the browser, you will find that the repository is now populated with all of zAppBuild's files and history, just like on IBM's public [zAppBuild](https://github.com/IBM/dbb-zappbuild) repository.
         - The following screenshot shows an example of a populated central zAppBuild repository with GitLab as the Git provider:
 
-            ![Example of a populated central zAppBuild repository in GitLab's web UI](./img/dbb-zappbuild-pushed.png)
+            ![Example of a populated central zAppBuild repository in GitLab's web UI](./img/pushed.png)
 
 ## Updating your customized version of zAppBuild
 
@@ -58,7 +58,7 @@ Once you have a clone of zAppBuild in your Git provider, you can customize the p
 2. Add a new Git remote definition to connect to IBM's official public zAppBuild GitHub repository. (Note: This step requires internet connectivity.)
     1. First, list the remotes by issuing `git remote -v`:
 
-        ![Output from initial listing of the remote tracked repositories](./img/dbb-zappbuild-remote-v1.png)
+        ![Output from initial listing of the remote tracked repositories](./img/remote-v1.png)
 
         - For more on Git remotes, see the [git-remote](https://git-scm.com/docs/git-remote) documentation.
 
@@ -70,7 +70,7 @@ Once you have a clone of zAppBuild in your Git provider, you can customize the p
 
     3. Verify that the new remote is available by issuing the command to list the remotes again: `git remote -v`:
 
-        ![Output from listing the remote tracked repositories after adding the zappbuild-official remote](./img/dbb-zappbuild-remote-v2.png)
+        ![Output from listing the remote tracked repositories after adding the zappbuild-official remote](./img/remote-v2.png)
 
     4. Fetch the latest information from the official repository, by executing a Git fetch for the official dbb-zappubuild repository:
 
@@ -78,7 +78,7 @@ Once you have a clone of zAppBuild in your Git provider, you can customize the p
         git fetch zappbuild-official
         ```
 
-        ![Output from Git fetch of the zappbuild-official remote](./img/dbb-zappbuild-fetch.png)
+        ![Output from Git fetch of the zappbuild-official remote](./img/fetch.png)
 
     5. Make sure that your feature branch is checked out, before attempting to merge the changes from zappbuild-official. To merge the changes run into your branch `update-zappbuild`, run the following command:
 
@@ -86,13 +86,13 @@ Once you have a clone of zAppBuild in your Git provider, you can customize the p
         git merge zappbuild-official/main
         ```
 
-        ![Merge conflict when attempting to merge in changes from zappbuild-official](./img/dbb-zappbuild-conflict.png)
+        ![Merge conflict when attempting to merge in changes from zappbuild-official](./img/conflict.png)
 
         Potentially, you face merge conflicts. In the above case, the merge processor could not automatically resolve the `utilities/ImpactUtilities.groovy`.
 
         Run the command `git status` to see which files changed:
 
-        ![Output of Git status to view files changed during the merge attempt](./img/dbb-zappbuild-status.png)
+        ![Output of Git status to view files changed during the merge attempt](./img/status.png)
     6. Open the unmerged files and resolve them manually. Either use the terminal, or an IDE for this task.
 
         The Git integration in many modern IDEs (for example, VS Code) is able to provide a side-by-side comparison highlighting the diff between your feature branch and the incoming changes from the merge attempt (in this case, from `zappbuild-official`). This can help make manual resolution of any merge conflicts much easier.
