@@ -19,5 +19,6 @@
 *.json zos-working-tree-encoding=utf-8 git-encoding=utf-8
 *.yaml zos-working-tree-encoding=utf-8 git-encoding=utf-8
 
-# TAZ recording file
+# binary managed files
 *.rec binary
+*.png binary
