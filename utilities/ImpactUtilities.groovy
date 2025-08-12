@@ -670,9 +670,35 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	if (metadataStore && !props.error && !props.preview) {
+	
+	     def relBuildFile = buildUtils.relativizePath(buildFile)
+         def defaultMember = relBuildFile.tokenize('/')[-1].replaceAll(/\..*$/, '').toUpperCase()
+         String member = defaultMember  // start with default
+         /*
+         * Process the below steps for a LINK file only. This is to cater to the scenario when the LINK member name is different from
+         * the load module name
+         */
+         if (buildFile.toLowerCase().endsWith(".lnk")) {
+             String overrideMember = null
+             File lnkFile = new File(buildFile)
+
+                if (lnkFile.exists()) {
+                   lnkFile.eachLine { line ->
+                   def matcher = (line =~ /NAME\s+(\w+)\s*\(R\)/)
+                        if (matcher.find()) {
+                         overrideMember = matcher.group(1).toUpperCase()
+                         if (props.verbose) println "Found a different load module in .lnk file: $overrideMember"
+                        }
+                    }  
+                }
+              //replace the lnk member name so the correct load module is scanned       
+              if (overrideMember) {
+                member = overrideMember
+               }   
+          }
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
-		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
+		LogicalFile scannerLogicalFile = scanner.scan(relBuildFile, loadPDS, member)
 		if (props.verbose) println "*** Logical file = \n$scannerLogicalFile"
 
 		// overwrite original logicalDependencies with load module dependencies
