@@ -34,11 +34,30 @@ sortedList.each { buildFile ->
 
 	// create mvs commands
 	String member = CopyToPDS.createMemberName(buildFile)
-	
+	String overrideMember = member
+
+	/*
+	 * The below steps are to cater to the scenario when the LINK member name is different from
+	 * the load module name. 
+	*/ 
+    if (buildFile.toLowerCase().endsWith(".lnk")) {
+       File lnkFile = new File(buildFile)
+
+       if (lnkFile.exists()) {
+           lnkFile.eachLine { line ->
+             def matcher = (line =~ /NAME\s+(\w+)\s*\(R\)/)
+              if (matcher.find()) {
+                  overrideMember = matcher.group(1).toUpperCase()
+                  if (props.verbose) println "*** Load Module in link card: $overrideMember"
+                }
+            }
+        }
+
+    }
 	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.linkedit.log")
 	if (logFile.exists())
 		logFile.delete()
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, overrideMember, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -57,13 +76,15 @@ sortedList.each { buildFile ->
 		if(!props.userBuild){
 			// only scan the load module if load module scanning turned on for file
 			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
+			member = overrideMember
 			if (scanLoadModule && scanLoadModule.toBoolean())
-				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, member, logicalFile)
 		}
 	}
 
 	job.stop()
 }
+
 
 // end script
 
@@ -75,7 +96,7 @@ sortedList.each { buildFile ->
 /*
  * createLinkEditCommand - creates a MVSExec xommand for link editing the object module produced by link file
  */
-def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, String overrideMember, File logFile) {
 	String parms = props.getFileProperty('linkEdit_parms', buildFile)
 	String linker = props.getFileProperty('linkedit_linkEditor', buildFile)
 
@@ -95,7 +116,7 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// deployType requires a file level overwrite to define isCICS and isDLI, while the linkcard does not carry isCICS, isDLI attributes
 	String deployType = buildUtils.getDeployType("linkedit", buildFile, logicalFile)
 	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr").report(true))
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($member)").options('shr').output(true).deployType(deployType))
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($overrideMember)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.linkedit_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.linkedit_tempOptions))
 
@@ -130,7 +151,3 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	return linkedit
 }
-
-
-
-
