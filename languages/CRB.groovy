@@ -54,6 +54,7 @@ buildList.each { buildFile ->
         if (slashIndex < 0) slashIndex = 0
 
         def outputFile = "CICSResourceBuilder/" + buildFile.substring(slashIndex + 1, extIndex) + ".csd"
+		def prepareFile = "CICSResourceBuilder/" + buildFile.substring(slashIndex + 1, extIndex) + "_prepare.csd"
 
         File outputDir = new File(props.buildOutDir + '/CICSResourceBuilder');
         if (!outputDir.exists())
@@ -65,6 +66,8 @@ buildList.each { buildFile ->
         if (applicationConstraintsFile && fileExists(applicationConstraintsFile)) {
             optionsString += " --application ${applicationConstraintsFile}"
         }
+		optionsString += " --prepare ${props.buildOutDir}/${prepareFile}"
+		
         ArrayList<String> optionsList = new ArrayList<String>(Arrays.asList(optionsString.split(" ")))
         if (props.verbose)
             println("*** Executing command '$zrbPath' with options '${optionsList}'")
@@ -76,6 +79,8 @@ buildList.each { buildFile ->
         zrbExecution.setFile(buildFile)
         zrbExecution.setOutputEncoding(encoding)
         zrbExecution.addOutput(props.buildOutDir, outputFile, "CSD")
+		zrbExecution.addOutput(props.buildOutDir, prepareFile, "CSD")
+		
         int returnCode = zrbExecution.execute()
 
         // evaluate return code
