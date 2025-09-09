@@ -408,7 +408,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			if (lastBuildResult != null && props.impactBuild && !calculateConcurrentChanges){
 
 				if (!baseline) {
-					if (props.verbose) println "*! Baseline Hash for Directory $dir not found. Retrieving list of files that are considered to be added to the build scope."
+					if (props.verbose) println "*! Baseline hash for directory '$dir' not found. Retrieving list of files in '$dir' and adding to build list."
 					Set<String> fileSet = buildUtils.getFileSet(dir, true, '**/*.*', props.excludeFileList)
 					changed.addAll(fileSet)
 				}
