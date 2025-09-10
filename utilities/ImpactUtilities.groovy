@@ -406,10 +406,11 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			// when a build result is provided and build type impactBuild,
 			//   calculate changed between baseline and current state of the repository
 			if (lastBuildResult != null && props.impactBuild && !calculateConcurrentChanges){
-				baseline = baselineHashes.get(buildUtils.relativizePath(dir))
-				current = currentHashes.get(buildUtils.relativizePath(dir))
-				if (!baseline || !current) {
-					if (props.verbose) println "*! Skipping directory $dir because baseline or current hash does not exist.  baseline : $baseline current : $current"
+
+				if (!baseline) {
+					if (props.verbose) println "*! Baseline hash for directory '$dir' not found. Retrieving list of files in '$dir' and adding to build list."
+					Set<String> fileSet = buildUtils.getFileSet(dir, true, '**/*.*', props.excludeFileList)
+					changed.addAll(fileSet)
 				}
 				else {
 					if (props.verbose) println "** Diffing baseline $baseline -> current $current"
