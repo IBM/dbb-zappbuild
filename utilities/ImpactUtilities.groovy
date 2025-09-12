@@ -613,7 +613,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, movedFiles) {
 					def logicalFile
 					def scanner = dependencyScannerUtils.getScanner(file)
 					if (scanner != null) {
-						if (props.verbose) println("*** Scanning file ${props.workspace}/${file} with ${scanner.getClass()}")
+						if (props.verbose) println("*** Scanning file ${file} with ${scanner.getClass()}")
 						logicalFile = scanner.scan(file, props.workspace)
 						if (props.verbose) println("*** Logical file for '$file' =\n$logicalFile")
 					} 
