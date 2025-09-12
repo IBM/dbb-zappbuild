@@ -282,9 +282,10 @@ def getConcurrentChanges(String gitDir, String baselineReference) {
 def getChangedFiles(String cmd) {
 	def git_diff = new StringBuffer()
 	def git_error = new StringBuffer()
-	def changedFiles = []
-	def deletedFiles = []
-	def renamedFiles = []
+	def changedFiles = [] // to be rebuild
+	def deletedFiles = [] // to be removed from the DBB Metadatastore + Generate Deletion Record
+	def renamedFiles = [] // to be removed from the DBB Metadatastore
+	def movedFiles = []   // to be scanned but not rebuild
 
 	def process = cmd.execute()
 	process.waitForProcessOutput(git_diff, git_error)
@@ -311,10 +312,14 @@ def getChangedFiles(String cmd) {
 			} else if (action.startsWith("R")) { // handle renamed file
 				renamedFile = gitDiffOutput[1]
 				newFileName = gitDiffOutput[2]
-				changedFiles.add(newFileName) // will rebuild file
 				renamedFiles.add(renamedFile)
 				//evaluate similarity score
 				similarityScore = action.substring(1) as int
+				if (similarityScore == 100) {
+					movedFiles.add(newFileName)
+				} else {
+					changedFiles.add(newFileName) // will rebuild file
+				}
 				if (similarityScore < 50){
 					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $renamedFile : $similarityScore with new file $newFileName. ")
 				}
@@ -333,7 +338,8 @@ def getChangedFiles(String cmd) {
 	return [
 		changedFiles,
 		deletedFiles,
-		renamedFiles
+		renamedFiles,
+		movedFiles
 	]
 }
 
