@@ -104,10 +104,11 @@ def renameAndCommit(String renameFile, String newFilename) {
 
 def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
-	println "** Validating impact build results"
-	def expectedFilesBuilt = filesBuiltMappings.getValue(renameFile) as int
-
 	try{
+		println "** Validating impact build results"
+
+		def expectedFilesBuilt = filesBuiltMappings.getValue(renameFile)
+
 		// Validate clean build
 		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $renameFile\nOUTPUT STREAM:\n$outputStream\n"
 
