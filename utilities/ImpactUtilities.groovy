@@ -326,10 +326,10 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Map<String,String> currentHashes = new HashMap<String,String>()
 	Map<String,String> currentAbbrevHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
-	Set<String> changedFiles = new HashSet<String>()
-	Set<String> deletedFiles = new HashSet<String>()
-	Set<String> renamedFiles = new HashSet<String>()
-	Set<String> movedFiles = new HashSet<String>()
+	Set<String> changedFiles = new HashSet<String>() // to be built
+	Set<String> deletedFiles = new HashSet<String>() // to be removed from metadatastore
+	Set<String> renamedFiles = new HashSet<String>() // to be removed from metadatastore
+	Set<String> movedFiles = new HashSet<String>() // to be scanned and added to metadatastore
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
@@ -445,8 +445,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		// make sure file is not an excluded file
 		List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
-		if (props.verbose) println "*** Changed files for directory $dir $msg:"
-		if (props.verbose) println "*** To be rebuilt"
+		if (props.verbose) println "*** Changed files for directory $dir $msg (to be built):"
 
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, mode)
@@ -475,8 +474,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
-		if (props.verbose) println "*** To be removed from DBB Metadatastore"
+		if (props.verbose) println "*** Deleted files for directory $dir $msg (to be removed from DBB Metadatastore):"
 		deleted.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -487,8 +485,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
-		if (props.verbose) println "*** To be removed from DBB Metadatastore"
+		if (props.verbose) println "*** Renamed files for directory $dir $msg (to be removed from DBB Metadatastore):"
 		renamed.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -499,8 +496,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Moved files for directory $dir $msg:"
-		if (props.verbose) println "*** To be added to DBB Metadatastore, not rebuilt"
+		// files are not built
+		if (props.verbose) println "*** Moved files for directory $dir $msg (to be scanned and added to DBB Metadatastore):"
 		moved.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
