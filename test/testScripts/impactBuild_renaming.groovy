@@ -65,7 +65,7 @@ try {
 		process.waitForProcessOutput(outputStream, System.err)
 
 		// validate build results
-		validateImpactBuild(renameFile, filesBuiltMappings, outputStream)
+		validateImpactBuild(renameFile, newFilename, filesBuiltMappings, outputStream)
 	}
 }
 finally {
@@ -102,7 +102,7 @@ def renameAndCommit(String renameFile, String newFilename) {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
+def validateImpactBuild(String renameFile, String newFilename, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
 	try{
 		println "** Validating impact build results"
@@ -119,7 +119,6 @@ def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, 
 		assert outputStream.contains("*** Deleting renamed logical file for ${props.app}/${renameFile}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
 		
 		// Validate that new files is scanned
-		newFilename=renamedFilesMapping.getValue(renameFile)
 		assert outputStream.contains("*** Scanning file '${props.app}/${newFilename}'") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND SCAN OF NEW FILE\nOUTPUT STREAM:\n$outputStream\n"				
 		
 		println "**"
