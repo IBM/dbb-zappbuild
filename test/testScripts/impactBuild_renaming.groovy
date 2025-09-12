@@ -119,7 +119,7 @@ def validateImpactBuild(String renameFile, String newFilename, PropertyMappings 
 		assert outputStream.contains("*** Deleting renamed logical file for ${props.app}/${renameFile}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
 		
 		// Validate that new files is scanned
-		assert outputStream.contains("*** Scanning file \\'${props.app}/${newFilename}\\'") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND SCAN OF NEW FILE\nOUTPUT STREAM:\n$outputStream\n"				
+		assert outputStream.contains("*** Scanning file ${props.app}/${newFilename}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND SCAN OF NEW FILE\nOUTPUT STREAM:\n$outputStream\n"				
 		
 		println "**"
 		println "** IMPACT BUILD TEST - FILE RENAME : PASSED FOR RENAMING $renameFile **"
