@@ -592,7 +592,7 @@ def createBuildList() {
 			println("** Deleting collection ${props.applicationOutputsCollectionName}")
 			metadataStore.deleteCollection(props.applicationOutputsCollectionName)
 		}
-		impactUtils.updateCollection(buildSet, null, null)
+		impactUtils.updateCollection(buildSet, null, null, null)
 	}
 	// check if impact build
 	else if (props.impactBuild) {
