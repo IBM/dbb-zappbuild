@@ -40,7 +40,8 @@ sortedList.each { buildFile ->
 	 * The below steps cater to the scenario when the LINK sourceMembername is different from
 	 * the load module name and the flag linkedit_extractOutputMember is set to true. 
 	*/ 
-    if (props.get("linkedit_extractOutputMember")?.toBoolean()) {
+    String linkedit_extractOutputMember = props.getFileProperty('linkedit_extractOutputMember', buildFile)
+    if (linkedit_extractOutputMember && linkedit_extractOutputMember.toBoolean()) {
        File lnkFile = new File(buildFile)
 
        if (lnkFile.exists()) {
