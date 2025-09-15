@@ -49,7 +49,7 @@ sortedList.each { buildFile ->
              def matcher = (line =~ /NAME\s+(\w+)\s*\(R\)/)
               if (matcher.find()) {
                   outputMember = matcher.group(1).toUpperCase()
-                  if (props.verbose) println "*** Load Module in link card: $outputMember"
+                  if (props.verbose) println "*** Link card defines Load Module output name as: $outputMember"
                 }
             }
         }
