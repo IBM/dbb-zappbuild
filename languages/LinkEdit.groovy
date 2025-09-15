@@ -33,12 +33,32 @@ sortedList.each { buildFile ->
 	LogicalFile logicalFile = SearchPathDependencyResolver.getLogicalFile(buildFile,props.workspace)
 
 	// create mvs commands
-	String member = CopyToPDS.createMemberName(buildFile)
-	
-	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${member}.log" : "${props.buildOutDir}/${member}.linkedit.log")
+	String sourceMember = CopyToPDS.createMemberName(buildFile)
+	String outputMember = sourceMember
+
+	/*
+	 * The below steps cater to the scenario when the LINK sourceMembername is different from
+	 * the load module name and the flag linkedit_extractOutputMember is set to true. 
+	*/ 
+    String linkedit_extractOutputMember = props.getFileProperty('linkedit_extractOutputMember', buildFile)
+    if (linkedit_extractOutputMember && linkedit_extractOutputMember.toBoolean()) {
+       File lnkFile = new File(buildFile)
+
+       if (lnkFile.exists()) {
+           lnkFile.eachLine { line ->
+             def matcher = (line =~ /NAME\s+(\w+)\s*\(R\)/)
+              if (matcher.find()) {
+                  outputMember = matcher.group(1).toUpperCase()
+                  if (props.verbose) println "*** Link card defines Load Module output name as: $outputMember"
+                }
+            }
+        }
+
+    }
+	File logFile = new File( props.userBuild ? "${props.buildOutDir}/${sourceMember}.log" : "${props.buildOutDir}/${sourceMember}.linkedit.log")
 	if (logFile.exists())
 		logFile.delete()
-	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, member, logFile)
+	MVSExec linkEdit = createLinkEditCommand(buildFile, logicalFile, sourceMember, outputMember, logFile)
 
 	// execute mvs commands in a mvs job
 	MVSJob job = new MVSJob()
@@ -51,19 +71,20 @@ sortedList.each { buildFile ->
 		String errorMsg = "*! The link edit return code ($rc) for $buildFile exceeded the maximum return code allowed ($maxRC)"
 		println(errorMsg)
 		props.error = "true"
-		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}.log":logFile])
+		buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${sourceMember}.log":logFile])
 	}
 	else {
 		if(!props.userBuild){
 			// only scan the load module if load module scanning turned on for file
-			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)
+			String scanLoadModule = props.getFileProperty('linkedit_scanLoadModule', buildFile)			
 			if (scanLoadModule && scanLoadModule.toBoolean())
-				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+				impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, outputMember, logicalFile)
 		}
 	}
 
 	job.stop()
 }
+
 
 // end script
 
@@ -75,7 +96,7 @@ sortedList.each { buildFile ->
 /*
  * createLinkEditCommand - creates a MVSExec xommand for link editing the object module produced by link file
  */
-def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
+def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String sourceMember, String outputMember, File logFile) {
 	String parms = props.getFileProperty('linkEdit_parms', buildFile)
 	String linker = props.getFileProperty('linkedit_linkEditor', buildFile)
 
@@ -94,8 +115,8 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 	// add DD statements to the linkedit command
 	// deployType requires a file level overwrite to define isCICS and isDLI, while the linkcard does not carry isCICS, isDLI attributes
 	String deployType = buildUtils.getDeployType("linkedit", buildFile, logicalFile)
-	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($member)").options("shr").report(true))
-	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($member)").options('shr').output(true).deployType(deployType))
+	linkedit.dd(new DDStatement().name("SYSLIN").dsn("${props.linkedit_srcPDS}($sourceMember)").options("shr").report(true))
+	linkedit.dd(new DDStatement().name("SYSLMOD").dsn("${props.linkedit_loadPDS}($outputMember)").options('shr').output(true).deployType(deployType))
 	linkedit.dd(new DDStatement().name("SYSPRINT").options(props.linkedit_tempOptions))
 	linkedit.dd(new DDStatement().name("SYSUT1").options(props.linkedit_tempOptions))
 
@@ -130,7 +151,3 @@ def createLinkEditCommand(String buildFile, LogicalFile logicalFile, String memb
 
 	return linkedit
 }
-
-
-
-

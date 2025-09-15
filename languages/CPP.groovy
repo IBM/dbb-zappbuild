@@ -98,7 +98,7 @@ sortedList.each { buildFile ->
                     // only scan the load module if load module scanning turned on for file
                     String scanLoadModule = props.getFileProperty('cpp_scanLoadModule', buildFile)
                     if (scanLoadModule && scanLoadModule.toBoolean())
-                        impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, logicalFile)
+                        impactUtils.saveStaticLinkDependencies(buildFile, props.linkedit_loadPDS, member, logicalFile)
                 }
             }
         }

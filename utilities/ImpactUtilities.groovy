@@ -668,12 +668,12 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
  * saveStaticLinkDependencies - Scan the load module to determine LINK dependencies. Impact resolver can use
  * these to determine that this file gets rebuilt if a LINK dependency changes.
  */
-def saveStaticLinkDependencies(String buildFile, String loadPDS, LogicalFile logicalFile) {
+def saveStaticLinkDependencies(String buildFile, String loadPDS, String member, LogicalFile logicalFile) {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
 	if (metadataStore && !props.error && !props.preview) {
 		LinkEditScanner scanner = new LinkEditScanner()
 		if (props.verbose) println "*** Scanning load module for $buildFile"
-		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS)
+		LogicalFile scannerLogicalFile = scanner.scan(buildUtils.relativizePath(buildFile), loadPDS, member)
 		if (props.verbose) println "*** Logical file = \n$scannerLogicalFile"
 
 		// overwrite original logicalDependencies with load module dependencies
