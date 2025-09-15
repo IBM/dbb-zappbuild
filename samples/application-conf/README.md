@@ -172,7 +172,7 @@ linkedit_deployType | default deployType for build output | true
 linkedit_deployTypeCICS | deployType for build output for build files where isCICS=true set as file property | true
 linkedit_deployTypeDLI | deployType for build output for build files with isDLI=true set as file property | true
 linkedit_scanLoadModule | Flag indicating to scan the load module for link dependencies and store in the application's outputs collection. | true
-linkedit_extractOutputMember | flag to turn on extraction of the output member name from the linkage editor control file | false
+linkedit_extractOutputMember | Flag to turn on extraction of the output member name from the linkage editor control file | true
 linkEdit_linkEditSyslibConcatenation | A comma-separated list of libraries to be concatenated in syslib during linkEdit step | true
 
 ### PLI.properties
