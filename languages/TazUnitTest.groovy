@@ -44,7 +44,9 @@ int currentBuildFileNumber = 1
 	LogicalFile logicalFile = buildUtils.createLogicalFile(dependencyResolver, buildFile)
 
 	// get playback dependency for bzucfg file from logicalFile
-	LogicalDependency playbackFile = getPlaybackFile(logicalFile);
+	String playbackFile = getPlaybackFile(logicalFile);
+	String sysload = getLoadModule(logicalFile);
+	String sysprog = getProgram(logicalFile);
 
 	// Create JCLExec String
 	String jobcard = props.getFileProperty('tazunittest_jobCard', buildFile).replace("\\n", "\n")
@@ -67,11 +69,13 @@ int currentBuildFileNumber = 1
 	jcl += """\
 //  PARM=('$unitTestParms')
 """
-	if (playbackFile != null) { // bzucfg contains reference to a playback file
+	if (playbackFile != null) {
+		// bzucfg contains reference to a playback file
 		jcl +=
 				"//REPLAY.BZUPLAY DD DISP=SHR, \n" +
-				"// DSN=${props.tazunittest_bzuplayPDS}(${playbackFile.getLname()}) \n"
-	} else { // no playbackfile referenced
+				"// DSN=${props.tazunittest_bzuplayPDS}(${playbackFile}) \n"
+	} else {
+		// no playbackfile referenced
 		jcl +=
 				"//REPLAY.BZUPLAY DD DUMMY   \n"
 	}
@@ -106,13 +110,23 @@ int currentBuildFileNumber = 1
 				"//CEEOPTS DD *                        \n"   +
 				( ( codeCoverageHost != null && codeCoveragePort != null && !props.userBuild ) ? "TEST(,,,TCPIP&${codeCoverageHost}%${codeCoveragePort}:*)  \n" : "${debugParms}  \n" ) +
 				"ENVAR(\n"
+
+		// define the EQA_STARTUP_KEY
+		String key = "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}"
+		if (sysload != null) {
+			key = "EQA_STARTUP_KEY=CC,${member},t=${member},z=${sysload}"
+			if (sysload != sysprog) {
+				key += ",f='- .*,+ ${sysload} ${sysprog} .*"
+			}
+		}
+
 		if (codeCoverageOptions != null) {
-			optionsParms = splitCCParms('"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}," + codeCoverageOptions + '")');
+			optionsParms = splitCCParms('"' + "${key}," + codeCoverageOptions + '")');
 			optionsParms.each { optionParm ->
 				jcl += optionParm + "\n";
 			}
 		} else {
-			jcl += '"' + "EQA_STARTUP_KEY=CC,${member},t=${member},i=${member}" +'")' + "\n"
+			jcl += '"' + "${key}" +'")' + "\n"
 		}
 		jcl += "/* \n"
 	} else if (props.debugzUnitTestcase && props.userBuild) {
@@ -179,26 +193,30 @@ int currentBuildFileNumber = 1
 			// Store Report in Workspace
 			new CopyToHFS().dataset(props.tazunittest_bzureportPDS).member(member).file(reportLogFile).copyMode(DBBConstants.CopyMode.valueOf("BINARY")).append(false).copy()
 			if (props.tazunittest_convertTazResultsToJunit && props.tazunittest_convertTazResultsToJunit.toBoolean()) {
-			    if (props.tazunittest_tazxlsconv) {
-			  	// Convert the report to Junit and store in workspace
-			 	def exec = new UnixExec()
-			  	   .command("Xalan")
-			  	   .options(["-o", reportJunitFile.toString(), reportLogFile.toString(), xslFile])
-			  	   .execute()
-					
-		          	if (exec != 0) {
-                             	    String convWarningMsg = "*** Warning: JUnit Conversion failed with return code RC=${exec} for $buildFile"
-			            println  convWarningMsg
-                                    buildUtils.updateBuildResult(warningMsg:convWarningMsg)                             
-                                } else {
-                                       println "***  JUnit Conversion executed successfully with return code RC=${exec} for $buildFile"
-                                }	
-				    
-		           } else {
-                                  String msg = "***  Warning: JUnit Conversion skipped - XSL file path is missing in (tazunittest_tazxlsconv)"
-                                  println msg
-                                  buildUtils.updateBuildResult(warningMsg: msg)			
-		           }	   
+				if (props.tazunittest_tazxlsconv) {
+					// Convert the report to Junit and store in workspace
+					def exec = new UnixExec()
+							.command("Xalan")
+							.options([
+								"-o",
+								reportJunitFile.toString(),
+								reportLogFile.toString(),
+								xslFile
+							])
+							.execute()
+
+					if (exec != 0) {
+						String convWarningMsg = "*** Warning: JUnit Conversion failed with return code RC=${exec} for $buildFile"
+						println  convWarningMsg
+						buildUtils.updateBuildResult(warningMsg:convWarningMsg)
+					} else {
+						println "***  JUnit Conversion executed successfully with return code RC=${exec} for $buildFile"
+					}
+				} else {
+					String msg = "***  Warning: JUnit Conversion skipped - XSL file path is missing in (tazunittest_tazxlsconv)"
+					println msg
+					buildUtils.updateBuildResult(warningMsg: msg)
+				}
 			}
 			// printReport
 			printReport(reportLogFile)
@@ -210,16 +228,17 @@ int currentBuildFileNumber = 1
 			println warningMsg
 			printReport(reportLogFile)
 			buildUtils.updateBuildResult(warningMsg:warningMsg,logs:["${member}_tazunittest.log":logFile])
-		} else { // rc > props.tazunittest_maxWarnRC.toInteger()
+		} else {
+			// rc > props.tazunittest_maxWarnRC.toInteger()
 			props.error = "true"
 			String errorMsg = "*! TAZ Unit Test failed with RC=($rc) for $buildFile "
 			println(errorMsg)
 			buildUtils.updateBuildResult(errorMsg:errorMsg,logs:["${member}_tazunittest.log":logFile])
 		}
-	} else { // skip evaluating Unit tests result
+	} else {
+		// skip evaluating Unit tests result
 		if (props.verbose) println "*** Evaluation of TAZ Unit Test result skipped, because running in preview mode."
 	}
-
 }
 
 /**
@@ -234,7 +253,29 @@ def getPlaybackFile(LogicalFile logicalFile) {
 	LogicalDependency playbackDependency = logicalFile.getLogicalDependencies().find {
 		it.getLibrary() == "SYSPLAY"
 	}
-	return playbackDependency
+	return ((playbackDependency==null)?null:playbackDependency.getLname())
+}
+
+/*
+ * returns the SYSLOAD lname
+ */
+def getLoadModule(LogicalFile logicalFile) {
+	// find load module dependency
+	LogicalDependency sysloadDependency = logicalFile.getLogicalDependencies().find {
+		it.getLibrary() == "SYSLOAD"
+	}
+	return ((sysloadDependency==null)?null:sysloadDependency.getLname())
+}
+
+/*
+ * returns the SYSPROG lname
+ */
+def getProgram(LogicalFile logicalFile) {
+	// find program under test dependency
+	LogicalDependency sysprogDependency = logicalFile.getLogicalDependencies().find {
+		it.getLibrary() == "SYSPROG"
+	}
+	return ((sysprogDependency==null)?null:sysprogDependency.getLname())
 }
 
 /**
@@ -263,7 +304,6 @@ def printReport(File resultFile) {
 	} catch (Exception e) {
 		print "! Reading TAZ Unit Test result failed."
 	}
-
 }
 
 def splitCCParms(String parms) {
