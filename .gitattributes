@@ -9,16 +9,21 @@
 *.mfs zos-working-tree-encoding=ibm-1047
 *.bnd zos-working-tree-encoding=ibm-1047
 *.lnk zos-working-tree-encoding=ibm-1047
-*.txt zos-working-tree-encoding=ibm-1047
-*.groovy zos-working-tree-encoding=ibm-1047
-*.sh zos-working-tree-encoding=ibm-1047
-*.properties zos-working-tree-encoding=ibm-1047
 *.asm zos-working-tree-encoding=ibm-1047
 *.jcl zos-working-tree-encoding=ibm-1047
 *.mac zos-working-tree-encoding=ibm-1047
+*.txt zos-working-tree-encoding=ibm-1047
+*.md zos-working-tree-encoding=utf-8
+
+# build configuration
+*.properties zos-working-tree-encoding=ibm-1047
+*.groovy zos-working-tree-encoding=ibm-1047
+*.sh zos-working-tree-encoding=ibm-1047
+*.config zos-working-tree-encoding=ibm-1047
+
 *.json zos-working-tree-encoding=utf-8
 *.yaml zos-working-tree-encoding=utf-8
-*.md zos-working-tree-encoding=ibm-1047
+*.yml zos-working-tree-encoding=ibm-1047
 
 # binary managed files
 *.rec binary
