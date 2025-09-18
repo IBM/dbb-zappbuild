@@ -496,7 +496,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		// files are not built
+		// files are not built. This is for documentation purposes. See logic in GitUtilities.groovy
 		if (props.verbose) println "*** Moved files for directory $dir $msg (to be scanned and added to DBB Metadatastore):"
 		moved.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
@@ -504,7 +504,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				movedFiles << file
 				if (props.verbose) println "**** $file"
 			} else {
-				if (props.verbose) println "**** $file is renamed, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
+				if (props.verbose) println "**** $file is moved, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
