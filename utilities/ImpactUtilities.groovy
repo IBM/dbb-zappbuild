@@ -26,6 +26,7 @@ def createImpactBuildList() {
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> movedFiles = new HashSet<String>()
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
@@ -37,7 +38,7 @@ def createImpactBuildList() {
 
 	// calculate changed files
 	if (lastBuildResult || props.baselineRef) {
-		(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(lastBuildResult)
+		(changedFiles, deletedFiles, renamedFiles, movedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(lastBuildResult)
 	}
 	else {
 		// else create a fullBuild list
@@ -50,7 +51,7 @@ def createImpactBuildList() {
 	}
 
 	// scan files and update source collection for impact analysis
-	updateCollection(changedFiles, deletedFiles, renamedFiles)
+	updateCollection(changedFiles, deletedFiles, renamedFiles, movedFiles)
 
 
 	if (calculatedChanges) {
@@ -217,13 +218,14 @@ def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
 	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> movedFiles = new HashSet<String>()
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	
-	(changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(null)
+	(changedFiles, deletedFiles, renamedFiles, movedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles) = calculateChangedFiles(null)
 
 	// scan files and update source collection
-	updateCollection(changedFiles, deletedFiles, renamedFiles)
+	updateCollection(changedFiles, deletedFiles, renamedFiles, movedFiles)
 
 	// iterate over changed file and add them to the buildSet
 
@@ -238,7 +240,7 @@ def createMergeBuildList(){
 		}
 	}
 
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles]
+	return [buildSet, changedFiles, deletedFiles, renamedFiles, movedFiles, changedBuildProperties, changedIndividualFilePropertiesFiles]
 }
 
 /*
@@ -324,9 +326,10 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Map<String,String> currentHashes = new HashMap<String,String>()
 	Map<String,String> currentAbbrevHashes = new HashMap<String,String>()
 	Map<String,String> baselineHashes = new HashMap<String,String>()
-	Set<String> changedFiles = new HashSet<String>()
-	Set<String> deletedFiles = new HashSet<String>()
-	Set<String> renamedFiles = new HashSet<String>()
+	Set<String> changedFiles = new HashSet<String>() // to be built
+	Set<String> deletedFiles = new HashSet<String>() // to be removed from metadatastore
+	Set<String> renamedFiles = new HashSet<String>() // to be removed from metadatastore
+	Set<String> movedFiles = new HashSet<String>() // to be scanned and added to metadatastore
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
@@ -393,6 +396,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		def changed = []
 		def deleted = []
 		def renamed = []
+		def moved = []
 		String baseline
 		String current
 		String abbrevCurrent
@@ -414,7 +418,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				}
 				else {
 					if (props.verbose) println "** Diffing baseline $baseline -> current $current"
-					(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current)
+					(changed, deleted, renamed, moved) = gitUtils.getChangedFiles(dir, baseline, current)
 				}
 			}
 			// when no build result is provided but the outgoingChangesBuild, calculate the outgoing changes
@@ -424,11 +428,11 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				current = "HEAD"
 
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
-				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
+				(changed, deleted, renamed, moved) = gitUtils.getMergeChanges(dir, baseline)
 			}
 			// calculate concurrent changes
 			else if (calculateConcurrentChanges) {
-				(changed, deleted, renamed) = gitUtils.getConcurrentChanges(dir, gitReference)
+				(changed, deleted, renamed, moved) = gitUtils.getConcurrentChanges(dir, gitReference)
 			}
 		}
 		else {
@@ -441,7 +445,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		// make sure file is not an excluded file
 		List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
-		if (props.verbose) println "*** Changed files for directory $dir $msg:"
+		if (props.verbose) println "*** Changed files for directory $dir $msg (to be built):"
+
 		changed.each { file ->
 			(file, mode) = fixGitDiffPath(file, dir, true, mode)
 			if ( file != null ) {
@@ -469,7 +474,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Deleted files for directory $dir $msg:"
+		if (props.verbose) println "*** Deleted files for directory $dir $msg (to be removed from DBB Metadatastore):"
 		deleted.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -480,7 +485,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Renamed files for directory $dir $msg:"
+		if (props.verbose) println "*** Renamed files for directory $dir $msg (to be removed from DBB Metadatastore):"
 		renamed.each { file ->
 			if ( !buildUtils.matches(file, excludeMatchers)) {
 				(file, mode) = fixGitDiffPath(file, dir, false, mode)
@@ -491,12 +496,25 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
+		// files are not built. This is for documentation purposes. See logic in GitUtilities.groovy
+		if (props.verbose) println "*** Moved files for directory $dir $msg (to be scanned and added to DBB Metadatastore):"
+		moved.each { file ->
+			if ( !buildUtils.matches(file, excludeMatchers)) {
+				(file, mode) = fixGitDiffPath(file, dir, false, mode)
+				movedFiles << file
+				if (props.verbose) println "**** $file"
+			} else {
+				if (props.verbose) println "**** $file is moved, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
+			}
+		}
+
 	}
 
 	return [
 		changedFiles,
 		deletedFiles,
 		renamedFiles,
+		movedFiles,
 		changedBuildProperties, 
 		changedIndividualFilePropertiesFiles
 	]
@@ -541,7 +559,7 @@ def scanOnlyStaticDependencies(List buildList){
 	}
 }
 
-def updateCollection(changedFiles, deletedFiles, renamedFiles) {
+def updateCollection(changedFiles, deletedFiles, renamedFiles, movedFiles) {
 
 	if (!MetadataStoreFactory.metadataStoreExists()) {
 		if (props.verbose) println "** Unable to update collections. No Metadata Store."
@@ -580,7 +598,8 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 	}
 
 	// scan changed files
-	changedFiles.each { file ->
+	def filesToBeScanned = ( changedFiles + movedFiles )
+	filesToBeScanned.each { file ->
 
 		// make sure file is not an excluded file
 		if ( new File("${props.workspace}/${file}").exists() && !buildUtils.matches(file, excludeMatchers)) {
@@ -594,7 +613,7 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles) {
 					def logicalFile
 					def scanner = dependencyScannerUtils.getScanner(file)
 					if (scanner != null) {
-						if (props.verbose) println("*** Scanning file '(${props.workspace}/${file}' with ${scanner.getClass()}")
+						if (props.verbose) println("*** Scanning file ${file} with ${scanner.getClass()}")
 						logicalFile = scanner.scan(file, props.workspace)
 						if (props.verbose) println("*** Logical file for '$file' =\n$logicalFile")
 					} 
