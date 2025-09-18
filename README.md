@@ -22,6 +22,8 @@ zAppBuild publishes [releases](https://github.com/IBM/dbb-zappbuild/releases) wi
 
 Contributions are reviewed and then merged into branch `main`. The maintainers of the repository will create a [release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) when the contents qualifies for a new release and the state of the repository passed the [zAppBuild test framework](test/). 
 
+The [version.properties](version.properties) file contains the recent version number, and is displayed when running zAppBuild with `--verbose` output option.
+
 You'll find a [discussion](https://github.com/IBM/dbb-zappbuild/discussions) page for each zAppBuild release.
 
 ## How zAppBuild works
