@@ -16,6 +16,14 @@ IBM Dependency Based Build version 3.0 has introduced the zBuilder build framewo
 
 For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
 
+## zAppBuild releases
+
+zAppBuild publishes [releases](https://github.com/IBM/dbb-zappbuild/releases) with a New & Noteworthy summary via Github's release capability.
+
+Contributions are reviewed and then merged into branch `main`. The maintainers of the repository will create a [release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) when the contents qualifies for a new release and the state of the repository passed the [zAppBuild test framework](test/). 
+
+You'll find a [discussion](https://github.com/IBM/dbb-zappbuild/discussions) page for each zAppBuild release.
+
 ## How zAppBuild works
 
 The zAppBuild repository is intended to be cloned to a single location on Unix Systems Services (USS) and used to build all of your z/OS applications. Global configuration properties are configured in the properties files in the [build-conf](build-conf/) directory. Specifying application-level properties is done by simply copying the supplied `application-conf` folder (located in the [samples folder](samples)) to the application source repository you want to build and then verify/update the contained default configuration property values to ensure they meet the build requirements of your application. See the included [MortgageApplication](samples/MortgageApplication) sample for an example of an application that has been modified to be built by zAppBuild.  
