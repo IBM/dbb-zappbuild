@@ -248,7 +248,7 @@ def getPreviousGitHash(String gitDir) {
 
 /*
  * getChangedFiles - assembles a git diff command to support the impactBuild for a given directory
- *  returns the changed, deleted and renamed files.
+ *  returns the changed, deleted, renamed and moved files.
  * 
  */
 def getChangedFiles(String gitDir, String baseHash, String currentHash) {
@@ -258,7 +258,7 @@ def getChangedFiles(String gitDir, String baseHash, String currentHash) {
 
 /*
  * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios 
- *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
+ *  returns the changed, deleted, renamed and moved files between current HEAD and the provided baseline.
  *  
  */
 def getMergeChanges(String gitDir, String baselineReference) {
@@ -268,7 +268,7 @@ def getMergeChanges(String gitDir, String baselineReference) {
 
 /*
  * getMergeChanges - assembles a git triple-dot diff command to support mergeBuild scenarios
- *  returns the changed, deleted and renamed files between current HEAD and the provided baseline.
+ *  returns the changed, deleted, renamed and moved files between current HEAD and the provided baseline.
  *
  */
 def getConcurrentChanges(String gitDir, String baselineReference) {
