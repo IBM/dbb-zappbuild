@@ -65,7 +65,7 @@ try {
 		process.waitForProcessOutput(outputStream, System.err)
 
 		// validate build results
-		validateImpactBuild(renameFile, filesBuiltMappings, outputStream)
+		validateImpactBuild(renameFile, newFilename, filesBuiltMappings, outputStream)
 	}
 }
 finally {
@@ -102,25 +102,25 @@ def renameAndCommit(String renameFile, String newFilename) {
 	task.waitForProcessOutput(outputStream, System.err)
 }
 
-def validateImpactBuild(String renameFile, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
-
-	println "** Validating impact build results"
-	def expectedFilesBuiltList = filesBuiltMappings.getValue(renameFile).split(',')
+def validateImpactBuild(String renameFile, String newFilename, PropertyMappings filesBuiltMappings, StringBuffer outputStream) {
 
 	try{
+		println "** Validating impact build results"
+
+		def expectedFilesBuilt = filesBuiltMappings.getValue(renameFile)
+
 		// Validate clean build
 		assert outputStream.contains("Build State : CLEAN") : "*! IMPACT BUILD FAILED FOR $renameFile\nOUTPUT STREAM:\n$outputStream\n"
 
 		// Validate expected number of files built
-		def numImpactFiles = expectedFilesBuiltList.size()
-		assert outputStream.contains("Total files processed : ${numImpactFiles}") : "*! IMPACT BUILD FOR $renameFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${numImpactFiles}\nOUTPUT STREAM:\n$outputStream\n"
-
-		// Validate expected built files in output stream
-		assert expectedFilesBuiltList.count{ i-> outputStream.contains(i) } == expectedFilesBuiltList.size() : "*! IMPACT BUILD FOR $renameFile DOES NOT CONTAIN THE LIST OF BUILT FILES EXPECTED ${expectedFilesBuiltList}\nOUTPUT STREAM:\n$outputStream\n"
+		assert outputStream.contains("Total files processed : ${expectedFilesBuilt}") : "*! IMPACT BUILD FOR $renameFile TOTAL FILES PROCESSED ARE NOT EQUAL TO ${expectedFilesBuilt}\nOUTPUT STREAM:\n$outputStream\n"
 
 		// Validate message that file renamed was deleted from collections
 		assert outputStream.contains("*** Deleting renamed logical file for ${props.app}/${renameFile}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND DELETION OF LOGICAL FILE\nOUTPUT STREAM:\n$outputStream\n"
-				
+		
+		// Validate that new files is scanned
+		assert outputStream.contains("*** Scanning file ${props.app}/${newFilename}") : "*! IMPACT BUILD FOR $renameFile DO NOT FIND SCAN OF NEW FILE\nOUTPUT STREAM:\n$outputStream\n"				
+		
 		println "**"
 		println "** IMPACT BUILD TEST - FILE RENAME : PASSED FOR RENAMING $renameFile **"
 		println "**"

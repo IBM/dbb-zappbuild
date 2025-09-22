@@ -2,18 +2,29 @@
 
 zAppBuild is a generic build solution for building z/OS applications using Apache Groovy build scripts and IBM Dependency Based Build (DBB) APIs.
 
+IBM Dependency Based Build version 3.0 has introduced the zBuilder build framework - allowing your build configuration to be defined in YAML. This is an alternative build approach to zAppBuild. For further information see [Getting Started Guide for zBuilder](https://www.ibm.com/docs/en/adffz/dbb/3.0.0?topic=zbuilder-getting-started).
+
 ## Resources
 
 * [IBM Dependency Based Build Product Page](https://www.ibm.com/products/dependency-based-build)
-* [IBM DBB Knowledge Center](https://www.ibm.com/docs/en/adffz/dbb/3.0.0)
+* [IBM Docs](https://www.ibm.com/docs/en/adffz/dbb/latest)
 * [IBM/dbb Repository](https://github.com/IBM/dbb/)
-* [IBM IDZ Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=f461c55d-159c-4a94-b708-9f7fe11d972b)
-* [IBM DBB Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=20c9b889-9450-4ab6-8f11-8a5eb2b3342d)
-
+* [IBM/dbb-git-migration-modeler Repository](https://github.com/IBM/dbb-git-migration-modeler/)
+* [IBM Development and Pipeline Community](https://community.ibm.com/community/user/ibmz-and-linuxone/groups/topic-home?CommunityKey=f461c55d-159c-4a94-b708-9f7fe11d972b)
 
 ## Contributing
 
 For instructions on how to contribute enhancements and bug fixes to zAppBuild, please read the [Contributions Guidelines](CONTRIBUTIONS.md).
+
+## zAppBuild releases
+
+zAppBuild publishes [releases](https://github.com/IBM/dbb-zappbuild/releases) with a New & Noteworthy summary via Github's release capability.
+
+Contributions are reviewed and then merged into branch `main`. The maintainers of the repository will create a [release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) when the contents qualifies for a new release and the state of the repository passed the [zAppBuild test framework](test/). 
+
+The [version.properties](version.properties) file contains the recent version number, and is displayed when running zAppBuild with `--verbose` output option.
+
+You'll find a [discussion](https://github.com/IBM/dbb-zappbuild/discussions) page for each zAppBuild release.
 
 ## How zAppBuild works
 

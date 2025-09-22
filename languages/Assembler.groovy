@@ -153,7 +153,7 @@ sortedList.each { buildFile ->
 				String scanLoadModule = props.getFileProperty('assembler_scanLoadModule', buildFile)
 				if (scanLoadModule && scanLoadModule.toBoolean()) {
 					String assembler_loadPDS = props.getFileProperty('assembler_loadPDS', buildFile)
-					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, logicalFile)
+					impactUtils.saveStaticLinkDependencies(buildFile, assembler_loadPDS, member, logicalFile)
 				}
 			}
 		}

@@ -86,7 +86,7 @@ sortedList.each { buildFile ->
 					// only scan the load module if load module scanning turned on for file
 					String scanLoadModule = props.getFileProperty('rexx_scanLoadModule', buildFile)
 					if (scanLoadModule && scanLoadModule.toBoolean())
-						impactUtils.saveStaticLinkDependencies(buildFile, props.rexx_loadPDS, logicalFile)
+						impactUtils.saveStaticLinkDependencies(buildFile, props.rexx_loadPDS, member, logicalFile)
 				}
 			}
 		}
