@@ -170,7 +170,7 @@ def checkExistingFilesPropertyDefinition(String buildFile, String member, String
         expValue = expandedValue.toString()
 	                
         // If build file is already mapped to a value
-        if (propertyMapping.isMapped(expValue, buildFile)) {
+        if (propertyMapping.isMapped(expValue, buildFile) && (props.getProperty(entryKey) != expValue ) ) {
             if (props.verbose) println("    *! An existing file property was detected for $buildFile ") 
             if (props.verbose) println("       Existing value ${entryKey}=${value}")
             filePatternIsMapped = true
