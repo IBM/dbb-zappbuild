@@ -61,7 +61,17 @@ else {
 			println("** Invoking test scripts according to test order: ${props.testOrder}")
 			testOrderList = props.testOrder.split(',')
 		}
-		buildOrder = buildOrderList + testOrderList
+		buildOrder = buildOrderList + testOrderList		
+		
+		if (props.verbose) println("** Validating presence of build list files in workspace")
+		buildList.each { buildFile ->
+			absolutePathBuildFile = buildUtils.getAbsolutePath(buildFile)
+			if (!(new File(absolutePathBuildFile).exists())) {
+				println("** [WARN] The build file '$buildFile' was not found at '$absolutePathBuildFile'. The file will be removed from the build list, and the build process continues. Please validate situation for any inconsistencies.")
+				buildList.remove(buildFile)
+			}			
+		}
+		
 		buildOrder.each { script ->
 			scriptPath = script
 			// Use the ScriptMappings class to get the files mapped to the build script
