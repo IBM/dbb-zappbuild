@@ -149,6 +149,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 		dependencyPaths.each { dependencyPath ->
 			// if dependency is relative, convert to absolute path
 			String dependencyLoc = getAbsolutePath(dependencyPath)
+			String copyMode = props.getFileProperty(dependencyCopyModeMapping, dependencyLoc)
 
 			// Assume library is SYSLIB for all dependencies
 			String dependencyPDS = props.getProperty(dependenciesDatasetMapping.getValue(dependencyPath))
@@ -159,7 +160,7 @@ def copySourceFiles(String buildFile, String srcPDS, String dependencyDatasetMap
 				// create member name
 				String memberName = CopyToPDS.createMemberName(dependencyPath)
 				try {
-					new CopyToPDS().file(new File(physicalDependencyLoc))
+					new CopyToPDS().file(new File(dependencyLoc))
 					.dataset(dependencyPDS)
 					.copyMode(DBBConstants.CopyMode.valueOf(copyMode))
 					.member(memberName)
