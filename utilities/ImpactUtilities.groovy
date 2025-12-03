@@ -701,7 +701,7 @@ def saveStaticLinkDependencies(String buildFile, String loadPDS, String member, 
 		// Store logical file and indirect dependencies to the outputs collection
 		metadataStore.getCollection("${props.applicationOutputsCollectionName}").addLogicalFile( logicalFile );
 	} else {
-		if (props.verbose) println "*** Scanning load module for $buildFile was skipped due to prior condition (no metadatastore connection, build in error)."
+		if (props.verbose) println "*** Scanning load module '$loadPDS($member)' for '$buildFile' was skipped due to prior conditions (ex.: build state in error, performing preview build, no metadatastore connection)."
 	}
 }
 
