@@ -279,10 +279,10 @@ def createAssemblerSQLTranslatorCommand(String buildFile, LogicalFile logicalFil
 def createAssemblerCICSTranslatorCommand(String buildFile, LogicalFile logicalFile, String member, File logFile) {
 
 	// TODO: Externalise DFH pgm
-	String assember_cicsprecompiler = props.getFileProperty('assember_cicsprecompiler', buildFile)
-	String assember_cicsprecompilerParms = props.getFileProperty('assember_cicsprecompilerParms', buildFile)
+	String assembler_cicsprecompiler = props.getFileProperty('assembler_cicsprecompiler', buildFile)
+	String assembler_cicsprecompilerParms = props.getFileProperty('assembler_cicsprecompilerParms', buildFile)
 	
-	MVSExec assembler_CICStranslator = new MVSExec().file(buildFile).pgm(assember_cicsprecompiler).parm(assember_cicsprecompilerParms)
+	MVSExec assembler_CICStranslator = new MVSExec().file(buildFile).pgm(assembler_cicsprecompiler).parm(assembler_cicsprecompilerParms)
 
 	// add DD statements to the compile command
 	String assembler_srcPDS = props.getFileProperty('assembler_srcPDS', buildFile)
