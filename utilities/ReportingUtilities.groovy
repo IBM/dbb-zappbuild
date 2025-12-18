@@ -133,7 +133,7 @@ def calculateLogicalImpactedFiles(List<String> fileList, Set<String> changedFile
 		}
 	}
 
-	if(logicalDependencies.size != 0) {
+	if(logicalDependencies.size() != 0) {
 
 		// get all collections which match pattern
 		List<String> selectedCollections = new ArrayList()
