@@ -72,7 +72,6 @@ else {
 			}
 			return false
 		}
-		if (props.verbose) println("** Build list files in workspace: ${buildList}")
 		
 		buildOrder.each { script ->
 			scriptPath = script
