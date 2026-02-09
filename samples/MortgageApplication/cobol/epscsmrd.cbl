@@ -7,7 +7,7 @@
       *  *************************************************************
       *    ************************RD/z**7.5************************
       *          *********************************************
-      **         Hello from Future Z workshop - Feb 9th
+      **         Hello from testing
        IDENTIFICATION DIVISION.
         PROGRAM-ID. 'EPSCSMRD'.
         AUTHOR. WD4Z.
