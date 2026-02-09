@@ -64,13 +64,15 @@ else {
 		buildOrder = buildOrderList + testOrderList		
 		
 		if (props.verbose) println("** Validating presence of build list files in workspace")
-		buildList.each { buildFile ->
+		buildList.removeAll { buildFile ->
 			absolutePathBuildFile = buildUtils.getAbsolutePath(buildFile)
 			if (!(new File(absolutePathBuildFile).exists())) {
 				println("** [WARN] The build file '$buildFile' was not found at '$absolutePathBuildFile'. The file will be removed from the build list, and the build process continues. Please validate situation for any inconsistencies.")
-				buildList.remove(buildFile)
-			}			
+				return true
+			}
+			return false
 		}
+		if (props.verbose) println("** Build list files in workspace: ${buildList}")
 		
 		buildOrder.each { script ->
 			scriptPath = script
@@ -843,6 +845,7 @@ def finalizeBuildProcess(Map args) {
 	if (props.error)
 		System.exit(1)
 }
+
 
 
 
