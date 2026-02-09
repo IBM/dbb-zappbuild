@@ -6,8 +6,9 @@
       *         Web Services for CICS TS 3.x Converter Driver
       *  *************************************************************
       *    ************************RD/z**7.5************************
-      *          *********************************************
+      *          *********************************************x
       **         Hello from Future Z workshop - Feb 9th
+      **         This work Ryan's personal testing space. So if I messed anything and it will not affect company's code
        IDENTIFICATION DIVISION.
         PROGRAM-ID. 'EPSCSMRD'.
         AUTHOR. WD4Z.
