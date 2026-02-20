@@ -765,7 +765,8 @@ def finalizeBuildProcess(Map args) {
 					String gitchangedfilesKey = "$gitchangedfilesPrefix${buildUtils.relativizePath(dir)}"
 					def lastBuildResult= buildUtils.retrieveLastBuildResult()
 					if (lastBuildResult){
-						String userBaselineRef = (props.baselineRef) ? buildUtils.getUserProvidedBaselineRef(dir).replaceAll("origin/","") : null
+						String baselineRef = props.baselineRef ? buildUtils.getUserProvidedBaselineRef(dir) : null
+						String userBaselineRef = baselineRef?.replaceAll("origin/","")
 						String baselineHash = (userBaselineRef) ? userBaselineRef : lastBuildResult.getProperty(key)
 						String gitchangedfilesLink = props.gitRepositoryURL << "/" << props.gitRepositoryCompareService <<"/" << baselineHash << "..." << currenthash
 						String gitchangedfilesLinkUrl = new URI(gitchangedfilesLink).normalize().toString()
