@@ -4,7 +4,51 @@ zAppBuild is a free, generic mainframe application build framework that customer
 
 Build properties can span across all applications (enterprise-level), one application (application-level), or individual programs. Properties that cross all applications are managed by administrators and define enterprise-wide settings such as the PDS name of the compiler, data set allocation attributes, and more. Application- and program-level properties are typically managed within the application repository itself.
 
-The zAppBuild framework is invoked either by a developer using the "User Build" capability in their integrated development environment (IDE), or by an automated CI/CD pipeline. It supports different build types.
+The zAppBuild framework is invoked either by a developer using the "User Build" capability in their integrated development environment (IDE), or by an automated CI/CD pipeline. It supports different [build types](../README#build-scope).
+
+## Understanding zAppBuild's concepts and architecture
+
+The main script of zAppBuild, `build.groovy`, initializes the build environment, identifies what to build, and invokes language scripts. This triggers the utilities and DBB APIs to then produce runtime artifacts. The build process also creates logs and an artifact manifest (`BuildReport.json`) for deployment processes coordinated by the deployment manager.
+
+The following chart provides a high-level summary of the steps that zAppBuild performs during a build:
+
+![zAppBuild workflow](../img/zappbuild-workflow.png)
+
+### zAppBuild architecture
+
+The zAppBuild framework is split into two parts. The core build framework, called `dbb-zappbuild`, is a Git repository that contains the build scripts and stores enterprise-level settings. Your organization's copy of `dbb-zappbuild` should reside in a permanent location on your z/OS UNIX file system (in addition to your organization's central Git repository). It is typically owned and controlled by the central build team.
+
+The other part of zAppBuild is the `application-conf` folder that resides within each application repository to provide application-level settings to the central build framework. These settings are owned, maintained, and updated by the application team.
+
+#### `dbb-zappbuild` folder structure overview
+
+- `build-conf` contains the following enterprise-level property files:
+  - `build.properties` defines DBB initilization properties, including location of the DBB metadata store (for storing dependency information) and more.
+  - `dataset.properties` describes system datasets such as the PDS name of the COBOL compiler or libraries used for the subsystem. You must update this properties file with your site’s data set names.
+  - Several language-specific property files that define the compiler or link-editor/binder program names, system libraries, and general system-level properties for COBOL, Assembler, and other languages.
+- `languages` contains Groovy scripts used to build programs. For example, `Cobol.groovy` is called by `build.groovy` to compile the COBOL source codes. The application source code is mapped by its file extension to the language script in `application-conf/file.properties`.
+- `samples` contains an `application-conf` template folder and a reference sample application, MortgageApplication.
+- `utilities` contains helper scripts used by `build.groovy` and other scripts to calculate the build list.
+- `build.groovy` is the main build script of zAppBuild. It takes several required command line parameters to customize the build process.
+
+#### `application-conf` overview
+
+This folder is located within the application's repository, and defines application-level properties such as the following:
+
+- `application.properties` defines various directory rules, default Git branch, impact resolution rules such as the copybook lookup rules, and more.
+- `file.properties` maps files to the language scripts in `dbb-zappbuild/languages`, and provides file-level property overrides.
+- Property files for further customization of the language script processing. For example, `Cobol.properties` is one of the language properties files to define compiler and link-edit options, among other properties.
+
+The following diagram illustrates how zAppBuild's application- and enterprise-level configurations feed into its build scripts to generate build artifacts from an application repository:
+![zAppBuild architecture](../img/zappbuild-architecture.png)
+
+### Available samples
+
+This [IBM dbb-zappbuild repository](https://github.com/IBM/dbb-zappbuild) is available for you to clone as a starting template for your organization's `dbb-zappbuild`. You can then customize and configure your copy of this central build framework as needed. More information on how to do this is detailed in the following section, [Making zAppBuild available in your Git provider](./GettingStarted.md#making-zappbuild-available-in-your-git-provider).
+
+The IBM dbb-zappbuild repository also includes a [sample `application-conf` folder template](https://github.com/IBM/dbb-zappbuild/tree/main/samples/application-conf) that you can copy into each of your applications' Git repositories and customize. Additionally, the [`MortgageApplication` sample application](https://github.com/IBM/dbb-zappbuild/tree/main/samples/MortgageApplication) is included in this IBM dbb-zappbuild repository with its own customized `application-conf` folder as an example of an application configured to be built by zAppBuild.
+
+- Note: Although the MortgageApplication example is located inside IBM's `dbb-zappbuild` repository, this is only to make it easier and more convenient to find as a sample. For real-world implementations, applications should reside in their own Git repositories, separate from your organization's `dbb-zappbuild` repository.
 
 ## Making zAppBuild available in your Git provider
 
@@ -18,7 +62,7 @@ Here are the steps to make the zAppBuild repository available in a central repos
     3. Do not initialize the repository yet.
         - Your Git provider creates the repository, but it is not yet initialized. On most Git providers, the repository creation process ends on a page with information on how to share an existing Git repository. Leave the browser open.
 2. Clone IBM's public [zAppBuild](https://github.com/IBM/dbb-zappbuild) repository to your local workstation. You can use your local workstation's terminal to complete this step (for example, Git Bash in Windows, or Terminal on MacOS).
-    - If you are using IBM Developer for z/OS (IDz) as your IDE, you can use its [Local Shell](https://www.ibm.com/docs/en/developer-for-zos/16.0?topic=view-running-viewing-commands-using-remote-shell). Wazi for VS Code and Wazi for Dev Spaces also both have Terminal windows. (We documented the steps in this guide using a terminal.)
+    - If you are using IBM Developer for z/OS (IDz) on VS Code as your IDE, you can use its Terminal. IDz on Eclipse also has a similar Shell view. (We documented the steps in this guide using a terminal.)
     1. In the terminal, navigate to the folder where you would like to clone the repository.
     2. Retrieve the Git repository URL or SSH path from IBM's public [zAppBuild repository](https://github.com/IBM/dbb-zappbuild):
 
