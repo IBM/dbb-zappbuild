@@ -97,7 +97,12 @@ def createImpactBuildList() {
 						warningMsg = "*! [WARNING] The impacted file '$impactFile' was not found at '$absolutePathBuildFile'. The file will be skipped, the build process continues. Please validate situation for any inconsistencies like the DBB Metadatastore information got out of sync with the repository."
 						buildUtils.updateBuildResult(warningMsg:warningMsg)
 						println(warningMsg)
-					} else {
+					} else if(impactFile == null) {
+						String warningMsg = "*! The impacted file does not have a file name. impact file in JSON representation: ${impact.toJSON()}."
+						buildUtils.updateBuildResult(warningMsg:warningMsg)
+						println(warningMsg)
+					}
+					else {
 						// only add impacted files that have a build script mapped to it
 						if (ScriptMappings.getScriptName(impactFile)) {
 							// only add impacted files, that are in scope of the build.
