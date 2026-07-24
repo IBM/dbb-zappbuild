@@ -62,10 +62,11 @@ def createImpactBuildList() {
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
 
-		changedFiles.each { changedFile ->
+		changedFiles.each {
+			changedFile ->
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
-				// skip adding generated test cases, when the testing is disabled 
+				// skip adding generated test cases, when the testing is disabled
 				if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 					if (props.verbose) println "** Identified $changedFile as a generated TAZ unit test case program. Processing TAZ unit tests is not enabled for this build. Skip building this program."
 				} else {
@@ -86,56 +87,60 @@ def createImpactBuildList() {
 				// list of impacts
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
 				def impacts = findImpactedFiles(impactSearch, changedFile)
-				
 
-				impacts.each { impact ->
+
+				impacts.each {
+					impact ->
 					def impactFile = impact.getFile()
-					if (props.verbose) println "** Found impacted file $impactFile"
-					// Test if impacted file exists
-					absolutePathBuildFile = buildUtils.getAbsolutePath(buildFile)
-					if (!(new File(absolutePathBuildFile).exists())) {
-						warningMsg = "*! [WARNING] The impacted file '$impactFile' was not found at '$absolutePathBuildFile'. The file will be skipped, the build process continues. Please validate situation for any inconsistencies like the DBB Metadatastore information got out of sync with the repository."
-						buildUtils.updateBuildResult(warningMsg:warningMsg)
-						println(warningMsg)
-					} else if(impactFile == null) {
+					if (impactFile != null) {
+						if (props.verbose) println "** Found impacted file $impactFile"
+						// Test if impacted file exists
+						absolutePathBuildFile = buildUtils.getAbsolutePath(impactFile)
+						if (!(new File(absolutePathBuildFile).exists())) {
+							warningMsg = "*! [WARNING] The impacted file '$impactFile' was not found at '$absolutePathBuildFile'. The file will be skipped, the build process continues. Please validate situation for any inconsistencies like the DBB Metadatastore information got out of sync with the repository."
+							buildUtils.updateBuildResult(warningMsg:warningMsg)
+							println(warningMsg)
+						} else {
+							// only add impacted files that have a build script mapped to it
+							if (ScriptMappings.getScriptName(impactFile)) {
+								// only add impacted files, that are in scope of the build.
+								if (!buildUtils.matches(impactFile, excludeMatchers)){
+
+									// calculate abbreviated gitHash for impactFile
+									filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+									if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+										abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+										githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+									}
+
+									// add file to buildset
+									buildSet.add(impactFile)
+									if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+								}
+								else {
+									// impactedFile found, but on Exclude List
+									//   Possible reasons: Exclude of file was defined after building the collection.
+									//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+									if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
+								}
+							} else {
+								String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+								buildUtils.updateBuildResult(warningMsg:warningMsg)
+								println(warningMsg)
+							}
+						}
+					}
+					else {
 						String warningMsg = "*! The impacted file does not have a file name. impact file in JSON representation: ${impact.toJSON()}."
 						buildUtils.updateBuildResult(warningMsg:warningMsg)
 						println(warningMsg)
 					}
-					else {
-						// only add impacted files that have a build script mapped to it
-						if (ScriptMappings.getScriptName(impactFile)) {
-							// only add impacted files, that are in scope of the build.
-							if (!buildUtils.matches(impactFile, excludeMatchers)){
-
-								// calculate abbreviated gitHash for impactFile
-								filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-								if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-									abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-									githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
-								}
-
-								// add file to buildset
-								buildSet.add(impactFile)
-								if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
-							}
-							else {
-								// impactedFile found, but on Exclude List
-								//   Possible reasons: Exclude of file was defined after building the collection.
-								//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-								if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
-							}
-						} else {
-							String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
-							buildUtils.updateBuildResult(warningMsg:warningMsg)
-							println(warningMsg)
-						}
-					}
 				}
-			}else {
+			}
+			else {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
-		}
+
 	    
 	    Set<String> buildLinkSet = new HashSet<String>() 
 	    buildSet.each { buildFile ->
