@@ -90,31 +90,38 @@ def createImpactBuildList() {
 
 				impacts.each { impact ->
 					def impactFile = impact.getFile()
-					if (props.verbose) println "** Found impacted file $impactFile"
-					// only add impacted files that have a build script mapped to it
-					if (ScriptMappings.getScriptName(impactFile)) {
-						// only add impacted files, that are in scope of the build.
-						if (!buildUtils.matches(impactFile, excludeMatchers)){
+					if (impactFile != null) {
+						if (props.verbose) println "** Found impacted file $impactFile"
+						// only add impacted files that have a build script mapped to it
+						if (ScriptMappings.getScriptName(impactFile)) {
+							// only add impacted files, that are in scope of the build.
+							if (!buildUtils.matches(impactFile, excludeMatchers)){
 
-							// calculate abbreviated gitHash for impactFile
-							filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-							if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-								abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-								githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+								// calculate abbreviated gitHash for impactFile
+								filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+								if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+									abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+									githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+								}
+
+								// add file to buildset
+								buildSet.add(impactFile)
+								if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 							}
-
-							// add file to buildset
-							buildSet.add(impactFile)
-							if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+							else {
+								// impactedFile found, but on Exclude List
+								//   Possible reasons: Exclude of file was defined after building the collection.
+								//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+								if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
+							}
+						} else {
+							String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+							buildUtils.updateBuildResult(warningMsg:warningMsg)
+							println(warningMsg)
 						}
-						else {
-							// impactedFile found, but on Exclude List
-							//   Possible reasons: Exclude of file was defined after building the collection.
-							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
-						}
-					} else {
-						String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+					}
+					else {
+						String warningMsg = "*! The impacted file does not have a file name. impact file in JSON representation: ${impact.toJSON()}."
 						buildUtils.updateBuildResult(warningMsg:warningMsg)
 						println(warningMsg)
 					}
