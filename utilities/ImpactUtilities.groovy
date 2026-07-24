@@ -21,7 +21,7 @@ import com.ibm.dbb.dependency.internal.*
 
 def createImpactBuildList() {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	
+
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
@@ -30,8 +30,8 @@ def createImpactBuildList() {
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
-	
-	boolean calculatedChanges = true 
+
+	boolean calculatedChanges = true
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult()
@@ -45,7 +45,7 @@ def createImpactBuildList() {
 		println "*! No prior build result located.  Creating a full build list."
 		changedFiles = buildUtils.createFullBuildList()
 		buildSet = changedFiles
-		
+
 		// skip impact calculation and return the generated build list
 		calculatedChanges = false
 	}
@@ -62,8 +62,7 @@ def createImpactBuildList() {
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
 
-		changedFiles.each {
-			changedFile ->
+		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
 				// skip adding generated test cases, when the testing is disabled
@@ -89,8 +88,7 @@ def createImpactBuildList() {
 				def impacts = findImpactedFiles(impactSearch, changedFile)
 
 
-				impacts.each {
-					impact ->
+				impacts.each { impact ->
 					def impactFile = impact.getFile()
 					if (impactFile != null) {
 						if (props.verbose) println "** Found impacted file $impactFile"
@@ -141,87 +139,91 @@ def createImpactBuildList() {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 
-	    
-	    Set<String> buildLinkSet = new HashSet<String>() 
-	    buildSet.each { buildFile ->
-	         String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
-	 
-	         //include statically called sub programs when the main program changes
-		
-		    if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
-			   // Call addLinkDependencies to append link dependencies to buildSet
-			   if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
-			   buildLinkSet = addLinkDependencies(buildFile)
-		    }
-	    }
-	        if (buildLinkSet !=null) {
-            buildSet.addAll(buildLinkSet)
-	    }
-		
-		// Perform impact analysis for property changes
-		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
-			if (props.verbose) println "*** Perform impact analysis for property changes."
 
-			changedBuildProperties.each { changedProp ->
+			Set<String> buildLinkSet = new HashSet<String>()
+			buildSet.each { buildFile ->
+				String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
 
-				if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
+				//include statically called sub programs when the main program changes
 
-					// perform impact analysis on changed property
-					if (props.verbose) println "** Performing impact analysis on property $changedProp"
+				if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
+					// Call addLinkDependencies to append link dependencies to buildSet
+					if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
+					buildLinkSet = addLinkDependencies(buildFile)
+				}
+			}
+			if (buildLinkSet !=null) {
+				buildSet.addAll(buildLinkSet)
+			}
 
-					// create logical dependency and query collections for logical files with this dependency
-					LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
-					logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
+			// Perform impact analysis for property changes
+			if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
+				if (props.verbose) println "*** Perform impact analysis for property changes."
+
+				changedBuildProperties.each { changedProp ->
+
+					if (props.impactBuildOnBuildPropertyList.contains(changedProp.toString())){
+
+						// perform impact analysis on changed property
+						if (props.verbose) println "** Performing impact analysis on property $changedProp"
+
+						// create logical dependency and query collections for logical files with this dependency
+						LogicalDependency lDependency = new LogicalDependency("$changedProp","BUILDPROPERTIES","PROPERTY")
+						logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(lDependency)
 
 
-					// get excludeListe
-					List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
+						// get excludeListe
+						List<PathMatcher> excludeMatchers = buildUtils.createPathMatcherPattern(props.excludeFileList)
 
-					logicalFileList.each { logicalFile ->
-						def impactFile = logicalFile.getFile()
-						if (props.verbose) println "** Found impacted file $impactFile"
-						// only add impacted files that have a build script mapped to it
-						if (ScriptMappings.getScriptName(impactFile)) {
-							// only add impacted files, that are in scope of the build.
-							if (!buildUtils.matches(impactFile, excludeMatchers)){
-								buildSet.add(impactFile)
-								if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
-							}
-							else {
-								// impactedFile found, but on Exclude List
-								//   Possible reasons: Exclude of file was defined after building the collection.
-								//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-								if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+						logicalFileList.each { logicalFile ->
+							def impactFile = logicalFile.getFile()
+							if (props.verbose) println "** Found impacted file $impactFile"
+							// only add impacted files that have a build script mapped to it
+							if (ScriptMappings.getScriptName(impactFile)) {
+								// only add impacted files, that are in scope of the build.
+								if (!buildUtils.matches(impactFile, excludeMatchers)){
+									buildSet.add(impactFile)
+									if (props.verbose) println "** $impactFile is impacted by changed property $changedProp. Adding to build list."
+								}
+								else {
+									// impactedFile found, but on Exclude List
+									//   Possible reasons: Exclude of file was defined after building the collection.
+									//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+									if (props.verbose) println "!! $impactFile is impacted by changed property $changedProp, but is on Exlude List. Not added to build list."
+								}
 							}
 						}
+					}else {
+						if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 					}
-				}else {
-					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
-			}
-		
-		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
-			
-		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
-			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
-			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
-			// locate logical files from the collection
-			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
-			logicalFileList.each { logicalFile ->
-				if (logicalFile.getFile().contains(repositoryFileName)) {
-					buildSet.add(logicalFile.getFile())
-					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
-				}
-			}
-		}
-		
-		}else {
-			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
-		}
 
+				if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
+
+				changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
+					def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+					def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
+					// locate logical files from the collection
+					def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
+					logicalFileList.each { logicalFile ->
+						if (logicalFile.getFile().contains(repositoryFileName)) {
+							buildSet.add(logicalFile.getFile())
+							if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+						}
+					}
+				}
+			}else {
+				if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
+			}
+		}
 	}
-	
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+	return [
+		buildSet,
+		changedFiles,
+		deletedFiles,
+		renamedFiles,
+		changedBuildProperties
+	]
 }
 
 
