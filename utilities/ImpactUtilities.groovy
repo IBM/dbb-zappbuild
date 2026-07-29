@@ -21,7 +21,7 @@ import com.ibm.dbb.dependency.internal.*
 
 def createImpactBuildList() {
 	MetadataStore metadataStore = MetadataStoreFactory.getMetadataStore()
-	
+
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
@@ -30,8 +30,8 @@ def createImpactBuildList() {
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 	Set<String> buildSet = new HashSet<String>()
-	
-	boolean calculatedChanges = true 
+
+	boolean calculatedChanges = true
 
 	// get the last build result to get the baseline hashes
 	def lastBuildResult = buildUtils.retrieveLastBuildResult()
@@ -45,7 +45,7 @@ def createImpactBuildList() {
 		println "*! No prior build result located.  Creating a full build list."
 		changedFiles = buildUtils.createFullBuildList()
 		buildSet = changedFiles
-		
+
 		// skip impact calculation and return the generated build list
 		calculatedChanges = false
 	}
@@ -62,10 +62,11 @@ def createImpactBuildList() {
 		PropertyMappings githashBuildableFilesMap = new PropertyMappings("githashBuildableFilesMap")
 
 
+		// impact analysis
 		changedFiles.each { changedFile ->
 			// if the changed file has a build script then add to build list
 			if (ScriptMappings.getScriptName(changedFile)) {
-				// skip adding generated test cases, when the testing is disabled 
+				// skip adding generated test cases, when the testing is disabled
 				if (buildUtils.isGeneratedTazTestCaseProgram(changedFile) && !(props.runzTests && props.runzTests.toBoolean())) {
 					if (props.verbose) println "** Identified $changedFile as a generated TAZ unit test case program. Processing TAZ unit tests is not enabled for this build. Skip building this program."
 				} else {
@@ -86,61 +87,74 @@ def createImpactBuildList() {
 				// list of impacts
 				String impactSearch = props.getFileProperty('impactSearch', changedFile)
 				def impacts = findImpactedFiles(impactSearch, changedFile)
-				
+
 
 				impacts.each { impact ->
 					def impactFile = impact.getFile()
-					if (props.verbose) println "** Found impacted file $impactFile"
-					// only add impacted files that have a build script mapped to it
-					if (ScriptMappings.getScriptName(impactFile)) {
-						// only add impacted files, that are in scope of the build.
-						if (!buildUtils.matches(impactFile, excludeMatchers)){
+					if (impactFile != null) {
+						if (props.verbose) println "** Found impacted file $impactFile"
+						// Test if impacted file exists
+						absolutePathBuildFile = buildUtils.getAbsolutePath(impactFile)
+						if (!(new File(absolutePathBuildFile).exists())) {
+							warningMsg = "*! [WARNING] The impacted file '$impactFile' was not found at '$absolutePathBuildFile'. The file will be skipped, the build process continues. Please validate situation for any inconsistencies like the DBB Metadatastore information got out of sync with the repository."
+							buildUtils.updateBuildResult(warningMsg:warningMsg)
+							println(warningMsg)
+						} else {
+							// only add impacted files that have a build script mapped to it
+							if (ScriptMappings.getScriptName(impactFile)) {
+								// only add impacted files, that are in scope of the build.
+								if (!buildUtils.matches(impactFile, excludeMatchers)){
 
-							// calculate abbreviated gitHash for impactFile
-							filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
-							if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
-								abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
-								githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+									// calculate abbreviated gitHash for impactFile
+									filePattern = FileSystems.getDefault().getPath(impactFile).getParent().toString()
+									if (filePattern != null && githashBuildableFilesMap.getValue(impactFile) == null) {
+										abbrevCurrentHash = gitUtils.getCurrentGitHash(buildUtils.getAbsolutePath(filePattern), true)
+										githashBuildableFilesMap.addFilePattern(abbrevCurrentHash, filePattern+"/*")
+									}
+
+									// add file to buildset
+									buildSet.add(impactFile)
+									if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
+								}
+								else {
+									// impactedFile found, but on Exclude List
+									//   Possible reasons: Exclude of file was defined after building the collection.
+									//   Rescan/Rebuild Collection to synchronize it with defined build scope.
+									if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
+								}
+							} else {
+								String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+								buildUtils.updateBuildResult(warningMsg:warningMsg)
+								println(warningMsg)
 							}
-
-							// add file to buildset
-							buildSet.add(impactFile)
-							if (props.verbose) println "** $impactFile is impacted by changed file $changedFile. Adding to build list."
 						}
-						else {
-							// impactedFile found, but on Exclude List
-							//   Possible reasons: Exclude of file was defined after building the collection.
-							//   Rescan/Rebuild Collection to synchronize it with defined build scope.
-							if (props.verbose) println "*! $impactFile is impacted by changed file $changedFile, but it is excluded from the build scope. See excludeFileList configuration. Not added to build list."
-						}
-					} else {
-						String warningMsg = "*! $impactFile is impacted by changed file $changedFile, but is not added to build list, because it is not mapped to a language script."
+					}
+					else {
+						String warningMsg = "*! The impacted file does not have a file name. impact file in JSON representation: ${impact.toJSON()}."
 						buildUtils.updateBuildResult(warningMsg:warningMsg)
 						println(warningMsg)
 					}
 				}
-
-			}else {
+			}
+			else {
 				if (props.verbose) println "** Impact analysis for $changedFile has been skipped due to configuration."
 			}
 		}
-	    
-	    Set<String> buildLinkSet = new HashSet<String>() 
-	    buildSet.each { buildFile ->
-	         String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
-	 
-	         //include statically called sub programs when the main program changes
-		
-		    if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
-			   // Call addLinkDependencies to append link dependencies to buildSet
-			   if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
-			   buildLinkSet = addLinkDependencies(buildFile)
-		    }
-	    }
-	        if (buildLinkSet !=null) {
-            buildSet.addAll(buildLinkSet)
-	    }
-		
+
+		// include statically called sub programs when the main program changes
+		Set<String> buildLinkSet = new HashSet<String>()
+		buildSet.each { buildFile ->
+			String addSubmodulesToBuildList = props.getFileProperty('addSubmodulesToBuildList', buildFile)
+			if (addSubmodulesToBuildList != null && addSubmodulesToBuildList.toBoolean()) {
+				// Call addLinkDependencies to append link dependencies to buildSet
+				if (props.verbose) println "** Perform analysis to add statically called sub modules to build list for ${buildFile}."
+				buildLinkSet = addLinkDependencies(buildFile)
+			}
+		}
+		if (buildLinkSet !=null) {
+			buildSet.addAll(buildLinkSet)
+		}
+
 		// Perform impact analysis for property changes
 		if (props.impactBuildOnBuildPropertyChanges && props.impactBuildOnBuildPropertyChanges.toBoolean()){
 			if (props.verbose) println "*** Perform impact analysis for property changes."
@@ -182,29 +196,32 @@ def createImpactBuildList() {
 					if (props.verbose) println "** Calculation of impacted files by changed property $changedProp has been skipped due to configuration. "
 				}
 			}
-		
-		if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
-			
-		changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
-			def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
-			def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
-			// locate logical files from the collection
-			def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
-			logicalFileList.each { logicalFile ->
-				if (logicalFile.getFile().contains(repositoryFileName)) {
-					buildSet.add(logicalFile.getFile())
-					if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+
+			if (props.verbose) println "*** Perform impact analysis for changed individual properties file changes."
+
+			changedIndividualFilePropertiesFiles.each { changedIndividualPropertiesFile ->
+				def repositoryFileName = changedIndividualPropertiesFile.split('/').last().replace(".properties", "")
+				def repositoryMemberName = CopyToPDS.createMemberName(repositoryFileName)
+				// locate logical files from the collection
+				def logicalFileList = metadataStore.getCollection(props.applicationCollectionName).getLogicalFiles(repositoryMemberName)
+				logicalFileList.each { logicalFile ->
+					if (logicalFile.getFile().contains(repositoryFileName)) {
+						buildSet.add(logicalFile.getFile())
+						if (props.verbose) println "** ${logicalFile.getFile()} is impacted by changed file $changedIndividualPropertiesFile. Adding to build list."
+					}
 				}
 			}
-		}
-		
 		}else {
 			if (props.verbose) println "** Calculation of impacted files by changed properties has been skipped due to configuration. "
 		}
-
 	}
-	
-	return [buildSet, changedFiles, deletedFiles, renamedFiles, changedBuildProperties]
+	return [
+		buildSet,
+		changedFiles,
+		deletedFiles,
+		renamedFiles,
+		changedBuildProperties
+	]
 }
 
 
