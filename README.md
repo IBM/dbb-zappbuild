@@ -47,6 +47,7 @@ The zAppBuild sample provides the following *language* build scripts by default:
 * TazUnitTest.groovy
 * CRB.groovy
 * Transfer.groovy (for transport non-buildable files like JCL or PROC into build libraries and register them as build output)
+* Transfer_USS.groovy(for transport of uss based files into target uss libraries and register them as build output)
 * Easytrieve.groovy
 * zCEE2.groovy
 * zCEE3.groovy (for z/OS Connect OpenAPI 3 specification)

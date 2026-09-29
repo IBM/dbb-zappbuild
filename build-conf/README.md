@@ -374,6 +374,14 @@ transfer_xmlPDS | Sample dataset for xml members
 transfer_dsOptions | BPXWDYN creation options for creating 'source' type data sets
 transfer_outputDatasets | List of output datasets to document deletions ** Can be overridden by a file property. ** If used for multiple, use a file property to set transfer_outputDatasets
 
+### Transfer_USS.properties
+Build properties used by zAppBuild/language/Transfer_USS.groovy
+
+Property | Description
+--- | --- | ---
+transfer_uss_deployType | Default deployType for files transferred to USS
+transfer_uss_targetDir | Target directory in USS (defaults to `${props.workspace}/ussfiles`)
+
 ### Easytrieve.properties
 Build properties used by zAppBuild/language/Easytrieve.groovy
 
