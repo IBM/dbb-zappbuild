@@ -44,8 +44,7 @@ buildList.each { buildFile ->
     println "*** (${currentBuildFileNumber++}/${buildList.size()}) Transferring file $buildFile to USS"
 
     // obtain target directory: check file-level property first, then global property, then fallback
-    String fileTargetDir = props.getFileProperty('transfer_uss_targetDir', buildFile)
-    String targetDir = fileTargetDir ?: (props.transfer_uss_targetDir ?: "${props.workspace}/ussfiles")
+    String targetDir = (props.getFileProperty('transfer_uss_targetDir', buildFile) ?: "${props.workspace}/ussfiles").replace('${props.workspace}', props.workspace)    
 
     String deployType = buildUtils.getDeployType("transfer_uss", buildFile, null)
 
@@ -62,7 +61,7 @@ buildList.each { buildFile ->
 
         // Use NIO copy for USS file transfer
         Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        if (props.verbose) println "** Copied $buildFile to ${destFile.getAbsolutePath()} with deployType $deployType"
+        if (props.verbose) println "** Copied $buildFile to $targetDir with deployType $deployType"
 
         // Register the output in the build report using CopyToUnixRecord
         CopyToUnixRecord record = new CopyToUnixRecord()
