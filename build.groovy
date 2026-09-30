@@ -584,7 +584,7 @@ def createBuildList() {
 	Set<String> buildSet = new HashSet<String>()
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
-	Set<String> renamedFiles = new HashSet<String>() // not yet used for any post-processing
+	Map<String,String> renamedFiles = new LinkedHashMap<String,String>() // old path -> new path; not yet used for any post-processing
 	Set<String> changedBuildProperties = new HashSet<String>() // not yet used for any post-processing
 	String action = (props.scanOnly) || (props.scanLoadmodules) ? 'Scanning' : 'Building'
 

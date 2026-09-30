@@ -25,7 +25,7 @@ def createImpactBuildList() {
 	// local variables
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
-	Set<String> renamedFiles = new HashSet<String>()
+	Map<String,String> renamedFiles = new LinkedHashMap<String,String>() // old path -> new path
 	Set<String> movedFiles = new HashSet<String>()
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
@@ -234,7 +234,7 @@ def createImpactBuildList() {
 def createMergeBuildList(){
 	Set<String> changedFiles = new HashSet<String>()
 	Set<String> deletedFiles = new HashSet<String>()
-	Set<String> renamedFiles = new HashSet<String>()
+	Map<String,String> renamedFiles = new LinkedHashMap<String,String>() // old path -> new path
 	Set<String> movedFiles = new HashSet<String>()
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
@@ -345,8 +345,8 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 	Map<String,String> baselineHashes = new HashMap<String,String>()
 	Set<String> changedFiles = new HashSet<String>() // to be built
 	Set<String> deletedFiles = new HashSet<String>() // to be removed from metadatastore
-	Set<String> renamedFiles = new HashSet<String>() // to be removed from metadatastore
-	Set<String> movedFiles = new HashSet<String>() // to be scanned and added to metadatastore
+	Map<String,String> renamedFiles = new LinkedHashMap<String,String>() // old path -> new path
+	Set<String> movedFiles = new HashSet<String>() // to be scanned and added to metadatastore (non-rename moves and renamed files with content changes)
 	Set<String> changedIndividualFilePropertiesFiles = new HashSet<String>()
 	Set<String> changedBuildProperties = new HashSet<String>()
 
@@ -412,8 +412,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 		if (props.verbose) println "** Calculating changed files for directory $dir"
 		def changed = []
 		def deleted = []
-		def renamed = []
-		def moved = []
+		def renamed = [:] // old path -> new path (Map returned by gitUtils.getChangedFiles)
 		String baseline
 		String current
 		String abbrevCurrent
@@ -435,7 +434,7 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				}
 				else {
 					if (props.verbose) println "** Diffing baseline $baseline -> current $current"
-					(changed, deleted, renamed, moved) = gitUtils.getChangedFiles(dir, baseline, current)
+					(changed, deleted, renamed) = gitUtils.getChangedFiles(dir, baseline, current)
 				}
 			}
 			// when no build result is provided but the outgoingChangesBuild, calculate the outgoing changes
@@ -445,11 +444,11 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 				current = "HEAD"
 
 				if (props.verbose) println "** Triple-dot diffing configuration baseline remotes/origin/$baseline -> current HEAD"
-				(changed, deleted, renamed, moved) = gitUtils.getMergeChanges(dir, baseline)
+				(changed, deleted, renamed) = gitUtils.getMergeChanges(dir, baseline)
 			}
 			// calculate concurrent changes
 			else if (calculateConcurrentChanges) {
-				(changed, deleted, renamed, moved) = gitUtils.getConcurrentChanges(dir, gitReference)
+				(changed, deleted, renamed) = gitUtils.getConcurrentChanges(dir, gitReference)
 			}
 		}
 		else {
@@ -502,26 +501,20 @@ def calculateChangedFiles(BuildResult lastBuildResult, boolean calculateConcurre
 			}
 		}
 
-		if (props.verbose) println "*** Renamed files for directory $dir $msg (to be removed from DBB Metadatastore):"
-		renamed.each { file ->
-			if ( !buildUtils.matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, false, mode)
-				renamedFiles << file
-				if (props.verbose) println "**** $file"
+		if (props.verbose) println "*** Renamed files for directory $dir $msg (old path -> new path, logical file will be updated in DBB Metadatastore):"
+		renamed.each { oldFile, newFile ->
+			if ( !buildUtils.matches(oldFile, excludeMatchers)) {
+				def (fixedOldFile, fixedMode) = fixGitDiffPath(oldFile, dir, false, mode)
+				def (fixedNewFile, ignored)   = fixGitDiffPath(newFile, dir, false, mode)
+				mode = fixedMode
+				renamedFiles[fixedOldFile] = fixedNewFile
+				if (props.verbose) println "**** $fixedOldFile -> $fixedNewFile"
+				// When similarity < 100 the content also changed: the new path was already added to
+				// changedFiles by GitUtils and will be fully rescanned. For similarity == 100 the
+				// logical file is updated in-place by updateCollection via setFile+addLogicalFile,
+				// so no separate entry in movedFiles is needed.
 			} else {
-				if (props.verbose) println "**** $file is renamed, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
-			}
-		}
-
-		// files are not built. This is for documentation purposes. See logic in GitUtilities.groovy
-		if (props.verbose) println "*** Moved files for directory $dir $msg (to be scanned and added to DBB Metadatastore):"
-		moved.each { file ->
-			if ( !buildUtils.matches(file, excludeMatchers)) {
-				(file, mode) = fixGitDiffPath(file, dir, false, mode)
-				movedFiles << file
-				if (props.verbose) println "**** $file"
-			} else {
-				if (props.verbose) println "**** $file is moved, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
+				if (props.verbose) println "**** $oldFile is renamed, but is excluded from build scope. See excludeFileList configuration. No follow-up processing."
 			}
 		}
 
@@ -600,13 +593,24 @@ def updateCollection(changedFiles, deletedFiles, renamedFiles, movedFiles) {
 		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
 	}
 
-	// remove renamed files from collection
-	renamedFiles.each { file ->
+	// update renamed files in collection: retrieve the existing logical file, update its file
+	// attribute to the new path, and save it - preserving all previously scanned dependencies
+	renamedFiles.each { oldFile, newFile ->
 		// files in a collection are stored as relative paths from a source directory
-		if (props.verbose) println "*** Deleting renamed logical file for $file"
-		logicalFile = buildUtils.relativizePath(file)
-		metadataStore.getCollection(props.applicationCollectionName).deleteLogicalFile(logicalFile)
-		metadataStore.getCollection(props.applicationOutputsCollectionName).deleteLogicalFile(logicalFile)
+		def oldRelPath = buildUtils.relativizePath(oldFile)
+		def newRelPath = buildUtils.relativizePath(newFile)
+		if (props.verbose) println "*** Updating logical file for renamed file $oldRelPath -> $newRelPath"
+		[props.applicationCollectionName, props.applicationOutputsCollectionName].each { collectionName ->
+			def collection = metadataStore.getCollection(collectionName)
+			def existingLogicalFile = collection.getLogicalFile(oldRelPath)
+			if (existingLogicalFile) {
+				existingLogicalFile.setFile(newRelPath)
+				collection.addLogicalFile(existingLogicalFile)
+				collection.deleteLogicalFile(oldRelPath)
+			} else {
+				if (props.verbose) println "*! No existing logical file found for $oldRelPath in collection $collectionName. Skipping update."
+			}
+		}
 	}
 
 	if (props.createTestcaseDependency && props.createTestcaseDependency.toBoolean() && changedFiles && changedFiles.size() > 1) {

@@ -277,15 +277,17 @@ def getConcurrentChanges(String gitDir, String baselineReference) {
 }
 
 /*
- * getChangedFiles - internal method to submit the a gitDiff command and calucate and classify the idenfified changes 
+ * getChangedFiles - internal method to submit the a gitDiff command and calucate and classify the idenfified changes
  */
 def getChangedFiles(String cmd) {
 	def git_diff = new StringBuffer()
 	def git_error = new StringBuffer()
 	def changedFiles = [] // to be rebuild
 	def deletedFiles = [] // to be removed from the DBB Metadatastore + Generate Deletion Record
-	def renamedFiles = [] // to be removed from the DBB Metadatastore
-	def movedFiles = []   // to be scanned but not rebuild
+	// Map of old path -> new path for renamed files.
+	// A similarity score of 100 means only a rename/move; the logical file is updated in-place by the caller.
+	// A lower score means content also changed: the new path is added to changedFiles for a full rescan.
+	def renamedFiles = [:] // old path -> new path
 
 	def process = cmd.execute()
 	process.waitForProcessOutput(git_diff, git_error)
@@ -312,13 +314,11 @@ def getChangedFiles(String cmd) {
 			} else if (action.startsWith("R")) { // handle renamed file
 				renamedFile = gitDiffOutput[1]
 				newFileName = gitDiffOutput[2]
-				renamedFiles.add(renamedFile)
 				//evaluate similarity score
 				similarityScore = action.substring(1) as int
-				if (similarityScore == 100) {
-					movedFiles.add(newFileName)
-				} else {
-					changedFiles.add(newFileName) // will rebuild file
+				renamedFiles.put(renamedFile, newFileName)
+				if (similarityScore < 100) {
+					changedFiles.add(newFileName) // content also changed, will rebuild file
 				}
 				if (similarityScore < 50){
 					println ("*! (GitUtils.getChangedFiles - Renaming Scenario) Low similarity score for renamed file $renamedFile : $similarityScore with new file $newFileName. ")
@@ -338,8 +338,7 @@ def getChangedFiles(String cmd) {
 	return [
 		changedFiles,
 		deletedFiles,
-		renamedFiles,
-		movedFiles
+		renamedFiles
 	]
 }
 
