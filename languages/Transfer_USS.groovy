@@ -44,7 +44,7 @@ buildList.each { buildFile ->
     println "*** (${currentBuildFileNumber++}/${buildList.size()}) Transferring file $buildFile to USS"
 
     // obtain target directory: check file-level property first, then global property, then fallback
-    String targetDir = (props.getFileProperty('transfer_uss_targetDir', buildFile) ?: "${props.workspace}/ussfiles").replace('${props.workspace}', props.workspace)    
+    String targetDir = props.getFileProperty('transfer_uss_targetDir', buildFile)   
 
     String deployType = buildUtils.getDeployType("transfer_uss", buildFile, null)
 
