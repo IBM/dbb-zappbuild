@@ -365,10 +365,10 @@ transfer_copyMode | Copy mode used during the copy to the target data set | true
 ### Transfer_USS.properties
 Application properties used by zAppBuild/language/Transfer_USS.groovy
 
-Property | Description
+Property | Description | Overridable
 --- | --- | ---
-transfer_uss_deployType | Default deployType for files transferred to USS
-transfer_uss_targetDir | Target directory in USS (defaults to `${props.workspace}/ussfiles`)
+transfer_uss_deployType | Default deployType for files transferred to USS | true
+transfer_uss_targetDir | Target directory in USS (defaults to `${props.workspace}/ussfiles`) | true
 
 
 
