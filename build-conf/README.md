@@ -380,7 +380,7 @@ Build properties used by zAppBuild/language/Transfer_USS.groovy
 Property | Description
 --- | --- | ---
 transfer_uss_deployType | Default deployType for files transferred to USS
-transfer_uss_targetDir | Target directory in USS (defaults to `${props.workspace}/ussfiles`)
+transfer_uss_targetDir | Target directory in USS (defaults to `${workspace}/ussfiles`)
 
 ### Easytrieve.properties
 Build properties used by zAppBuild/language/Easytrieve.groovy
